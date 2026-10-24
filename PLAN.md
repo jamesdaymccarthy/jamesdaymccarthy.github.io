@@ -37,8 +37,8 @@ Dates are written `YYYY-MM-DD` (ISO 8601) so sorting them like words also sorts 
 - [x] 2. Add at least two games to the JSON (one fave, one not), using the `/add-game` skill
 - [x] 3. Render the games as cards, newest first
 - [x] 4. Favorites get a ⭐ on their card, plus a filter button to show only favorites
-- [ ] 5. GitHub setup: create the `jamesdaymccarthy.github.io` repo and turn on Pages
-  (repo created; waiting for the first push)
+- [x] 5. GitHub setup: create the `jamesdaymccarthy.github.io` repo and turn on Pages
+  (live at https://jamesdaymccarthy.github.io)
 - [x] 6. Remember which games each visitor has played, and show "NEW!" on the ones they haven't
 - [x] 7. Visitors can ❤️ their own favorites (separate from my ⭐ picks in `games.json`)
 
