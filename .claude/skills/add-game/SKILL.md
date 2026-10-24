@@ -54,6 +54,11 @@ Ask where the game is. It might be:
   the tool), and Cheese Panic and Asteroid Buster (wrapped by hand earlier).
   The file name may not match the game (Asteroid Buster was
   `nature_ecosystem_sim.html`), so check what's inside.
+- **An old GitHub repo.** Clone it into the scratchpad (`gh repo clone`), then
+  investigate: follow the links between pages, compare look-alike files
+  (`cmp`/`diff`), and read `git log --stat` to see what was renamed or copied.
+  Copy only the pages that are really used, and make the "front door" page
+  `index.html` (fixing links to it). VeilCode is an example.
 - **Khan Academy (Processing.js).** Have them paste the code into a file. Wrap
   it in an `index.html` that loads Processing.js 1.4.8 from cdnjs and runs the code inside
   `new Processing(canvas, function(processingInstance) { with (processingInstance) { size(400, 400); frameRate(30); /* code */ } })`.
