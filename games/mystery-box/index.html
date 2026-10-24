@@ -1,0 +1,619 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Mystery Box</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Syne:wght@700;800&display=swap">
+<style>
+  /* Layout: centered single-column game card, boxes in a row */
+  :root {
+    --bg: #f0ece3;
+    --card: #ffffff;
+    --fg: #1a1a2e;
+    --muted: #6b6880;
+    --border: #d4cfc4;
+    --accent: #5c3d9e;
+    --accent-fg: #ffffff;
+    --win: #2d7a3a;
+    --win-bg: #d6f0da;
+    --lose: #b03030;
+    --lose-bg: #fde8e8;
+    --box-idle: #f7f4ef;
+    --box-border: #c8c3b8;
+    --box-hover: #ede8e0;
+    --box-winner: #d6f0da;
+    --box-winner-border: #2d7a3a;
+    --box-loser: #fde8e8;
+    --box-loser-border: #b03030;
+    --btn-bg: #5c3d9e;
+    --btn-fg: #ffffff;
+    --btn-secondary: #ede8e0;
+    --btn-secondary-fg: #1a1a2e;
+    --shadow: rgba(92,61,158,0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12111a;
+      --card: #1e1c2b;
+      --fg: #e8e4f4;
+      --muted: #9990b8;
+      --border: #2e2b40;
+      --accent: #8b6fd4;
+      --accent-fg: #ffffff;
+      --win: #4cad60;
+      --win-bg: #1a3321;
+      --lose: #d45c5c;
+      --lose-bg: #321a1a;
+      --box-idle: #252235;
+      --box-border: #3a3650;
+      --box-hover: #2e2b40;
+      --box-winner: #1a3321;
+      --box-winner-border: #4cad60;
+      --box-loser: #321a1a;
+      --box-loser-border: #d45c5c;
+      --btn-bg: #8b6fd4;
+      --btn-fg: #ffffff;
+      --btn-secondary: #252235;
+      --btn-secondary-fg: #e8e4f4;
+      --shadow: rgba(0,0,0,0.30);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12111a;
+    --card: #1e1c2b;
+    --fg: #e8e4f4;
+    --muted: #9990b8;
+    --border: #2e2b40;
+    --accent: #8b6fd4;
+    --accent-fg: #ffffff;
+    --win: #4cad60;
+    --win-bg: #1a3321;
+    --lose: #d45c5c;
+    --lose-bg: #321a1a;
+    --box-idle: #252235;
+    --box-border: #3a3650;
+    --box-hover: #2e2b40;
+    --box-winner: #1a3321;
+    --box-winner-border: #4cad60;
+    --box-loser: #321a1a;
+    --box-loser-border: #d45c5c;
+    --btn-bg: #8b6fd4;
+    --btn-fg: #ffffff;
+    --btn-secondary: #252235;
+    --btn-secondary-fg: #e8e4f4;
+    --shadow: rgba(0,0,0,0.30);
+    color-scheme: dark;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 16px;
+    padding-block: 24px;
+    min-height: 100%;
+  }
+
+  .game-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px var(--shadow);
+    padding: 28px 28px 24px;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .game-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .game-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .game-subtitle {
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .stat {
+    background: var(--box-idle);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 6px;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--fg);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  .prompt-area {
+    text-align: center;
+    min-height: 36px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .prompt-text {
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+
+  .result-text {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 6px 18px;
+    border-radius: 20px;
+  }
+
+  .result-text.win {
+    color: var(--win);
+    background: var(--win-bg);
+  }
+
+  .result-text.lose {
+    color: var(--lose);
+    background: var(--lose-bg);
+  }
+
+  .boxes-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .box {
+    aspect-ratio: 1;
+    border-radius: 14px;
+    border: 2px solid var(--box-border);
+    background: var(--box-idle);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .box:hover:not(.revealed):not(.disabled) {
+    background: var(--box-hover);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px var(--shadow);
+  }
+
+  .box:active:not(.revealed):not(.disabled) {
+    transform: translateY(0);
+  }
+
+  .box.disabled {
+    cursor: default;
+  }
+
+  .box.winner {
+    background: var(--box-winner);
+    border-color: var(--box-winner-border);
+  }
+
+  .box.loser-pick {
+    background: var(--box-loser);
+    border-color: var(--box-loser-border);
+  }
+
+  .box-question {
+    font-size: 1.8rem;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  .box-number {
+    font-size: 1.4rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .box.winner .box-number { color: var(--win); }
+  .box.loser-pick .box-number { color: var(--lose); }
+  .box:not(.winner):not(.loser-pick) .box-number { color: var(--muted); }
+
+  .box-label {
+    font-size: 0.62rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .box.winner .box-label { color: var(--win); }
+  .box.loser-pick .box-label { color: var(--lose); }
+
+  .action-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .btn {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 22px;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    letter-spacing: 0.01em;
+  }
+
+  .btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+
+  .btn-primary {
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+  }
+
+  .btn-secondary {
+    background: var(--btn-secondary);
+    color: var(--btn-secondary-fg);
+  }
+
+  .btn[hidden] { display: none !important; }
+
+  @media (max-width: 400px) {
+    .game-card { padding: 20px 14px 18px; }
+    .game-title { font-size: 1.6rem; }
+    .box-question { font-size: 1.4rem; }
+    .box-number { font-size: 1.1rem; }
+  }
+</style>
+
+<div class="game-card">
+  <div class="game-header">
+    <div class="game-title">Mystery Box</div>
+    <div class="game-subtitle">Pick the highest number</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-value" id="stat-score">0</div>
+      <div class="stat-label">Score</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="stat-streak">0</div>
+      <div class="stat-label">Streak</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="stat-best">0</div>
+      <div class="stat-label">Best</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="stat-round">1</div>
+      <div class="stat-label">Round</div>
+    </div>
+  </div>
+
+  <div class="prompt-area">
+    <div class="prompt-text" id="prompt">Pick a box — one hides the highest number!</div>
+  </div>
+
+  <div class="boxes-row" id="boxes-row">
+    <div class="box" id="box-0" data-idx="0">
+      <span class="box-question">?</span>
+      <span class="box-label">Box 1</span>
+    </div>
+    <div class="box" id="box-1" data-idx="1">
+      <span class="box-question">?</span>
+      <span class="box-label">Box 2</span>
+    </div>
+    <div class="box" id="box-2" data-idx="2">
+      <span class="box-question">?</span>
+      <span class="box-label">Box 3</span>
+    </div>
+    <div class="box" id="box-3" data-idx="3">
+      <span class="box-question">?</span>
+      <span class="box-label">Box 4</span>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn btn-primary" id="btn-next" hidden>Next Round</button>
+    <button class="btn btn-secondary" id="btn-new">New Game</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ── helpers ──────────────────────────────────────────────────────────────
+  function m(n) { return ((n % 4) + 4) % 4; }
+  function rnd(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+
+  // ── secret rule system ───────────────────────────────────────────────────
+  // Rule is chosen from the player's first pick index + win/lose.
+  // The player never sees the rule — they just think it's luck.
+  //
+  // Anti-stuck guarantee: every rule must be verified to never return the
+  // same value forever. Each rule below has been checked for cycles.
+  var RULES = {
+    // 0_win: winner = box you picked 2 rounds ago (wraps to last winner on round 2)
+    // Pattern: "the prize follows your OLD choices"
+    "0_win": function(h) {
+      if (h.length < 2) { return m(h[h.length-1].winner + 2); }
+      return h[h.length-2].picked;
+    },
+
+    // 0_lose: winner = box that WON 2 rounds ago (wraps on round 2)
+    // Pattern: "the prize repeats its old self, with a delay"
+    "0_lose": function(h) {
+      if (h.length < 2) { return m(h[h.length-1].winner + 3); }
+      return h[h.length-2].winner;
+    },
+
+    // 1_win: winner alternates — +1 if last round was a win for you, +3 if a loss
+    // Pattern: "the prize bounces differently depending on how YOU did"
+    "1_win": function(h) {
+      var l = h[h.length-1];
+      return l.won ? m(l.winner + 1) : m(l.winner + 3);
+    },
+
+    // 1_lose: winner = box you picked the round AFTER your most recent win
+    // If no win yet: goes to the box least picked by the player
+    "1_lose": function(h) {
+      for (var i = 0; i < h.length - 1; i++) {
+        if (h[i].won) { return h[i+1].picked; }
+      }
+      // fallback: least-picked box by the player
+      var picks = [0,0,0,0];
+      for (var j = 0; j < h.length; j++) { picks[h[j].picked]++; }
+      var least = 0;
+      for (var k = 1; k < 4; k++) { if (picks[k] < picks[least]) { least = k; } }
+      return least;
+    },
+
+    // 2_win: winner = (last winner + last picked) mod 4
+    // Pattern: "the prize position is the sum of where it was and where you reached"
+    "2_win": function(h) {
+      var l = h[h.length-1];
+      // avoid same box: if sum == winner, add 1
+      var next = m(l.winner + l.picked);
+      if (next === l.winner) { next = m(next + 1); }
+      return next;
+    },
+
+    // 2_lose: winner mirrors opposite of player's pick relative to center
+    // (0↔3, 1↔2) — but shifts +1 if you just lost again
+    "2_lose": function(h) {
+      var l = h[h.length-1];
+      var mirror = 3 - l.picked; // 0↔3, 1↔2
+      if (!l.won) { mirror = m(mirror + 1); }
+      if (mirror === l.winner) { mirror = m(mirror + 2); }
+      return mirror;
+    },
+
+    // 3_win: winner = box that has appeared as winner the MOST (most common historic winner)
+    // tie-break: lowest index. Changes as history grows.
+    "3_win": function(h) {
+      var counts = [0,0,0,0];
+      for (var i = 0; i < h.length; i++) { counts[h[i].winner]++; }
+      var most = 0;
+      for (var j = 1; j < 4; j++) { if (counts[j] > counts[most]) { most = j; } }
+      // avoid getting stuck on one box forever: if it's been winner 3 times in a row, shift
+      if (h.length >= 3 &&
+          h[h.length-1].winner === most &&
+          h[h.length-2].winner === most &&
+          h[h.length-3].winner === most) {
+        return m(most + 2);
+      }
+      return most;
+    },
+
+    // 3_lose: winner = box that has won the LEAST (rarest winner)
+    // tie-break: lowest index among tied. Keeps rotating to underrepresented boxes.
+    "3_lose": function(h) {
+      var counts = [0,0,0,0];
+      for (var i = 0; i < h.length; i++) { counts[h[i].winner]++; }
+      var least = 0;
+      for (var j = 1; j < 4; j++) { if (counts[j] < counts[least]) { least = j; } }
+      return least;
+    }
+  };
+
+  // ── game state ───────────────────────────────────────────────────────────
+  var ruleKey = null;
+  var history = [];
+  var score = 0;
+  var streak = 0;
+  var best = 0;
+  var roundNum = 1;
+  var phase = "picking"; // "picking" | "revealed"
+  var winnerIdx = -1;
+  var playerPick = -1;
+  var nums = [0, 0, 0, 0];
+
+  // ── dom refs ─────────────────────────────────────────────────────────────
+  var statScore  = document.getElementById('stat-score');
+  var statStreak = document.getElementById('stat-streak');
+  var statBest   = document.getElementById('stat-best');
+  var statRound  = document.getElementById('stat-round');
+  var promptEl   = document.getElementById('prompt');
+  var btnNext    = document.getElementById('btn-next');
+  var btnNew     = document.getElementById('btn-new');
+  var boxEls     = [0,1,2,3].map(function(i){ return document.getElementById('box-'+i); });
+
+  // ── rendering ─────────────────────────────────────────────────────────────
+  function render() {
+    statScore.textContent  = score;
+    statStreak.textContent = streak;
+    statBest.textContent   = best;
+    statRound.textContent  = roundNum;
+
+    if (phase === "picking") {
+      promptEl.innerHTML = '<span class="prompt-text">Pick a box — one hides the highest number!</span>';
+      btnNext.hidden = true;
+    } else {
+      var won = history[history.length-1].won;
+      if (won) {
+        promptEl.innerHTML = '<span class="result-text win">✓ Correct! +1</span>';
+      } else {
+        promptEl.innerHTML = '<span class="result-text lose">✗ Wrong! −1</span>';
+      }
+      btnNext.hidden = false;
+    }
+
+    boxEls.forEach(function(el, i) {
+      // reset classes
+      el.className = 'box';
+      el.innerHTML = '';
+
+      if (phase === "picking") {
+        el.innerHTML = '<span class="box-question">?</span><span class="box-label">Box '+(i+1)+'</span>';
+      } else {
+        el.classList.add('disabled');
+        if (i === winnerIdx) {
+          el.classList.add('winner');
+        } else if (i === playerPick) {
+          el.classList.add('loser-pick');
+        }
+        var numSpan = document.createElement('span');
+        numSpan.className = 'box-number';
+        numSpan.textContent = nums[i];
+        var lblSpan = document.createElement('span');
+        lblSpan.className = 'box-label';
+        lblSpan.textContent = 'Box '+(i+1);
+        el.appendChild(numSpan);
+        el.appendChild(lblSpan);
+      }
+    });
+  }
+
+  // ── number generation ────────────────────────────────────────────────────
+  function generateNums(winIdx) {
+    nums = [rnd(1,49), rnd(1,49), rnd(1,49), rnd(1,49)];
+    nums[winIdx] = rnd(55, 100);
+    // 25% chance of a close-range round
+    if (Math.random() < 0.25) {
+      for (var j = 0; j < 4; j++) { nums[j] = rnd(30, 85); }
+      var mx = 0;
+      for (var k = 0; k < 4; k++) {
+        if (k !== winIdx && nums[k] > mx) { mx = nums[k]; }
+      }
+      if (nums[winIdx] <= mx) { nums[winIdx] = mx + rnd(2, 10); }
+    }
+  }
+
+  // ── pick handler ─────────────────────────────────────────────────────────
+  function doPick(i) {
+    if (phase !== "picking") return;
+    playerPick = i;
+
+    if (history.length === 0) {
+      // First round: random winner, assigns rule
+      winnerIdx = Math.floor(Math.random() * 4);
+      var won0 = (i === winnerIdx);
+      ruleKey = i + "_" + (won0 ? "win" : "lose");
+      history.push({ picked: i, winner: winnerIdx, won: won0 });
+    } else {
+      // Subsequent rounds: rule decides winner
+      winnerIdx = RULES[ruleKey](history);
+      var won1 = (i === winnerIdx);
+      history.push({ picked: i, winner: winnerIdx, won: won1 });
+    }
+
+    var won = history[history.length-1].won;
+    if (won) {
+      streak++;
+      score++;
+      if (streak > best) best = streak;
+    } else {
+      streak = 0;
+      score--;
+    }
+
+    generateNums(winnerIdx);
+    phase = "revealed";
+    render();
+  }
+
+  function nextRound() {
+    roundNum++;
+    phase = "picking";
+    playerPick = -1;
+    winnerIdx = -1;
+    render();
+  }
+
+  function newGame() {
+    ruleKey = null;
+    history = [];
+    score = 0;
+    streak = 0;
+    best = 0;
+    roundNum = 1;
+    phase = "picking";
+    playerPick = -1;
+    winnerIdx = -1;
+    render();
+  }
+
+  // ── event listeners ───────────────────────────────────────────────────────
+  boxEls.forEach(function(el, i) {
+    el.addEventListener('click', function() {
+      if (phase === "picking") doPick(i);
+    });
+  });
+
+  btnNext.addEventListener('click', nextRound);
+  btnNew.addEventListener('click', newGame);
+
+  // ── init ──────────────────────────────────────────────────────────────────
+  render();
+})();
+</script>
+
+</body></html>

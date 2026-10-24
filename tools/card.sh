@@ -5,6 +5,9 @@
 # Example: tools/card.sh games/puzzling/index.html games/puzzling/card.png 3
 #
 # The page is drawn at 1280x800 (like a laptop screen) and shrunk to half size.
+# For small games that sit in the middle of the screen, pretend the screen is
+# smaller so the game fills more of the picture:
+#   CARD_WIDTH=800 tools/card.sh ...     (any width from 640 up)
 #
 # The button is a CSS selector like "#go" or ".start-button". It gets clicked
 # as soon as the game loads (to get past a start screen). This only works for
@@ -18,6 +21,7 @@ page="$1"
 out="$2"
 wait_seconds="${3:-3}"
 click="${4:-}"
+width="${CARD_WIDTH:-1280}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 page_abs="$(realpath "$page")"
 out_abs="$(realpath -m "$out")"
@@ -57,7 +61,8 @@ fi
 
 google-chrome --headless=new --disable-gpu --hide-scrollbars --mute-audio \
   --autoplay-policy=no-user-gesture-required \
-  --window-size=1280,920 --force-device-scale-factor=0.5 \
+  --window-size="$width,$(( width * 10 / 16 + 120 ))" \
+  --force-device-scale-factor="$(python3 -c "print(640 / $width)")" \
   --virtual-time-budget=$(( wait_seconds * 1000 )) \
   --screenshot="$out_abs" "$url" 2>/dev/null
 

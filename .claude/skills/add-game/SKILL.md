@@ -94,6 +94,9 @@ before showing it, and ask the user if they like it.
      to get past a start screen. Find it by searching the game's HTML for the
      start button (for example `id="go"`, `id="start"`, or a `<button>` with
      "Play" or "Start" in it).
+   - If the game is small and sits in the middle of lots of empty space, set
+     a smaller pretend screen so it fills the card: `CARD_WIDTH=720 tools/card.sh ...`
+     (default 1280; Mystery Box used 720).
    - Games that wait for a key press, or that need time to "grow"
      (like Growing Forest), usually don't look good this way. Use option 1 or 3.
 3. **A title card made from the game's own art.** Write a small HTML page in
@@ -104,8 +107,8 @@ before showing it, and ask the user if they like it.
 ## 5. Update games.json
 
 Add (or update) the entry. Keep the file in date order, oldest first, with one
-game per line so it's easy to read. The page sorts by itself, but neat files
-are nice.
+game per line so it's easy to read. If two games have the same date, the one
+lower in the file counts as newer, so ask which came first.
 
 ## 6. Test it
 

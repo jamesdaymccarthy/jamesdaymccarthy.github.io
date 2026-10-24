@@ -150,7 +150,9 @@ fetch("games.json")
   .then(response => response.json())
   .then(games => {
     // Newest first. Dates are "YYYY-MM-DD", so comparing them as text works!
-    allGames = games.sort((a, b) => b.date.localeCompare(a.date));
+    // games.json is oldest first, so we reverse it first: then if two games
+    // have the same date, the one lower in the file counts as newer.
+    allGames = games.reverse().sort((a, b) => b.date.localeCompare(a.date));
     render();
   })
   .catch(error => {
