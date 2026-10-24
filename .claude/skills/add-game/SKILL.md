@@ -49,7 +49,11 @@ Ask where the game is. It might be:
   gibberish like `ðŸ§€`. Wrap it: add `<!doctype html>`, `<meta charset="utf-8">`,
   a viewport meta tag, a `<title>`, and `<body>` around the original code. Also look for
   `var(--something)` colors that claude.ai provided (`grep -o 'var(--[a-z-]*'`)
-  and define them in a `:root { }` style. Cheese Panic is an example.
+  and define them in a `:root { }` style. Cheese Panic is an example. If it
+  uses icon classes like `ti ti-player-play`, those are Tabler Icons. Load
+  `https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css`
+  (Asteroid Buster is an example). The file name may not match the game (Asteroid
+  Buster was `nature_ecosystem_sim.html`), so check what's inside.
 - **Khan Academy (Processing.js).** Have them paste the code into a file. Wrap
   it in an `index.html` that loads Processing.js 1.4.8 from cdnjs and runs the code inside
   `new Processing(canvas, function(processingInstance) { with (processingInstance) { size(400, 400); frameRate(30); /* code */ } })`.
