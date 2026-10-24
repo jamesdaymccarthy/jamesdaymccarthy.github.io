@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>MASH-O-MATIC</title>
+<style>
+  :root{
+    --bg: #14110f;
+    --panel: #1e1a16;
+    --line: #3a332b;
+    --ink: #f3ecd8;
+    --dim: #a89a82;
+    --volt: #c8f04f;
+    --gore: #d9603a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(200,240,79,0.05), transparent 40%),
+      var(--bg);
+    color:var(--ink);
+    font-family: "Courier New", ui-monospace, monospace;
+    padding:24px;
+    min-height:100vh;
+  }
+  .wrap{ max-width: 1040px; margin: 0 auto; }
+
+  header{ margin-bottom: 22px; }
+  .eyebrow{
+    color:var(--volt); letter-spacing:3px; font-size:11px; text-transform:uppercase;
+    display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{ content:"◉"; }
+  h1{
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 900; font-style: italic;
+    font-size: clamp(34px, 6vw, 58px);
+    margin: 4px 0 6px; letter-spacing: -1px; line-height: 0.95;
+  }
+  h1 span{ color:var(--volt); font-style:normal; }
+  .sub{ color:var(--dim); font-size:13px; max-width:600px; line-height:1.5; }
+  .sub b{ color: var(--ink); }
+
+  .modes{ display:flex; gap:8px; margin-top:18px; flex-wrap:wrap; }
+  .mode-btn{
+    font-family:inherit; font-size:11px; letter-spacing:2px; text-transform:uppercase;
+    padding:10px 16px; cursor:pointer; background:transparent; color:var(--dim);
+    border:1px solid var(--line);
+  }
+  .mode-btn.active{ background:var(--volt); color:#161310; border-color:var(--volt); font-weight:bold; }
+  .mode-desc{ color:var(--dim); font-size:12px; margin-top:10px; min-height:16px; }
+
+  .stage{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
+  @media (max-width: 760px){ .stage{ grid-template-columns: 1fr; } }
+
+  .slot{ background: var(--panel); border: 1px solid var(--line); padding: 14px; position: relative; }
+  .slot-label{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 10px; }
+  .slot-label b{ font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--dim); }
+  .slot-num{ color: var(--volt); font-size: 12px; }
+
+  .drop{
+    aspect-ratio: 1/1; border: 1px dashed var(--line);
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    color: var(--dim); font-size: 12px; cursor: pointer;
+    position: relative; overflow: hidden; background: #100d0b;
+  }
+  .drop.has-img{ border-style: solid; cursor: crosshair; }
+  .drop canvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; }
+  .drop input{ display:none; }
+  .drop-hint{ padding: 0 20px; pointer-events:none; position:relative; z-index:2; }
+  .drop-hint em{ color:var(--volt); font-style:normal; }
+
+  .status{ margin-top:10px; font-size:11px; color:var(--dim); min-height:14px; }
+  .status b{ color: var(--volt); }
+  .status.done b{ color: var(--gore); }
+
+  .reset-pts{
+    margin-top:6px; background:none; border:1px solid var(--line); color:var(--dim);
+    font-family:inherit; font-size:10px; letter-spacing:1px; text-transform:uppercase;
+    padding:4px 8px; cursor:pointer;
+  }
+  .reset-pts:hover{ color:var(--ink); border-color:var(--ink); }
+
+  .plus{
+    display:flex; align-items:center; justify-content:center;
+    font-family: Georgia, serif; font-size: 30px; color: var(--volt);
+    grid-column: 1 / -1; margin: -4px 0;
+  }
+  @media (min-width:761px){ .plus{ display:none; } }
+
+  .rig{ margin-top: 22px; background: var(--panel); border: 1px solid var(--line); padding: 18px; }
+  .rig-row{ display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+  .rig-row:last-child{ margin-bottom:0; }
+  .rig-row label{
+    width: 130px; flex-shrink:0; font-size: 11px; letter-spacing:1px;
+    text-transform:uppercase; color:var(--dim);
+  }
+  input[type=range]{ flex:1; -webkit-appearance:none; height:2px; background:var(--line); outline:none; }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+    background: var(--volt); cursor:pointer; border: 2px solid var(--bg);
+  }
+  .val{ width: 46px; text-align:right; font-size:12px; color:var(--volt); }
+
+  .toggles{ display:flex; gap:10px; flex-wrap:wrap; }
+  .toggle{
+    border:1px solid var(--line); background:transparent; color:var(--dim);
+    font-family:inherit; font-size:11px; letter-spacing:1px; text-transform:uppercase;
+    padding: 8px 12px; cursor:pointer;
+  }
+  .toggle.active{ border-color:var(--volt); color:var(--volt); }
+
+  .result{ margin-top: 26px; text-align:center; }
+  .result-label{ font-size:11px; letter-spacing:3px; text-transform:uppercase; color:var(--dim); margin-bottom:10px; }
+  .result-label b{ color: var(--gore); }
+  .canvas-frame{ display:inline-block; border: 1px solid var(--line); padding: 8px; background: var(--panel); }
+  #output{ display:block; max-width: 100%; width: 400px; height:400px; background:#100d0b; }
+
+  .actions{ margin-top: 14px; display:flex; gap:10px; justify-content:center; }
+  button.cta{
+    font-family:inherit; letter-spacing:1px; text-transform:uppercase; font-size:12px;
+    padding: 12px 22px; cursor:pointer; border:none;
+  }
+  .primary{ background:var(--volt); color:#161310; font-weight:bold; }
+  .primary:hover{ filter:brightness(1.08); }
+  .ghost{ background:transparent; color:var(--dim); border:1px solid var(--line); }
+  .ghost:hover{ color:var(--ink); border-color:var(--ink); }
+
+  footer{ margin-top:20px; color:var(--dim); font-size:11px; text-align:center; }
+
+  [data-mode-only]{ display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">mash-o-matic</div>
+    <h1>Two faces walk<br>into a <span>blender.</span></h1>
+    <p class="sub">Drop two photos in. On each one, click <b>7 points in order</b> — both eyes, nose tip, both mouth corners, chin, forehead. Then pick what to do with them.</p>
+
+    <div class="modes">
+      <button class="mode-btn active" data-mode="mashup">Mashup</button>
+      <button class="mode-btn" data-mode="swap">Face Swap</button>
+      <button class="mode-btn" data-mode="average">Average</button>
+    </div>
+    <div class="mode-desc" id="modeDesc">Warps both faces onto a shared mesh, then crossfades them into one creature.</div>
+  </header>
+
+  <div class="stage">
+    <div class="slot">
+      <div class="slot-label"><b>Subject</b><span class="slot-num">01</span></div>
+      <div class="drop" id="dropA">
+        <canvas id="canvasA" width="400" height="400"></canvas>
+        <div class="drop-hint" id="hintA">click or drop a photo</div>
+        <input type="file" id="fileA" accept="image/*">
+      </div>
+      <div class="status" id="statusA"></div>
+      <button class="reset-pts" id="resetA">reset points</button>
+    </div>
+
+    <div class="plus">+</div>
+
+    <div class="slot">
+      <div class="slot-label"><b>Subject</b><span class="slot-num">02</span></div>
+      <div class="drop" id="dropB">
+        <canvas id="canvasB" width="400" height="400"></canvas>
+        <div class="drop-hint" id="hintB">click or drop a photo</div>
+        <input type="file" id="fileB" accept="image/*">
+      </div>
+      <div class="status" id="statusB"></div>
+      <button class="reset-pts" id="resetB">reset points</button>
+    </div>
+  </div>
+
+  <div class="rig">
+    <div class="rig-row" data-mode-only="mashup,average" style="display:flex;">
+      <label>Blend mix</label>
+      <input type="range" id="mix" min="0" max="100" value="50">
+      <span class="val" id="mixVal">50%</span>
+    </div>
+    <div class="rig-row" data-mode-only="swap">
+      <label>Swap direction</label>
+      <div class="toggles">
+        <button class="toggle active" id="dirAtoB">01's face → 02's photo</button>
+        <button class="toggle" id="dirBtoA">02's face → 01's photo</button>
+      </div>
+    </div>
+    <div class="rig-row" data-mode-only="mashup">
+      <label>Chroma glitch</label>
+      <input type="range" id="warp" min="0" max="100" value="0">
+      <span class="val" id="warpVal">0%</span>
+    </div>
+    <div class="rig-row">
+      <label>Filters</label>
+      <div class="toggles">
+        <button class="toggle active" id="tGray">grayscale</button>
+        <button class="toggle" id="tContrast">high contrast</button>
+        <button class="toggle" id="tGrain">film grain</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="result">
+    <div class="result-label">the result ↓</div>
+    <div class="canvas-frame"><canvas id="output" width="400" height="400"></canvas></div>
+    <div class="actions">
+      <button class="cta primary" id="mashBtn">= run it</button>
+      <button class="cta ghost" id="dlBtn">save image</button>
+    </div>
+  </div>
+
+  <footer>everything happens in your browser — nothing is uploaded anywhere.</footer>
+</div>
+
+<script>
+(function(){
+  const SIZE = 400;
+  const LANDMARK_NAMES = ['left eye','right eye','nose tip','left mouth corner','right mouth corner','chin','forehead'];
+  const CORNERS = [{x:0,y:0},{x:SIZE,y:0},{x:SIZE,y:SIZE},{x:0,y:SIZE}];
+
+  const layers = {
+    A: { buffer: null, points: [] },
+    B: { buffer: null, points: [] }
+  };
+
+  let mode = 'mashup';
+  let swapDir = 'AtoB';
+
+  const MODE_META = {
+    mashup:  { desc: 'Warps both faces onto a shared mesh, then crossfades them into one creature.', btn: '= mash it up' },
+    swap:    { desc: 'Warps one face onto the other\u2019s geometry and drops it into their photo.', btn: '= swap it' },
+    average: { desc: 'Same shared-mesh warp, locked at an even 50/50 \u2014 a clean composite average face.', btn: '= average it' }
+  };
+
+  function setupSlot(key){
+    const canvas = document.getElementById('canvas'+key);
+    const drop = document.getElementById('drop'+key);
+    const fileInput = document.getElementById('file'+key);
+    const hint = document.getElementById('hint'+key);
+    const status = document.getElementById('status'+key);
+    const resetBtn = document.getElementById('reset'+key);
+    const ctx = canvas.getContext('2d');
+    const L = layers[key];
+
+    function updateStatus(){
+      if(!L.buffer){ status.textContent = ''; status.classList.remove('done'); return; }
+      if(L.points.length < 7){
+        status.innerHTML = `click <b>${LANDMARK_NAMES[L.points.length]}</b> (${L.points.length+1}/7)`;
+        status.classList.remove('done');
+      } else {
+        status.innerHTML = 'mesh locked in \u2713 (7/7)';
+        status.classList.add('done');
+      }
+    }
+
+    function draw(){
+      ctx.clearRect(0,0,SIZE,SIZE);
+      ctx.fillStyle = '#100d0b';
+      ctx.fillRect(0,0,SIZE,SIZE);
+      if(L.buffer) ctx.drawImage(L.buffer,0,0);
+      L.points.forEach((p,i) => {
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,5,0,Math.PI*2);
+        ctx.strokeStyle = '#c8f04f';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.font = '10px monospace';
+        ctx.fillStyle = '#c8f04f';
+        ctx.fillText(String(i+1), p.x+8, p.y-8);
+      });
+      updateStatus();
+    }
+    L.draw = draw;
+
+    function loadFile(file){
+      if(!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const buf = document.createElement('canvas');
+          buf.width = SIZE; buf.height = SIZE;
+          const bctx = buf.getContext('2d');
+          const fit = Math.max(SIZE/img.width, SIZE/img.height);
+          const dw = img.width*fit, dh = img.height*fit;
+          bctx.drawImage(img, (SIZE-dw)/2, (SIZE-dh)/2, dw, dh);
+          L.buffer = buf;
+          L.points = [];
+          drop.classList.add('has-img');
+          hint.style.display = 'none';
+          draw();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    drop.addEventListener('click', (e)=>{
+      if(!L.buffer){ fileInput.click(); return; }
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = SIZE / rect.width;
+      const scaleY = SIZE / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
+      if(L.points.length >= 7) L.points = [];
+      L.points.push({x,y});
+      draw();
+    });
+    fileInput.addEventListener('change', e => loadFile(e.target.files[0]));
+    drop.addEventListener('dragover', e => e.preventDefault());
+    drop.addEventListener('drop', e => { e.preventDefault(); loadFile(e.dataTransfer.files[0]); });
+    resetBtn.addEventListener('click', ()=>{ L.points = []; draw(); });
+
+    draw();
+  }
+
+  setupSlot('A');
+  setupSlot('B');
+
+  // ---------- mode switching ----------
+  const modeButtons = document.querySelectorAll('.mode-btn');
+  const modeDesc = document.getElementById('modeDesc');
+  const mashBtn = document.getElementById('mashBtn');
+
+  function applyModeVisibility(){
+    document.querySelectorAll('[data-mode-only]').forEach(el => {
+      const modes = el.getAttribute('data-mode-only').split(',');
+      el.style.display = modes.includes(mode) ? 'flex' : 'none';
+    });
+    modeDesc.textContent = MODE_META[mode].desc;
+    mashBtn.textContent = MODE_META[mode].btn;
+  }
+  modeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      modeButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      mode = btn.dataset.mode;
+      applyModeVisibility();
+      render();
+    });
+  });
+  applyModeVisibility();
+
+  const dirAtoB = document.getElementById('dirAtoB');
+  const dirBtoA = document.getElementById('dirBtoA');
+  dirAtoB.addEventListener('click', ()=>{ swapDir='AtoB'; dirAtoB.classList.add('active'); dirBtoA.classList.remove('active'); render(); });
+  dirBtoA.addEventListener('click', ()=>{ swapDir='BtoA'; dirBtoA.classList.add('active'); dirAtoB.classList.remove('active'); render(); });
+
+  const mix = document.getElementById('mix');
+  const mixVal = document.getElementById('mixVal');
+  const warp = document.getElementById('warp');
+  const warpVal = document.getElementById('warpVal');
+  mix.addEventListener('input', ()=> mixVal.textContent = mix.value+'%');
+  warp.addEventListener('input', ()=> warpVal.textContent = warp.value+'%');
+
+  const tGray = document.getElementById('tGray');
+  const tContrast = document.getElementById('tContrast');
+  const tGrain = document.getElementById('tGrain');
+  [tGray, tContrast, tGrain].forEach(btn => btn.addEventListener('click', ()=> btn.classList.toggle('active')));
+
+  const output = document.getElementById('output');
+  const octx = output.getContext('2d');
+
+  // ---------- Delaunay triangulation (Bowyer-Watson) ----------
+  function circumcircleContains(p, a, b, c){
+    const area2 = (b.x-a.x)*(c.y-a.y) - (b.y-a.y)*(c.x-a.x);
+    if(area2 < 0){ const tmp=b; b=c; c=tmp; }
+    const ax=a.x-p.x, ay=a.y-p.y;
+    const bx=b.x-p.x, by=b.y-p.y;
+    const cx=c.x-p.x, cy=c.y-p.y;
+    const det = (ax*ax+ay*ay)*(bx*cy-cx*by)
+              - (bx*bx+by*by)*(ax*cy-cx*ay)
+              + (cx*cx+cy*cy)*(ax*by-bx*ay);
+    return det > 0;
+  }
+  function sameEdge(e1,e2){
+    return (e1[0]===e2[0] && e1[1]===e2[1]) || (e1[0]===e2[1] && e1[1]===e2[0]);
+  }
+  function delaunay(points){
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    points.forEach(p=>{ minX=Math.min(minX,p.x); minY=Math.min(minY,p.y); maxX=Math.max(maxX,p.x); maxY=Math.max(maxY,p.y); });
+    const dx=maxX-minX, dy=maxY-minY, deltaMax=Math.max(dx,dy)||1, midx=(minX+maxX)/2, midy=(minY+maxY)/2;
+    const p1={x:midx-20*deltaMax, y:midy-deltaMax};
+    const p2={x:midx, y:midy+20*deltaMax};
+    const p3={x:midx+20*deltaMax, y:midy-deltaMax};
+    let triangles = [{p:[p1,p2,p3]}];
+
+    points.forEach(pt => {
+      let edges = [];
+      triangles = triangles.filter(tri => {
+        if(circumcircleContains(pt, tri.p[0], tri.p[1], tri.p[2])){
+          edges.push([tri.p[0],tri.p[1]]);
+          edges.push([tri.p[1],tri.p[2]]);
+          edges.push([tri.p[2],tri.p[0]]);
+          return false;
+        }
+        return true;
+      });
+      edges = edges.filter((edge,i) => !edges.some((other,j) => i!==j && sameEdge(edge,other)));
+      edges.forEach(edge => triangles.push({p:[edge[0], edge[1], pt]}));
+    });
+
+    triangles = triangles.filter(tri => !tri.p.some(p => p===p1||p===p2||p===p3));
+    return triangles.map(tri => tri.p.map(p => points.indexOf(p)));
+  }
+
+  // ---------- Triangle affine warp ----------
+  function warpTriangle(ctx, image, srcTri, dstTri){
+    const [x0,y0]=[srcTri[0].x,srcTri[0].y], [x1,y1]=[srcTri[1].x,srcTri[1].y], [x2,y2]=[srcTri[2].x,srcTri[2].y];
+    const [u0,v0]=[dstTri[0].x,dstTri[0].y], [u1,v1]=[dstTri[1].x,dstTri[1].y], [u2,v2]=[dstTri[2].x,dstTri[2].y];
+    const denom = x0*(y1-y2) + x1*(y2-y0) + x2*(y0-y1);
+    if(Math.abs(denom) < 1e-6) return;
+    const a = (u0*(y1-y2) + u1*(y2-y0) + u2*(y0-y1)) / denom;
+    const b = (u0*(x2-x1) + u1*(x0-x2) + u2*(x1-x0)) / denom;
+    const c = (u0*(x1*y2-x2*y1) + u1*(x2*y0-x0*y2) + u2*(x0*y1-x1*y0)) / denom;
+    const d = (v0*(y1-y2) + v1*(y2-y0) + v2*(y0-y1)) / denom;
+    const e = (v0*(x2-x1) + v1*(x0-x2) + v2*(x1-x0)) / denom;
+    const f = (v0*(x1*y2-x2*y1) + v1*(x2*y0-x0*y2) + v2*(x0*y1-x1*y0)) / denom;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(dstTri[0].x, dstTri[0].y);
+    ctx.lineTo(dstTri[1].x, dstTri[1].y);
+    ctx.lineTo(dstTri[2].x, dstTri[2].y);
+    ctx.closePath();
+    ctx.clip();
+    ctx.setTransform(a, d, b, e, c, f);
+    ctx.drawImage(image, 0, 0);
+    ctx.restore();
+  }
+
+  function warpImageToTarget(sourceCanvas, srcPoints, targetPoints, triangles){
+    const out = document.createElement('canvas');
+    out.width = SIZE; out.height = SIZE;
+    const wctx = out.getContext('2d');
+    triangles.forEach(tri => {
+      const srcTri = tri.map(idx => srcPoints[idx]);
+      const dstTri = tri.map(idx => targetPoints[idx]);
+      warpTriangle(wctx, sourceCanvas, srcTri, dstTri);
+    });
+    return out;
+  }
+
+  // ---------- convex hull (monotone chain) for face-swap masking ----------
+  function convexHull(points){
+    const pts = points.slice().sort((a,b)=> a.x-b.x || a.y-b.y);
+    const cross = (o,a,b)=> (a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x);
+    const lower=[];
+    for(const p of pts){
+      while(lower.length>=2 && cross(lower[lower.length-2],lower[lower.length-1],p)<=0) lower.pop();
+      lower.push(p);
+    }
+    const upper=[];
+    for(let i=pts.length-1;i>=0;i--){
+      const p=pts[i];
+      while(upper.length>=2 && cross(upper[upper.length-2],upper[upper.length-1],p)<=0) upper.pop();
+      upper.push(p);
+    }
+    upper.pop(); lower.pop();
+    return lower.concat(upper);
+  }
+  function expandPolygon(poly, factor){
+    const cx = poly.reduce((s,p)=>s+p.x,0)/poly.length;
+    const cy = poly.reduce((s,p)=>s+p.y,0)/poly.length;
+    return poly.map(p=>({x: cx+(p.x-cx)*factor, y: cy+(p.y-cy)*factor}));
+  }
+  function drawFeatheredMask(maskCtx, poly, blurPx){
+    maskCtx.clearRect(0,0,SIZE,SIZE);
+    maskCtx.save();
+    maskCtx.filter = `blur(${blurPx}px)`;
+    maskCtx.fillStyle = '#fff';
+    maskCtx.beginPath();
+    poly.forEach((p,i)=> i===0 ? maskCtx.moveTo(p.x,p.y) : maskCtx.lineTo(p.x,p.y));
+    maskCtx.closePath();
+    maskCtx.fill();
+    maskCtx.restore();
+  }
+
+  // ---------- render dispatch ----------
+  function renderMashup(){
+    const targetLandmarks = layers.A.points.map((p,i) => ({
+      x: (p.x + layers.B.points[i].x) / 2,
+      y: (p.y + layers.B.points[i].y) / 2
+    }));
+    const targetPoints = targetLandmarks.concat(CORNERS);
+    const srcPointsA = layers.A.points.concat(CORNERS);
+    const srcPointsB = layers.B.points.concat(CORNERS);
+    const triangles = delaunay(targetPoints);
+    const warpedA = warpImageToTarget(layers.A.buffer, srcPointsA, targetPoints, triangles);
+    const warpedB = warpImageToTarget(layers.B.buffer, srcPointsB, targetPoints, triangles);
+
+    const m = mode === 'average' ? 0.5 : mix.value/100;
+    octx.save(); octx.globalAlpha = 1-m; octx.drawImage(warpedA,0,0); octx.restore();
+    octx.save(); octx.globalAlpha = m; octx.drawImage(warpedB,0,0); octx.restore();
+  }
+
+  function renderSwap(){
+    const src = swapDir === 'AtoB' ? layers.A : layers.B;
+    const dst = swapDir === 'AtoB' ? layers.B : layers.A;
+
+    const targetPoints = dst.points.concat(CORNERS);
+    const srcPoints = src.points.concat(CORNERS);
+    const triangles = delaunay(targetPoints);
+    const warpedFace = warpImageToTarget(src.buffer, srcPoints, targetPoints, triangles);
+
+    const hull = convexHull(dst.points);
+    const expanded = expandPolygon(hull, 1.3);
+    const maskCanvas = document.createElement('canvas');
+    maskCanvas.width = SIZE; maskCanvas.height = SIZE;
+    drawFeatheredMask(maskCanvas.getContext('2d'), expanded, 14);
+
+    const maskedFace = document.createElement('canvas');
+    maskedFace.width = SIZE; maskedFace.height = SIZE;
+    const mfCtx = maskedFace.getContext('2d');
+    mfCtx.drawImage(warpedFace, 0, 0);
+    mfCtx.globalCompositeOperation = 'destination-in';
+    mfCtx.drawImage(maskCanvas, 0, 0);
+
+    octx.drawImage(dst.buffer, 0, 0);
+    octx.drawImage(maskedFace, 0, 0);
+  }
+
+  function render(){
+    octx.clearRect(0,0,SIZE,SIZE);
+    octx.fillStyle = '#100d0b';
+    octx.fillRect(0,0,SIZE,SIZE);
+
+    const ready = layers.A.points.length === 7 && layers.B.points.length === 7;
+    if(!ready){
+      octx.fillStyle = '#a89a82';
+      octx.font = '12px monospace';
+      octx.textAlign = 'center';
+      octx.fillText('place all 7 points on both photos', SIZE/2, SIZE/2);
+      return;
+    }
+
+    if(mode === 'swap') renderSwap();
+    else renderMashup();
+
+    let filter = [];
+    if(tGray.classList.contains('active')) filter.push('grayscale(1)');
+    if(tContrast.classList.contains('active')) filter.push('contrast(1.5) brightness(1.05)');
+    if(filter.length){
+      const tmp = document.createElement('canvas');
+      tmp.width = SIZE; tmp.height = SIZE;
+      tmp.getContext('2d').drawImage(output, 0, 0);
+      octx.clearRect(0,0,SIZE,SIZE);
+      octx.filter = filter.join(' ');
+      octx.drawImage(tmp,0,0);
+      octx.filter = 'none';
+    }
+
+    if(mode === 'mashup'){
+      const glitch = warp.value/100;
+      if(glitch > 0){
+        const imgData = octx.getImageData(0,0,SIZE,SIZE);
+        const src = new Uint8ClampedArray(imgData.data);
+        const offset = Math.round(glitch * 6);
+        const d = imgData.data;
+        for(let y=0;y<SIZE;y++){
+          for(let x=0;x<SIZE;x++){
+            const i = (y*SIZE+x)*4;
+            const rx = Math.min(SIZE-1, x+offset);
+            const bx = Math.max(0, x-offset);
+            const ri = (y*SIZE+rx)*4;
+            const bi = (y*SIZE+bx)*4;
+            d[i] = src[ri];
+            d[i+2] = src[bi+2];
+          }
+        }
+        octx.putImageData(imgData,0,0);
+      }
+    }
+
+    if(tGrain.classList.contains('active')){
+      const imgData = octx.getImageData(0,0,SIZE,SIZE);
+      const d = imgData.data;
+      for(let i=0;i<d.length;i+=4){
+        const n = (Math.random()-0.5)*35;
+        d[i]+=n; d[i+1]+=n; d[i+2]+=n;
+      }
+      octx.putImageData(imgData,0,0);
+    }
+
+    if(mode !== 'swap'){
+      const grad = octx.createRadialGradient(SIZE/2,SIZE/2,SIZE*0.3,SIZE/2,SIZE/2,SIZE*0.7);
+      grad.addColorStop(0,'rgba(0,0,0,0)');
+      grad.addColorStop(1,'rgba(0,0,0,0.35)');
+      octx.fillStyle = grad;
+      octx.fillRect(0,0,SIZE,SIZE);
+    }
+  }
+
+  mashBtn.addEventListener('click', render);
+
+  document.getElementById('dlBtn').addEventListener('click', ()=>{
+    const link = document.createElement('a');
+    link.download = 'mashup.png';
+    link.href = output.toDataURL('image/png');
+    link.click();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
