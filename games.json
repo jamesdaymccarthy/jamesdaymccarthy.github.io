@@ -1,4 +1,5 @@
 [
+  {"title": "Planet Biome Explorer", "folder": "planet-biome-explorer", "blurb": "Explore different places and even create your own!", "fave": false, "date": "2026-07-04"},
   {"title": "Cheese Panic", "folder": "cheese-panic", "blurb": "You are a mouse. There are spikes", "fave": false, "date": "2026-07-04"},
   {"title": "Asteroid Buster", "folder": "asteroid-buster", "blurb": "Shoot asteroids and collect stars", "fave": false, "date": "2026-07-06"},
   {"title": "Explainer of Life", "folder": "explainer-of-life", "blurb": "Figure out how life probably works", "fave": true, "date": "2026-07-12"},

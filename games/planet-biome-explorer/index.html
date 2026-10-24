@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planet Biome Explorer</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+  /* claude.ai gave the game these colors and styles. On our site we set them ourselves. */
+  :root {
+    color-scheme: dark;
+    --text-primary: #ececf1;
+    --text-secondary: #a1a1ad;
+    --text-tertiary: #71717c;
+    --surface-0: #15151c;
+    --surface-1: #20202a;
+    --surface-2: #2a2a36;
+    --border: #2f2f3b;
+    --border-strong: #454555;
+    --border-accent: #7c8cff;
+    --accent: #7c8cff;
+    --radius: 8px;
+  }
+  body {
+    margin: 0;
+    padding: 0 16px;
+    background: var(--surface-0);
+    color: var(--text-primary);
+    font-family: system-ui, sans-serif;
+  }
+  body > div { max-width: 760px; margin: 0 auto; }
+  button {
+    font: inherit;
+    color: var(--text-primary);
+    background: var(--surface-1);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+  button:hover { background: var(--surface-2); }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+<div style="padding: 1rem 0;">
+<h2 class="sr-only">An interactive planet explorer with many biomes to enter as live ecosystem simulations, a custom biome editor where you draw the place icon, prey, and predator, and a random biome generator button.</h2>
+
+<div id="earthScreen">
+  <div style="display:flex; justify-content:center; margin-bottom:1.5rem;">
+    <svg width="220" height="220" viewBox="0 0 220 220">
+      <circle cx="110" cy="110" r="100" fill="#2d6fa8"></circle>
+      <path d="M40 70 Q60 50 90 60 Q120 45 140 65 Q160 55 175 75 Q170 100 145 105 Q150 125 120 120 Q100 140 75 120 Q50 125 45 100 Z" fill="#4a934a"></path>
+      <path d="M60 150 Q80 140 100 155 Q125 145 145 165 Q135 185 110 180 Q90 195 70 175 Q55 170 60 150 Z" fill="#4a934a"></path>
+      <circle cx="110" cy="110" r="100" fill="none" stroke="#1f4f78" stroke-width="2"></circle>
+    </svg>
+  </div>
+  <div id="bioGrid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap:8px;">
+    <button data-biome="cave" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-mountain" aria-hidden="true" style="font-size:20px;"></i><span>Cave</span>
+    </button>
+    <button data-biome="forest" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-trees" aria-hidden="true" style="font-size:20px;"></i><span>Forest</span>
+    </button>
+    <button data-biome="ocean" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-fish" aria-hidden="true" style="font-size:20px;"></i><span>Ocean</span>
+    </button>
+    <button data-biome="desert" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-sun" aria-hidden="true" style="font-size:20px;"></i><span>Desert</span>
+    </button>
+    <button data-biome="tundra" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-snowflake" aria-hidden="true" style="font-size:20px;"></i><span>Tundra</span>
+    </button>
+    <button data-biome="jungle" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-leaf" aria-hidden="true" style="font-size:20px;"></i><span>Jungle</span>
+    </button>
+    <button data-biome="swamp" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-droplet" aria-hidden="true" style="font-size:20px;"></i><span>Swamp</span>
+    </button>
+    <button data-biome="savanna" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-paw" aria-hidden="true" style="font-size:20px;"></i><span>Savanna</span>
+    </button>
+    <button data-biome="volcano" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-flame" aria-hidden="true" style="font-size:20px;"></i><span>Volcano</span>
+    </button>
+    <button data-biome="reef" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-anchor" aria-hidden="true" style="font-size:20px;"></i><span>Reef</span>
+    </button>
+    <button data-biome="mountain" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-triangle" aria-hidden="true" style="font-size:20px;"></i><span>Mountain</span>
+    </button>
+    <button data-biome="beach" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-umbrella" aria-hidden="true" style="font-size:20px;"></i><span>Beach</span>
+    </button>
+    <button data-biome="prairie" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-wind" aria-hidden="true" style="font-size:20px;"></i><span>Prairie</span>
+    </button>
+    <button data-biome="kelp" class="biomeBtn" style="display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;">
+      <i class="ti ti-plant-2" aria-hidden="true" style="font-size:20px;"></i><span>Kelp forest</span>
+    </button>
+  </div>
+  <div style="display:flex; gap:8px; margin-top:8px;">
+    <button id="openCustomBtn" style="display:flex; align-items:center; justify-content:center; gap:6px; flex:1; padding:0.7rem; border:2px solid var(--border-accent);">
+      <i class="ti ti-pencil" aria-hidden="true" style="font-size:18px;"></i><span>Custom biome</span>
+    </button>
+    <button id="randomBtn" style="display:flex; align-items:center; justify-content:center; gap:6px; flex:1; padding:0.7rem; border:2px solid var(--border-accent);">
+      <i class="ti ti-dice" aria-hidden="true" style="font-size:18px;"></i><span>Random biome</span>
+    </button>
+  </div>
+</div>
+
+<div id="customScreen" style="display:none;">
+  <p style="font-size:15px; font-weight:500; margin:0 0 1rem;">Design a custom biome</p>
+
+  <div style="display:flex; flex-direction:column; gap:16px;">
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+        <canvas class="drawPad" id="placeCanvas" data-pen="placePenColor" width="72" height="72" style="border-radius:var(--radius); border:0.5px solid var(--border-strong); background:#ffffff; touch-action:none; cursor:crosshair;"></canvas>
+        <div style="display:flex; gap:4px; align-items:center;">
+          <input type="color" id="placePenColor" value="#3a6fd8" style="width:22px; height:22px; padding:0; border:none;">
+          <button class="clearPadBtn" data-target="placeCanvas" style="padding:2px 8px; font-size:11px;">Clear</button>
+        </div>
+      </div>
+      <div style="flex:1; min-width:160px;">
+        <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:2px;">Place name</label>
+        <input type="text" id="placeName" placeholder="Name this place" style="width:100%;">
+        <p style="font-size:11px; color:var(--text-secondary); margin:4px 0 0;">Draw the icon on the left with the color swatch below it — it shows on the planet screen button.</p>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <div style="width:72px; height:72px; border-radius:var(--radius); display:flex; align-items:center; justify-content:center;">
+        <input type="color" id="resourceColor" value="#4a934a" style="width:48px; height:48px; padding:0; border:none;">
+      </div>
+      <div style="flex:1; min-width:160px;">
+        <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:2px;">Resource name</label>
+        <input type="text" id="resourceName" placeholder="e.g. Moss" style="width:100%;">
+        <p style="font-size:11px; color:var(--text-secondary); margin:4px 0 0;">This tints the ground based on how much has grown back.</p>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+        <canvas class="drawPad" id="preyCanvas" data-pen="preyPenColor" width="72" height="72" style="border-radius:var(--radius); border:0.5px solid var(--border-strong); background:#ffffff; touch-action:none; cursor:crosshair;"></canvas>
+        <div style="display:flex; gap:4px; align-items:center;">
+          <input type="color" id="preyPenColor" value="#3a6fd8" style="width:22px; height:22px; padding:0; border:none;">
+          <button class="clearPadBtn" data-target="preyCanvas" style="padding:2px 8px; font-size:11px;">Clear</button>
+        </div>
+      </div>
+      <div style="flex:1; min-width:160px;">
+        <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:2px;">Prey name</label>
+        <input type="text" id="preyName" placeholder="e.g. Beetles" style="width:100%;">
+        <p style="font-size:11px; color:var(--text-secondary); margin:4px 0 0;">Draw it with the swatch below the canvas — that's the color it'll appear in.</p>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+        <canvas class="drawPad" id="predatorCanvas" data-pen="predatorPenColor" width="72" height="72" style="border-radius:var(--radius); border:0.5px solid var(--border-strong); background:#ffffff; touch-action:none; cursor:crosshair;"></canvas>
+        <div style="display:flex; gap:4px; align-items:center;">
+          <input type="color" id="predatorPenColor" value="#c9432f" style="width:22px; height:22px; padding:0; border:none;">
+          <button class="clearPadBtn" data-target="predatorCanvas" style="padding:2px 8px; font-size:11px;">Clear</button>
+        </div>
+      </div>
+      <div style="flex:1; min-width:160px;">
+        <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:2px;">Predator name</label>
+        <input type="text" id="predatorName" placeholder="e.g. Spiders" style="width:100%;">
+        <p style="font-size:11px; color:var(--text-secondary); margin:4px 0 0;">Draw it with the swatch below the canvas — that's the color it'll appear in.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; gap:8px; margin-top:1.25rem;">
+    <button id="cancelCustomBtn"><i class="ti ti-x" aria-hidden="true" style="font-size:16px; vertical-align:-3px; margin-right:6px;"></i>Cancel</button>
+    <button id="saveCustomBtn" style="border:2px solid var(--border-accent);"><i class="ti ti-check" aria-hidden="true" style="font-size:16px; vertical-align:-3px; margin-right:6px;"></i>Save and enter</button>
+  </div>
+</div>
+
+<div id="simScreen" style="display:none;">
+  <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
+    <button id="backBtn"><i class="ti ti-arrow-left" aria-hidden="true" style="font-size:16px; vertical-align:-3px; margin-right:6px;"></i>Back to planet</button>
+    <span id="biomeTitle" style="font-size:15px; font-weight:500; margin-left:4px;"></span>
+    <span style="flex:1;"></span>
+    <button id="playBtn" style="min-width:88px;"><i class="ti ti-player-pause" aria-hidden="true" style="font-size:16px; vertical-align:-3px; margin-right:6px;"></i>Pause</button>
+    <button id="resetBtn"><i class="ti ti-refresh" aria-hidden="true" style="font-size:16px; vertical-align:-3px; margin-right:6px;"></i>Reset</button>
+    <label style="font-size:13px; color:var(--text-secondary); margin-left:4px;">Speed</label>
+    <input type="range" id="speed" min="1" max="4" step="1" value="2" style="width:100px;">
+  </div>
+
+  <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+    <canvas id="world" width="640" height="380" style="border-radius:12px; display:block; max-width:100%;"></canvas>
+    <div style="min-width:180px; display:flex; flex-direction:column; gap:10px;">
+      <div style="background:var(--surface-1); border-radius:var(--radius); padding:0.75rem 1rem;">
+        <p style="font-size:13px; color:var(--text-secondary); margin:0 0 4px;"><span id="resDot" style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;"></span><span id="resLabel"></span></p>
+        <p style="font-size:20px; font-weight:500; margin:0;" id="resStat">0%</p>
+      </div>
+      <div style="background:var(--surface-1); border-radius:var(--radius); padding:0.75rem 1rem;">
+        <p style="font-size:13px; color:var(--text-secondary); margin:0 0 4px;"><span id="herbDot" style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;"></span><span id="herbLabel"></span></p>
+        <p style="font-size:20px; font-weight:500; margin:0;" id="herbStat">0</p>
+      </div>
+      <div style="background:var(--surface-1); border-radius:var(--radius); padding:0.75rem 1rem;">
+        <p style="font-size:13px; color:var(--text-secondary); margin:0 0 4px;"><span id="predDot" style="display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;"></span><span id="predLabel"></span></p>
+        <p style="font-size:20px; font-weight:500; margin:0;" id="predStat">0</p>
+      </div>
+      <canvas id="chart" width="180" height="90" style="border-radius:var(--radius); background:var(--surface-1);"></canvas>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  const BIOMES = {
+    cave: { title: 'Cave', resourceLabel: 'Crystal coverage', herbivoreLabel: 'Crickets', predatorLabel: 'Bats',
+      herbivoreColor: '#d8c48a', predatorColor: '#8a6fc9', resDot: '#8fb8e0',
+      herbivoreEmoji: '\u{1F997}', predatorEmoji: '\u{1F987}',
+      tileColor: function(v){ return 'rgb('+Math.round(25+v*80)+','+Math.round(25+v*100)+','+Math.round(35+v*180)+')'; },
+      startHerb: 30, startPred: 6 },
+    forest: { title: 'Forest', resourceLabel: 'Grass coverage', herbivoreLabel: 'Rabbits', predatorLabel: 'Foxes',
+      herbivoreColor: '#3a6fd8', predatorColor: '#c9432f', resDot: '#4a934a',
+      herbivoreEmoji: '\u{1F407}', predatorEmoji: '\u{1F98A}',
+      tileColor: function(v){ return 'rgb('+Math.round(60+v*20)+','+Math.round(60+v*90)+','+Math.round(45+v*20)+')'; },
+      startHerb: 30, startPred: 6 },
+    ocean: { title: 'Ocean', resourceLabel: 'Plankton coverage', herbivoreLabel: 'Fish', predatorLabel: 'Sharks',
+      herbivoreColor: '#e8c34a', predatorColor: '#2b3a4a', resDot: '#3aa0b0',
+      herbivoreEmoji: '\u{1F41F}', predatorEmoji: '\u{1F988}',
+      tileColor: function(v){ return 'rgb('+Math.round(15+v*30)+','+Math.round(45+v*100)+','+Math.round(90+v*40)+')'; },
+      startHerb: 34, startPred: 6 },
+    desert: { title: 'Desert', resourceLabel: 'Shrub coverage', herbivoreLabel: 'Lizards', predatorLabel: 'Coyotes',
+      herbivoreColor: '#7a9a5a', predatorColor: '#8a5a3a', resDot: '#d8b26a',
+      herbivoreEmoji: '\u{1F98E}', predatorEmoji: '\u{1F43A}',
+      tileColor: function(v){ return 'rgb('+Math.round(200-v*40)+','+Math.round(175-v*30)+','+Math.round(120-v*10)+')'; },
+      startHerb: 28, startPred: 5 },
+    tundra: { title: 'Tundra', resourceLabel: 'Moss coverage', herbivoreLabel: 'Hares', predatorLabel: 'Wolves',
+      herbivoreColor: '#c8cdd6', predatorColor: '#4a5568', resDot: '#7fa8b0',
+      herbivoreEmoji: '\u{1F430}', predatorEmoji: '\u{1F43A}',
+      tileColor: function(v){ return 'rgb('+Math.round(210-v*60)+','+Math.round(220-v*40)+','+Math.round(225-v*20)+')'; },
+      startHerb: 28, startPred: 5 },
+    jungle: { title: 'Jungle', resourceLabel: 'Foliage coverage', herbivoreLabel: 'Monkeys', predatorLabel: 'Jaguars',
+      herbivoreColor: '#8a5a2a', predatorColor: '#c9761f', resDot: '#1f6b2f',
+      herbivoreEmoji: '\u{1F412}', predatorEmoji: '\u{1F406}',
+      tileColor: function(v){ return 'rgb('+Math.round(20+v*20)+','+Math.round(70+v*100)+','+Math.round(20+v*10)+')'; },
+      startHerb: 32, startPred: 6 },
+    swamp: { title: 'Swamp', resourceLabel: 'Algae coverage', herbivoreLabel: 'Frogs', predatorLabel: 'Alligators',
+      herbivoreColor: '#a8c060', predatorColor: '#3a4a2a', resDot: '#5a7a4a',
+      herbivoreEmoji: '\u{1F438}', predatorEmoji: '\u{1F40A}',
+      tileColor: function(v){ return 'rgb('+Math.round(50+v*20)+','+Math.round(60+v*80)+','+Math.round(35+v*20)+')'; },
+      startHerb: 30, startPred: 5 },
+    savanna: { title: 'Savanna', resourceLabel: 'Tall grass coverage', herbivoreLabel: 'Zebras', predatorLabel: 'Lions',
+      herbivoreColor: '#e8e0c8', predatorColor: '#b8823a', resDot: '#c9a63a',
+      herbivoreEmoji: '\u{1F993}', predatorEmoji: '\u{1F981}',
+      tileColor: function(v){ return 'rgb('+Math.round(190+v*30)+','+Math.round(160+v*50)+','+Math.round(80+v*20)+')'; },
+      startHerb: 30, startPred: 5 },
+    volcano: { title: 'Volcano', resourceLabel: 'Lichen coverage', herbivoreLabel: 'Salamanders', predatorLabel: 'Scorpions',
+      herbivoreColor: '#e8823a', predatorColor: '#1a1a1a', resDot: '#c94a2a',
+      herbivoreEmoji: '\u{1F98E}', predatorEmoji: '\u{1F982}',
+      tileColor: function(v){ return 'rgb('+Math.round(50+v*140)+','+Math.round(30+v*60)+','+Math.round(30+v*20)+')'; },
+      startHerb: 26, startPred: 5 },
+    reef: { title: 'Reef', resourceLabel: 'Coral coverage', herbivoreLabel: 'Clownfish', predatorLabel: 'Moray eels',
+      herbivoreColor: '#e8722a', predatorColor: '#2a5a4a', resDot: '#3ac9b0',
+      herbivoreEmoji: '\u{1F420}', predatorEmoji: '\u{1F40D}',
+      tileColor: function(v){ return 'rgb('+Math.round(20+v*60)+','+Math.round(120+v*80)+','+Math.round(140+v*60)+')'; },
+      startHerb: 34, startPred: 6 },
+    mountain: { title: 'Mountain', resourceLabel: 'Alpine grass coverage', herbivoreLabel: 'Goats', predatorLabel: 'Eagles',
+      herbivoreColor: '#e8e4d8', predatorColor: '#6a4a2a', resDot: '#6a8a5a',
+      herbivoreEmoji: '\u{1F410}', predatorEmoji: '\u{1F985}',
+      tileColor: function(v){ return 'rgb('+Math.round(130-v*40)+','+Math.round(135-v*10)+','+Math.round(130-v*30)+')'; },
+      startHerb: 26, startPred: 5 },
+    beach: { title: 'Beach', resourceLabel: 'Seaweed coverage', herbivoreLabel: 'Crabs', predatorLabel: 'Seagulls',
+      herbivoreColor: '#c9532a', predatorColor: '#8a8a90', resDot: '#4a7a4a',
+      herbivoreEmoji: '\u{1F980}', predatorEmoji: '\u{1F426}',
+      tileColor: function(v){ return 'rgb('+Math.round(225-v*30)+','+Math.round(205-v*10)+','+Math.round(160+v*20)+')'; },
+      startHerb: 30, startPred: 5 },
+    prairie: { title: 'Prairie', resourceLabel: 'Wildflower coverage', herbivoreLabel: 'Bison', predatorLabel: 'Hawks',
+      herbivoreColor: '#6a4a2a', predatorColor: '#8a3a2a', resDot: '#c9a83a',
+      herbivoreEmoji: '\u{1F9AC}', predatorEmoji: '\u{1F985}',
+      tileColor: function(v){ return 'rgb('+Math.round(150+v*40)+','+Math.round(150+v*60)+','+Math.round(70+v*20)+')'; },
+      startHerb: 28, startPred: 5 },
+    kelp: { title: 'Kelp forest', resourceLabel: 'Kelp coverage', herbivoreLabel: 'Sea otters', predatorLabel: 'Orcas',
+      herbivoreColor: '#a8825a', predatorColor: '#1a1a1a', resDot: '#1f8a5a',
+      herbivoreEmoji: '\u{1F9A6}', predatorEmoji: '\u{1F433}',
+      tileColor: function(v){ return 'rgb('+Math.round(10+v*20)+','+Math.round(60+v*100)+','+Math.round(60+v*40)+')'; },
+      startHerb: 30, startPred: 5 }
+  };
+
+  const earthScreen = document.getElementById('earthScreen');
+  const customScreen = document.getElementById('customScreen');
+  const simScreen = document.getElementById('simScreen');
+  const world = document.getElementById('world');
+  const wctx = world.getContext('2d');
+  const chart = document.getElementById('chart');
+  const cctx = chart.getContext('2d');
+  const W = world.width, H = world.height;
+  const cols = 64, rows = 38;
+  const cw = W/cols, ch = H/rows;
+
+  let config, grass, herbivores, predators, running, speed, growthRate, tick, history;
+
+  function rand(a,b){ return a + Math.random()*(b-a); }
+  function dist2(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return dx*dx+dy*dy; }
+  function makeAnimal(x,y,energy){ return { x, y, energy, angle: rand(0, Math.PI*2) }; }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function hexToRgbArr(hex){
+    const h = hex.replace('#','');
+    return [parseInt(h.substring(0,2),16), parseInt(h.substring(2,4),16), parseInt(h.substring(4,6),16)];
+  }
+  function makeTileColorFn(hex){
+    const c = hexToRgbArr(hex);
+    return function(v){
+      const t = 0.25 + v*0.75;
+      return 'rgb('+Math.round(c[0]*t)+','+Math.round(c[1]*t)+','+Math.round(c[2]*t)+')';
+    };
+  }
+  function randomHex(){
+    const r = Math.floor(rand(40,230)), g = Math.floor(rand(40,230)), b = Math.floor(rand(40,230));
+    return '#' + [r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+  }
+
+  function init(){
+    grass = new Float32Array(cols*rows);
+    for(let i=0;i<grass.length;i++) grass[i] = Math.random()*0.6;
+    herbivores = [];
+    for(let i=0;i<config.startHerb;i++) herbivores.push(makeAnimal(rand(0,W), rand(0,H), rand(30,50)));
+    predators = [];
+    for(let i=0;i<config.startPred;i++) predators.push(makeAnimal(rand(0,W), rand(0,H), rand(40,60)));
+    tick = 0;
+    history = [];
+    running = true;
+    document.getElementById('playBtn').innerHTML = '<i class="ti ti-player-pause" aria-hidden="true" style="font-size:16px; vertical-align:-3px; margin-right:6px;"></i>Pause';
+  }
+
+  function grassAt(x,y){
+    const gx = Math.min(cols-1, Math.max(0, Math.floor(x/cw)));
+    const gy = Math.min(rows-1, Math.max(0, Math.floor(y/ch)));
+    return { idx: gy*cols+gx };
+  }
+
+  function step(){
+    growthRate = 4/5500;
+    for(let i=0;i<grass.length;i++){
+      grass[i] = Math.min(1, grass[i] + growthRate * (0.3 + Math.random()*0.7));
+    }
+    for(const h of herbivores){
+      const g = grassAt(h.x,h.y);
+      if(grass[g.idx] > 0.15){
+        const eat = Math.min(grass[g.idx], 0.05);
+        grass[g.idx] -= eat;
+        h.energy += eat*16;
+      } else {
+        h.angle += rand(-0.6,0.6);
+      }
+      if(Math.random() < 0.05) h.angle += rand(-1,1);
+      h.x += Math.cos(h.angle)*1.4;
+      h.y += Math.sin(h.angle)*1.4;
+      if(h.x<0){h.x=0; h.angle=Math.PI-h.angle;}
+      if(h.x>W){h.x=W; h.angle=Math.PI-h.angle;}
+      if(h.y<0){h.y=0; h.angle=-h.angle;}
+      if(h.y>H){h.y=H; h.angle=-h.angle;}
+      h.energy -= 0.2;
+    }
+    const newHerb = [];
+    for(const h of herbivores){
+      if(h.energy > 170 && Math.random() < 0.5){
+        h.energy *= 0.5;
+        newHerb.push(makeAnimal(h.x+rand(-8,8), h.y+rand(-8,8), h.energy));
+      }
+    }
+    herbivores = herbivores.filter(h => h.energy > 0).concat(newHerb);
+    if(herbivores.length > 200) herbivores.length = 200;
+
+    for(const p of predators){
+      let target = null, best = Infinity;
+      for(const h of herbivores){
+        const d = dist2(p,h);
+        if(d < best){ best = d; target = h; }
+      }
+      if(target){
+        const dx = target.x-p.x, dy = target.y-p.y;
+        p.angle = Math.atan2(dy,dx);
+        if(best < 90 && Math.random() < 0.5){
+          target.energy = -1;
+          p.energy += 40;
+        }
+      } else {
+        if(Math.random() < 0.08) p.angle += rand(-1,1);
+      }
+      p.x += Math.cos(p.angle)*2.0;
+      p.y += Math.sin(p.angle)*2.0;
+      if(p.x<0){p.x=0; p.angle=Math.PI-p.angle;}
+      if(p.x>W){p.x=W; p.angle=Math.PI-p.angle;}
+      if(p.y<0){p.y=0; p.angle=-p.angle;}
+      if(p.y>H){p.y=H; p.angle=-p.angle;}
+      p.energy -= 0.4;
+    }
+    herbivores = herbivores.filter(h => h.energy > 0);
+    const newPred = [];
+    for(const p of predators){
+      if(p.energy > 320 && Math.random() < 0.35){
+        p.energy *= 0.5;
+        newPred.push(makeAnimal(p.x+rand(-8,8), p.y+rand(-8,8), p.energy));
+      }
+    }
+    predators = predators.filter(p => p.energy > 0).concat(newPred);
+    if(predators.length > 24) predators.length = 24;
+
+    if(herbivores.length < 3 && Math.random() < 0.02){
+      herbivores.push(makeAnimal(rand(0,W), rand(0,H), 50));
+    }
+    if(predators.length < 2 && herbivores.length > 25 && Math.random() < 0.01){
+      predators.push(makeAnimal(rand(0,W), rand(0,H), 50));
+    }
+
+    tick++;
+    if(tick % 6 === 0){
+      history.push({h: herbivores.length, p: predators.length});
+      if(history.length > 90) history.shift();
+    }
+  }
+
+  function drawCreature(entity, size, emoji, img, color){
+    if(img && img.complete && img.naturalWidth > 0){
+      wctx.drawImage(img, entity.x - size/2, entity.y - size/2, size, size);
+    } else if(emoji){
+      wctx.save();
+      wctx.fillStyle = color;
+      wctx.font = size + 'px sans-serif';
+      wctx.textAlign = 'center';
+      wctx.textBaseline = 'middle';
+      wctx.fillText(emoji, entity.x, entity.y);
+      wctx.restore();
+    } else {
+      wctx.save();
+      wctx.fillStyle = color;
+      wctx.beginPath();
+      wctx.arc(entity.x, entity.y, size/3, 0, Math.PI*2);
+      wctx.fill();
+      wctx.restore();
+    }
+  }
+
+  function draw(){
+    for(let gy=0; gy<rows; gy++){
+      for(let gx=0; gx<cols; gx++){
+        wctx.fillStyle = config.tileColor(grass[gy*cols+gx]);
+        wctx.fillRect(gx*cw, gy*ch, cw+0.5, ch+0.5);
+      }
+    }
+    for(const h of herbivores){
+      drawCreature(h, 16, config.herbivoreEmoji, config.herbivoreImg, config.herbivoreColor);
+    }
+    for(const p of predators){
+      drawCreature(p, 22, config.predatorEmoji, config.predatorImg, config.predatorColor);
+    }
+
+    let avgGrass = 0;
+    for(let i=0;i<grass.length;i++) avgGrass += grass[i];
+    avgGrass /= grass.length;
+    document.getElementById('resStat').textContent = Math.round(avgGrass*100) + '%';
+    document.getElementById('herbStat').textContent = herbivores.length;
+    document.getElementById('predStat').textContent = predators.length;
+
+    cctx.clearRect(0,0,chart.width,chart.height);
+    if(history.length > 1){
+      const maxV = Math.max(20, ...history.map(d=>Math.max(d.h,d.p)));
+      cctx.beginPath();
+      history.forEach((d,i)=>{
+        const x = i/(history.length-1)*chart.width;
+        const y = chart.height - (d.h/maxV)*chart.height;
+        i===0 ? cctx.moveTo(x,y) : cctx.lineTo(x,y);
+      });
+      cctx.strokeStyle = config.herbivoreColor;
+      cctx.lineWidth = 1.5;
+      cctx.stroke();
+      cctx.beginPath();
+      history.forEach((d,i)=>{
+        const x = i/(history.length-1)*chart.width;
+        const y = chart.height - (d.p/maxV)*chart.height;
+        i===0 ? cctx.moveTo(x,y) : cctx.lineTo(x,y);
+      });
+      cctx.strokeStyle = config.predatorColor;
+      cctx.lineWidth = 1.5;
+      cctx.stroke();
+    }
+  }
+
+  function loop(){
+    if(simScreen.style.display !== 'none' && running){
+      speed = parseInt(document.getElementById('speed').value,10);
+      for(let s=0; s<speed; s++) step();
+      draw();
+    }
+    requestAnimationFrame(loop);
+  }
+
+  function enterBiome(key){
+    config = BIOMES[key];
+    document.getElementById('biomeTitle').textContent = config.title;
+    document.getElementById('resLabel').textContent = config.resourceLabel;
+    document.getElementById('herbLabel').textContent = config.herbivoreLabel;
+    document.getElementById('predLabel').textContent = config.predatorLabel;
+    document.getElementById('resDot').style.background = config.resDot;
+    document.getElementById('herbDot').style.background = config.herbivoreColor;
+    document.getElementById('predDot').style.background = config.predatorColor;
+    earthScreen.style.display = 'none';
+    customScreen.style.display = 'none';
+    simScreen.style.display = 'block';
+    init();
+    draw();
+  }
+
+  document.querySelectorAll('.biomeBtn').forEach(function(btn){
+    btn.addEventListener('click', function(){ enterBiome(btn.getAttribute('data-biome')); });
+  });
+  document.getElementById('backBtn').addEventListener('click', function(){
+    running = false;
+    simScreen.style.display = 'none';
+    earthScreen.style.display = 'block';
+  });
+  document.getElementById('playBtn').addEventListener('click', function(){
+    running = !running;
+    this.innerHTML = running
+      ? '<i class="ti ti-player-pause" aria-hidden="true" style="font-size:16px; vertical-align:-3px; margin-right:6px;"></i>Pause'
+      : '<i class="ti ti-player-play" aria-hidden="true" style="font-size:16px; vertical-align:-3px; margin-right:6px;"></i>Play';
+  });
+  document.getElementById('resetBtn').addEventListener('click', init);
+
+  function attachDrawingPad(canvas){
+    const pctx = canvas.getContext('2d');
+    const penInputId = canvas.getAttribute('data-pen');
+    let drawing = false, lastX = 0, lastY = 0;
+    function pos(e){
+      const rect = canvas.getBoundingClientRect();
+      const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      const cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+      return [cx * (canvas.width/rect.width), cy * (canvas.height/rect.height)];
+    }
+    canvas.addEventListener('pointerdown', function(e){ drawing = true; [lastX,lastY] = pos(e); e.preventDefault(); });
+    canvas.addEventListener('pointermove', function(e){
+      if(!drawing) return;
+      const [x,y] = pos(e);
+      pctx.strokeStyle = document.getElementById(penInputId).value;
+      pctx.lineWidth = 5;
+      pctx.lineCap = 'round';
+      pctx.lineJoin = 'round';
+      pctx.beginPath();
+      pctx.moveTo(lastX,lastY);
+      pctx.lineTo(x,y);
+      pctx.stroke();
+      lastX = x; lastY = y;
+      e.preventDefault();
+    });
+    window.addEventListener('pointerup', function(){ drawing = false; });
+  }
+  document.querySelectorAll('.drawPad').forEach(attachDrawingPad);
+  document.querySelectorAll('.clearPadBtn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      const canvas = document.getElementById(btn.getAttribute('data-target'));
+      canvas.getContext('2d').clearRect(0,0,canvas.width, canvas.height);
+    });
+  });
+
+  function resetCustomForm(){
+    ['placeCanvas','preyCanvas','predatorCanvas'].forEach(function(id){
+      const c = document.getElementById(id);
+      c.getContext('2d').clearRect(0,0,c.width,c.height);
+    });
+    document.getElementById('placeName').value = '';
+    document.getElementById('resourceName').value = '';
+    document.getElementById('preyName').value = '';
+    document.getElementById('predatorName').value = '';
+    document.getElementById('resourceColor').value = '#4a934a';
+    document.getElementById('placePenColor').value = '#3a6fd8';
+    document.getElementById('preyPenColor').value = '#3a6fd8';
+    document.getElementById('predatorPenColor').value = '#c9432f';
+  }
+
+  document.getElementById('openCustomBtn').addEventListener('click', function(){
+    resetCustomForm();
+    earthScreen.style.display = 'none';
+    customScreen.style.display = 'block';
+  });
+  document.getElementById('cancelCustomBtn').addEventListener('click', function(){
+    customScreen.style.display = 'none';
+    earthScreen.style.display = 'block';
+  });
+
+  function canvasHasArt(canvas){
+    const c = canvas.getContext('2d');
+    const data = c.getImageData(0,0,canvas.width,canvas.height).data;
+    for(let i=3;i<data.length;i+=4){ if(data[i] !== 0) return true; }
+    return false;
+  }
+
+  function addBiomeButton(id, iconHtml, placeName){
+    const btn = document.createElement('button');
+    btn.className = 'biomeBtn';
+    btn.setAttribute('data-biome', id);
+    btn.style.cssText = 'display:flex; flex-direction:column; align-items:center; gap:6px; padding:0.7rem;';
+    btn.innerHTML = iconHtml + '<span>'+placeName+'</span>';
+    btn.addEventListener('click', function(){ enterBiome(id); });
+    document.getElementById('bioGrid').appendChild(btn);
+  }
+
+  document.getElementById('saveCustomBtn').addEventListener('click', function(){
+    const placeName = document.getElementById('placeName').value.trim() || 'My biome';
+    const resourceName = document.getElementById('resourceName').value.trim() || 'Resource';
+    const preyName = document.getElementById('preyName').value.trim() || 'Prey';
+    const predatorName = document.getElementById('predatorName').value.trim() || 'Predator';
+    const resourceColor = document.getElementById('resourceColor').value;
+    const preyColor = document.getElementById('preyPenColor').value;
+    const predatorColor = document.getElementById('predatorPenColor').value;
+
+    const placeCanvas = document.getElementById('placeCanvas');
+    const preyCanvas = document.getElementById('preyCanvas');
+    const predatorCanvas = document.getElementById('predatorCanvas');
+    const iconData = placeCanvas.toDataURL('image/png');
+    const id = 'custom_' + Date.now();
+
+    const bio = {
+      title: placeName,
+      resourceLabel: resourceName + ' coverage',
+      herbivoreLabel: preyName,
+      predatorLabel: predatorName,
+      herbivoreColor: preyColor,
+      predatorColor: predatorColor,
+      resDot: resourceColor,
+      tileColor: makeTileColorFn(resourceColor),
+      startHerb: 30, startPred: 6
+    };
+
+    if(canvasHasArt(preyCanvas)){
+      const img = new Image();
+      img.src = preyCanvas.toDataURL('image/png');
+      bio.herbivoreImg = img;
+    }
+    if(canvasHasArt(predatorCanvas)){
+      const img = new Image();
+      img.src = predatorCanvas.toDataURL('image/png');
+      bio.predatorImg = img;
+    }
+
+    BIOMES[id] = bio;
+    addBiomeButton(id, '<img src="'+iconData+'" alt="" style="width:20px; height:20px; object-fit:contain;">', placeName);
+    enterBiome(id);
+  });
+
+  const ADJECTIVES = ['Misty','Crimson','Frozen','Sunken','Emerald','Shattered','Whispering','Ashen','Golden','Silent','Hollow','Drifting','Amber','Twilight','Glimmering'];
+  const NOUNS = ['Canyon','Bog','Reef','Hollow','Steppe','Grove','Basin','Ridge','Delta','Expanse','Hollow','Thicket','Marsh','Peaks','Isle'];
+  const RESOURCES = ['Moss','Fungus','Kelp','Lichen','Crystals','Ferns','Algae','Vines','Roots','Spores','Reeds','Clover'];
+  const PREY = [['Beetles','\u{1FAB2}'],['Voles','\u{1F401}'],['Sparrows','\u{1F426}'],['Newts','\u{1F98E}'],['Shrimp','\u{1F990}'],['Moths','\u{1F98B}'],['Snails','\u{1F40C}'],['Squirrels','\u{1F43F}\uFE0F'],['Turtles','\u{1F422}'],['Deer','\u{1F98C}']];
+  const PREDATORS = [['Owls','\u{1F989}'],['Wolves','\u{1F43A}'],['Spiders','\u{1F577}\uFE0F'],['Hawks','\u{1F985}'],['Snakes','\u{1F40D}'],['Bears','\u{1F43B}'],['Crocodiles','\u{1F40A}'],['Wasps','\u{1F41D}'],['Weasels','\u{1F9A1}'],['Falcons','\u{1F985}']];
+  const ICONS = ['ti-star','ti-diamond','ti-bolt','ti-droplet','ti-flame','ti-snowflake','ti-leaf','ti-cloud','ti-moon','ti-sun','ti-flower','ti-feather'];
+
+  document.getElementById('randomBtn').addEventListener('click', function(){
+    const title = pick(ADJECTIVES) + ' ' + pick(NOUNS);
+    const resourceName = pick(RESOURCES);
+    const [preyName, preyEmoji] = pick(PREY);
+    const [predName, predEmoji] = pick(PREDATORS);
+    const resourceColor = randomHex();
+    const preyColor = randomHex();
+    const predColor = randomHex();
+    const icon = pick(ICONS);
+    const id = 'random_' + Date.now();
+
+    BIOMES[id] = {
+      title: title,
+      resourceLabel: resourceName + ' coverage',
+      herbivoreLabel: preyName,
+      predatorLabel: predName,
+      herbivoreColor: preyColor,
+      predatorColor: predColor,
+      resDot: resourceColor,
+      herbivoreEmoji: preyEmoji,
+      predatorEmoji: predEmoji,
+      tileColor: makeTileColorFn(resourceColor),
+      startHerb: Math.round(rand(24,36)), startPred: Math.round(rand(4,7))
+    };
+
+    addBiomeButton(id, '<i class="ti '+icon+'" aria-hidden="true" style="font-size:20px; color:'+resourceColor+';"></i>', title);
+    enterBiome(id);
+  });
+
+  loop();
+})();
+</script>
+</body>
+</html>

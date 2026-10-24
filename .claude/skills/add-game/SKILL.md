@@ -44,16 +44,16 @@ Ask where the game is. It might be:
   plain HTML), it needs a small HTML wrapper that loads React and Babel from
   cdnjs. Make that, then test it.
 - **Half a page from claude.ai.** Some claude.ai games download as a *fragment*:
-  the file starts with `<style>` or `<div>` instead of `<!doctype html>`, and has
-  no `<head>`, `<title>`, or `<meta charset="utf-8">`. Then emoji show up as
-  gibberish like `ðŸ§€`. Wrap it: add `<!doctype html>`, `<meta charset="utf-8">`,
-  a viewport meta tag, a `<title>`, and `<body>` around the original code. Also look for
-  `var(--something)` colors that claude.ai provided (`grep -o 'var(--[a-z-]*'`)
-  and define them in a `:root { }` style. Cheese Panic is an example. If it
-  uses icon classes like `ti ti-player-play`, those are Tabler Icons. Load
-  `https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css`
-  (Asteroid Buster is an example). The file name may not match the game (Asteroid
-  Buster was `nature_ecosystem_sim.html`), so check what's inside.
+  the file starts with `<style>` or `<div>` instead of `<!doctype html>`, with
+  no `<head>` or `<meta charset="utf-8">`, so emoji become gibberish like `ðŸ§€`.
+  claude.ai also used to provide colors (`var(--text-secondary)`), button
+  styles, and Tabler Icons (`class="ti ti-..."`). Fix it with
+  `python3 tools/wrap_fragment.py games/<folder>/index.html "Title"`.
+  Then check the screenshot. If it uses a `var(--something)` the tool doesn't
+  define yet, add it to the tool. Examples: Planet Biome Explorer (wrapped by
+  the tool), and Cheese Panic and Asteroid Buster (wrapped by hand earlier).
+  The file name may not match the game (Asteroid Buster was
+  `nature_ecosystem_sim.html`), so check what's inside.
 - **Khan Academy (Processing.js).** Have them paste the code into a file. Wrap
   it in an `index.html` that loads Processing.js 1.4.8 from cdnjs and runs the code inside
   `new Processing(canvas, function(processingInstance) { with (processingInstance) { size(400, 400); frameRate(30); /* code */ } })`.
@@ -80,7 +80,9 @@ becomes part of the web address and shouldn't change later.
 - **Title.** Suggest one from the game and confirm it.
 - **Date.** "When did you release (finish) this game?" If they don't know,
   suggest a guess from file dates (`ls -l --time-style=long-iso`) and let
-  them choose. Format: `YYYY-MM-DD`.
+  them choose. Format: `YYYY-MM-DD`. Moving a file keeps its time, so check
+  the time *before* or after the move, but not after editing it. If two games share a
+  date, the file times can tell which came first.
 - **Favorite?** Yes or no. Is it one of their best?
 - **Blurb.** Ask what the game is about and what's fun or special about it.
   Then offer 2–3 short blurb ideas (one or two sentences, in *their* voice,
