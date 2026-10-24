@@ -40,7 +40,11 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 #mpBadge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lily); box-shadow: 0 0 8px var(--lily); }
 #mpBadge button { background: rgba(237,240,214,.1); border: 1px solid var(--line); border-radius: 99px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
 #bag { position: absolute; left: 50%; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 5px; max-width: min(640px, 92vw); background: rgba(10,22,15,.7); border: 1px solid var(--line); border-radius: 14px; padding: 6px 8px; pointer-events: auto; }
-#bag[hidden], #mpBadge[hidden] { display: none !important; }
+#bag[hidden], #mpBadge[hidden], #voiceHud[hidden] { display: none !important; }
+#voiceHud { position: absolute; left: 50%; top: calc(148px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); background: rgba(10,22,15,.75); border: 1px solid var(--line); border-radius: 99px; padding: 4px 12px; font-size: 13px; font-weight: 700; display: flex; gap: 8px; align-items: center; }
+#voiceHud.talk { border-color: #9fd15b; box-shadow: 0 0 12px rgba(159,209,91,.6); }
+#voiceHud i { width: 9px; height: 9px; border-radius: 50%; background: #6a7a60; }
+#voiceHud.talk i { background: #9fd15b; }
 #bag .bl { width: 100%; text-align: center; font-size: 12px; color: var(--ink-dim); }
 #bag button { background: rgba(237,240,214,.08); border: 1.5px solid var(--line); border-radius: 99px; padding: 3px 10px; font-size: 12.5px; }
 #bag button.on { border-color: var(--marigold); background: rgba(244,194,77,.18); }
@@ -253,6 +257,7 @@ select { background: var(--panel-2); color: var(--ink); border: 1px solid var(--
         <span class="kbd">Q</span><p>Sneak (lower and quieter). Underwater: swim down.</p>
         <span class="kbd">X</span><p>Rest to recover energy.</p>
         <span class="kbd">V</span><p>Insider Frog only: turn yourself inside out, or back again.</p>
+        <span class="kbd">B</span><p>Multiplayer: hold to talk (when voice chat is set to push to talk).</p>
         <span class="kbd">Tab</span><p>Status, field guide, achievements, home and map.</p>
         <span class="kbd">H</span><p>Hide the interface for screenshots.</p>
         <span class="kbd">Esc</span><p>Pause and settings.</p>
@@ -270,6 +275,7 @@ select { background: var(--panel-2); color: var(--ink); border: 1px solid var(--
   <div id="stagebox" class="hidden"><b id="stageName"></b><p id="stageHint"></p><div class="bar"><i id="stageBar"></i></div></div>
   <div id="toasts"></div>
   <div id="mpBadge" hidden><span class="dot"></span><span id="mpText"></span><button id="mpLeave">Leave</button></div>
+  <div id="voiceHud" hidden><i></i><span id="voiceText"></span></div>
   <div id="regionToast"></div>
   <div id="crosshair"></div>
   <svg id="charge" viewBox="0 0 46 46"><circle cx="23" cy="23" r="19" fill="none" stroke="rgba(244,194,77,.95)" stroke-width="4" stroke-linecap="round" stroke-dasharray="0 200" transform="rotate(-90 23 23)"/></svg>
@@ -325,6 +331,8 @@ select { background: var(--panel-2); color: var(--ink); border: 1px solid var(--
   <div class="panel small">
     <header><h2 id="srvTitle">Start a server</h2></header>
     <form class="body stack" id="srvForm">
+      <label for="srvName">Your username</label>
+      <input id="srvName" autocomplete="nickname" maxlength="20" placeholder="e.g. Toadboi32">
       <label for="srvNum">Enter server number</label>
       <input id="srvNum" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="e.g. 4821">
       <p id="srvErr" class="note" role="alert" style="color:#f4c24d;margin:0;min-height:1.4em"></p>
@@ -372,7 +380,7 @@ const SAVE_KEY = 'pondlife.save.v1';
 function defaultSave() {
   return {
     v: 1,
-    settings: { quality: 'medium', master: 0.8, sfx: 0.9, amb: 0.75, sens: 1, invert: false, dayLen: 12, touch: 'auto', fov: 70 },
+    settings: { quality: 'medium', master: 0.8, sfx: 0.9, amb: 0.75, sens: 1, invert: false, dayLen: 12, touch: 'auto', fov: 70, username: '', voice: 'off', voiceVol: 1 },
     unlocks: { species: ['green', 'tree', 'bull', 'dart'], patterns: ['classic', 'spotted'], envs: ['summer'], decor: [] },
     guide: {}, ach: {},
     stats: { eaten: {}, total: 0, pebbles: [], regions: [], longJump: 0, nights: 0, maxDive: 0, chorus: 0, escapes: 0, days: 0 },
@@ -5775,7 +5783,7 @@ function toggleBurrowSand() {
    ============================================================ */
 const MP = { api: null, user: null, lobby: null, srv: null, num: null, hosting: false, remotes: new Map(), servers: new Set(), sendT: 0, croakN: 0, unsub: [], ready: false, names: {} };
 function mpInit() {
-  if (!window.claude || !window.claude.use) { mpRefreshUI(); return; }
+  if (!window.claude || !window.claude.use) { mpWebInit(); return; }
   window.claude.use('room').then(room => {
     MP.api = room; MP.ready = true;
     if (!room) { mpRefreshUI(); return; }
@@ -5791,7 +5799,7 @@ function mpScanServers(peers) {
   mpRefreshUI();
 }
 function mpRefreshUI() {
-  const any = MP.servers.size > 0 && !MP.srv;
+  const any = (MP.servers.size > 0 || (MP.web && !!MP.api)) && !MP.srv;
   for (const id of ['#joinBtn', '#pJoin']) { const b = $(id); if (b) b.hidden = !any; }
   for (const id of ['#hostBtn', '#pHost']) { const b = $(id); if (b) b.hidden = !!MP.srv; }
   const lv = $('#pLeave'); if (lv) lv.hidden = !MP.srv;
@@ -5805,20 +5813,22 @@ function mpAsk(mode) {
   const m = $('#srvModal'), input = $('#srvNum'), err = $('#srvErr');
   $('#srvTitle').textContent = mode === 'host' ? 'Start a server' : 'Join server';
   $('#srvGo').textContent = mode === 'host' ? 'Start server' : 'Join';
-  err.textContent = ''; input.value = '';
+  err.textContent = ''; input.value = ''; $('#srvName').value = SAVE.settings.username || '';
   m.classList.remove('hidden'); m.dataset.mode = mode;
   if (GAME.state === 'play') { GAME.paused = true; exitLock(); }
   setTimeout(() => input.focus(), 30);
 }
 function mpCloseAsk() { $('#srvModal').classList.add('hidden'); if (GAME.state === 'play' && $('#pause').classList.contains('hidden') && $('#menu').classList.contains('hidden')) GAME.paused = false; clearKeys(); }
 async function mpSubmit() {
-  const mode = $('#srvModal').dataset.mode, num = $('#srvNum').value.trim(), err = $('#srvErr');
+  const mode = $('#srvModal').dataset.mode, num = $('#srvNum').value.trim(), err = $('#srvErr'), nm = cleanName($('#srvName').value);
+  if (!nm) { err.textContent = 'Type a username so other players know who you are.'; return; }
+  SAVE.settings.username = nm; persist();
   if (!/^\d{1,8}$/.test(num)) { err.textContent = 'Type a server number using digits only, like 4821.'; return; }
-  if (!MP.api) { err.textContent = MP.ready ? 'Multiplayer needs the game open on claude.ai while you are signed in.' : 'Still connecting. Try again in a second.'; return; }
-  if (mode === 'join' && !MP.servers.has(num)) { err.textContent = 'No server with that number is running right now. Check the number with the host.'; return; }
+  if (!MP.api) { err.textContent = !MP.ready ? 'Still connecting. Try again in a second.' : MP.web ? 'Could not load the multiplayer service. Check your internet connection and reload the page.' : 'Multiplayer needs the game open on claude.ai while you are signed in.'; return; }
+  if (mode === 'join' && !MP.web && !MP.servers.has(num)) { err.textContent = 'No server with that number is running right now. Check the number with the host.'; return; }
   $('#srvGo').disabled = true; err.textContent = mode === 'host' ? 'Starting…' : 'Joining…';
   try { await mpJoin(num, mode === 'host'); }
-  catch (e) { err.textContent = 'Could not connect to that server. Try again.'; $('#srvGo').disabled = false; return; }
+  catch (e) { const t = e && e.type; err.textContent = t === 'unavailable-id' ? 'Server ' + num + ' is already running. Pick another number, or press Join server instead.' : t === 'peer-unavailable' ? 'No server with that number is running right now. Check the number with the host.' : 'Could not connect to that server. Try again.'; $('#srvGo').disabled = false; return; }
   $('#srvGo').disabled = false; mpCloseAsk();
   closePause();
   if (GAME.state !== 'play') beginPlay(false);
@@ -5827,24 +5837,27 @@ async function mpSubmit() {
 }
 async function mpJoin(num, host) {
   await mpLeave(true);
-  const srv = await MP.api.join('pond-' + num);
+  const srv = MP.web ? await webJoin(num, host) : await MP.api.join('pond-' + num);
   MP.srv = srv; MP.num = num; MP.hosting = host;
-  if (host) MP.lobby.presence({ hosting: num }).catch(() => {});
+  if (host && MP.lobby) MP.lobby.presence({ hosting: num }).catch(() => {});
   MP.unsub.push(srv.onPeers(ch => mpPeers(ch), () => { toast('Lost the connection to the server.'); mpLeave(); }));
+  if (srv.peer) srv.peer.on('call', voiceIncoming);
   mpSend(true);
+  if (SAVE.settings.voice && SAVE.settings.voice !== 'off') voiceSetMode(SAVE.settings.voice, true);
 }
 async function mpLeave(quiet) {
   MP.unsub.forEach(u => { try { u(); } catch (e) {} }); MP.unsub = [];
   for (const r of MP.remotes.values()) mpRemoveRemote(r);
   MP.remotes.clear();
   if (MP.hosting && MP.lobby) MP.lobby.presence({ hosting: null }).catch(() => {});
+  voiceDropAll();
   const s = MP.srv; MP.srv = null; MP.num = null; MP.hosting = false;
   if (s) { try { await s.leave(); } catch (e) {} if (!quiet) toast('You left the server.'); }
   mpRefreshUI();
 }
 function mpState() {
   const p = PL.pos, st = PL.settled ? 's' : PL.diving ? 'd' : PL.inWater ? 'w' : PL.climbing ? 'c' : PL.onGround ? 'g' : 'a';
-  return { x: +p.x.toFixed(2), y: +p.y.toFixed(2), z: +p.z.toFixed(2), r: +PL.yaw.toFixed(2), sp: GAME.species, pt: GAME.pattern, sg: PL.stage, m: st, cr: MP.croakN, den: W.inBurrow ? 1 : 0, h: MP.hosting ? 1 : 0, t: +GAME.time.toFixed(2), wx: WEATHER.type, env: GAME.env, io: PL.insideOut ? 1 : 0 };
+  return { x: +p.x.toFixed(2), y: +p.y.toFixed(2), z: +p.z.toFixed(2), r: +PL.yaw.toFixed(2), sp: GAME.species, pt: GAME.pattern, sg: PL.stage, m: st, cr: MP.croakN, den: W.inBurrow ? 1 : 0, h: MP.hosting ? 1 : 0, t: +GAME.time.toFixed(2), wx: WEATHER.type, env: GAME.env, io: PL.insideOut ? 1 : 0, n: myName() };
 }
 function mpSend(force) {
   if (!MP.srv) return;
@@ -5856,8 +5869,9 @@ function mpPeers(ch) {
     if (p.isMe && p.sameTab) continue;
     const s = p.presence || {}; if (typeof s.x !== 'number') continue;
     let r = MP.remotes.get(p.peer);
-    if (!r) { r = { peer: p.peer, by: p.by, pos: new THREE.Vector3(s.x, s.y, s.z), yaw: s.r || 0, name: '' }; MP.remotes.set(p.peer, r); mpName(r); toast('A frog joined the server!', 'guide'); }
+    if (!r) { r = { peer: p.peer, by: p.by, pos: new THREE.Vector3(s.x, s.y, s.z), yaw: s.r || 0, name: cleanName(s.n) || '', named: !!cleanName(s.n) }; MP.remotes.set(p.peer, r); mpName(r); toast((r.name || 'A frog') + ' joined the server!', 'guide'); voiceConnect(p.peer); }
     r.s = s; r.target = new THREE.Vector3(s.x, s.y, s.z);
+    { const nm = cleanName(s.n); if (nm && nm !== r.name) { r.name = nm; r.named = true; if (r.tag) mpTag(r); } }
     if (!r.F || r.sp !== s.sp || r.pt !== s.pt || r.sg !== s.sg) mpBuildRemote(r);
     if (typeof s.cr === 'number' && r.cr !== undefined && s.cr !== r.cr) { r.croakT = s.sp === 'bull' ? 1.6 : 0.6; SFX.croak(SPECIES[s.sp] ? SPECIES[s.sp].croak : 'green', r.pos.clone(), true); W.lastNpcCroak = GAME.t; }
     r.cr = s.cr;
@@ -5870,8 +5884,9 @@ function mpPeers(ch) {
   mpRefreshUI();
 }
 async function mpName(r) {
+  if (r.named) return;
   r.name = 'Frog friend';
-  try { if (MP.user && r.by) { const ps = await MP.user.profiles([r.by]); const n = ps && ps[r.by] && ps[r.by].name; if (n) r.name = n; } } catch (e) {}
+  try { if (MP.user && r.by) { const ps = await MP.user.profiles([r.by]); const n = ps && ps[r.by] && ps[r.by].name; if (n && !r.named) r.name = n; } } catch (e) {}
   if (r.tag) mpTag(r);
 }
 function mpTag(r) {
@@ -5893,7 +5908,7 @@ function mpBuildRemote(r) {
   else { r.F = makeFrog(r.sp, r.pt); r.F.root.scale.setScalar(size); r.F.tail.visible = r.sg === 3; r.root.add(r.F.root); }
   r.size = size; mpTag(r); r.tag.position.y = 0.9 + size * 0.9;
 }
-function mpRemoveRemote(r) { if (r.root) scene.remove(r.root); }
+function mpRemoveRemote(r) { if (r.root) scene.remove(r.root); voiceDrop(r.peer); }
 function mpTick(dt) {
   if (!MP.srv) return;
   MP.sendT -= dt; if (MP.sendT <= 0) { MP.sendT = 0.1; mpSend(); }
@@ -5908,6 +5923,7 @@ function mpTick(dt) {
     r.yaw += angDiff(r.yaw, s.r || 0) * Math.min(1, dt * 10);
     const spd = before.distanceTo(r.pos) / Math.max(dt, 1e-3);
     r.root.position.copy(r.pos); r.root.rotation.y = r.yaw;
+    voiceUpdateRemote(r);
     r.ph = (r.ph || 0) + dt * (2 + spd * 3);
     r.croakT = Math.max(0, (r.croakT || 0) - dt);
     if (r.F) {
@@ -5922,6 +5938,162 @@ function mpTick(dt) {
     } else if (r.T) animTadpole(r.T, dt, Math.min(1, spd / 3));
   }
 }
+
+/* ---------- multiplayer outside claude.ai (e.g. on your own website):
+   peer-to-peer through PeerJS. The host's browser relays everyone's frog state. ---------- */
+function mpWebInit() {
+  MP.web = true; mpRefreshUI();
+  const load = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+  (window.Peer ? Promise.resolve() : load('https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js').catch(() => load('https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js')))
+    .then(() => { MP.api = window.Peer ? { web: true } : null; MP.ready = true; mpRefreshUI(); })
+    .catch(e => { console.warn('Pondlife: could not load PeerJS for multiplayer', e); MP.ready = true; mpRefreshUI(); });
+}
+function webJoin(num, host) {
+  return new Promise((resolve, reject) => {
+    const HOST_ID = 'pondlife-frog-server-' + num;
+    const peer = host ? new window.Peer(HOST_ID) : new window.Peer();
+    const S = { conns: new Map(), states: new Map(), mine: null, cbs: [], closeCbs: [], lastIds: new Set(), closed: false, myId: null, conn: null, bT: 0 };
+    let settled = false;
+    const timer = setTimeout(() => fail({ type: 'timeout' }), 15000);
+    function fail(e) { if (settled) return; settled = true; clearTimeout(timer); S.closed = true; try { peer.destroy(); } catch (_) {} reject(e); }
+    function ok() { if (settled) return; settled = true; clearTimeout(timer); resolve(api); }
+    function lost() { if (!S.closed) { S.closed = true; S.closeCbs.forEach(f => { try { f(); } catch (_) {} }); try { peer.destroy(); } catch (_) {} } }
+    function emit(list) {
+      const ids = new Set(list.map(p => p.peer));
+      const left = [...S.lastIds].filter(i => !ids.has(i)).map(peer => ({ peer })); S.lastIds = ids;
+      const ch = { peers: list, left }; S.cbs.forEach(cb => { try { cb(ch); } catch (e) { console.warn(e); } });
+    }
+    function hostList() { const list = [{ peer: HOST_ID, presence: S.mine || {}, isMe: true, sameTab: true }]; for (const [id, st] of S.states) list.push({ peer: id, presence: st, isMe: false }); return list; }
+    function hostBroadcast(force) {
+      const now = performance.now(); if (!force && now - S.bT < 90) return; S.bT = now;
+      const list = hostList(), msg = { t: 'p', list: list.map(p => ({ id: p.peer, s: p.presence })) };
+      for (const c of S.conns.values()) if (c.open) { try { c.send(msg); } catch (_) {} }
+      emit(list);
+    }
+    const api = {
+      peer, get myId() { return S.myId; },
+      presence(s) { S.mine = s; if (host) hostBroadcast(); else if (S.conn && S.conn.open) { try { S.conn.send({ t: 's', s }); } catch (_) {} } return Promise.resolve(); },
+      onPeers(cb, onClose) { S.cbs.push(cb); if (onClose) S.closeCbs.push(onClose); return () => { S.cbs = S.cbs.filter(f => f !== cb); S.closeCbs = S.closeCbs.filter(f => f !== onClose); }; },
+      leave() { S.closed = true; for (const c of S.conns.values()) { try { c.close(); } catch (_) {} } try { peer.destroy(); } catch (_) {} return Promise.resolve(); }
+    };
+    peer.on('open', id => {
+      S.myId = id;
+      if (host) { ok(); return; }
+      const c = peer.connect(HOST_ID, { reliable: true }); S.conn = c;
+      c.on('open', ok);
+      c.on('data', m => { if (m && m.t === 'p' && Array.isArray(m.list)) emit(m.list.map(p => ({ peer: p.id, presence: p.s, isMe: p.id === S.myId, sameTab: p.id === S.myId }))); });
+      c.on('close', lost); c.on('error', () => { if (!settled) fail({ type: 'peer-unavailable' }); else lost(); });
+    });
+    if (host) peer.on('connection', c => {
+      c.on('open', () => { S.conns.set(c.peer, c); hostBroadcast(true); });
+      c.on('data', m => { if (m && m.t === 's' && m.s && typeof m.s === 'object') S.states.set(c.peer, m.s); });
+      c.on('close', () => { S.conns.delete(c.peer); S.states.delete(c.peer); hostBroadcast(true); });
+    });
+    peer.on('error', e => { if (!settled) fail(e); else if (e && (e.type === 'network' || e.type === 'server-error' || e.type === 'socket-closed') && !host) lost(); });
+    peer.on('disconnected', () => { if (!S.closed) { try { peer.reconnect(); } catch (_) {} } });
+  });
+}
+
+/* ---------- usernames ---------- */
+function cleanName(v) { return typeof v === 'string' ? v.replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 20) : ''; }
+function myName() { return cleanName(SAVE.settings.username) || (MP.myProfileName || 'Frog'); }
+
+/* ---------- proximity voice chat (like Simple Voice Chat): you hear players near you, in 3D ---------- */
+const VC = { mode: 'off', stream: null, calls: new Map(), ptt: false, talking: false, an: null, buf: new Uint8Array(256), lvl: 0, hudT: 0 };
+const VOICE_RANGE = 48;
+async function voiceSetMode(mode, quiet) {
+  SAVE.settings.voice = mode; persist(); VC.mode = mode;
+  if (mode === 'off') { voiceStopMic(); voiceDropAll(); voiceHud(); return; }
+  if (!MP.web) { if (!quiet) toast('Voice chat works when the game is on your own website. Inside claude.ai only usernames are shared.'); voiceHud(); return; }
+  if (!(await voiceEnsureMic())) return;
+  voiceApplyTalk(); voiceConnectAll();
+  if (!quiet) toast(mode === 'ptt' ? 'Voice chat on. Hold B to talk.' : 'Voice chat on. Your microphone is always open.', 'quiet');
+}
+async function voiceEnsureMic() {
+  if (VC.stream) return true;
+  try {
+    VC.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+    audioInit(); if (AU.ctx) { const src = AU.ctx.createMediaStreamSource(VC.stream); VC.an = AU.ctx.createAnalyser(); VC.an.fftSize = 512; src.connect(VC.an); }
+    return true;
+  } catch (e) {
+    toast('Could not use your microphone. Allow microphone access for this page to use voice chat.');
+    VC.mode = 'off'; SAVE.settings.voice = 'off'; persist(); voiceHud(); return false;
+  }
+}
+function voiceStopMic() { if (VC.stream) { VC.stream.getTracks().forEach(t => t.stop()); VC.stream = null; VC.an = null; } }
+function voiceApplyTalk() {
+  const on = !!VC.stream && (VC.mode === 'open' || (VC.mode === 'ptt' && VC.ptt));
+  if (VC.stream) VC.stream.getAudioTracks().forEach(t => { t.enabled = on; });
+  VC.talking = on; voiceHud();
+}
+function voiceConnectAll() { for (const r of MP.remotes.values()) voiceConnect(r.peer); }
+function voiceConnect(id) {
+  const S = MP.srv; if (!MP.web || !S || !S.peer || !VC.stream || VC.mode === 'off' || VC.calls.has(id)) return;
+  if (!(String(S.myId) < String(id))) return; // only one side starts each call; the other answers
+  try { const call = S.peer.call(id, VC.stream); if (call) voiceHook(id, call); } catch (e) { console.warn('voice call failed', e); }
+}
+function voiceIncoming(call) {
+  if (VC.mode === 'off' || !VC.stream) { try { call.close(); } catch (e) {} return; }
+  if (VC.calls.has(call.peer)) voiceDrop(call.peer);
+  call.answer(VC.stream); voiceHook(call.peer, call);
+}
+function voiceHook(id, call) {
+  const v = { call }; VC.calls.set(id, v);
+  call.on('stream', rs => voiceAttach(id, v, rs));
+  call.on('close', () => { if (VC.calls.get(id) === v) voiceDrop(id); });
+  call.on('error', () => { if (VC.calls.get(id) === v) voiceDrop(id); });
+}
+function voiceAttach(id, v, rs) {
+  audioInit(); const c = AU.ctx; if (!c || v.src) return;
+  // Chrome only feeds remote WebRTC audio into Web Audio if it is also attached to a (muted) media element
+  v.el = new Audio(); v.el.srcObject = rs; v.el.muted = true; v.el.play().catch(() => {});
+  v.src = c.createMediaStreamSource(rs);
+  v.an = c.createAnalyser(); v.an.fftSize = 256; v.buf = new Uint8Array(256);
+  v.g = c.createGain(); v.g.gain.value = SAVE.settings.voiceVol === undefined ? 1 : SAVE.settings.voiceVol;
+  v.pn = c.createPanner(); v.pn.panningModel = 'HRTF'; v.pn.distanceModel = 'linear'; v.pn.refDistance = 4; v.pn.maxDistance = VOICE_RANGE; v.pn.rolloffFactor = 1;
+  v.src.connect(v.an); v.src.connect(v.g); v.g.connect(v.pn); v.pn.connect(AU.master);
+  voiceHud();
+}
+function voiceDrop(id) {
+  const v = VC.calls.get(id); if (!v) return; VC.calls.delete(id);
+  try { v.call.close(); } catch (e) {}
+  try { v.src && v.src.disconnect(); v.g && v.g.disconnect(); v.pn && v.pn.disconnect(); } catch (e) {}
+  if (v.el) { v.el.srcObject = null; }
+  const r = MP.remotes.get(id); if (r && r.spk) r.spk.visible = false;
+  voiceHud();
+}
+function voiceDropAll() { for (const id of [...VC.calls.keys()]) voiceDrop(id); }
+function voiceVolume() { const g = SAVE.settings.voiceVol === undefined ? 1 : SAVE.settings.voiceVol; for (const v of VC.calls.values()) if (v.g) v.g.gain.value = g; }
+function voiceLevel(an, buf) { an.getByteTimeDomainData(buf); let s = 0; for (let i = 0; i < buf.length; i++) { const d = (buf[i] - 128) / 128; s += d * d; } return Math.sqrt(s / buf.length); }
+// place each voice where that player's frog is, and show a speaker icon above them while they talk
+function voiceUpdateRemote(r) {
+  const v = VC.calls.get(r.peer); if (!v || !v.pn) return;
+  const s = r.s || {}, apart = !!s.den !== !!W.inBurrow || (s.x > SEA_EDGE) !== (PL.pos.x > SEA_EDGE) || (W.inBurrow && s.den);
+  setPos(v.pn, r.pos.x, r.pos.y + 0.5, r.pos.z);
+  v.g.gain.value = apart ? 0 : (SAVE.settings.voiceVol === undefined ? 1 : SAVE.settings.voiceVol);
+  const talking = !apart && voiceLevel(v.an, v.buf) > 0.03;
+  if (!r.spk) {
+    const c = mkCanvas(64, 64), x = c.getContext('2d'); x.fillStyle = '#9fd15b'; x.beginPath(); x.moveTo(14, 26); x.lineTo(24, 26); x.lineTo(36, 14); x.lineTo(36, 50); x.lineTo(24, 38); x.lineTo(14, 38); x.closePath(); x.fill();
+    x.strokeStyle = '#9fd15b'; x.lineWidth = 4; x.lineCap = 'round'; for (const rr2 of [8, 15]) { x.beginPath(); x.arc(38, 32, rr2, -0.8, 0.8); x.stroke(); }
+    r.spk = new THREE.Sprite(new THREE.SpriteMaterial({ map: canvasTex(c), transparent: true, depthTest: false, fog: false })); r.spk.scale.setScalar(0.7); r.spk.renderOrder = 11; r.root.add(r.spk);
+  }
+  r.spk.visible = talking; r.spk.position.y = (r.tag ? r.tag.position.y : 1.5) + 0.65;
+}
+function voiceHud() {
+  const el = $('#voiceHud'); if (!el) return;
+  const on = !!MP.srv && VC.mode !== 'off' && MP.web && GAME.state === 'play';
+  el.hidden = !on; if (!on) return;
+  const n = [...VC.calls.values()].filter(v => v.src).length;
+  el.classList.toggle('talk', VC.talking && VC.lvl > 0.02);
+  $('#voiceText').textContent = (!VC.stream ? 'Mic off' : VC.mode === 'ptt' ? (VC.ptt ? 'Talking…' : 'Hold B to talk') : 'Mic on') + ' · ' + n + (n === 1 ? ' voice' : ' voices');
+}
+function voiceTick(dt) {
+  if (VC.an && VC.talking) VC.lvl = voiceLevel(VC.an, VC.buf); else VC.lvl = 0;
+  VC.hudT -= dt; if (VC.hudT <= 0) { VC.hudT = 0.2; voiceHud(); }
+}
+addEventListener('keydown', e => { if (e.code !== 'KeyB' || e.repeat || (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT'))) return; if (VC.mode === 'ptt') { VC.ptt = true; voiceApplyTalk(); } });
+addEventListener('keyup', e => { if (e.code !== 'KeyB') return; if (VC.ptt) { VC.ptt = false; voiceApplyTalk(); } });
+addEventListener('blur', () => { if (VC.ptt) { VC.ptt = false; voiceApplyTalk(); } });
 /* ============================================================
    Camera, visuals, HUD, menus, input, boot
    ============================================================ */
@@ -6316,7 +6488,12 @@ function renderPause() {
     '<div class="row"><label for="sWx">Weather</label><select id="sWx">' + opt('auto', WEATHER.lock, 'Changes naturally') + Object.keys(WTYPES).map(k => opt(k, WEATHER.lock, 'Always ' + WTYPES[k].name.toLowerCase())).join('') + '</select></div>' +
     '<div class="row"><label for="sTime">Time of day</label><input type="range" id="sTime" min="0" max="23.9" step="0.1" value="' + GAME.time.toFixed(1) + '"></div>' +
     '<div class="btnrow"><button class="btn" id="pHome">Return home</button><button class="btn" id="pQuit">Save and quit to title</button></div>' +
-    '<div class="sect">Multiplayer</div><div class="btnrow" style="justify-content:flex-start;margin:0"><button class="btn" id="pHost">Start a server</button><button class="btn" id="pJoin" hidden>Join server</button><button class="btn" id="pLeave" hidden>Leave server</button></div>' +
+    '<div class="sect">Multiplayer</div>' +
+    '<div class="row"><label for="sName">Username</label><input id="sName" maxlength="20" autocomplete="nickname" value="' + (s.username || '').replace(/[&<>"]/g, '') + '" placeholder="Your frog name"></div>' +
+    '<div class="row"><label for="sVoice">Voice chat</label><select id="sVoice">' + opt('off', s.voice, 'Off') + opt('ptt', s.voice, 'Push to talk (hold B)') + opt('open', s.voice, 'Always on (open mic)') + '</select></div>' +
+    '<div class="row"><label for="sVoiceVol">Voice volume</label><input type="range" id="sVoiceVol" min="0" max="2" step="0.05" value="' + (s.voiceVol === undefined ? 1 : s.voiceVol) + '"></div>' +
+    '<p class="note" style="margin:0 0 8px">' + (MP.web ? 'Proximity voice: you hear frogs near you, louder the closer they are, from the direction they are in.' : 'Voice chat works when the game is on your own website. Inside claude.ai only usernames are shared.') + '</p>' +
+    '<div class="btnrow" style="justify-content:flex-start;margin:0"><button class="btn" id="pHost">Start a server</button><button class="btn" id="pJoin" hidden>Join server</button><button class="btn" id="pLeave" hidden>Leave server</button></div>' +
     '<div class="sect">Danger zone</div><div id="resetBox"><button class="btn danger" id="pReset">Reset all progress</button></div>';
   const on = (id, ev, f) => $(id).addEventListener(ev, f);
   on('#pResume', 'click', closePause);
@@ -6331,6 +6508,9 @@ function renderPause() {
   on('#sTime', 'input', e => { GAME.time = +e.target.value; });
   on('#pHome', 'click', () => { closePause(); fadeTo(() => { W.inBurrow = false; W.chamber.visible = false; const s2 = spawnPoint(); if (PL.stage <= 2) placePlayer(-14, 27, -0.6); else placePlayer(s2[0], s2[1], s2[2]); CAM.snap = true; }); });
   on('#pQuit', 'click', () => { saveRun(); closePause(); mpLeave(true); showTitle(); });
+  on('#sName', 'change', e => { s.username = cleanName(e.target.value); e.target.value = s.username; persist(); mpSend(true); });
+  on('#sVoice', 'change', e => voiceSetMode(e.target.value));
+  on('#sVoiceVol', 'input', e => { s.voiceVol = +e.target.value; persist(); voiceVolume(); });
   on('#pHost', 'click', () => mpAsk('host')); on('#pJoin', 'click', () => mpAsk('join')); on('#pLeave', 'click', () => { mpLeave(); closePause(); });
   mpRefreshUI();
   on('#pReset', 'click', () => {
@@ -6483,7 +6663,7 @@ function tick(dt) {
   if (GAME.nightWatch && GAME.time >= 6 && GAME.time < 7) { GAME.nightWatch = false; SAVE.stats.nights++; unlockAch('night_owl'); }
   updateWeather(dt);
   W.inCave = !W.inBurrow && Math.hypot(PL.pos.x - CAVE.x, PL.pos.z - CAVE.z) < CAVE_WALL;
-  updatePlayer(dt); seaTick(dt); denTick(dt); roomTick(dt); roomTick2(dt); fishRoomTick(dt); regionTick(dt); roomTick3(dt); pickupTick(dt); mpTick(dt); updateTongue(dt); findAim(); findInteract(); digTick(dt);
+  updatePlayer(dt); seaTick(dt); denTick(dt); roomTick(dt); roomTick2(dt); fishRoomTick(dt); regionTick(dt); roomTick3(dt); pickupTick(dt); mpTick(dt); voiceTick(dt); updateTongue(dt); findAim(); findInteract(); digTick(dt);
   if (PL.settled) GAME.time += dt * 24 / (SAVE.settings.dayLen * 60) * 6;
   updateInsects(dt);
   for (const c of CREATURES) {
