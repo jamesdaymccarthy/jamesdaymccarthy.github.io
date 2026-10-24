@@ -9,6 +9,9 @@
 # smaller so the game fills more of the picture:
 #   CARD_WIDTH=800 tools/card.sh ...     (any width from 640 up)
 #
+# To scroll down to part of the page first (like the game's canvas), name it:
+#   CARD_SCROLL=canvas tools/card.sh ...
+#
 # The button is a CSS selector like "#go" or ".start-button". It gets clicked
 # as soon as the game loads (to get past a start screen). This only works for
 # pages inside this repo.
@@ -21,6 +24,7 @@ page="$1"
 out="$2"
 wait_seconds="${3:-3}"
 click="${4:-}"
+scroll="${CARD_SCROLL:-}"
 width="${CARD_WIDTH:-1280}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 page_abs="$(realpath "$page")"
@@ -41,16 +45,20 @@ if [[ "$page_abs" == "$root"/* ]]; then
   server_pid=$!
   sleep 1
   url="http://localhost:$port/${page_abs#"$root"/}"
-  if [[ -n "$click" ]]; then
-    # A tiny page that shows the game in an <iframe> and clicks the button.
+  if [[ -n "$click" || -n "$scroll" ]]; then
+    # A tiny page that shows the game in an <iframe>, then clicks the button
+    # and scrolls (if we asked it to).
     wrapper="$root/.card-wrapper-$$.html"
     cat > "$wrapper" <<HTML
 <!doctype html>
 <style>html, body, iframe { margin: 0; border: 0; width: 100%; height: 100%; display: block; overflow: hidden; }</style>
 <iframe src="$url"></iframe>
 <script>
-  document.querySelector("iframe").onload = event =>
-    event.target.contentDocument.querySelector("$click").click();
+  document.querySelector("iframe").onload = event => {
+    const game = event.target.contentDocument;
+    if ("$click") game.querySelector("$click").click();
+    if ("$scroll") game.querySelector("$scroll").scrollIntoView({ block: "center" });
+  };
 </script>
 HTML
     url="http://localhost:$port/$(basename "$wrapper")"
