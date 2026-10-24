@@ -68,11 +68,20 @@ Ask where the game is. It might be:
   computer), then go to https://packager.turbowarp.org, load it, choose
   "Plain HTML", and package it. The resulting `.html` becomes `index.html`.
   Walk them through it step by step.
-- **PICO-8.** In PICO-8, load the cart and type `export <name>.html`. That
-  makes `<name>.html` and `<name>.js`. Copy both, and rename the `.html` to
-  `index.html` (the `.js` keeps its name). For the card, press **F6** while the
-  game is running to save a screenshot (or **F7** to capture the cart label),
-  Screenshots go to the desktop folder (usually `~/Desktop`).
+- **PICO-8.** Carts live in `~/Dev/pico-8/` (its own git repo). **Never move
+  or change them.** Copy the `.p8` into the scratchpad and export there. PICO-8 is at
+  `~/Downloads/pico-8/pico8`:
+  `cd <scratch> && ~/Downloads/pico-8/pico8 -home <scratch>/home cart.p8 -export "-f cart.html"`
+  This makes `cart_html/index.html` and `cart_html/cart.js`. Copy both into
+  `games/<folder>/`. Test that it plays.
+  - PICO-8 refuses to export without a **label** ("please capture a label
+    first"). Check with `grep -c '^__label__' cart.p8`. If it's missing, the
+    kid has to add one: `load` the cart, `run`, press **F7** at a cool moment,
+    then Esc and `save`. Don't make a label for them; it's their cart's cover art.
+  - **Card:** `python3 tools/p8_label.py cart.p8 games/<folder>/card.png` turns
+    the label into a card (pixels made 3x bigger, on black).
+  - **Date:** `git -C ~/Dev/pico-8 log --follow --date=short -- cart.p8`
+    shows when it was started and changed. Ask which date to use.
 - **TIC-80.** Use `export html <name>` in TIC-80 (it makes a `.zip`). Unzip it into
   the folder. It should already have an `index.html`.
 
