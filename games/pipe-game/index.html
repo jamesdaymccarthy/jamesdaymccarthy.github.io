@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLOWLINE — Pipe Puzzle</title>
+<style>
+  :root{
+    --bg: #0a0e14;
+    --panel: #10161f;
+    --pipe: #2a3340;
+    --pipe-edge: #3d4a5c;
+    --text: #cfe3ee;
+    --text-dim: #6d7f92;
+    --danger: #ff5c6c;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background: radial-gradient(circle at 50% 0%, #131a24 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: 'Courier New', ui-monospace, Menlo, monospace;
+    overflow-y:auto; overflow-x:hidden;
+    user-select: none;
+  }
+  #app{
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    min-height:100%; width:100%; padding: 12px; gap: 8px;
+  }
+  #hud{
+    display:flex; align-items:center; justify-content:space-between;
+    width: 100%; max-width: 560px;
+    padding: 10px 16px;
+    background: linear-gradient(180deg, var(--panel), #0c1119);
+    border: 1px solid #1c2531;
+    border-radius: 10px;
+    letter-spacing: 1px;
+  }
+  #title{
+    font-weight:bold; font-size:15px; color: #8ff5ff;
+    text-shadow: 0 0 8px rgba(53,224,255,0.5);
+  }
+  .stat{ font-size:12px; color: var(--text-dim); text-align:center; }
+  .stat b{ display:block; font-size:16px; color: var(--text); font-weight:bold; }
+  #legend{
+    display:flex; gap: 14px; align-items:center; flex-wrap:wrap;
+    width: 100%; max-width: 560px;
+    padding: 4px 16px;
+    font-size: 11px; color: var(--text-dim); letter-spacing: 1px;
+    min-height: 16px;
+  }
+  .legendItem{ display:flex; align-items:center; gap:6px; }
+  .legendDot{ width:9px; height:9px; border-radius:50%; box-shadow: 0 0 8px currentColor; }
+  #boardWrap{
+    position:relative;
+    background: linear-gradient(180deg, var(--panel), #0b0f16);
+    border: 1px solid #1c2531;
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.7), inset 0 0 40px rgba(0,0,0,0.3);
+  }
+  canvas{ display:block; border-radius: 6px; touch-action: manipulation; }
+  #overlay{
+    position:absolute; inset:10px;
+    display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:8px;
+    background: rgba(6,9,14,0.72);
+    border-radius:6px;
+    opacity:0; pointer-events:none;
+    transition: opacity 0.35s ease;
+  }
+  #overlay.show{ opacity:1; pointer-events:all; }
+  #overlayText{
+    font-size:22px; font-weight:bold; color: #3ddc84;
+    text-shadow: 0 0 16px rgba(61,220,132,0.7);
+    letter-spacing: 2px;
+  }
+  #overlaySub{ font-size:12px; color: var(--text-dim); }
+  .controls{ display:flex; gap: 8px; flex-wrap:wrap; justify-content:center; max-width:560px; }
+  button{
+    font-family: inherit; font-size: 12px; letter-spacing:1px;
+    background: #161e2a; color: var(--text);
+    border: 1px solid #2a3546;
+    padding: 8px 14px; border-radius: 8px; cursor:pointer;
+    transition: all 0.15s ease;
+  }
+  button:hover{ background:#1c2634; border-color:#3b4a5f; color:#8ff5ff; }
+  button:active{ transform: scale(0.96); }
+  button.brushBtn{ padding: 6px 10px; font-size:11px; }
+  button.brushBtn.selected{ background:#22304a; box-shadow: inset 0 0 0 2px currentColor; }
+  #editorPalette{
+    display:none; flex-wrap:wrap; gap:6px; justify-content:center;
+    max-width: 560px; padding: 8px; background: var(--panel);
+    border: 1px solid #1c2531; border-radius: 10px;
+  }
+  .paletteDivider{ width:100%; height:1px; background:#1c2531; margin:2px 0; }
+  .customFluidInput{
+    font-family: inherit; font-size:11px; background:#0c1119; color:var(--text);
+    border:1px solid #2a3546; border-radius:6px; padding:6px 8px; width:100px;
+  }
+  .customFluidColor{
+    width:34px; height:30px; padding:2px; background:#0c1119; border:1px solid #2a3546; border-radius:6px; cursor:pointer;
+  }
+  #sizeLabel{ font-size:12px; color: var(--text-dim); align-self:center; padding:0 4px; }
+  #editorStatus{ font-size:12px; min-height:14px; letter-spacing: 0.5px; }
+  #editorStatus.ok{ color:#3ddc84; }
+  #editorStatus.warn{ color:#ff5c6c; }
+  #jsonArea{
+    display:none; width:100%; max-width:560px; height:110px;
+    background:#0c1119; color:var(--text); border:1px solid #2a3546; border-radius:8px;
+    font-family: inherit; font-size:11px; padding:8px;
+  }
+  #hint{ font-size:11px; color: var(--text-dim); letter-spacing: 0.5px; text-align:center; max-width:520px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="hud">
+    <div id="title">FLOWLINE</div>
+    <div class="stat" id="modeStatWrap">LEVEL<b id="lvlStat">1</b></div>
+    <div class="stat">MOVES<b id="movesStat">0</b></div>
+    <div class="stat">TIME<b id="timeStat">0:00</b></div>
+  </div>
+  <div id="legend"></div>
+  <div id="boardWrap">
+    <canvas id="board"></canvas>
+    <div id="overlay">
+      <div id="overlayText">CONNECTED</div>
+      <div id="overlaySub">advancing...</div>
+    </div>
+  </div>
+
+  <div class="controls" id="playControls">
+    <button id="editorToggleBtn">Level Editor</button>
+    <button id="shuffleBtn">Reshuffle</button>
+    <button id="restartBtn">Restart Level</button>
+  </div>
+
+  <div class="controls" id="editorControls" style="display:none">
+    <button id="playToggleBtn">Back to Play</button>
+    <button id="testBtn">Test Level</button>
+    <button id="clearBtn">Clear</button>
+    <button id="sizeMinusBtn">Size −</button>
+    <span id="sizeLabel">6×6</span>
+    <button id="sizePlusBtn">Size +</button>
+    <button id="exportBtn">Export</button>
+    <button id="importBtn">Import</button>
+  </div>
+
+  <div id="editorPalette"></div>
+  <div id="editorStatus"></div>
+  <textarea id="jsonArea" spellcheck="false"></textarea>
+
+  <div class="controls" id="testControls" style="display:none">
+    <button id="backToEditorBtn">Back to Editor</button>
+    <button id="testReshuffleBtn">Reshuffle</button>
+  </div>
+
+  <div id="hint">click / tap a pipe to rotate it — connect every source to its matching outlet</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Audio ----------
+  let actx = null;
+  function ac(){ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+  function tone(freq, dur, type, vol, delay){
+    delay = delay||0;
+    try{
+      const c = ac();
+      const t0 = c.currentTime + delay;
+      const osc = c.createOscillator();
+      const gain = c.createGain();
+      osc.type = type||'square';
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(vol||0.06, t0+0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+      osc.connect(gain); gain.connect(c.destination);
+      osc.start(t0); osc.stop(t0+dur+0.02);
+    }catch(e){}
+  }
+  function clickSound(){ tone(320,0.05,'square',0.05); tone(480,0.04,'square',0.03,0.02); }
+  function winSound(){ [523,659,784,1046].forEach((f,i)=> tone(f, 0.16, 'square', 0.06, i*0.09)); }
+  function badSound(){ tone(150,0.12,'sawtooth',0.05); }
+  function liquidJoinSound(idx){ tone(300+idx*140, 0.09, 'triangle', 0.045); }
+  function mixSound(){ tone(260,0.05,'sawtooth',0.05); tone(390,0.07,'triangle',0.05,0.05); }
+  function placeSound(){ tone(700,0.03,'square',0.03); }
+
+  // ---------- Liquids ----------
+  const LIQUIDS = [
+    { name:'AQUA',  color:'#35e0ff', glow:'#8ff5ff' },
+    { name:'MAGMA', color:'#ff6a3d', glow:'#ffb18f' },
+    { name:'ACID',  color:'#9dff35', glow:'#d4ffa8' },
+    { name:'VOLT',  color:'#c86bff', glow:'#e3b3ff' }
+  ];
+
+  // ---------- Direction helpers ----------
+  const DIRS = ['N','E','S','W'];
+  const DELTA = { N:{x:0,y:-1}, E:{x:1,y:0}, S:{x:0,y:1}, W:{x:-1,y:0} };
+  const OPP = { N:'S', S:'N', E:'W', W:'E' };
+  function rotDir(d, times){ times=((times%4)+4)%4; return DIRS[(DIRS.indexOf(d)+times)%4]; }
+  function rotSet(set, times){ return set.map(d=>rotDir(d,times)); }
+  function sameSet(a,b){
+    if(a.length!==b.length) return false;
+    return [...a].sort().join('')===[...b].sort().join('');
+  }
+  const BASE = {
+    straight:['N','S'],
+    elbow:['N','E'],
+    tee:['N','E','S'],
+    quad:['N','E','S','W'],
+    cap:['N'],
+    mixer:['N','E','S']
+  };
+  const ROTATABLE_TYPES = ['straight','elbow','tee','quad','cap','mixer'];
+  function findRotationForTarget(type, target){
+    for(let r=0;r<4;r++) if(sameSet(rotSet(BASE[type], r), target)) return r;
+    return 0;
+  }
+  function axisOf(pair){ return pair.includes('N') ? 'NS' : 'EW'; }
+  function key(x,y){ return x+','+y; }
+  function inBounds(x,y,size){ return x>=0 && y>=0 && x<size && y<size; }
+
+  function mixerRoles(rotation){
+    const dirs = rotSet(BASE.mixer, rotation);
+    for(const d of dirs){
+      if(dirs.includes(OPP[d])){
+        return { inputs:[d, OPP[d]], output: dirs.find(x=>x!==d && x!==OPP[d]) };
+      }
+    }
+    return { inputs:[dirs[0],dirs[1]], output:dirs[2] };
+  }
+
+  function hexToRgb(hex){
+    hex = hex.replace('#','');
+    return [parseInt(hex.substr(0,2),16), parseInt(hex.substr(2,2),16), parseInt(hex.substr(4,2),16)];
+  }
+  function blendColors(hexA, hexB){
+    const a = hexToRgb(hexA), b = hexToRgb(hexB);
+    return 'rgb('+Math.round((a[0]+b[0])/2)+','+Math.round((a[1]+b[1])/2)+','+Math.round((a[2]+b[2])/2)+')';
+  }
+  function lighten(hex, amt){
+    const [r,g,b] = hexToRgb(hex);
+    const lr = Math.min(255, r + (255-r)*amt);
+    const lg = Math.min(255, g + (255-g)*amt);
+    const lb = Math.min(255, b + (255-b)*amt);
+    return 'rgb('+Math.round(lr)+','+Math.round(lg)+','+Math.round(lb)+')';
+  }
+  function lighten(hex, amt){
+    const [r,g,b] = hexToRgb(hex);
+    const nr = Math.round(r + (255-r)*amt), ng = Math.round(g + (255-g)*amt), nb = Math.round(b + (255-b)*amt);
+    return 'rgb('+nr+','+ng+','+nb+')';
+  }
+
+  const BUILTIN_LIQUID_COUNT = 4; // procedural play-mode levels only ever use the built-in liquids
+  const MAX_LIQUIDS = 8; // custom fluids cap, keeps the editor palette manageable
+
+  // ---------- Game state ----------
+  let mode = 'play'; // 'play' | 'editor' | 'test'
+  let level = 1;
+  let gridSize = 5;
+  let grid = [];
+  let sources = []; // sparse array indexed by liquid id
+  let sinks = [];
+  let solvedFlags = new Array(LIQUIDS.length).fill(false);
+  let moves = 0;
+  let startTime = Date.now();
+  let allSolved = false;
+  let cellPx = 70;
+  let animRotations = {};
+  const ROT_ANIM_MS = 150;
+
+  let editorSize = 6;
+  let currentBrush = 'straight';
+
+  function activeLiquidIndices(){
+    const arr=[];
+    for(let i=0;i<LIQUIDS.length;i++) if(sources[i]) arr.push(i);
+    return arr;
+  }
+
+  function activeLiquidCount(lvl){ return Math.min(BUILTIN_LIQUID_COUNT, 1 + Math.floor((lvl-1)/5)); }
+
+  function getConnections(cell, liquidIdx){
+    if(!cell) return [];
+    if(cell.type==='source'){
+      return cell.liquid===liquidIdx ? [cell.fixedDir] : [];
+    }
+    if(cell.type==='sink'){
+      return cell.liquids && cell.liquids[liquidIdx]!==undefined ? [cell.liquids[liquidIdx]] : [];
+    }
+    if(BASE[cell.type]) return rotSet(BASE[cell.type], cell.rotation||0);
+    return [];
+  }
+
+  function genericConnections(cell){
+    // liquid-agnostic connection set for plain pipe types (used for downstream mixer flow)
+    if(!cell) return [];
+    if(BASE[cell.type] && cell.type!=='mixer') return rotSet(BASE[cell.type], cell.rotation||0);
+    return [];
+  }
+
+  function dirBetween(a,b){
+    if(b.x>a.x) return 'E';
+    if(b.x<a.x) return 'W';
+    if(b.y>a.y) return 'S';
+    return 'N';
+  }
+
+  function pickPair(count){
+    const idxs=[...Array(count).keys()];
+    for(let i=idxs.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const tmp=idxs[i]; idxs[i]=idxs[j]; idxs[j]=tmp; }
+    return [idxs[0], idxs[1]];
+  }
+
+  // ---------- Level generation (procedural play mode) ----------
+  function attemptGenerate(size, count){
+    const liqSrc = [];
+    for(let i=0;i<count;i++){
+      const edge = i;
+      let sx,sy;
+      if(edge===0){ sx=0; sy=Math.floor(Math.random()*size); }
+      else if(edge===1){ sx=Math.floor(Math.random()*size); sy=0; }
+      else if(edge===2){ sx=size-1; sy=Math.floor(Math.random()*size); }
+      else { sx=Math.floor(Math.random()*size); sy=size-1; }
+      liqSrc.push({x:sx,y:sy});
+    }
+    const used = new Set(liqSrc.map(p=>key(p.x,p.y)));
+    if(used.size !== count) return null;
+
+    const combinedPair = (count>=2 && Math.random()<0.45) ? pickPair(count) : null;
+    let combinedSinkPos = null;
+    const liqSink = [];
+
+    for(let i=0;i<count;i++){
+      if(combinedPair && combinedPair.includes(i)){
+        if(!combinedSinkPos){
+          let ex,ey,tries=0;
+          do{
+            ex = 1+Math.floor(Math.random()*Math.max(1,size-2));
+            ey = 1+Math.floor(Math.random()*Math.max(1,size-2));
+            tries++;
+          } while(used.has(key(ex,ey)) && tries<25);
+          if(used.has(key(ex,ey))) return null;
+          combinedSinkPos = {x:ex,y:ey};
+          used.add(key(ex,ey));
+        }
+        liqSink.push({x:combinedSinkPos.x, y:combinedSinkPos.y});
+      } else {
+        const edge = i;
+        let ex,ey,tries=0;
+        do{
+          if(edge===0){ ex=size-1; ey=Math.floor(Math.random()*size); }
+          else if(edge===1){ ex=Math.floor(Math.random()*size); ey=size-1; }
+          else if(edge===2){ ex=0; ey=Math.floor(Math.random()*size); }
+          else { ex=Math.floor(Math.random()*size); ey=0; }
+          tries++;
+        } while(used.has(key(ex,ey)) && tries<25);
+        if(used.has(key(ex,ey))) return null;
+        liqSink.push({x:ex,y:ey});
+        used.add(key(ex,ey));
+      }
+    }
+
+    const occ = Array.from({length:size},()=>Array(size).fill(null));
+    for(let i=0;i<count;i++){
+      occ[liqSrc[i].y][liqSrc[i].x] = { blocked:true, kind:'endpoint' };
+      occ[liqSink[i].y][liqSink[i].x] = { blocked:true, kind:'endpoint' };
+    }
+
+    function tryStep(cx,cy,d,ex,ey){
+      const nx=cx+DELTA[d].x, ny=cy+DELTA[d].y;
+      if(!inBounds(nx,ny,size)) return null;
+      if(nx===ex && ny===ey) return { kind:'normal', x:nx, y:ny };
+      const o = occ[ny][nx];
+      if(!o) return { kind:'normal', x:nx, y:ny };
+      if(o.blocked) return null;
+      if(o.kind==='straight'){
+        const newPair = [OPP[d], d];
+        if(axisOf(o.pair)===axisOf(newPair)) return null;
+        const bx=nx+DELTA[d].x, by=ny+DELTA[d].y;
+        if(!inBounds(bx,by,size)) return null;
+        const beyond = occ[by][bx];
+        if(beyond) return null;
+        return { kind:'cross', crossX:nx, crossY:ny, x:bx, y:by };
+      }
+      return null;
+    }
+
+    function dfsPath(liquidIdx, sx, sy, ex, ey){
+      const visited = new Set([key(sx,sy)]);
+      let budget = 4000;
+      function rec(cx,cy,path){
+        if(budget-- <= 0) return null;
+        if(cx===ex && cy===ey) return path;
+        const dirs = [...DIRS].sort(()=>Math.random()-0.5);
+        for(const d of dirs){
+          const step = tryStep(cx,cy,d,ex,ey);
+          if(!step) continue;
+          if(visited.has(key(step.x,step.y))) continue;
+          visited.add(key(step.x,step.y));
+          let nextPath;
+          if(step.kind==='normal'){
+            nextPath = rec(step.x, step.y, [...path, {x:step.x,y:step.y}]);
+          } else {
+            nextPath = rec(step.x, step.y, [...path, {x:step.crossX,y:step.crossY,isCross:true}, {x:step.x,y:step.y}]);
+          }
+          if(nextPath) return nextPath;
+          visited.delete(key(step.x,step.y));
+          if(budget<=0) return null;
+        }
+        return null;
+      }
+      return rec(sx,sy,[{x:sx,y:sy}]);
+    }
+
+    const paths = [];
+    for(let i=0;i<count;i++){
+      const p = dfsPath(i, liqSrc[i].x, liqSrc[i].y, liqSink[i].x, liqSink[i].y);
+      if(!p) return null;
+      paths.push(p);
+      for(let j=1;j<p.length-1;j++){
+        const node = p[j];
+        if(node.isCross){
+          occ[node.y][node.x] = { kind:'straight', pair:['N','S'], blocked:true }; // axis irrelevant once crossed
+        } else {
+          const prevDir = dirBetween(node, p[j-1]);
+          const nextDir = dirBetween(node, p[j+1]);
+          const pair = [prevDir, nextDir];
+          const isStraight = OPP[prevDir]===nextDir;
+          occ[node.y][node.x] = isStraight ? { kind:'straight', pair } : { blocked:true, kind:'elbow' };
+        }
+      }
+    }
+
+    return { liqSrc, liqSink, paths };
+  }
+
+  function buildGridFromPaths(size, count, paths){
+    const g = Array.from({length:size},()=>Array(size).fill(null));
+    const srcArr = new Array(count), sinkArr = new Array(count);
+
+    for(let i=0;i<count;i++){
+      const p = paths[i];
+      const first = p[0], second = p[1];
+      const fixedDirSrc = dirBetween(first, {x:second.x, y:second.y});
+      g[first.y][first.x] = { type:'source', liquid:i, fixedDir: fixedDirSrc, wetSet:[] };
+      srcArr[i] = {x:first.x,y:first.y,fixedDir:fixedDirSrc};
+
+      const last = p[p.length-1], secondLast = p[p.length-2];
+      const fixedDirSink = dirBetween(last, {x:secondLast.x, y:secondLast.y});
+      if(g[last.y][last.x] && g[last.y][last.x].type==='sink'){
+        g[last.y][last.x].liquids[i] = fixedDirSink;
+      } else {
+        g[last.y][last.x] = { type:'sink', liquids:{ [i]: fixedDirSink }, wetSet:[] };
+      }
+      sinkArr[i] = {x:last.x,y:last.y,fixedDir:fixedDirSink};
+
+      for(let j=1;j<p.length-1;j++){
+        const node = p[j];
+        if(node.isCross){
+          if(!g[node.y][node.x] || g[node.y][node.x].type!=='cross'){
+            g[node.y][node.x] = { type:'cross', wetSet:[], wetAxis:{NS:null,EW:null} };
+          }
+        } else {
+          const prevDir = dirBetween(node, p[j-1]);
+          const nextDir = dirBetween(node, p[j+1]);
+          const pair = [prevDir, nextDir];
+          const isStraight = OPP[prevDir]===nextDir;
+          const type = isStraight ? 'straight' : 'elbow';
+          const scrambled = Math.floor(Math.random()*4);
+          g[node.y][node.x] = { type, rotation: scrambled, wetSet:[], correctPair: pair };
+        }
+      }
+    }
+
+    const decoyTypes = ['straight','elbow','tee','quad','cap'];
+    const decoyWeights = [0.38,0.38,0.13,0.05,0.06];
+    function pickDecoyType(){
+      let r = Math.random(), acc=0;
+      for(let k=0;k<decoyTypes.length;k++){ acc+=decoyWeights[k]; if(r<acc) return decoyTypes[k]; }
+      return 'straight';
+    }
+    for(let y=0;y<size;y++){
+      for(let x=0;x<size;x++){
+        if(!g[y][x]){
+          const type = pickDecoyType();
+          g[y][x] = { type, rotation: Math.floor(Math.random()*4), wetSet:[] };
+        }
+      }
+    }
+
+    return { g, srcArr, sinkArr };
+  }
+
+  function generateLevel(){
+    level = Math.max(1, level);
+    let count = activeLiquidCount(level);
+    let size = Math.min(5 + Math.floor((level-1)/2) + (count-1), 9);
+
+    let result = null, attempts = 0;
+    while(!result && attempts < 90){
+      result = attemptGenerate(size, count);
+      attempts++;
+      if(!result && attempts % 15 === 0 && size < 9) size++;
+    }
+    if(!result){
+      size = 9;
+      let lc = count;
+      while(!result && lc>=1){
+        for(let tries=0; tries<25 && !result; tries++){
+          result = attemptGenerate(size, lc);
+        }
+        if(!result) lc--;
+      }
+      count = Math.max(1, lc);
+    }
+
+    gridSize = size;
+    const built = buildGridFromPaths(gridSize, count, result.paths);
+    grid = built.g;
+    sources = built.srcArr;
+    sinks = built.sinkArr;
+
+    moves = 0;
+    allSolved = false;
+    solvedFlags = new Array(LIQUIDS.length).fill(false);
+    animRotations = {};
+    startTime = Date.now();
+    document.getElementById('modeStatWrap').innerHTML = 'LEVEL<b id="lvlStat">'+level+'</b>';
+    updateHud();
+    updateLegend();
+    sizeCanvas();
+  }
+
+  // ---------- Flow evaluation ----------
+  let overlayTimeout=null;
+  function evaluateFlow(){
+    for(let y=0;y<gridSize;y++){
+      for(let x=0;x<gridSize;x++){
+        const c = grid[y][x];
+        if(!c) continue;
+        c.wetSet = [];
+        c.mixColor = null;
+        if(c.type==='cross') c.wetAxis = {NS:null, EW:null};
+        if(c.type==='mixer'){ c.inputDeliveries = {}; c.mixReady = false; }
+      }
+    }
+
+    const active = activeLiquidIndices();
+    const mixerFeeds = {};
+
+    for(const i of active){
+      const src = sources[i];
+      if(!src){ solvedFlags[i]=false; continue; }
+      let cx=src.x, cy=src.y, dir=src.fixedDir;
+      const order = [{x:cx,y:cy}];
+      const seen = new Set([key(cx,cy)]);
+      let reached = false;
+      let mixerStop = false;
+
+      for(let steps=0; steps<gridSize*gridSize+4; steps++){
+        const nx = cx+DELTA[dir].x, ny=cy+DELTA[dir].y;
+        if(!inBounds(nx,ny,gridSize)) break;
+        const ncell = grid[ny][nx];
+        if(!ncell) break;
+        const incoming = OPP[dir];
+
+        if(ncell.type==='cross'){
+          if(seen.has(key(nx,ny))){ /* allow pass-through re-entry on the other axis only once */ }
+          order.push({x:nx,y:ny});
+          const axis = (incoming==='N'||incoming==='S') ? 'NS' : 'EW';
+          ncell.wetAxis[axis] = { color: LIQUIDS[i].color, glow: LIQUIDS[i].glow };
+          cx=nx; cy=ny; dir=OPP[incoming];
+          continue;
+        }
+
+        if(ncell.type==='mixer'){
+          const roles = mixerRoles(ncell.rotation);
+          if(!roles.inputs.includes(incoming)) break;
+          order.push({x:nx,y:ny});
+          mixerFeeds[key(nx,ny)] = mixerFeeds[key(nx,ny)] || {};
+          mixerFeeds[key(nx,ny)][incoming] = i;
+          mixerStop = true;
+          break;
+        }
+
+        if(ncell.type==='mixedsink') break; // a single liquid alone can never satisfy a mixed exit
+
+        const conns = getConnections(ncell, i);
+        if(!conns.includes(incoming)) break;
+
+        if(ncell.type==='sink'){
+          if(ncell.liquids && ncell.liquids[i]!==undefined){ order.push({x:nx,y:ny}); reached=true; }
+          break;
+        }
+        if(ncell.type==='source') break;
+        if(seen.has(key(nx,ny))) break;
+        seen.add(key(nx,ny));
+        order.push({x:nx,y:ny});
+        const outgoing = conns.find(d=>d!==incoming);
+        if(!outgoing) break;
+        cx=nx; cy=ny; dir=outgoing;
+      }
+
+      for(const p of order) if(grid[p.y][p.x]) grid[p.y][p.x].wetSet.push(i);
+      if(!mixerStop){
+        if(reached && !solvedFlags[i]) liquidJoinSound(i);
+        solvedFlags[i] = reached;
+      } else {
+        solvedFlags[i] = false; // pending resolution below
+      }
+    }
+
+    // resolve mixers: need two DIFFERENT liquids feeding the two distinct input directions
+    for(const mkey in mixerFeeds){
+      const feeds = mixerFeeds[mkey];
+      const dirs = Object.keys(feeds);
+      if(dirs.length<2) continue;
+      const liqA = feeds[dirs[0]], liqB = feeds[dirs[1]];
+      if(liqA===liqB) continue;
+      const [mx,my] = mkey.split(',').map(Number);
+      const mcell = grid[my][mx];
+      if(!mcell) continue;
+      mcell.inputDeliveries = feeds;
+      const roles = mixerRoles(mcell.rotation);
+
+      let cx=mx, cy=my, dir=roles.output;
+      const seen = new Set([mkey]);
+      const mixOrder = [];
+      let mixReached = false;
+
+      for(let steps=0; steps<gridSize*gridSize+4; steps++){
+        const nx=cx+DELTA[dir].x, ny=cy+DELTA[dir].y;
+        if(!inBounds(nx,ny,gridSize)) break;
+        const ncell = grid[ny][nx];
+        if(!ncell) break;
+        const incoming = OPP[dir];
+
+        if(ncell.type==='cross'){
+          mixOrder.push({x:nx,y:ny});
+          cx=nx; cy=ny; dir=OPP[incoming];
+          continue;
+        }
+        if(ncell.type==='mixedsink'){
+          if(ncell.fixedDir===incoming){
+            const sortedPair = [Math.min(liqA,liqB), Math.max(liqA,liqB)];
+            const allowedOk = !ncell.allowed || (ncell.allowed[0]===sortedPair[0] && ncell.allowed[1]===sortedPair[1]);
+            if(allowedOk){ mixOrder.push({x:nx,y:ny}); mixReached=true; }
+          }
+          break;
+        }
+        if(ncell.type==='mixer' || ncell.type==='source' || ncell.type==='sink') break;
+
+        const conns = genericConnections(ncell);
+        if(!conns.includes(incoming)) break;
+        if(seen.has(key(nx,ny))) break;
+        seen.add(key(nx,ny));
+        mixOrder.push({x:nx,y:ny});
+        const outgoing = conns.find(d=>d!==incoming);
+        if(!outgoing) break;
+        cx=nx; cy=ny; dir=outgoing;
+      }
+
+      if(mixReached){
+        const blend = blendColors(LIQUIDS[liqA].color, LIQUIDS[liqB].color);
+        mcell.mixReady = true;
+        mcell.mixColor = blend;
+        if(!solvedFlags[liqA] && !solvedFlags[liqB]) mixSound();
+        for(const p of mixOrder){
+          const c = grid[p.y][p.x];
+          if(c){ c.wetSet.push('mix'); c.mixColor = blend; if(c.type==='cross'){ /* axis unspecified for merged flow, tint both faintly via NS by convention */ } }
+        }
+        solvedFlags[liqA] = true;
+        solvedFlags[liqB] = true;
+      }
+    }
+
+    const nowAllSolved = active.length>0 && active.every(i=>solvedFlags[i]);
+    if(nowAllSolved && !allSolved){
+      allSolved = true;
+      if(mode==='play'){
+        winSound();
+        clearTimeout(overlayTimeout);
+        overlayTimeout = setTimeout(()=>{
+          document.getElementById('overlayText').textContent = 'CONNECTED';
+          document.getElementById('overlaySub').textContent = 'advancing...';
+          document.getElementById('overlay').classList.add('show');
+          setTimeout(()=>{ nextLevel(); }, 1300);
+        }, 650);
+      } else {
+        winSound();
+        setStatus('✓ all liquids connected!', 'ok');
+      }
+    } else if(!nowAllSolved){
+      allSolved = false;
+      if(mode!=='play') setStatus('', '');
+    }
+  }
+
+  function setStatus(msg, cls){
+    const el = document.getElementById('editorStatus');
+    el.textContent = msg;
+    el.className = cls||'';
+  }
+
+  function nextLevel(){
+    document.getElementById('overlay').classList.remove('show');
+    level++;
+    generateLevel();
+    evaluateFlow();
+  }
+
+  // ---------- Editor ----------
+  function initEditor(size){
+    editorSize = size;
+    gridSize = size;
+    grid = Array.from({length:size},()=>Array(size).fill(null));
+    sources = [];
+    sinks = [];
+    solvedFlags = new Array(LIQUIDS.length).fill(false);
+    allSolved = false;
+    animRotations = {};
+    document.getElementById('sizeLabel').textContent = size+'×'+size;
+    updateLegend();
+    setStatus('', '');
+    sizeCanvas();
+  }
+
+  function parseMixedBrush(brush){
+    // 'mixedsink:any' -> null (accepts any pair); 'mixedsink:2-0' -> [0,2] sorted
+    const suffix = brush.split(':')[1];
+    if(!suffix || suffix==='any') return null;
+    const parts = suffix.split('-').map(Number);
+    return [Math.min(parts[0],parts[1]), Math.max(parts[0],parts[1])];
+  }
+  function sameAllowed(a,b){
+    if(!a && !b) return true;
+    if(!a || !b) return false;
+    return a[0]===b[0] && a[1]===b[1];
+  }
+
+  function autoDir(x,y,size,excludeDirs){
+    let preferred;
+    if(x===0) preferred='E';
+    else if(x===size-1) preferred='W';
+    else if(y===0) preferred='S';
+    else if(y===size-1) preferred='N';
+    else preferred='E';
+    if(!excludeDirs.includes(preferred)) return preferred;
+    for(const d of DIRS) if(!excludeDirs.includes(d)) return d;
+    return 'E';
+  }
+
+  function editorPlace(x,y){
+    if(currentBrush==='erase'){
+      grid[y][x] = null;
+    } else if(currentBrush==='cross'){
+      grid[y][x] = { type:'cross', wetSet:[], wetAxis:{NS:null,EW:null} };
+    } else if(currentBrush.startsWith('mixedsink')){
+      const allowed = parseMixedBrush(currentBrush);
+      const existing = grid[y][x];
+      if(existing && existing.type==='mixedsink'){
+        if(sameAllowed(existing.allowed, allowed)){
+          const idx = DIRS.indexOf(existing.fixedDir);
+          existing.fixedDir = DIRS[(idx+1)%4];
+        } else {
+          existing.allowed = allowed;
+        }
+      } else {
+        grid[y][x] = { type:'mixedsink', allowed, fixedDir: autoDir(x,y,gridSize,[]), wetSet:[] };
+      }
+    } else if(ROTATABLE_TYPES.includes(currentBrush)){
+      const existing = grid[y][x];
+      if(existing && existing.type===currentBrush){
+        existing.rotation = (existing.rotation+1)%4;
+      } else {
+        grid[y][x] = { type:currentBrush, rotation:0, wetSet:[] };
+      }
+    } else if(currentBrush.startsWith('source:')){
+      const liqIdx = Number(currentBrush.split(':')[1]);
+      const existing = grid[y][x];
+      if(existing && existing.type==='source' && existing.liquid===liqIdx){
+        const idx = DIRS.indexOf(existing.fixedDir);
+        existing.fixedDir = DIRS[(idx+1)%4];
+      } else {
+        grid[y][x] = { type:'source', liquid:liqIdx, fixedDir: autoDir(x,y,gridSize,[]), wetSet:[] };
+      }
+    } else if(currentBrush.startsWith('sink:')){
+      const liqIdx = Number(currentBrush.split(':')[1]);
+      const existing = grid[y][x];
+      if(existing && existing.type==='sink' && existing.liquids[liqIdx]!==undefined){
+        const idx = DIRS.indexOf(existing.liquids[liqIdx]);
+        existing.liquids[liqIdx] = DIRS[(idx+1)%4];
+      } else if(existing && existing.type==='sink'){
+        const usedDirs = Object.values(existing.liquids);
+        existing.liquids[liqIdx] = autoDir(x,y,gridSize,usedDirs);
+      } else {
+        grid[y][x] = { type:'sink', liquids:{ [liqIdx]: autoDir(x,y,gridSize,[]) }, wetSet:[] };
+      }
+    }
+    placeSound();
+    rebuildSourcesSinksFromGrid();
+    evaluateFlow();
+  }
+
+  function rebuildSourcesSinksFromGrid(){
+    sources = [];
+    sinks = [];
+    for(let y=0;y<gridSize;y++){
+      for(let x=0;x<gridSize;x++){
+        const cell = grid[y][x];
+        if(!cell) continue;
+        if(cell.type==='source'){
+          sources[cell.liquid] = {x,y,fixedDir:cell.fixedDir};
+        } else if(cell.type==='sink'){
+          for(const liqStr in cell.liquids){
+            sinks[Number(liqStr)] = {x,y,fixedDir:cell.liquids[liqStr]};
+          }
+        }
+      }
+    }
+  }
+
+  function exportLevel(){
+    const cells = [];
+    for(let y=0;y<gridSize;y++) for(let x=0;x<gridSize;x++) if(grid[y][x]) cells.push({x,y,cell:grid[y][x]});
+    const customFluids = LIQUIDS.slice(4).map(l=>({name:l.name, color:l.color, glow:l.glow}));
+    const data = { size: gridSize, customFluids, cells };
+    const ta = document.getElementById('jsonArea');
+    ta.value = JSON.stringify(data);
+    ta.style.display = 'block';
+    ta.focus(); ta.select();
+    setStatus('exported — copy the JSON below', 'ok');
+  }
+
+  function importLevel(){
+    const ta = document.getElementById('jsonArea');
+    try{
+      const data = JSON.parse(ta.value);
+      if(Array.isArray(data.customFluids)){
+        for(const cf of data.customFluids){
+          if(LIQUIDS.length<8 && cf && cf.name && !LIQUIDS.some(l=>l.name===cf.name)){
+            LIQUIDS.push({name:cf.name, color:cf.color, glow:cf.glow});
+          }
+        }
+      }
+      const size = Math.max(4, Math.min(9, data.size||6));
+      initEditor(size);
+      for(const item of (data.cells||[])){
+        if(item.x>=0 && item.x<size && item.y>=0 && item.y<size) grid[item.y][item.x] = item.cell;
+      }
+      rebuildSourcesSinksFromGrid();
+      buildPalette();
+      evaluateFlow();
+      sizeCanvas();
+      updateLegend();
+      setStatus('imported successfully', 'ok');
+    }catch(e){
+      setStatus('could not read that JSON', 'warn');
+    }
+  }
+
+  // ---------- Canvas / rendering ----------
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  let dpr = Math.max(1, window.devicePixelRatio||1);
+
+  function sizeCanvas(){
+    const maxW = Math.min(560, window.innerWidth - 60);
+    const maxH = window.innerHeight - 320;
+    const avail = Math.max(220, Math.min(maxW, maxH));
+    cellPx = Math.floor(avail / gridSize);
+    const size = cellPx * gridSize;
+    canvas.style.width = size+'px';
+    canvas.style.height = size+'px';
+    canvas.width = size*dpr;
+    canvas.height = size*dpr;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  function cellCenter(x,y){ return { cx: x*cellPx + cellPx/2, cy: y*cellPx + cellPx/2 }; }
+
+  function drawSeg(x,y,dirs,color,glow,widthScale,dash,dashOffset){
+    const {cx,cy} = cellCenter(x,y);
+    const w = cellPx * 0.22 * (widthScale||1);
+    ctx.save();
+    ctx.lineCap='round';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = w;
+    if(glow){ ctx.shadowColor = glow; ctx.shadowBlur = cellPx*0.3; }
+    if(dash){ ctx.setLineDash(dash); ctx.lineDashOffset = dashOffset||0; }
+    ctx.beginPath();
+    for(const d of dirs){
+      const ex = cx + DELTA[d].x*cellPx*0.5;
+      const ey = cy + DELTA[d].y*cellPx*0.5;
+      ctx.moveTo(cx,cy); ctx.lineTo(ex,ey);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function wetColorOf(cell){
+    if(!cell.wetSet || !cell.wetSet.length) return null;
+    if(cell.wetSet[0]==='mix') return { color: cell.mixColor, glow: cell.mixColor };
+    const liq = LIQUIDS[cell.wetSet[0]];
+    return { color: liq.color, glow: liq.glow };
+  }
+
+  function drawSourceNode(x,y,cellObj){
+    const liq = LIQUIDS[cellObj.liquid];
+    const {cx,cy} = cellCenter(x,y);
+    drawSeg(x,y,[cellObj.fixedDir], liq.color, liq.color, 1);
+    ctx.save();
+    ctx.fillStyle = liq.color; ctx.shadowColor = liq.color; ctx.shadowBlur = cellPx*0.3;
+    ctx.beginPath(); ctx.arc(cx,cy, cellPx*0.19, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.fillStyle = '#0a0e14';
+    ctx.font = 'bold '+(cellPx*0.16)+'px monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('IN', cx, cy+1);
+    ctx.restore();
+  }
+
+  function collectUniqueSinks(){
+    const map = new Map();
+    for(const i of activeLiquidIndices()){
+      if(!sinks[i]) continue;
+      const k = key(sinks[i].x, sinks[i].y);
+      if(!map.has(k)) map.set(k, {x:sinks[i].x, y:sinks[i].y, liquids:[]});
+      map.get(k).liquids.push(i);
+    }
+    return [...map.values()];
+  }
+
+  function drawSinkGroup(group){
+    const cell = grid[group.y][group.x];
+    if(!cell) return;
+    const {cx,cy} = cellCenter(group.x,group.y);
+    for(const liqIdx of group.liquids){
+      const liq = LIQUIDS[liqIdx];
+      const dir = cell.liquids[liqIdx];
+      if(dir) drawSeg(group.x,group.y,[dir], liq.color, liq.color, 1);
+    }
+    if(group.liquids.length<=1){
+      const liq = LIQUIDS[group.liquids[0]];
+      ctx.save();
+      ctx.fillStyle=liq.color; ctx.shadowColor=liq.color; ctx.shadowBlur=cellPx*0.3;
+      ctx.beginPath(); ctx.arc(cx,cy,cellPx*0.19,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+      ctx.save(); ctx.fillStyle='#0a0e14'; ctx.font='bold '+(cellPx*0.16)+'px monospace';
+      ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('OUT',cx,cy+1); ctx.restore();
+    } else {
+      const n = group.liquids.length;
+      const r = cellPx*0.24;
+      let startAngle=-Math.PI/2;
+      const slice = Math.PI*2/n;
+      ctx.save();
+      for(const liqIdx of group.liquids){
+        const liq = LIQUIDS[liqIdx];
+        ctx.fillStyle = liq.color; ctx.shadowColor = liq.color; ctx.shadowBlur=cellPx*0.22;
+        ctx.beginPath(); ctx.moveTo(cx,cy);
+        ctx.arc(cx,cy,r,startAngle,startAngle+slice);
+        ctx.closePath(); ctx.fill();
+        startAngle+=slice;
+      }
+      ctx.restore();
+      ctx.save(); ctx.fillStyle='#0a0e14'; ctx.font='bold '+(cellPx*0.13)+'px monospace';
+      ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('MIX',cx,cy+1); ctx.restore();
+    }
+  }
+
+  function drawMixedSinkNode(x,y,cell){
+    const {cx,cy} = cellCenter(x,y);
+    const lit = cell.wetSet && cell.wetSet.includes('mix');
+    let idleCol = '#5a6b80';
+    if(cell.allowed) idleCol = blendColors(LIQUIDS[cell.allowed[0]].color, LIQUIDS[cell.allowed[1]].color);
+    const col = lit ? cell.mixColor : idleCol;
+    drawSeg(x,y,[cell.fixedDir], col, lit?col:null, 1);
+    ctx.save();
+    ctx.fillStyle = col;
+    if(lit){ ctx.shadowColor=col; ctx.shadowBlur=cellPx*0.3; }
+    ctx.beginPath(); ctx.arc(cx,cy,cellPx*0.19,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+    ctx.save(); ctx.fillStyle='#0a0e14'; ctx.font='bold '+(cellPx*0.13)+'px monospace';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('MIX',cx,cy+1); ctx.restore();
+  }
+
+  let t0 = performance.now();
+  function render(now){
+    t0 = now;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(61,74,92,0.15)';
+    ctx.lineWidth = 1;
+    for(let i=0;i<=gridSize;i++){
+      ctx.beginPath(); ctx.moveTo(i*cellPx,0); ctx.lineTo(i*cellPx,gridSize*cellPx); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0,i*cellPx); ctx.lineTo(gridSize*cellPx,i*cellPx); ctx.stroke();
+    }
+    ctx.restore();
+
+    const dashOffset = -(now/40)%16;
+
+    for(let y=0;y<gridSize;y++){
+      for(let x=0;x<gridSize;x++){
+        const cell = grid[y][x];
+        if(!cell) continue;
+        if(cell.type==='source' || cell.type==='sink' || cell.type==='mixedsink') continue;
+
+        const {cx,cy} = cellCenter(x,y);
+
+        if(cell.type==='cross'){
+          drawSeg(x,y,['N','S'],'#2a3340', null, 1);
+          drawSeg(x,y,['N','S'],'rgba(61,74,92,0.9)', null, 0.5);
+          drawSeg(x,y,['E','W'],'#2a3340', null, 1);
+          drawSeg(x,y,['E','W'],'rgba(61,74,92,0.9)', null, 0.5);
+          if(cell.wetAxis && cell.wetAxis.NS) drawSeg(x,y,['N','S'], cell.wetAxis.NS.glow, cell.wetAxis.NS.color, 0.42, [6,5], dashOffset);
+          if(cell.wetAxis && cell.wetAxis.EW) drawSeg(x,y,['E','W'], cell.wetAxis.EW.glow, cell.wetAxis.EW.color, 0.42, [6,5], dashOffset);
+          if(cell.wetSet && cell.wetSet.includes('mix') && !(cell.wetAxis.NS||cell.wetAxis.EW)){
+            drawSeg(x,y,['N','S','E','W'], cell.mixColor, cell.mixColor, 0.38, [6,5], dashOffset);
+          }
+          ctx.save(); ctx.fillStyle = '#161e2a';
+          ctx.beginPath(); ctx.arc(cx,cy,cellPx*0.1,0,Math.PI*2); ctx.fill(); ctx.restore();
+          continue;
+        }
+
+        if(cell.type==='mixer'){
+          const roles = mixerRoles(cell.rotation);
+          const allDirs = rotSet(BASE.mixer, cell.rotation);
+          drawSeg(x,y, allDirs, '#2a3340', null, 1);
+          drawSeg(x,y, allDirs, 'rgba(61,74,92,0.9)', null, 0.5);
+          for(const inDir of roles.inputs){
+            const liqIdx = cell.inputDeliveries ? cell.inputDeliveries[inDir] : undefined;
+            if(liqIdx!==undefined){
+              const liq = LIQUIDS[liqIdx];
+              drawSeg(x,y,[inDir], liq.glow, liq.color, 0.42, [6,5], dashOffset);
+            }
+          }
+          if(cell.mixReady){
+            drawSeg(x,y,[roles.output], cell.mixColor, cell.mixColor, 0.46, [6,5], dashOffset);
+          }
+          ctx.save();
+          ctx.fillStyle = cell.mixReady ? cell.mixColor : '#3d4a5c';
+          if(cell.mixReady){ ctx.shadowColor=cell.mixColor; ctx.shadowBlur=cellPx*0.22; }
+          ctx.beginPath(); ctx.arc(cx,cy,cellPx*0.09,0,Math.PI*2); ctx.fill();
+          ctx.restore();
+          continue;
+        }
+
+        const key2 = x+','+y;
+        const anim = animRotations[key2];
+        if(anim){
+          const prog = Math.min(1, (now-anim.start)/ROT_ANIM_MS);
+          if(prog>=1){
+            delete animRotations[key2];
+            const dirs = rotSet(BASE[cell.type], cell.rotation);
+            drawSeg(x,y,dirs,'#2a3340', null, 1);
+            drawSeg(x,y,dirs,'rgba(61,74,92,0.9)', null, 0.5);
+            const wc = wetColorOf(cell);
+            if(wc) drawSeg(x,y,dirs, wc.glow, wc.color, 0.42, [6,5], dashOffset);
+          } else {
+            const ease = 1-Math.pow(1-prog,3);
+            const angle = (anim.from*90 + (anim.to-anim.from)*90*ease) * Math.PI/180;
+            ctx.save();
+            ctx.translate(cx,cy); ctx.rotate(angle); ctx.translate(-cx,-cy);
+            drawSeg(x,y, BASE[cell.type], '#2a3340', null, 1);
+            drawSeg(x,y, BASE[cell.type], 'rgba(61,74,92,0.9)', null, 0.5);
+            ctx.restore();
+          }
+        } else {
+          const dirs = rotSet(BASE[cell.type], cell.rotation);
+          drawSeg(x,y, dirs, '#2a3340', null, 1);
+          drawSeg(x,y, dirs, 'rgba(61,74,92,0.9)', null, 0.5);
+          const wc = wetColorOf(cell);
+          if(wc) drawSeg(x,y, dirs, wc.glow, wc.color, 0.42, [6,5], dashOffset);
+        }
+
+        const wc2 = wetColorOf(cell);
+        ctx.save();
+        ctx.fillStyle = wc2 ? wc2.glow : '#3d4a5c';
+        if(wc2){ ctx.shadowColor = wc2.color; ctx.shadowBlur=cellPx*0.2; }
+        ctx.beginPath(); ctx.arc(cx,cy,cellPx*0.06,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    for(const i of activeLiquidIndices()){
+      if(sources[i] && grid[sources[i].y] && grid[sources[i].y][sources[i].x]){
+        drawSourceNode(sources[i].x, sources[i].y, grid[sources[i].y][sources[i].x]);
+      }
+    }
+    for(const group of collectUniqueSinks()){
+      drawSinkGroup(group);
+    }
+    for(let y=0;y<gridSize;y++){
+      for(let x=0;x<gridSize;x++){
+        const cell = grid[y][x];
+        if(cell && cell.type==='mixedsink') drawMixedSinkNode(x,y,cell);
+      }
+    }
+
+    if(mode==='editor'){
+      ctx.save();
+      ctx.strokeStyle='rgba(143,245,255,0.12)';
+      ctx.setLineDash([3,3]);
+      for(let y=0;y<gridSize;y++){
+        for(let x=0;x<gridSize;x++){
+          if(!grid[y][x]){
+            ctx.strokeRect(x*cellPx+3,y*cellPx+3,cellPx-6,cellPx-6);
+          }
+        }
+      }
+      ctx.restore();
+    }
+
+    updateTimeStat();
+    requestAnimationFrame(render);
+  }
+
+  // ---------- Interaction ----------
+  function getCellFromEvent(evt){
+    const rect = canvas.getBoundingClientRect();
+    const clientX = (evt.touches ? evt.touches[0].clientX : evt.clientX);
+    const clientY = (evt.touches ? evt.touches[0].clientY : evt.clientY);
+    const px = (clientX-rect.left) / rect.width * (gridSize*cellPx);
+    const py = (clientY-rect.top) / rect.height * (gridSize*cellPx);
+    const x = Math.floor(px/cellPx), y = Math.floor(py/cellPx);
+    if(!inBounds(x,y,gridSize)) return null;
+    return {x,y};
+  }
+
+  function handleTap(evt){
+    evt.preventDefault();
+    const c = getCellFromEvent(evt);
+    if(!c) return;
+
+    if(mode==='editor'){
+      editorPlace(c.x, c.y);
+      return;
+    }
+
+    if(allSolved && mode==='play') return;
+    const cell = grid[c.y][c.x];
+    if(!cell || !ROTATABLE_TYPES.includes(cell.type)) return;
+    const from = cell.rotation;
+    const to = (cell.rotation+1)%4;
+    cell.rotation = to;
+    animRotations[c.x+','+c.y] = { from, to, start: performance.now() };
+    moves++;
+    clickSound();
+    updateHud();
+    evaluateFlow();
+  }
+
+  canvas.addEventListener('click', handleTap);
+  canvas.addEventListener('touchstart', handleTap, {passive:false});
+
+  // ---------- HUD ----------
+  function updateHud(){
+    const lvlEl = document.getElementById('lvlStat');
+    if(lvlEl) lvlEl.textContent = level;
+    document.getElementById('movesStat').textContent = moves;
+  }
+  function updateTimeStat(){
+    const s = Math.floor((Date.now()-startTime)/1000);
+    const m = Math.floor(s/60), sec = s%60;
+    document.getElementById('timeStat').textContent = m+':'+String(sec).padStart(2,'0');
+  }
+  function updateLegend(){
+    const el = document.getElementById('legend');
+    el.innerHTML = '';
+    const idxs = mode==='play' ? activeLiquidIndices() : [...Array(LIQUIDS.length).keys()];
+    for(const i of idxs){
+      const liq = LIQUIDS[i];
+      const item = document.createElement('div');
+      item.className = 'legendItem';
+      item.style.color = liq.color;
+      const dot = document.createElement('span');
+      dot.className = 'legendDot';
+      dot.style.background = liq.color;
+      item.appendChild(dot);
+      item.appendChild(document.createTextNode(liq.name));
+      el.appendChild(item);
+    }
+  }
+
+  // ---------- Palette ----------
+  function buildPalette(){
+    const el = document.getElementById('editorPalette');
+    el.innerHTML = '';
+    const pipeDefs = [
+      {label:'Erase', brush:'erase'},
+      {label:'Straight', brush:'straight'},
+      {label:'Elbow', brush:'elbow'},
+      {label:'Tee', brush:'tee'},
+      {label:'Quad', brush:'quad'},
+      {label:'Cap', brush:'cap'},
+      {label:'Bridge +', brush:'cross'},
+      {label:'Mixer', brush:'mixer'},
+    ];
+    for(const d of pipeDefs) el.appendChild(makeBrushBtn(d.label, d.brush, null));
+    el.appendChild(makeDivider());
+    for(let i=0;i<LIQUIDS.length;i++) el.appendChild(makeBrushBtn('Src '+LIQUIDS[i].name, 'source:'+i, LIQUIDS[i].color));
+    for(let i=0;i<LIQUIDS.length;i++) el.appendChild(makeBrushBtn('Out '+LIQUIDS[i].name, 'sink:'+i, LIQUIDS[i].color));
+    el.appendChild(makeDivider());
+    el.appendChild(makeBrushBtn('Mix: Any', 'mixedsink:any', '#cfe3ee'));
+    for(let a=0;a<LIQUIDS.length;a++){
+      for(let b=a+1;b<LIQUIDS.length;b++){
+        const label = 'Mix '+LIQUIDS[a].name+'+'+LIQUIDS[b].name;
+        el.appendChild(makeBrushBtn(label, 'mixedsink:'+a+'-'+b, blendColors(LIQUIDS[a].color, LIQUIDS[b].color)));
+      }
+    }
+    el.appendChild(makeDivider());
+    if(LIQUIDS.length < 8){
+      const nameInput = document.createElement('input');
+      nameInput.type='text'; nameInput.id='customFluidName'; nameInput.placeholder='fluid name';
+      nameInput.maxLength=10; nameInput.className='customFluidInput';
+      const colorInput = document.createElement('input');
+      colorInput.type='color'; colorInput.id='customFluidColor'; colorInput.value='#ffffff';
+      colorInput.className='customFluidColor';
+      const addBtn = document.createElement('button');
+      addBtn.textContent = '+ Add Fluid';
+      addBtn.addEventListener('click', ()=>{
+        const name = (nameInput.value||'').trim().toUpperCase().slice(0,10);
+        if(!name){ setStatus('enter a fluid name first', 'warn'); return; }
+        if(LIQUIDS.some(l=>l.name===name)){ setStatus('that name is already in use', 'warn'); return; }
+        const color = colorInput.value;
+        LIQUIDS.push({ name, color, glow: lighten(color, 0.55) });
+        buildPalette();
+        updateLegend();
+        setStatus(name+' added', 'ok');
+      });
+      el.appendChild(nameInput);
+      el.appendChild(colorInput);
+      el.appendChild(addBtn);
+    } else {
+      const maxNote = document.createElement('span');
+      maxNote.style.fontSize='11px'; maxNote.style.color='var(--text-dim)'; maxNote.style.alignSelf='center';
+      maxNote.textContent = 'fluid limit reached (8 max)';
+      el.appendChild(maxNote);
+    }
+    highlightBrush();
+  }
+  function makeDivider(){
+    const d = document.createElement('div');
+    d.className = 'paletteDivider';
+    return d;
+  }
+  function makeBrushBtn(label, brush, color){
+    const b = document.createElement('button');
+    b.className = 'brushBtn';
+    b.textContent = label;
+    b.dataset.brush = brush;
+    if(color){ b.style.borderColor=color; b.style.color=color; }
+    b.addEventListener('click', ()=>{ currentBrush = brush; highlightBrush(); });
+    return b;
+  }
+  function highlightBrush(){
+    const el = document.getElementById('editorPalette');
+    for(const child of el.children){
+      if(child.dataset.brush===currentBrush) child.classList.add('selected');
+      else child.classList.remove('selected');
+    }
+  }
+
+  // ---------- Mode switching ----------
+  function setMode(newMode){
+    mode = newMode;
+    document.getElementById('playControls').style.display = mode==='play' ? 'flex' : 'none';
+    document.getElementById('editorControls').style.display = mode==='editor' ? 'flex' : 'none';
+    document.getElementById('editorPalette').style.display = mode==='editor' ? 'flex' : 'none';
+    document.getElementById('testControls').style.display = mode==='test' ? 'flex' : 'none';
+    document.getElementById('jsonArea').style.display = 'none';
+    setStatus('', '');
+    if(mode!=='editor'){
+      document.getElementById('modeStatWrap').innerHTML = mode==='play' ? ('LEVEL<b id="lvlStat">'+level+'</b>') : 'MODE<b>TEST</b>';
+    } else {
+      document.getElementById('modeStatWrap').innerHTML = 'MODE<b>EDITOR</b>';
+    }
+    updateLegend();
+  }
+
+  document.getElementById('editorToggleBtn').addEventListener('click', ()=>{
+    setMode('editor');
+    initEditor(editorSize);
+    buildPalette();
+  });
+  document.getElementById('playToggleBtn').addEventListener('click', ()=>{
+    setMode('play');
+    generateLevel();
+    evaluateFlow();
+  });
+  document.getElementById('testBtn').addEventListener('click', ()=>{
+    rebuildSourcesSinksFromGrid();
+    if(activeLiquidIndices().length===0){
+      setStatus('place at least one source + matching outlet first', 'warn');
+      return;
+    }
+    setMode('test');
+    moves = 0; startTime = Date.now(); allSolved=false;
+    solvedFlags = new Array(LIQUIDS.length).fill(false);
+    evaluateFlow();
+  });
+  document.getElementById('backToEditorBtn').addEventListener('click', ()=>{
+    setMode('editor');
+    buildPalette();
+  });
+  document.getElementById('clearBtn').addEventListener('click', ()=>{ initEditor(editorSize); });
+  document.getElementById('sizeMinusBtn').addEventListener('click', ()=>{
+    if(editorSize>4){ initEditor(editorSize-1); }
+  });
+  document.getElementById('sizePlusBtn').addEventListener('click', ()=>{
+    if(editorSize<9){ initEditor(editorSize+1); }
+  });
+  document.getElementById('exportBtn').addEventListener('click', exportLevel);
+  document.getElementById('importBtn').addEventListener('click', ()=>{
+    const ta = document.getElementById('jsonArea');
+    if(ta.style.display==='none'){ ta.style.display='block'; ta.value=''; ta.focus(); setStatus('paste level JSON, then click Import again', ''); }
+    else importLevel();
+  });
+
+  document.getElementById('shuffleBtn').addEventListener('click', ()=>{
+    if(allSolved) return;
+    for(let y=0;y<gridSize;y++){
+      for(let x=0;x<gridSize;x++){
+        const cell = grid[y][x];
+        if(cell && ROTATABLE_TYPES.includes(cell.type)) cell.rotation = Math.floor(Math.random()*4);
+      }
+    }
+    badSound();
+    evaluateFlow();
+  });
+  document.getElementById('restartBtn').addEventListener('click', ()=>{
+    generateLevel();
+    evaluateFlow();
+  });
+  document.getElementById('testReshuffleBtn').addEventListener('click', ()=>{
+    for(let y=0;y<gridSize;y++){
+      for(let x=0;x<gridSize;x++){
+        const cell = grid[y][x];
+        if(cell && ROTATABLE_TYPES.includes(cell.type)) cell.rotation = Math.floor(Math.random()*4);
+      }
+    }
+    badSound();
+    solvedFlags = new Array(LIQUIDS.length).fill(false);
+    allSolved = false;
+    evaluateFlow();
+  });
+
+  window.addEventListener('resize', sizeCanvas);
+
+  // ---------- Boot ----------
+  generateLevel();
+  evaluateFlow();
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>
