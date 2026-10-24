@@ -103,6 +103,10 @@ before showing it, and ask the user if they like it.
    - If instructions or a title push the game down the page, scroll to it
      first: `CARD_SCROLL=canvas tools/card.sh ...` (any CSS selector; Gravity
      Golf used `CARD_WIDTH=720 CARD_SCROLL=canvas` plus `'#startBtn'`).
+   - To press keys first (turn off fog, switch to 3D, start the game...),
+     list them: `CARD_KEYS="f" tools/card.sh ...` (names are JavaScript's
+     `e.key` names, like `f`, `Enter`, `ArrowRight`, separated by spaces).
+     Search the game's `keydown` code to see which keys do what.
    - Games that wait for a key press, or that need time to "grow"
      (like Growing Forest), usually don't look good this way. Use option 1 or 3.
 3. **A title card made from the game's own art.** Write a small HTML page in

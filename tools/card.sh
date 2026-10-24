@@ -12,6 +12,10 @@
 # To scroll down to part of the page first (like the game's canvas), name it:
 #   CARD_SCROLL=canvas tools/card.sh ...
 #
+# To press keys first (like F to turn off fog), list them with spaces between.
+# Use the names JavaScript gives keys: f, D, Enter, ArrowRight, " "...
+#   CARD_KEYS="f" tools/card.sh ...
+#
 # The button is a CSS selector like "#go" or ".start-button". It gets clicked
 # as soon as the game loads (to get past a start screen). This only works for
 # pages inside this repo.
@@ -25,6 +29,7 @@ out="$2"
 wait_seconds="${3:-3}"
 click="${4:-}"
 scroll="${CARD_SCROLL:-}"
+keys="${CARD_KEYS:-}"
 width="${CARD_WIDTH:-1280}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 page_abs="$(realpath "$page")"
@@ -45,9 +50,9 @@ if [[ "$page_abs" == "$root"/* ]]; then
   server_pid=$!
   sleep 1
   url="http://localhost:$port/${page_abs#"$root"/}"
-  if [[ -n "$click" || -n "$scroll" ]]; then
-    # A tiny page that shows the game in an <iframe>, then clicks the button
-    # and scrolls (if we asked it to).
+  if [[ -n "$click" || -n "$scroll" || -n "$keys" ]]; then
+    # A tiny page that shows the game in an <iframe>, then clicks the button,
+    # presses the keys and scrolls (if we asked it to).
     wrapper="$root/.card-wrapper-$$.html"
     cat > "$wrapper" <<HTML
 <!doctype html>
@@ -57,6 +62,11 @@ if [[ "$page_abs" == "$root"/* ]]; then
   document.querySelector("iframe").onload = event => {
     const game = event.target.contentDocument;
     if ("$click") game.querySelector("$click").click();
+    for (const key of "$keys".split(" ").filter(k => k)) {
+      for (const type of ["keydown", "keyup"]) {
+        game.dispatchEvent(new KeyboardEvent(type, { key, bubbles: true }));
+      }
+    }
     if ("$scroll") game.querySelector("$scroll").scrollIntoView({ block: "center" });
   };
 </script>
