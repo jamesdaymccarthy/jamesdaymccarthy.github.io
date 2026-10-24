@@ -1,4 +1,5 @@
 [
+  {"title": "I am Dung", "folder": "i-am-dung", "blurb": "You are not the beetle. You are what the beetle rolls.", "fave": false, "date": "2026-08-12"},
   {"title": "Toast Cafe", "folder": "toast-cafe", "blurb": "You are the cook of a cafe. You must serve the pigs", "fave": false, "date": "2026-09-06"},
   {"title": "Mover Sandbox", "folder": "mover-sandbox", "blurb": "Experiment with a circle (or possibly a square)", "fave": false, "date": "2026-09-14"},
   {"title": "Mystery Box", "folder": "mystery-box", "blurb": "A chance game or so it seems!", "fave": false, "date": "2026-10-12"},
