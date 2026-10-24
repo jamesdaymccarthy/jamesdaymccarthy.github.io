@@ -93,7 +93,10 @@ before showing it, and ask the user if they like it.
    - The optional last argument is a CSS selector for a button to click first,
      to get past a start screen. Find it by searching the game's HTML for the
      start button (for example `id="go"`, `id="start"`, or a `<button>` with
-     "Play" or "Start" in it).
+     "Play" or "Start" in it). If the buttons have no ids (often because
+     JavaScript built them), pick one by position instead, like
+     `'.modes button:nth-child(3)'`.
+   - A game's title screen can make a great card too. Compare both before choosing.
    - If the game is small and sits in the middle of lots of empty space, set
      a smaller pretend screen so it fills the card: `CARD_WIDTH=720 tools/card.sh ...`
      (default 1280; Mystery Box used 720).
