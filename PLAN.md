@@ -46,6 +46,9 @@ Dates are written `YYYY-MM-DD` (ISO 8601) so sorting them like words also sorts 
 
 - [ ] **Growing Forest card:** play until the forest looks awesome, press Print
   Screen, and select the game. Then ask Claude to make it the card.
+- [ ] **Image Mashup card:** make a funny "strange abomination" and Print Screen it
+  for the card. The site is public, so use animals, cartoons, or my own face,
+  not a friend's photo without asking them.
 
 ## Tools
 

@@ -1,4 +1,5 @@
 [
+  {"title": "Explainer of Life", "folder": "explainer-of-life", "blurb": "Figure out how life probably works", "fave": true, "date": "2026-07-12"},
   {"title": "Image Mashup", "folder": "image-mashup", "blurb": "Mashup images to create strange abominations", "fave": false, "date": "2026-07-13"},
   {"title": "Pipe Game", "folder": "pipe-game", "blurb": "Connect the pipes!", "fave": false, "date": "2026-07-14"},
   {"title": "Maze", "folder": "maze", "blurb": "Wander around the maze, find the exit, certain keys do certain things", "fave": false, "date": "2026-07-16"},
