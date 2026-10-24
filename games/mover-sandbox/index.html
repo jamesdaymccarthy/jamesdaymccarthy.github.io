@@ -1,0 +1,1952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mover Sandbox</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #222; display: flex; align-items: center; justify-content: center; height: 100%; }
+  #wrap { position: relative; width: 800px; height: 600px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+  #p5-holder, #p5-holder canvas { position: absolute; top: 0; left: 0; display: block; }
+  #panelCanvas { position: absolute; top: 0; left: 0; pointer-events: none; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fix-webm-duration@1.0.6/fix-webm-duration.js"></script>
+</head>
+<body>
+<div id="wrap">
+  <div id="p5-holder"></div>
+  <canvas id="panelCanvas" width="800" height="600"></canvas>
+  <div id="videoOverlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.9); z-index:50; align-items:center; justify-content:center; flex-direction:column;">
+    <video id="videoPlayerEl" controls autoplay style="max-width:90%; max-height:80%; background:#000;"></video>
+    <button id="closeVideoBtn" style="margin-top:12px; padding:8px 20px; cursor:pointer; border:none;
+      border-radius:4px; background:#00e1ff; font-size:14px; font-weight:bold;">Close</button>
+  </div>
+</div>
+<script>
+// Ported from a Khan Academy ProcessingJS sketch to p5.js.
+// PVector is aliased to p5.Vector so the original math code is unchanged.
+var PVector = p5.Vector;
+
+var gohst = false;
+var bounceMode = false;
+var flockMode = false;
+var rainbowMode = false;
+var movers = [];
+
+// Color picker state
+var pickerHue = 0;
+var pickerSat = 1;
+var pickerBri = 1;
+var hueBarDragging = false;
+var boxOrbDragging = false;
+
+// Physics
+var gravityStrength = 0;
+var windStrength    = 0;
+var windAngle       = 0;
+var windDialDragging = false;
+
+// Shape
+var moverShape = "circle";
+
+// Panel
+var panelVisible = true;
+var PANEL_OPEN_Y  = 170;
+var PANEL_CLOSED_Y = 650;
+var tabBtn = { x: 59, y: 160, width: 50, height: 16 };
+var PANEL_X = 0;
+var PANEL_Y = PANEL_OPEN_Y;
+var PANEL_W = 212;
+var PANEL_H = 300;
+
+// App mode: 'sandbox' (normal), 'home' (gallery + shop), 'challenge', 'platformer'
+var appMode = 'sandbox';
+// Up to 3 nav buttons show at once; which ones depends on appMode:
+// sandbox -> [Home], home -> [Sandbox, Challenge, Platformer], challenge -> [Home], platformer -> [Home]
+var navSlotA = { x: 5,   y: 138, width: 60, height: 18 };
+var navSlotB = { x: 70,  y: 138, width: 70, height: 18 };
+var navSlotC = { x: 145, y: 138, width: 80, height: 18 };
+
+// Saved images/videos shown on the Home screen
+var archive = [];
+
+// --- Mover Coins + Creativity Coins shop ---
+var moverCoins = 0;
+var shopItems = [
+    { id: 'ghost',       name: 'Ghost Mode',       cost: 9,  type: 'feature',  currency: 'mover', owned: false },
+    { id: 'wobble',      name: 'Wobble Control',   cost: 10, type: 'feature',  currency: 'mover', owned: false },
+    { id: 'bounce',      name: 'Bounce Mode',      cost: 11, type: 'feature',  currency: 'mover', owned: false },
+    { id: 'rainbow',     name: 'Rainbow Mode',     cost: 13, type: 'feature',  currency: 'mover', owned: false },
+    { id: 'gravity',     name: 'Gravity Control',  cost: 14, type: 'feature',  currency: 'mover', owned: false },
+    { id: 'randomize',   name: 'Randomize Button', cost: 15, type: 'feature',  currency: 'mover', owned: false },
+    { id: 'flock',       name: 'Flock Mode',       cost: 16, type: 'feature',  currency: 'mover', owned: false },
+    { id: 'wind',        name: 'Wind Control',     cost: 18, type: 'feature',  currency: 'mover', owned: false },
+    { id: 'shapes',      name: 'Shape Picker',     cost: 22, type: 'feature',  currency: 'mover', owned: false },
+    { id: 'colorpicker', name: 'Color Picker',     cost: 25, type: 'feature',  currency: 'mover', owned: false },
+    { id: 'backdrop_space',    name: 'Space Backdrop',    cost: 30, type: 'backdrop', currency: 'mover', owned: false },
+    { id: 'backdrop_ocean',    name: 'Ocean Backdrop',    cost: 38, type: 'backdrop', currency: 'mover', owned: false },
+    { id: 'backdrop_jurassic', name: 'Jurassic Backdrop', cost: 45, type: 'backdrop', currency: 'mover', owned: false },
+    { id: 'bouncer', name: 'Bouncer', cost: 8,  type: 'platformer', currency: 'creativity', owned: false },
+    { id: 'ramp',    name: 'Ramp',    cost: 12, type: 'platformer', currency: 'creativity', owned: false },
+    { id: 'portal',  name: 'Portal',  cost: 20, type: 'platformer', currency: 'creativity', owned: false }
+];
+var currentBackdrop = 'default';
+var shopItemRects = [];     // rebuilt each frame in Home mode -- feature/backdrop shop column
+var platShopItemRects = []; // rebuilt each frame in Home mode -- platformer shop column
+var shopScroll = { value: 0 };     // scroll offset for the feature shop list (mouse wheel)
+var platShopScroll = { value: 0 }; // scroll offset for the platformer shop list (mouse wheel)
+
+// --- Creativity Coins (earned from the Finish button in Sandbox) ---
+var creativityCoins = 0;
+var finishBtn = { x: 5, y: 443, width: 140, height: 20 };
+var finishMessageText = '';
+var finishMessageTimer = 0;
+var usedRandomizeSinceFinish = false;
+var HOME_GALLERY_W = 300;
+
+// --- Platformer mode: bouncers/ramps/portals placed on the mover canvas ---
+var platformerItems = []; // { type: 'bouncer'|'ramp'|'portal', ... }
+var placingTool = null;   // 'bouncer' | 'ramp' | 'portal' | null
+var pendingPortalA = null;
+var rampDragStart = null;   // set while click-dragging to aim a ramp
+var rampDragCurrent = null;
+var toolBtnBouncer  = { x: 20,  y: 550, width: 90,  height: 30 };
+var toolBtnRamp     = { x: 120, y: 550, width: 90,  height: 30 };
+var toolBtnPortal   = { x: 220, y: 550, width: 90,  height: 30 };
+var clearObjectsBtn = { x: 320, y: 550, width: 110, height: 30 };
+
+// --- Challenge mode ---
+var challengeTargets = [];
+var challengeRewardGiven = false;
+var newChallengeBtn = { x: 560, y: 6, width: 120, height: 30 };
+
+// Buttons
+var gohstBtn   = { x: 5,  y: 290, width: 74, height: 18 };
+var bounceBtn  = { x: 5,  y: 312, width: 74, height: 18 };
+var flockBtn   = { x: 5,  y: 333, width: 74, height: 18 };
+var rainbowBtn = { x: 5,  y: 354, width: 74, height: 18 };
+var resetBtn   = { x: 5,  y: 377, width: 82, height: 18 };
+var saveBtn    = { x: 5,  y: 399, width: 82, height: 18 };
+var pauseBtn   = { x: 92,  y: 399, width: 56, height: 18 };
+var randomBtn  = { x: 154, y: 399, width: 56, height: 18 };
+var recordBtn  = { x: 150, y: 421, width: 56, height: 18 };
+var isPaused = false;
+
+// Filename + recording state
+var currentFilename = 'mover-sandbox';
+var filenameInput; // created in setup(), a real <input> so it's typeable
+var isRecording = false;
+var recordingFrameCount = 0;
+var mediaRecorder = null;
+var recordedChunks = [];
+var recordingStartTime = 0;
+var screenWipeBtn = { x: 186, y: 182, width: 18, height: 61 };
+
+var arrowBtns = {
+    up:   { x: 148, y: 312, width: 25, height: 18 },
+    down: { x: 176, y: 313, width: 25, height: 18 },
+    m2:   { x: 148, y: 289, width: 26, height: 18 },
+    d2:   { x: 176, y: 289, width: 26, height: 18 }
+};
+
+var shapeBtn = {
+    circle:   { x: 84, y: 333, width: 58, height: 18 },
+    triangle: { x: 84, y: 354, width: 58, height: 18 },
+    square:   { x: 90, y: 375, width: 58, height: 18 },
+    diamond:  { x: 82, y: 312, width: 58, height: 18 },
+    star:     { x: 83, y: 291, width: 58, height: 18 }
+};
+
+// Sliders
+var sMx = 90;
+var slider       = { x: 5, y: 183, width: sMx, handleX: 50, dragging: false };
+var wobbleSlider = { x: 5, y: 203, width: sMx, handleX: 50, dragging: false };
+var sizeSlider   = { x: 5, y: 223, width: sMx, handleX: 30, dragging: false };
+var ghostSlider  = { x: 5, y: 243, width: sMx, handleX: 13,  dragging: false };
+var gravSlider   = { x: 5, y: 263, width: sMx, handleX: 5,  dragging: false };
+var windSlider   = { x: 5, y: 283, width: sMx, handleX: 5,  dragging: false };
+
+// Wind dial
+var DIAL_X = 180;
+var DIAL_Y = 371;
+var DIAL_R = 28;
+
+// Color picker
+var CP_X = 108;
+var CP_Y = 175;
+var CP_W = 70;
+var CP_H = 70;
+var HB_X = CP_X;
+var HB_Y = CP_Y + CP_H + 4;
+var HB_W = CP_W;
+var HB_H = 8;
+var orbX = CP_X + CP_W;
+var orbY = CP_Y;
+
+var getSpeed     = function() { return map(slider.handleX,       slider.x,       slider.x       + slider.width,       0.1, 8);  };
+var getWobble    = function() { return map(wobbleSlider.handleX, wobbleSlider.x, wobbleSlider.x + wobbleSlider.width, 0,   10); };
+var getMoverSize = function() { return map(sizeSlider.handleX,   sizeSlider.x,   sizeSlider.x   + sizeSlider.width,   10,  80); };
+var getMoverGhost= function() { return map(ghostSlider.handleX,  ghostSlider.x,  ghostSlider.x  + ghostSlider.width,  0,   255);};
+var getGravity   = function() { return map(gravSlider.handleX,   gravSlider.x,   gravSlider.x   + gravSlider.width,   0,   1);  };
+var getWind      = function() { return map(windSlider.handleX,   windSlider.x,   windSlider.x   + windSlider.width,   0,   2);  };
+
+var hsbToRgb = function(h, s, b) {
+    h = h % 360;
+    var c = b * s;
+    var x = c * (1 - abs((h / 60) % 2 - 1));
+    var m = b - c;
+    var r = 0; var g = 0; var bl = 0;
+    if      (h < 60)  { r = c; g = x; bl = 0; }
+    else if (h < 120) { r = x; g = c; bl = 0; }
+    else if (h < 180) { r = 0; g = c; bl = x; }
+    else if (h < 240) { r = 0; g = x; bl = c; }
+    else if (h < 300) { r = x; g = 0; bl = c; }
+    else              { r = c; g = 0; bl = x; }
+    return { r: (r + m) * 255, g: (g + m) * 255, b: (bl + m) * 255 };
+};
+
+var getPickerColor = function() {
+    return hsbToRgb(pickerHue, pickerSat, pickerBri);
+};
+
+// Adds a saved PNG/video to the Home screen gallery. Images get preloaded
+// into an Image() so drawImage() can draw them as thumbnails right away.
+var addToArchive = function(type, filename, blob) {
+    var url = URL.createObjectURL(blob);
+    var entry = { type: type, filename: filename, url: url, img: null };
+    if (type === 'png') {
+        // entry.img is only set once the image data has actually finished
+        // decoding -- checking .complete/.naturalWidth every frame instead
+        // was unreliable, so we wait for a real load event here.
+        if (typeof createImageBitmap === 'function') {
+            createImageBitmap(blob).then(function(bitmap) {
+                entry.img = bitmap;
+            }).catch(function() {
+                var imgEl = new Image();
+                imgEl.onload = function() { entry.img = imgEl; };
+                imgEl.src = url;
+            });
+        } else {
+            var imgEl2 = new Image();
+            imgEl2.onload = function() { entry.img = imgEl2; };
+            imgEl2.src = url;
+        }
+    }
+    archive.push(entry);
+};
+
+var archiveItemRects = []; // rebuilt each frame in Home mode, used for click hit-testing
+
+// Images still open in a new tab (that part worked fine). Videos play
+// in-app using the browser's own <video> element -- this uses the
+// browser's built-in decoder, not any external/system video player, so it
+// works even when the OS's video tools are broken.
+var openArchiveEntry = function(entry) {
+    var a = document.createElement('a');
+    a.href = entry.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+};
+
+var videoOverlayEl = document.getElementById('videoOverlay');
+var videoPlayerEl = document.getElementById('videoPlayerEl');
+document.getElementById('closeVideoBtn').addEventListener('click', function() {
+    videoPlayerEl.pause();
+    videoPlayerEl.removeAttribute('src');
+    videoPlayerEl.load();
+    videoOverlayEl.style.display = 'none';
+});
+
+// Surfaces real decode/playback errors instead of just staying silently
+// blank, so a broken recording is obvious rather than looking like nothing
+// happened.
+videoPlayerEl.addEventListener('error', function() {
+    var err = videoPlayerEl.error;
+    var msg = 'Video failed to play.';
+    if (err) {
+        var codes = { 1: 'Loading was aborted.', 2: 'A network error occurred.',
+                      3: 'The video data is corrupted or in a format this browser cannot decode.',
+                      4: 'This video format/source is not supported by this browser.' };
+        msg += ' ' + (codes[err.code] || ('Error code ' + err.code + '.'));
+    }
+    alert(msg);
+});
+
+var playArchiveVideo = function(entry) {
+    videoOverlayEl.style.display = 'flex';
+    videoPlayerEl.src = entry.url;
+    videoPlayerEl.load();
+
+    // Chrome/Chromium have a well-known bug where MediaRecorder output gets
+    // an Infinity/unset duration internally, which shows as a stuck "0:00"
+    // and silently blocks playback and seeking. Seeking to a huge time once
+    // forces the browser to recalculate the real duration; we then reset to
+    // the start and play normally. See: https://bugs.chromium.org/p/chromium/issues/detail?id=642012
+    var startPlayback = function() {
+        var playPromise = videoPlayerEl.play();
+        if (playPromise && playPromise.catch) {
+            playPromise.catch(function(err) {
+                alert('Playback was blocked or failed to start: ' + (err && err.message ? err.message : err));
+            });
+        }
+    };
+
+    videoPlayerEl.onloadedmetadata = function() {
+        if (videoPlayerEl.duration === Infinity || isNaN(videoPlayerEl.duration)) {
+            videoPlayerEl.currentTime = 1e101;
+            videoPlayerEl.ontimeupdate = function() {
+                videoPlayerEl.ontimeupdate = null;
+                videoPlayerEl.currentTime = 0;
+                startPlayback();
+            };
+        } else {
+            startPlayback();
+        }
+    };
+};
+
+var downloadCanvasPNG = function() {
+    var canvasElt = document.getElementById('moverCanvas');
+    if (!canvasElt) { return; }
+    var filename = (currentFilename || 'mover-sandbox') + '.png';
+
+    canvasElt.toBlob(function(blob) {
+        if (!blob) { return; }
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+
+        // Same blob also goes straight into the Home gallery.
+        addToArchive('png', filename, blob);
+    }, 'image/png');
+};
+
+var startRecording = function() {
+    var canvasElt = document.getElementById('moverCanvas');
+    if (!canvasElt || typeof canvasElt.captureStream !== 'function' || typeof MediaRecorder === 'undefined') {
+        alert('Video recording is not supported in this browser.');
+        return;
+    }
+    var stream = canvasElt.captureStream(30);
+    recordedChunks = [];
+    var recorderOptions = { videoBitsPerSecond: 8000000 }; // high bitrate so fine diagonal/diamond detail doesn't get compressed into flat gray blocks
+
+    // VP9's software encoder has known color/chroma bugs on some Chrome +
+    // GPU/driver combinations (can come out fully desaturated). VP8 is an
+    // older, simpler, more consistently-behaved codec, so prefer it when
+    // available; fall back to VP9, then to whatever the browser defaults to.
+    var mimeCandidates = ['video/webm;codecs=vp8', 'video/webm;codecs=vp9', 'video/webm'];
+    var chosenMime = null;
+    for (var mc = 0; mc < mimeCandidates.length; mc++) {
+        if (typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported(mimeCandidates[mc])) {
+            chosenMime = mimeCandidates[mc];
+            break;
+        }
+    }
+    try {
+        mediaRecorder = chosenMime
+            ? new MediaRecorder(stream, Object.assign({ mimeType: chosenMime }, recorderOptions))
+            : new MediaRecorder(stream, recorderOptions);
+    } catch (e1) {
+        try {
+            mediaRecorder = new MediaRecorder(stream, recorderOptions);
+        } catch (e2) {
+            mediaRecorder = new MediaRecorder(stream);
+        }
+    }
+    mediaRecorder.ondataavailable = function(evt) {
+        if (evt.data && evt.data.size > 0) { recordedChunks.push(evt.data); }
+    };
+    mediaRecorder.onstop = function() {
+        var totalBytes = 0;
+        for (var ci = 0; ci < recordedChunks.length; ci++) { totalBytes += recordedChunks[ci].size; }
+        if (totalBytes === 0) {
+            alert('Recording came out empty (0 bytes) -- nothing was captured. Try recording for at least a second or two before hitting Stop.');
+            return;
+        }
+
+        var rawBlob = new Blob(recordedChunks, { type: 'video/webm' });
+        var durationMs = Date.now() - recordingStartTime;
+
+        var finishWithBlob = function(blob) {
+            var filename = (currentFilename || 'mover-sandbox') + '.webm';
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+
+            addToArchive('video', filename, blob);
+        };
+
+        // MediaRecorder output is missing duration metadata (a well-known
+        // Chromium bug: https://bugs.chromium.org/p/chromium/issues/detail?id=642012),
+        // which is exactly what causes a stuck "0:00" and unplayable video
+        // in any player, including outside this page. Patch it in before
+        // downloading/archiving so the actual file is fixed, not just this
+        // page's player.
+        if (typeof ysFixWebmDuration === 'function') {
+            // Signature is (blob, duration, callback, options) -- callback
+            // must be explicitly undefined for the 4th arg to be options,
+            // otherwise the library tries to call our options object as a
+            // function and silently breaks.
+            ysFixWebmDuration(rawBlob, durationMs, undefined, { logger: false })
+                .then(finishWithBlob)
+                .catch(function(err) {
+                    console.error('fix-webm-duration failed:', err);
+                    alert('Could not patch video duration metadata (' + (err && err.message ? err.message : err) + '). Saving the unfixed file -- it may not play correctly.');
+                    finishWithBlob(rawBlob);
+                });
+        } else {
+            alert('fix-webm-duration library did not load -- saving without the duration fix. The video may show as 0:00 and fail to play.');
+            finishWithBlob(rawBlob);
+        }
+    };
+    // Request data every 500ms instead of only once at the very end -- this
+    // produces a more robust file (and avoids edge cases with very short
+    // recordings never flushing any data at all).
+    recordingStartTime = Date.now();
+    mediaRecorder.start(500);
+    isRecording = true;
+    recordingFrameCount = 0;
+};
+
+var stopRecording = function() {
+    if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+    }
+    isRecording = false;
+};
+
+// Picks a handful of random directives and joins them into one challenge line.
+var isUnlocked = function(id) {
+    for (var i = 0; i < shopItems.length; i++) {
+        if (shopItems[i].id === id) { return shopItems[i].owned; }
+    }
+    return false;
+};
+
+var findShopItem = function(id) {
+    for (var i = 0; i < shopItems.length; i++) {
+        if (shopItems[i].id === id) { return shopItems[i]; }
+    }
+    return null;
+};
+
+var currencyLabel = function(item) {
+    return (item.currency === 'creativity') ? 'creativity coins' : 'coins';
+};
+
+var currencyBalance = function(item) {
+    return (item.currency === 'creativity') ? creativityCoins : moverCoins;
+};
+
+var buyItem = function(id) {
+    var item = findShopItem(id);
+    if (!item || item.owned) { return; }
+    if (currencyBalance(item) < item.cost) { return; }
+    if (item.currency === 'creativity') { creativityCoins -= item.cost; }
+    else { moverCoins -= item.cost; }
+    item.owned = true;
+};
+
+var setBackdrop = function(id) {
+    currentBackdrop = id;
+    drawBackdrop();
+};
+
+// Rates how "creative" the current Sandbox setup looks -- rewards using
+// unusual/non-default values across whatever controls are unlocked. Only a
+// small random nudge is added so the score stays tied to what you actually
+// changed instead of being dominated by luck.
+var finishCreation = function() {
+    var score = 0;
+
+    score += Math.min(movers.length, 20) * 0.4;
+    if (Math.abs(getSpeed() - 4.05) > 1.2)   { score += 2; }
+    if (Math.abs(getMoverSize() - 45) > 15)  { score += 2; }
+    if (isUnlocked('wobble')  && getWobble() > 1.5)   { score += 2; }
+    if (isUnlocked('gravity') && getGravity() > 0.08) { score += 2; }
+    if (isUnlocked('wind')    && getWind() > 0.15)    { score += 2; }
+    if (isUnlocked('rainbow') && rainbowMode)  { score += 3; }
+    if (isUnlocked('bounce')  && bounceMode)   { score += 2; }
+    if (isUnlocked('flock')   && flockMode)    { score += 3; }
+    if (isUnlocked('ghost')   && gohst)        { score += 2; }
+    if (isUnlocked('shapes')      && moverShape !== 'circle') { score += 2; }
+    if (isUnlocked('colorpicker') && (pickerHue !== 0 || pickerSat !== 1 || pickerBri !== 1)) { score += 2; }
+    if (currentBackdrop !== 'default') { score += 3; }
+
+    score += random(0, 1); // tiny nudge, not the deciding factor
+
+    return Math.max(1, Math.floor(score));
+};
+
+// Different flavor text depending on how the score landed.
+var creativityMessage = function(n) {
+    if (n <= 2)  { return "Pretty basic. +" + n + " Creativity Coins"; }
+    if (n <= 5)  { return "Nice touch! +" + n + " Creativity Coins"; }
+    if (n <= 9)  { return "Getting creative! +" + n + " Creativity Coins"; }
+    if (n <= 14) { return "Wow, inventive! +" + n + " Creativity Coins"; }
+    return "Absolutely wild creation! +" + n + " Creativity Coins";
+};
+
+// Builds a fresh set of 2-3 challenge targets, only using controls that are
+// currently unlocked (Speed and Size are always available).
+var generateChallenge = function() {
+    var pool = [];
+
+    var targetSpeed = Math.round(random(0.5, 7.5) * 10) / 10;
+    pool.push({ label: 'Set Speed to ' + targetSpeed, check: function() { return Math.abs(getSpeed() - targetSpeed) < 0.4; } });
+
+    var targetSize = Math.round(random(15, 75));
+    pool.push({ label: 'Set Size to ' + targetSize, check: function() { return Math.abs(getMoverSize() - targetSize) < 5; } });
+
+    var targetMoverCount = Math.floor(random(1, 21));
+    pool.push({ label: 'Set movers to ' + targetMoverCount, check: function() { return movers.length === targetMoverCount; } });
+
+    if (isUnlocked('wobble')) {
+        var targetWobble = Math.round(random(0, 10) * 10) / 10;
+        pool.push({ label: 'Set Wobble to ' + targetWobble, check: function() { return Math.abs(getWobble() - targetWobble) < 0.7; } });
+    }
+    if (isUnlocked('gravity')) {
+        var targetGrav = Math.round(random(0, 1) * 100) / 100;
+        pool.push({ label: 'Set Gravity to ' + targetGrav, check: function() { return Math.abs(getGravity() - targetGrav) < 0.08; } });
+    }
+    if (isUnlocked('wind')) {
+        var targetWind = Math.round(random(0, 2) * 10) / 10;
+        pool.push({ label: 'Set Wind to ' + targetWind, check: function() { return Math.abs(getWind() - targetWind) < 0.25; } });
+        var targetDeg = Math.floor(random(0, 360));
+        pool.push({ label: 'Set wind dir to ' + targetDeg + ' degrees', check: function() {
+            var curDeg = (degrees(windAngle) + 360) % 360;
+            var diff = Math.abs(curDeg - targetDeg);
+            diff = Math.min(diff, 360 - diff);
+            return diff < 15;
+        } });
+    }
+    if (isUnlocked('rainbow')) {
+        var wantRainbow = random() < 0.5;
+        pool.push({ label: 'Turn Rainbow ' + (wantRainbow ? 'ON' : 'OFF'), check: function() { return rainbowMode === wantRainbow; } });
+    }
+    if (isUnlocked('bounce')) {
+        var wantBounce = random() < 0.5;
+        pool.push({ label: 'Turn Bounce ' + (wantBounce ? 'ON' : 'OFF'), check: function() { return bounceMode === wantBounce; } });
+    }
+    if (isUnlocked('flock')) {
+        var wantFlock = random() < 0.5;
+        pool.push({ label: 'Turn Flock ' + (wantFlock ? 'ON' : 'OFF'), check: function() { return flockMode === wantFlock; } });
+    }
+    if (isUnlocked('ghost')) {
+        var wantGhost = random() < 0.5;
+        pool.push({ label: 'Turn Ghost ' + (wantGhost ? 'ON' : 'OFF'), check: function() { return gohst === wantGhost; } });
+    }
+    if (isUnlocked('shapes')) {
+        var shapes = ['circle', 'square', 'triangle', 'diamond', 'star'];
+        var wantShape = shapes[Math.floor(random(shapes.length))];
+        pool.push({ label: 'Make the shape ' + wantShape, check: function() { return moverShape === wantShape; } });
+    }
+
+    // Shuffle order for variety, but keep ALL of them -- a challenge should
+    // exercise everything you've unlocked so far, not just a random subset.
+    for (var i = pool.length - 1; i > 0; i--) {
+        var j = Math.floor(random(i + 1));
+        var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+    }
+    challengeTargets = pool;
+    challengeRewardGiven = false;
+};
+
+var drawCoinBadge = function() {
+    var cx = panelCanvas.width - 72;
+    var cy = 26;
+    var r = 15;
+
+    // drop shadow
+    pctx.beginPath();
+    pctx.arc(cx + 1, cy + 2, r, 0, Math.PI * 2);
+    pctx.fillStyle = 'rgba(0,0,0,0.35)';
+    pctx.fill();
+
+    // metallic silver body (radial gradient for a shiny, domed look)
+    var grad = pctx.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.15, cx, cy, r);
+    grad.addColorStop(0,    '#ffffff');
+    grad.addColorStop(0.45, '#d8d8d8');
+    grad.addColorStop(0.8,  '#a8a8a8');
+    grad.addColorStop(1,    '#7c7c7c');
+    pctx.beginPath();
+    pctx.arc(cx, cy, r, 0, Math.PI * 2);
+    pctx.fillStyle = grad;
+    pctx.fill();
+    pctx.strokeStyle = '#5a5a5a';
+    pctx.lineWidth = 1.5;
+    pctx.stroke();
+
+    // inner milled-edge ring
+    pctx.beginPath();
+    pctx.arc(cx, cy, r - 3.5, 0, Math.PI * 2);
+    pctx.strokeStyle = 'rgba(90,90,90,0.55)';
+    pctx.lineWidth = 1;
+    pctx.stroke();
+
+    // small rim highlight (top-left arc) for a curved-metal look
+    pctx.beginPath();
+    pctx.arc(cx, cy, r - 2, Math.PI * 1.05, Math.PI * 1.55);
+    pctx.strokeStyle = 'rgba(255,255,255,0.8)';
+    pctx.lineWidth = 1.5;
+    pctx.stroke();
+
+    // embossed "M" (dark offset + bright top layer)
+    pctx.font = 'bold 14px sans-serif';
+    pctx.textAlign = 'center';
+    pctx.textBaseline = 'middle';
+    pctx.fillStyle = '#6b6b6b';
+    pctx.fillText('M', cx, cy + 1.5);
+    pctx.fillStyle = '#fefefe';
+    pctx.fillText('M', cx, cy);
+
+    // coin count -- bold with a dark outline so it stays readable over any background
+    var label = String(moverCoins);
+    pctx.font = 'bold 16px sans-serif';
+    pctx.textAlign = 'left';
+    pctx.textBaseline = 'middle';
+    pctx.lineWidth = 3.5;
+    pctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    pctx.strokeText(label, cx + r + 8, cy);
+    pctx.fillStyle = '#ffffff';
+    pctx.fillText(label, cx + r + 8, cy);
+};
+
+// Same coin design, but copper-toned with a "C" -- stacked just below the
+// silver Mover Coin badge.
+var drawCreativityBadge = function() {
+    var cx = panelCanvas.width - 72;
+    var cy = 60;
+    var r = 15;
+
+    pctx.beginPath();
+    pctx.arc(cx + 1, cy + 2, r, 0, Math.PI * 2);
+    pctx.fillStyle = 'rgba(0,0,0,0.35)';
+    pctx.fill();
+
+    var grad = pctx.createRadialGradient(cx - r * 0.35, cy - r * 0.4, r * 0.15, cx, cy, r);
+    grad.addColorStop(0,    '#f0c39a');
+    grad.addColorStop(0.45, '#cd7f45');
+    grad.addColorStop(0.8,  '#a35a24');
+    grad.addColorStop(1,    '#7a4118');
+    pctx.beginPath();
+    pctx.arc(cx, cy, r, 0, Math.PI * 2);
+    pctx.fillStyle = grad;
+    pctx.fill();
+    pctx.strokeStyle = '#5c320f';
+    pctx.lineWidth = 1.5;
+    pctx.stroke();
+
+    pctx.beginPath();
+    pctx.arc(cx, cy, r - 3.5, 0, Math.PI * 2);
+    pctx.strokeStyle = 'rgba(90,50,15,0.55)';
+    pctx.lineWidth = 1;
+    pctx.stroke();
+
+    pctx.beginPath();
+    pctx.arc(cx, cy, r - 2, Math.PI * 1.05, Math.PI * 1.55);
+    pctx.strokeStyle = 'rgba(255,220,180,0.8)';
+    pctx.lineWidth = 1.5;
+    pctx.stroke();
+
+    pctx.font = 'bold 14px sans-serif';
+    pctx.textAlign = 'center';
+    pctx.textBaseline = 'middle';
+    pctx.fillStyle = '#5c320f';
+    pctx.fillText('C', cx, cy + 1.5);
+    pctx.fillStyle = '#fde8d0';
+    pctx.fillText('C', cx, cy);
+
+    var clabel = String(creativityCoins);
+    pctx.font = 'bold 16px sans-serif';
+    pctx.textAlign = 'left';
+    pctx.textBaseline = 'middle';
+    pctx.lineWidth = 3.5;
+    pctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    pctx.strokeText(clabel, cx + r + 8, cy);
+    pctx.fillStyle = '#ffd9ad';
+    pctx.fillText(clabel, cx + r + 8, cy);
+};
+
+// Only up to two nav buttons show at once, and which two depends on appMode:
+// Sandbox -> [Home]; Home -> [Sandbox, Challenge]; Challenge -> [Home]
+var drawModeButtons = function() {
+    if (appMode === 'sandbox') {
+        drawButton(navSlotA, "Home", false);
+    } else if (appMode === 'home') {
+        drawButton(navSlotA, "Sandbox", false);
+        drawButton(navSlotB, "Challenge", false);
+        drawButton(navSlotC, "Platformer", false);
+    } else if (appMode === 'challenge') {
+        drawButton(navSlotA, "Home", false);
+    } else if (appMode === 'platformer') {
+        drawButton(navSlotA, "Home", false);
+    }
+};
+
+var drawHomeScreen = function() {
+    pctx.fillStyle = 'rgba(20,20,20,0.97)';
+    pctx.fillRect(0, 0, panelCanvas.width, panelCanvas.height);
+
+    pctx.fillStyle = '#fff';
+    pctx.font = '18px sans-serif';
+    pctx.textAlign = 'left';
+    pctx.textBaseline = 'top';
+    pctx.fillText('Home', 20, 20);
+
+    // --- Left: saved images/videos ---
+    var galleryW = HOME_GALLERY_W;
+    pctx.font = '13px sans-serif';
+    pctx.fillStyle = '#ccc';
+    pctx.fillText('Saved images & videos', 20, 50);
+
+    if (archive.length === 0) {
+        pctx.font = '11px sans-serif';
+        pctx.fillStyle = '#888';
+        pctx.fillText('Nothing saved yet -- use Save PNG or Record in Sandbox mode.', 20, 75);
+        archiveItemRects = [];
+    } else {
+        archiveItemRects = [];
+        var cols = 2;
+        var thumbW = 120, thumbH = 90, gapX = 20, gapY = 34, startX = 20, startY = 75;
+        for (var i = 0; i < archive.length; i++) {
+            var col = i % cols;
+            var row = Math.floor(i / cols);
+            var x = startX + col * (thumbW + gapX);
+            var y = startY + row * (thumbH + gapY);
+            if (y + thumbH > panelCanvas.height - 10) { break; }
+            var entry = archive[i];
+            archiveItemRects.push({ rect: { x: x, y: y, width: thumbW, height: thumbH }, entry: entry });
+
+            pctx.fillStyle = '#333';
+            pctx.fillRect(x, y, thumbW, thumbH);
+
+            if (entry.type === 'png' && entry.img) {
+                pctx.drawImage(entry.img, x, y, thumbW, thumbH);
+            } else if (entry.type === 'video') {
+                pctx.fillStyle = '#fff';
+                pctx.beginPath();
+                pctx.moveTo(x + thumbW / 2 - 10, y + thumbH / 2 - 14);
+                pctx.lineTo(x + thumbW / 2 - 10, y + thumbH / 2 + 14);
+                pctx.lineTo(x + thumbW / 2 + 14, y + thumbH / 2);
+                pctx.closePath();
+                pctx.fill();
+            }
+
+            pctx.strokeStyle = '#000';
+            pctx.lineWidth = 1;
+            pctx.strokeRect(x, y, thumbW, thumbH);
+
+            pctx.fillStyle = '#eee';
+            pctx.font = '10px sans-serif';
+            pctx.textAlign = 'center';
+            pctx.textBaseline = 'top';
+            var label = entry.filename;
+            if (label.length > 18) { label = label.slice(0, 15) + '...'; }
+            pctx.fillText(label, x + thumbW / 2, y + thumbH + 4);
+
+            if (entry.type === 'video') {
+                pctx.fillStyle = '#9df';
+                pctx.font = '9px sans-serif';
+                pctx.fillText('click to play', x + thumbW / 2, y + thumbH + 16);
+            }
+        }
+    }
+
+    // --- Right: two scrollable shop columns ---
+    var shopX = galleryW + 20;
+    var shopW = 220;
+    var platShopX = shopX + shopW + 20;
+    var platShopW = panelCanvas.width - platShopX - 20;
+
+    shopItemRects = [];
+    drawShopColumn(shopItems.filter(function(it) { return it.type !== 'platformer'; }), shopX, shopW, 'Shop', shopScroll, shopItemRects);
+
+    platShopItemRects = [];
+    drawShopColumn(shopItems.filter(function(it) { return it.type === 'platformer'; }), platShopX, platShopW, 'Platformer Shop', platShopScroll, platShopItemRects);
+};
+
+// Draws one scrollable shop column (used for both the feature/backdrop shop
+// and the Platformer shop) and records click-hit rects into rectsOut.
+var drawShopColumn = function(items, x, w, title, scrollState, rectsOut) {
+    pctx.fillStyle = '#1c1c1c';
+    pctx.fillRect(x, 0, w, panelCanvas.height);
+    pctx.fillStyle = '#fff';
+    pctx.font = '15px sans-serif';
+    pctx.textAlign = 'left';
+    pctx.textBaseline = 'top';
+    pctx.fillText(title, x + 14, 50);
+
+    var listTop = 78;
+    var listBottom = panelCanvas.height - 10;
+    var rowH = 44;
+    var rowGap = 6;
+    var rowStep = rowH + rowGap;
+    var visibleH = listBottom - listTop;
+    var contentH = items.length * rowStep;
+    var maxScroll = Math.max(0, contentH - visibleH);
+    if (scrollState.value > maxScroll) { scrollState.value = maxScroll; }
+    if (scrollState.value < 0) { scrollState.value = 0; }
+
+    pctx.save();
+    pctx.beginPath();
+    pctx.rect(x, listTop, w, visibleH);
+    pctx.clip();
+
+    var rowY = listTop - scrollState.value;
+    for (var s = 0; s < items.length; s++) {
+        if (rowY + rowH < listTop || rowY > listBottom) { rowY += rowStep; continue; }
+        var item = items[s];
+        var rowRect = { x: x + 10, y: rowY, width: w - 20, height: rowH };
+
+        pctx.fillStyle = item.owned ? '#27402c' : '#333';
+        pctx.fillRect(rowRect.x, rowRect.y, rowRect.width, rowRect.height);
+
+        pctx.fillStyle = '#eee';
+        pctx.font = '11px sans-serif';
+        pctx.textAlign = 'left';
+        pctx.textBaseline = 'top';
+        pctx.fillText(item.name, rowRect.x + 8, rowRect.y + 6);
+
+        pctx.font = '10px sans-serif';
+        pctx.fillStyle = '#aaa';
+        pctx.fillText(item.owned ? 'Owned' : (item.cost + ' ' + currencyLabel(item)), rowRect.x + 8, rowRect.y + 24);
+
+        if (!item.owned) {
+            var canAfford = currencyBalance(item) >= item.cost;
+            var buyBtn = { x: rowRect.x + rowRect.width - 52, y: rowRect.y + 10, width: 44, height: 24 };
+            pctx.fillStyle = canAfford ? rgbStr(0, 225, 255) : rgbStr(90, 90, 90);
+            pRoundRect(buyBtn.x, buyBtn.y, buyBtn.width, buyBtn.height, 3);
+            pctx.fill();
+            pctx.fillStyle = '#000';
+            pctx.font = '10px sans-serif';
+            pctx.textAlign = 'center';
+            pctx.textBaseline = 'middle';
+            pctx.fillText('Buy', buyBtn.x + buyBtn.width / 2, buyBtn.y + buyBtn.height / 2);
+            rectsOut.push({ rect: buyBtn, itemId: item.id, action: 'buy' });
+        } else if (item.type === 'backdrop') {
+            var isActive = (currentBackdrop === item.id);
+            var useBtn = { x: rowRect.x + rowRect.width - 52, y: rowRect.y + 10, width: 44, height: 24 };
+            pctx.fillStyle = isActive ? rgbStr(0, 180, 90) : rgbStr(0, 225, 255);
+            pRoundRect(useBtn.x, useBtn.y, useBtn.width, useBtn.height, 3);
+            pctx.fill();
+            pctx.fillStyle = '#000';
+            pctx.font = '10px sans-serif';
+            pctx.textAlign = 'center';
+            pctx.textBaseline = 'middle';
+            pctx.fillText(isActive ? 'Active' : 'Use', useBtn.x + useBtn.width / 2, useBtn.y + useBtn.height / 2);
+            rectsOut.push({ rect: useBtn, itemId: item.id, action: 'use' });
+        }
+
+        rowY += rowStep;
+    }
+    pctx.restore();
+
+    if (maxScroll > 0) {
+        var trackX = x + w - 8;
+        pctx.fillStyle = 'rgba(255,255,255,0.15)';
+        pctx.fillRect(trackX, listTop, 4, visibleH);
+        var thumbH = Math.max(20, visibleH * (visibleH / contentH));
+        var thumbY = listTop + (scrollState.value / maxScroll) * (visibleH - thumbH);
+        pctx.fillStyle = 'rgba(255,255,255,0.55)';
+        pctx.fillRect(trackX, thumbY, 4, thumbH);
+    }
+};
+
+// Challenge mode reuses the Sandbox rendering (movers + panel); this only
+// draws the instruction bar along the top and checks for completion.
+var drawChallengeBar = function() {
+    // Check completion first so we know the bar height before drawing the background.
+    var allDone = challengeTargets.length > 0;
+    for (var t0 = 0; t0 < challengeTargets.length; t0++) {
+        if (!challengeTargets[t0].check()) { allDone = false; break; }
+    }
+    if (allDone && challengeTargets.length > 0 && !challengeRewardGiven) {
+        moverCoins += 3;
+        challengeRewardGiven = true;
+    }
+
+    // Build the list of lines to show: a live movers readout first, then one
+    // line per challenge target, then a completion line if everything's done.
+    var lines = [{ text: 'Movers: ' + movers.length, color: '#ccc' }];
+    for (var t = 0; t < challengeTargets.length; t++) {
+        var done = challengeTargets[t].check();
+        lines.push({ text: (done ? '[x] ' : '[ ] ') + challengeTargets[t].label, color: done ? '#5cff8a' : '#ff8a8a' });
+    }
+    if (allDone && challengeTargets.length > 0) {
+        lines.push({ text: 'Challenge complete! +3 Mover Coins', color: '#ffd75c', bold: true });
+    }
+
+    var lineHeight = 16;
+    var topPad = 8;
+    var itemsPerCol = 7;
+    var colWidth = 250;
+    var numCols = Math.ceil(lines.length / itemsPerCol);
+    var rowsUsed = Math.min(lines.length, itemsPerCol);
+    var barH = topPad * 2 + rowsUsed * lineHeight;
+    if (barH < 45) { barH = 45; }
+
+    pctx.fillStyle = 'rgba(20,20,20,0.92)';
+    pctx.fillRect(0, 0, panelCanvas.width, barH);
+
+    pctx.textAlign = 'left';
+    pctx.textBaseline = 'middle';
+    for (var li = 0; li < lines.length; li++) {
+        var col = Math.floor(li / itemsPerCol);
+        var row = li % itemsPerCol;
+        var lx = 8 + col * colWidth;
+        var ly = topPad + row * lineHeight + lineHeight / 2;
+        pctx.font = (lines[li].bold ? 'bold ' : '') + '12px sans-serif';
+        pctx.fillStyle = lines[li].color;
+        pctx.fillText(lines[li].text, lx, ly);
+    }
+
+    // Anchor the button to the bar's own height so it never overlaps the text.
+    // Kept well clear of the coin badge in the top-right corner.
+    newChallengeBtn.x = panelCanvas.width - 220;
+    newChallengeBtn.y = 8;
+    newChallengeBtn.width = 120;
+    newChallengeBtn.height = Math.min(30, barH - 16);
+    drawButton(newChallengeBtn, "New Challenge", false);
+};
+
+var randomizeAll = function() {
+    slider.handleX       = random(slider.x,       slider.x       + slider.width);
+    wobbleSlider.handleX = random(wobbleSlider.x, wobbleSlider.x + wobbleSlider.width);
+    sizeSlider.handleX   = random(sizeSlider.x,   sizeSlider.x   + sizeSlider.width);
+    ghostSlider.handleX  = random(ghostSlider.x,  ghostSlider.x  + ghostSlider.width);
+    gravSlider.handleX   = random(gravSlider.x,   gravSlider.x   + gravSlider.width);
+    windSlider.handleX   = random(windSlider.x,   windSlider.x   + windSlider.width);
+
+    windAngle = random(0, TWO_PI);
+
+    var shapes = ["circle", "square", "triangle", "diamond", "star"];
+    moverShape = shapes[Math.floor(random(shapes.length))];
+
+    pickerHue = random(0, 360);
+    pickerSat = random(0.3, 1);
+    pickerBri = random(0.4, 1);
+    orbX = CP_X + pickerSat * CP_W;
+    orbY = CP_Y + (1 - pickerBri) * CP_H;
+
+    gohst       = random() < 0.5;
+    bounceMode  = random() < 0.5;
+    flockMode   = random() < 0.5;
+    rainbowMode = random() < 0.5;
+
+    usedRandomizeSinceFinish = true;
+};
+
+// --- Platformer mode: placement, physics, and drawing for bouncers/ramps/portals ---
+
+var placePlatformerObject = function(tool, x, y) {
+    // Ramps are placed via click-and-drag (see mousePressed/mouseReleased)
+    // so their angle matches the drag direction -- not handled here.
+    if (platformerItems.length >= 40) { return; }
+    if (tool === 'bouncer') {
+        platformerItems.push({ type: 'bouncer', x: x, y: y });
+    } else if (tool === 'portal') {
+        if (!pendingPortalA) {
+            pendingPortalA = { x: x, y: y };
+        } else {
+            platformerItems.push({ type: 'portal', ax: pendingPortalA.x, ay: pendingPortalA.y, bx: x, by: y });
+            pendingPortalA = null;
+        }
+    }
+};
+
+var applyPlatformerEffects = function(m) {
+    if (m.portalCooldown > 0) { m.portalCooldown--; }
+    for (var pi = 0; pi < platformerItems.length; pi++) {
+        var obj = platformerItems[pi];
+        if (obj.type === 'bouncer') {
+            if (dist(m.position.x, m.position.y, obj.x, obj.y) < 26) {
+                var dir = PVector.sub(m.position, new PVector(obj.x, obj.y));
+                if (dir.mag() < 0.01) { dir = PVector.random2D(); }
+                dir.normalize();
+                dir.mult(Math.max(m.velocity.mag() * 1.6, 6));
+                m.velocity = dir;
+            }
+        } else if (obj.type === 'ramp') {
+            if (dist(m.position.x, m.position.y, obj.x, obj.y) < 24) {
+                var launch = new PVector(cos(obj.angle), sin(obj.angle));
+                launch.mult(Math.max(m.velocity.mag() * 1.3, 5));
+                m.velocity = launch;
+            }
+        } else if (obj.type === 'portal' && m.portalCooldown <= 0) {
+            if (dist(m.position.x, m.position.y, obj.ax, obj.ay) < 20) {
+                m.position.x = obj.bx; m.position.y = obj.by;
+                m.portalCooldown = 8;
+            } else if (dist(m.position.x, m.position.y, obj.bx, obj.by) < 20) {
+                m.position.x = obj.ax; m.position.y = obj.ay;
+                m.portalCooldown = 8;
+            }
+        }
+    }
+};
+
+var drawPlatformerObjects = function() {
+    for (var pi = 0; pi < platformerItems.length; pi++) {
+        var obj = platformerItems[pi];
+        if (obj.type === 'bouncer') {
+            noStroke();
+            fill(255, 90, 90);
+            ellipse(obj.x, obj.y, 40, 40);
+            fill(255, 200, 200);
+            ellipse(obj.x, obj.y, 18, 18);
+        } else if (obj.type === 'ramp') {
+            var len = 30;
+            stroke(90, 200, 255);
+            strokeWeight(4);
+            line(obj.x - cos(obj.angle) * len, obj.y - sin(obj.angle) * len,
+                 obj.x + cos(obj.angle) * len, obj.y + sin(obj.angle) * len);
+            noStroke();
+            fill(90, 200, 255);
+            ellipse(obj.x, obj.y, 10, 10);
+        } else if (obj.type === 'portal') {
+            noFill();
+            stroke(200, 90, 255);
+            strokeWeight(3);
+            ellipse(obj.ax, obj.ay, 34, 34);
+            ellipse(obj.bx, obj.by, 34, 34);
+            stroke(200, 90, 255, 120);
+            strokeWeight(1);
+            line(obj.ax, obj.ay, obj.bx, obj.by);
+        }
+    }
+    if (pendingPortalA) {
+        noFill();
+        stroke(200, 90, 255, 150);
+        strokeWeight(2);
+        ellipse(pendingPortalA.x, pendingPortalA.y, 34, 34);
+    }
+};
+
+// ---------------------------------------------------------------------
+// The panel UI is drawn on its own plain <canvas> (panelCanvas), using
+// the native Canvas 2D API directly -- not p5 -- so it is completely
+// independent of the p5 mover canvas underneath. It is fully cleared and
+// redrawn every frame; when the panel is hidden we simply skip drawing
+// it, so the overlay stays transparent and the mover canvas underneath
+// (which is never cleared) shows through untouched.
+// ---------------------------------------------------------------------
+var panelCanvas = document.getElementById('panelCanvas');
+var pctx = panelCanvas.getContext('2d');
+
+var rgbStr = function(r, g, b, a) {
+    if (a === undefined) { a = 255; }
+    return 'rgba(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ',' + (a / 255) + ')';
+};
+
+var pRoundRect = function(x, y, w, h, r) {
+    if (!r) { r = 0; }
+    pctx.beginPath();
+    pctx.moveTo(x + r, y);
+    pctx.arcTo(x + w, y, x + w, y + h, r);
+    pctx.arcTo(x + w, y + h, x, y + h, r);
+    pctx.arcTo(x, y + h, x, y, r);
+    pctx.arcTo(x, y, x + w, y, r);
+    pctx.closePath();
+};
+
+var pEllipsePath = function(cx, cy, dw, dh) {
+    pctx.beginPath();
+    pctx.ellipse(cx, cy, dw / 2, dh / 2, 0, 0, Math.PI * 2);
+};
+
+var drawButton = function(btn, label, active) {
+    pctx.fillStyle = active ? rgbStr(0, 180, 220) : rgbStr(0, 225, 255);
+    pRoundRect(btn.x, btn.y, btn.width, btn.height, 3);
+    pctx.fill();
+    pctx.fillStyle = rgbStr(0, 0, 0);
+    pctx.font = '9px sans-serif';
+    pctx.textAlign = 'left';
+    pctx.textBaseline = 'middle';
+    pctx.fillText(label, btn.x + 3, btn.y + btn.height / 2);
+};
+
+var drawLocked = function(rect, label, cost) {
+    pctx.fillStyle = 'rgba(0,0,0,0.45)';
+    pctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+    pctx.strokeStyle = '#000';
+    pctx.lineWidth = 1;
+    pctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
+    pctx.fillStyle = '#ddd';
+    pctx.font = '8px sans-serif';
+    pctx.textAlign = 'left';
+    pctx.textBaseline = 'middle';
+    pctx.fillText('\uD83D\uDD12 ' + label + ' (' + cost + 'c)', rect.x + 3, rect.y + rect.height / 2);
+};
+
+var drawArrowButton = function(btn, label) {
+    pctx.fillStyle = rgbStr(0, 225, 255);
+    pRoundRect(btn.x, btn.y, btn.width, btn.height, 3);
+    pctx.fill();
+    pctx.fillStyle = rgbStr(0, 0, 0);
+    pctx.font = '9px sans-serif';
+    pctx.textAlign = 'center';
+    pctx.textBaseline = 'middle';
+    pctx.fillText(label, btn.x + btn.width / 2, btn.y + btn.height / 2);
+};
+
+var drawSliderGeneric = function(sl, label) {
+    pctx.strokeStyle = rgbStr(180, 180, 180);
+    pctx.lineWidth = 2;
+    pctx.beginPath();
+    pctx.moveTo(sl.x, sl.y);
+    pctx.lineTo(sl.x + sl.width, sl.y);
+    pctx.stroke();
+    pctx.fillStyle = rgbStr(0, 225, 255);
+    pEllipsePath(sl.handleX, sl.y, 11, 11);
+    pctx.fill();
+    pctx.fillStyle = rgbStr(0, 0, 0);
+    pctx.font = '8px sans-serif';
+    pctx.textAlign = 'left';
+    pctx.textBaseline = 'bottom';
+    pctx.fillText(label, sl.x, sl.y - 1);
+};
+
+var drawDial = function() {
+    pctx.fillStyle = rgbStr(80, 80, 80);
+    pctx.strokeStyle = rgbStr(0, 0, 0);
+    pctx.lineWidth = 1;
+    pEllipsePath(DIAL_X, DIAL_Y, DIAL_R * 2, DIAL_R * 2);
+    pctx.fill();
+    pctx.stroke();
+    pctx.strokeStyle = rgbStr(0, 225, 255);
+    pctx.lineWidth = 2;
+    pctx.beginPath();
+    pctx.moveTo(DIAL_X, DIAL_Y);
+    pctx.lineTo(DIAL_X + cos(windAngle) * DIAL_R, DIAL_Y + sin(windAngle) * DIAL_R);
+    pctx.stroke();
+    pctx.fillStyle = rgbStr(255, 255, 255);
+    pEllipsePath(DIAL_X, DIAL_Y, 5, 5);
+    pctx.fill();
+    pctx.fillStyle = rgbStr(0, 0, 0);
+    pctx.font = '8px sans-serif';
+    pctx.textAlign = 'center';
+    pctx.textBaseline = 'bottom';
+    pctx.fillText('wind dir', DIAL_X, DIAL_Y - DIAL_R - 1);
+};
+
+var drawColorPicker = function() {
+    var step = 4;
+    for (var sx = 0; sx < CP_W; sx += step) {
+        for (var sy = 0; sy < CP_H; sy += step) {
+            var s = sx / CP_W;
+            var b = 1 - (sy / CP_H);
+            var rgb = hsbToRgb(pickerHue, s, b);
+            pctx.fillStyle = rgbStr(rgb.r, rgb.g, rgb.b);
+            pctx.fillRect(CP_X + sx, CP_Y + sy, step, step);
+        }
+    }
+    pctx.strokeStyle = rgbStr(0, 0, 0);
+    pctx.lineWidth = 1;
+    pctx.strokeRect(CP_X, CP_Y, CP_W, CP_H);
+
+    pctx.strokeStyle = rgbStr(0, 0, 0);
+    pctx.lineWidth = 2;
+    pEllipsePath(orbX, orbY, 9, 9);
+    pctx.stroke();
+    pctx.strokeStyle = rgbStr(255, 255, 255);
+    pctx.lineWidth = 1;
+    pEllipsePath(orbX, orbY, 9, 9);
+    pctx.stroke();
+
+    var hStep = 3;
+    for (var hx = 0; hx < HB_W; hx += hStep) {
+        var h = map(hx, 0, HB_W, 0, 360);
+        var hrgb = hsbToRgb(h, 1, 1);
+        pctx.fillStyle = rgbStr(hrgb.r, hrgb.g, hrgb.b);
+        pctx.fillRect(HB_X + hx, HB_Y, hStep, HB_H);
+    }
+    pctx.strokeStyle = rgbStr(0, 0, 0);
+    pctx.lineWidth = 1;
+    pctx.strokeRect(HB_X, HB_Y, HB_W, HB_H);
+
+    var hueHandleX = map(pickerHue, 0, 360, HB_X, HB_X + HB_W);
+    pctx.fillStyle = rgbStr(255, 255, 255);
+    pRoundRect(hueHandleX - 3, HB_Y - 2, 6, HB_H + 4, 2);
+    pctx.fill();
+    pctx.strokeStyle = rgbStr(0, 0, 0);
+    pctx.lineWidth = 1;
+    pctx.stroke();
+
+    var pc = getPickerColor();
+    pctx.fillStyle = rgbStr(pc.r, pc.g, pc.b);
+    pRoundRect(CP_X, HB_Y + HB_H + 3, CP_W, 10, 2);
+    pctx.fill();
+    pctx.strokeStyle = rgbStr(0, 0, 0);
+    pctx.lineWidth = 1;
+    pctx.stroke();
+};
+
+// Procedurally paints the mover canvas's background according to the
+// currently selected backdrop (bought in the Home shop).
+var drawBackdrop = function() {
+    if (currentBackdrop === 'backdrop_space') {
+        background(8, 8, 28);
+        push();
+        noStroke();
+        fill(255);
+        for (var s = 0; s < 180; s++) {
+            var sx = random(width);
+            var sy = random(height);
+            var sz = random(1, 2.5);
+            ellipse(sx, sy, sz, sz);
+        }
+        fill(255, 255, 255, 180);
+        for (var s2 = 0; s2 < 6; s2++) {
+            ellipse(random(width), random(height), random(2, 4), random(2, 4));
+        }
+        pop();
+    } else if (currentBackdrop === 'backdrop_ocean') {
+        background(8, 60, 110);
+        push();
+        noStroke();
+        for (var w = 0; w < 8; w++) {
+            fill(255, 255, 255, 30);
+            rect(0, height * (w / 8) + random(-6, 6), width, 3);
+        }
+        pop();
+    } else if (currentBackdrop === 'backdrop_jurassic') {
+        background(50, 85, 35);
+        push();
+        noStroke();
+        fill(30, 60, 20);
+        for (var g = 0; g < 50; g++) {
+            var gx = random(width);
+            var gy = height - random(90);
+            triangle(gx, gy, gx + 3, gy - 25 - random(25), gx + 6, gy);
+        }
+        pop();
+    } else {
+        background(255);
+    }
+};
+
+var drawShape = function(px, py, sz, angle) {
+    var r = sz / 2;
+    push();
+    translate(px, py);
+    rotate(angle);
+    if (moverShape === "circle") {
+        ellipse(0, 0, sz, sz);
+    } else if (moverShape === "square") {
+        rectMode(CENTER);
+        rect(0, 0, sz, sz);
+        rectMode(CORNER);
+    } else if (moverShape === "triangle") {
+        triangle(r, 0, -r * 0.6, -r * 0.8, -r * 0.6, r * 0.8);
+    } else if (moverShape === "diamond") {
+        quad(0, -r, r, 0, 0, r, -r, 0);
+    } else if (moverShape === "star") {
+        var inner = r * 0.4;
+        beginShape();
+        for (var pt = 0; pt < 10; pt++) {
+            var a = pt * PI / 5 - PI / 2;
+            var rad = (pt % 2 === 0) ? r : inner;
+            vertex(cos(a) * rad, sin(a) * rad);
+        }
+        endShape(CLOSE);
+    }
+    pop();
+};
+
+var isMouseInside = function(btn) {
+    return mouseX >= btn.x && mouseX <= btn.x + btn.width &&
+           mouseY >= btn.y && mouseY <= btn.y + btn.height;
+};
+
+var Mover = function() {
+    this.position = new PVector(width / 2, height / 2);
+    this.velocity = new PVector(0, 0);
+    this.acceleration = new PVector(0, 0);
+    this.hue = random(360);
+    var rgb = hsbToRgb(this.hue, 0.8, 0.9);
+    this.r = rgb.r;
+    this.g = rgb.g;
+    this.b = rgb.b;
+    this.portalCooldown = 0; // Platformer mode: prevents instant re-teleport
+};
+
+Mover.prototype.update = function() {
+    if (flockMode && movers.length > 1) {
+        var sep = this.separate();
+        var ali = this.align();
+        var coh = this.cohere();
+        sep.mult(1.5);
+        this.acceleration = PVector.add(sep, PVector.add(ali, coh));
+    } else {
+        this.acceleration = PVector.random2D();
+        this.acceleration.mult(random(getWobble()));
+    }
+    this.acceleration.y += getGravity();
+    var ws = getWind();
+    this.acceleration.x += cos(windAngle) * ws;
+    this.acceleration.y += sin(windAngle) * ws;
+    this.velocity.add(this.acceleration);
+    this.velocity.limit(getSpeed() * 2);
+    this.position.add(this.velocity);
+};
+
+Mover.prototype.separate = function() {
+    var desired = new PVector(0, 0);
+    var count = 0;
+    var r = getMoverSize() * 1.5;
+    for (var i = 0; i < movers.length; i++) {
+        if (!movers[i]) { continue; }
+        var d = PVector.dist(this.position, movers[i].position);
+        if (d > 0 && d < r) {
+            var diff = PVector.sub(this.position, movers[i].position);
+            diff.normalize();
+            diff.div(d);
+            desired.add(diff);
+            count++;
+        }
+    }
+    if (count > 0) {
+        desired.div(count);
+        desired.normalize();
+        desired.mult(getSpeed() * 2);
+        desired.sub(this.velocity);
+        desired.limit(0.5);
+    }
+    return desired;
+};
+
+Mover.prototype.align = function() {
+    var sum = new PVector(0, 0);
+    var count = 0;
+    for (var i = 0; i < movers.length; i++) {
+        if (!movers[i]) { continue; }
+        var d = PVector.dist(this.position, movers[i].position);
+        if (d > 0 && d < 80) {
+            sum.add(movers[i].velocity);
+            count++;
+        }
+    }
+    if (count > 0) {
+        sum.div(count);
+        sum.normalize();
+        sum.mult(getSpeed() * 2);
+        sum.sub(this.velocity);
+        sum.limit(0.3);
+    }
+    return sum;
+};
+
+Mover.prototype.cohere = function() {
+    var sum = new PVector(0, 0);
+    var count = 0;
+    for (var i = 0; i < movers.length; i++) {
+        if (!movers[i]) { continue; }
+        var d = PVector.dist(this.position, movers[i].position);
+        if (d > 0 && d < 100) {
+            sum.add(movers[i].position);
+            count++;
+        }
+    }
+    if (count > 0) {
+        sum.div(count);
+        var desired = PVector.sub(sum, this.position);
+        desired.normalize();
+        desired.mult(getSpeed() * 2);
+        desired.sub(this.velocity);
+        desired.limit(0.25);
+        return desired;
+    }
+    return new PVector(0, 0);
+};
+
+Mover.prototype.display = function() {
+    stroke(0);
+    strokeWeight(2);
+    if (rainbowMode) {
+        fill(this.r, this.g, this.b);
+    } else {
+        var pc = getPickerColor();
+        fill(pc.r, pc.g, pc.b);
+    }
+    var sz = getMoverSize();
+    var angle = atan2(this.velocity.y, this.velocity.x);
+    drawShape(this.position.x, this.position.y, sz, angle);
+    if (gohst) {
+        noStroke();
+        fill(255, 255, 255, getMoverGhost());
+        ellipse(this.position.x, this.position.y, 800, 800);
+    }
+};
+
+Mover.prototype.checkEdges = function() {
+    var sz = getMoverSize() / 2;
+    if (bounceMode) {
+        if (this.position.x > width - sz)  { this.position.x = width - sz;  this.velocity.x *= -1; }
+        if (this.position.x < sz)          { this.position.x = sz;           this.velocity.x *= -1; }
+        if (this.position.y > height - sz) { this.position.y = height - sz;  this.velocity.y *= -1; }
+        if (this.position.y < sz)          { this.position.y = sz;           this.velocity.y *= -1; }
+    } else {
+        if (this.position.x > width)  { this.position.x = 0; }
+        if (this.position.x < 0)      { this.position.x = width; }
+        if (this.position.y > height) { this.position.y = 0; }
+        if (this.position.y < 0)      { this.position.y = height; }
+    }
+};
+
+function setup() {
+    pixelDensity(1); // fix the canvas's real pixel buffer at exactly 800x600,
+                      // so recording/export can't pick up a retina-scaled size
+    var c = createCanvas(800, 600);
+    c.id('moverCanvas');
+    c.parent('p5-holder');
+    drawBackdrop();
+    movers.push(new Mover());
+
+    filenameInput = document.createElement('input');
+    filenameInput.type = 'text';
+    filenameInput.value = currentFilename;
+    filenameInput.placeholder = 'filename';
+    filenameInput.style.position = 'absolute';
+    filenameInput.style.left = '5px';
+    filenameInput.style.top = '421px';
+    filenameInput.style.width = '140px';
+    filenameInput.style.height = '18px';
+    filenameInput.style.boxSizing = 'border-box';
+    filenameInput.style.fontSize = '9px';
+    filenameInput.style.zIndex = '10';
+    filenameInput.addEventListener('input', function() {
+        currentFilename = filenameInput.value.trim() || 'mover-sandbox';
+    });
+    document.getElementById('wrap').appendChild(filenameInput);
+
+    document.getElementById('wrap').addEventListener('wheel', function(e) {
+        if (appMode !== 'home') { return; }
+        var shopX = HOME_GALLERY_W + 20;
+        var shopW = 220;
+        var platShopX = shopX + shopW + 20;
+        if (mouseX >= platShopX) {
+            platShopScroll.value += e.deltaY;
+            e.preventDefault();
+        } else if (mouseX >= shopX) {
+            shopScroll.value += e.deltaY;
+            e.preventDefault();
+        }
+    }, { passive: false });
+}
+
+mousePressed = function() {
+    // Platformer: click-and-drag to aim a ramp. Handled first and
+    // independently of panelVisible, since the toolbar works regardless.
+    if (appMode === 'platformer' && placingTool === 'ramp') {
+        var inPanelBoxP = panelVisible && mouseX >= PANEL_X && mouseX <= PANEL_X + PANEL_W &&
+                           mouseY >= PANEL_Y && mouseY <= PANEL_Y + PANEL_H;
+        var inToolbarP = mouseY >= 545 && mouseY <= 590 && mouseX <= 440;
+        var inTopUIP = mouseY <= 160;
+        if (!inPanelBoxP && !inToolbarP && !inTopUIP) {
+            rampDragStart = { x: mouseX, y: mouseY };
+            rampDragCurrent = { x: mouseX, y: mouseY };
+            return;
+        }
+    }
+
+    if ((appMode !== 'sandbox' && appMode !== 'challenge' && appMode !== 'platformer') || !panelVisible) { return; }
+    if (isUnlocked('wind') && dist(mouseX, mouseY, DIAL_X, DIAL_Y) < DIAL_R + 5) { windDialDragging = true; }
+    if (isUnlocked('colorpicker') && mouseX >= CP_X && mouseX <= CP_X + CP_W &&
+        mouseY >= CP_Y && mouseY <= CP_Y + CP_H) {
+        boxOrbDragging = true;
+        orbX = constrain(mouseX, CP_X, CP_X + CP_W);
+        orbY = constrain(mouseY, CP_Y, CP_Y + CP_H);
+        pickerSat = (orbX - CP_X) / CP_W;
+        pickerBri = 1 - (orbY - CP_Y) / CP_H;
+    }
+    if (isUnlocked('colorpicker') && mouseX >= HB_X && mouseX <= HB_X + HB_W &&
+        mouseY >= HB_Y && mouseY <= HB_Y + HB_H) {
+        hueBarDragging = true;
+        pickerHue = map(mouseX, HB_X, HB_X + HB_W, 0, 360);
+    }
+    if (dist(mouseX, mouseY, slider.handleX,        slider.y)       < 10) { slider.dragging       = true; }
+    if (dist(mouseX, mouseY, sizeSlider.handleX,    sizeSlider.y)   < 10) { sizeSlider.dragging   = true; }
+    if (isUnlocked('wobble')  && dist(mouseX, mouseY, wobbleSlider.handleX, wobbleSlider.y) < 10) { wobbleSlider.dragging = true; }
+    if (isUnlocked('ghost')   && dist(mouseX, mouseY, ghostSlider.handleX,  ghostSlider.y)  < 10) { ghostSlider.dragging  = true; }
+    if (isUnlocked('gravity') && dist(mouseX, mouseY, gravSlider.handleX,   gravSlider.y)   < 10) { gravSlider.dragging   = true; }
+    if (isUnlocked('wind')    && dist(mouseX, mouseY, windSlider.handleX,   windSlider.y)   < 10) { windSlider.dragging   = true; }
+};
+
+mouseDragged = function() {
+    if (appMode === 'platformer' && rampDragStart) {
+        rampDragCurrent = { x: mouseX, y: mouseY };
+        return;
+    }
+    if (appMode !== 'sandbox' && appMode !== 'challenge' && appMode !== 'platformer') { return; }
+    if (windDialDragging) { windAngle = atan2(mouseY - DIAL_Y, mouseX - DIAL_X); }
+    if (boxOrbDragging) {
+        orbX = constrain(mouseX, CP_X, CP_X + CP_W);
+        orbY = constrain(mouseY, CP_Y, CP_Y + CP_H);
+        pickerSat = (orbX - CP_X) / CP_W;
+        pickerBri = 1 - (orbY - CP_Y) / CP_H;
+    }
+    if (hueBarDragging) { pickerHue = map(constrain(mouseX, HB_X, HB_X + HB_W), HB_X, HB_X + HB_W, 0, 360); }
+    if (slider.dragging)       { slider.handleX       = constrain(mouseX, slider.x,       slider.x       + slider.width); }
+    if (wobbleSlider.dragging) { wobbleSlider.handleX = constrain(mouseX, wobbleSlider.x, wobbleSlider.x + wobbleSlider.width); }
+    if (sizeSlider.dragging)   { sizeSlider.handleX   = constrain(mouseX, sizeSlider.x,   sizeSlider.x   + sizeSlider.width); }
+    if (ghostSlider.dragging)  { ghostSlider.handleX  = constrain(mouseX, ghostSlider.x,  ghostSlider.x  + ghostSlider.width); }
+    if (gravSlider.dragging)   { gravSlider.handleX   = constrain(mouseX, gravSlider.x,   gravSlider.x   + gravSlider.width); }
+    if (windSlider.dragging)   { windSlider.handleX   = constrain(mouseX, windSlider.x,   windSlider.x   + windSlider.width); }
+};
+
+mouseReleased = function() {
+    windDialDragging      = false;
+    boxOrbDragging        = false;
+    hueBarDragging        = false;
+    slider.dragging       = false;
+    wobbleSlider.dragging = false;
+    sizeSlider.dragging   = false;
+    ghostSlider.dragging  = false;
+    gravSlider.dragging   = false;
+    windSlider.dragging   = false;
+
+    if (appMode === 'platformer' && rampDragStart) {
+        var dx = rampDragCurrent.x - rampDragStart.x;
+        var dy = rampDragCurrent.y - rampDragStart.y;
+        if (Math.sqrt(dx * dx + dy * dy) > 8 && platformerItems.length < 40) {
+            platformerItems.push({ type: 'ramp', x: rampDragStart.x, y: rampDragStart.y, angle: atan2(dy, dx) });
+        }
+        rampDragStart = null;
+        rampDragCurrent = null;
+    }
+};
+
+mouseClicked = function() {
+    // --- Easter egg: click the coin badge for +10,000 Mover Coins ---
+    var coinCx = panelCanvas.width - 72;
+    var coinCy = 26;
+    if (dist(mouseX, mouseY, coinCx, coinCy) < 17) {
+        moverCoins += 10000;
+        return;
+    }
+
+    // --- Nav (which button is in which slot depends on appMode) ---
+    if (appMode === 'sandbox' && isMouseInside(navSlotA)) {
+        appMode = 'home';
+        if (filenameInput) { filenameInput.style.display = 'none'; }
+        return;
+    }
+    if (appMode === 'home' && isMouseInside(navSlotA)) {
+        appMode = 'sandbox';
+        if (filenameInput) { filenameInput.style.display = panelVisible ? 'block' : 'none'; }
+        return;
+    }
+    if (appMode === 'home' && isMouseInside(navSlotB)) {
+        appMode = 'challenge';
+        generateChallenge();
+        if (filenameInput) { filenameInput.style.display = panelVisible ? 'block' : 'none'; }
+        return;
+    }
+    if (appMode === 'home' && isMouseInside(navSlotC)) {
+        appMode = 'platformer';
+        if (filenameInput) { filenameInput.style.display = panelVisible ? 'block' : 'none'; }
+        return;
+    }
+    if (appMode === 'challenge' && isMouseInside(navSlotA)) {
+        appMode = 'home';
+        if (filenameInput) { filenameInput.style.display = 'none'; }
+        return;
+    }
+    if (appMode === 'platformer' && isMouseInside(navSlotA)) {
+        appMode = 'home';
+        if (filenameInput) { filenameInput.style.display = 'none'; }
+        return;
+    }
+
+    // --- Home mode: shop buy/use buttons + saved-gallery items ---
+    if (appMode === 'home') {
+        for (var si = 0; si < shopItemRects.length; si++) {
+            if (isMouseInside(shopItemRects[si].rect)) {
+                if (shopItemRects[si].action === 'buy') { buyItem(shopItemRects[si].itemId); }
+                else { setBackdrop(shopItemRects[si].itemId); }
+                return;
+            }
+        }
+        for (var pi = 0; pi < platShopItemRects.length; pi++) {
+            if (isMouseInside(platShopItemRects[pi].rect)) {
+                buyItem(platShopItemRects[pi].itemId); // platformer items have no "use" action
+                return;
+            }
+        }
+        for (var ai = 0; ai < archiveItemRects.length; ai++) {
+            if (isMouseInside(archiveItemRects[ai].rect)) {
+                var entry = archiveItemRects[ai].entry;
+                if (entry.type === 'video') { playArchiveVideo(entry); }
+                else { openArchiveEntry(entry); }
+                return;
+            }
+        }
+        return;
+    }
+
+    // --- Platformer mode: tool buttons + click-to-place on the canvas ---
+    if (appMode === 'platformer') {
+        if (isUnlocked('bouncer') && isMouseInside(toolBtnBouncer)) {
+            placingTool = (placingTool === 'bouncer') ? null : 'bouncer';
+            pendingPortalA = null;
+            return;
+        }
+        if (isUnlocked('ramp') && isMouseInside(toolBtnRamp)) {
+            placingTool = (placingTool === 'ramp') ? null : 'ramp';
+            pendingPortalA = null;
+            return;
+        }
+        if (isUnlocked('portal') && isMouseInside(toolBtnPortal)) {
+            placingTool = (placingTool === 'portal') ? null : 'portal';
+            pendingPortalA = null;
+            return;
+        }
+        if (isMouseInside(clearObjectsBtn)) {
+            platformerItems = [];
+            pendingPortalA = null;
+            return;
+        }
+        if (placingTool && placingTool !== 'ramp') {
+            var inPanelBox = panelVisible && mouseX >= PANEL_X && mouseX <= PANEL_X + PANEL_W &&
+                              mouseY >= PANEL_Y && mouseY <= PANEL_Y + PANEL_H;
+            var inToolbar = mouseY >= 545 && mouseY <= 590 && mouseX <= 440;
+            var inTopUI = mouseY <= 160;
+            if (!inPanelBox && !inToolbar && !inTopUI) {
+                placePlatformerObject(placingTool, mouseX, mouseY);
+                return;
+            }
+        }
+    }
+
+    // --- Challenge mode: "New Challenge" button, then fall through to the
+    // normal Sandbox panel handling below so it's fully interactive ---
+    if (appMode === 'challenge' && isMouseInside(newChallengeBtn)) {
+        generateChallenge();
+        return;
+    }
+
+    if (appMode !== 'sandbox' && appMode !== 'challenge' && appMode !== 'platformer') { return; }
+
+    if (isMouseInside(tabBtn)) {
+        panelVisible = !panelVisible;
+        PANEL_Y = panelVisible ? PANEL_OPEN_Y : PANEL_CLOSED_Y;
+        if (filenameInput) { filenameInput.style.display = panelVisible ? 'block' : 'none'; }
+        return;
+    }
+    if (!panelVisible) { return; }
+    if (isUnlocked('ghost')   && isMouseInside(gohstBtn))   { gohst       = !gohst; }
+    if (isUnlocked('bounce')  && isMouseInside(bounceBtn))  { bounceMode  = !bounceMode; }
+    if (isUnlocked('flock')   && isMouseInside(flockBtn))   { flockMode   = !flockMode; }
+    if (isUnlocked('rainbow') && isMouseInside(rainbowBtn)) { rainbowMode = !rainbowMode; }
+    if (isMouseInside(shapeBtn.circle)) { moverShape = "circle"; }
+    if (isUnlocked('shapes')) {
+        if (isMouseInside(shapeBtn.triangle)) { moverShape = "triangle"; }
+        if (isMouseInside(shapeBtn.square))   { moverShape = "square"; }
+        if (isMouseInside(shapeBtn.diamond))  { moverShape = "diamond"; }
+        if (isMouseInside(shapeBtn.star))     { moverShape = "star"; }
+    }
+    if (isMouseInside(resetBtn)) {
+        drawBackdrop();
+        for (var i = 0; i < movers.length; i++) {
+            movers[i].position     = new PVector(width / 2, height / 2);
+            movers[i].velocity     = new PVector(0, 0);
+            movers[i].acceleration = new PVector(0, 0);
+        }
+    }
+    if (isMouseInside(saveBtn)) {
+        downloadCanvasPNG();
+    }
+    if (isMouseInside(pauseBtn)) {
+        isPaused = !isPaused;
+    }
+    if (isMouseInside(randomBtn) && appMode === 'sandbox' && isUnlocked('randomize')) {
+        randomizeAll();
+    }
+    if (isMouseInside(recordBtn)) {
+        if (!isRecording) { startRecording(); } else { stopRecording(); }
+    }
+    if (appMode === 'sandbox' && isMouseInside(finishBtn)) {
+        if (usedRandomizeSinceFinish) {
+            finishMessageText = "Don't use random. +0 Creativity Coins";
+            usedRandomizeSinceFinish = false;
+        } else {
+            var earned = finishCreation();
+            creativityCoins += earned;
+            finishMessageText = creativityMessage(earned);
+        }
+        finishMessageTimer = 150;
+    }
+    if (isMouseInside(screenWipeBtn)) {
+        drawBackdrop();
+    }
+    if (isMouseInside(arrowBtns.up)   && movers.length < 100) { movers.push(new Mover()); }
+    if (isMouseInside(arrowBtns.down) && movers.length > 0)   { movers.pop(); }
+    if (isMouseInside(arrowBtns.m2)   && movers.length > 0) {
+        var target = movers.length * 2;
+        if (target > 100) { target = 100; }
+        for (var i = movers.length; i < target; i++) { movers.push(new Mover()); }
+    }
+    if (isMouseInside(arrowBtns.d2) && movers.length > 1) {
+        var targetD = Math.max(1, Math.floor(movers.length / 2));
+        while (movers.length > targetD) { movers.pop(); }
+    }
+};
+
+draw = function() {
+    // Movers/trails run/render in Sandbox, Challenge, and Platformer (not on
+    // the Home screen). Platformer also draws its bouncers/ramps/portals and
+    // applies their physics to each mover.
+    if (appMode === 'sandbox' || appMode === 'challenge' || appMode === 'platformer') {
+        if (appMode === 'platformer') { drawPlatformerObjects(); }
+        for (var i = 0; i < movers.length; i++) {
+            if (movers[i]) {
+                if (!isPaused) {
+                    movers[i].update();
+                    movers[i].checkEdges();
+                    if (appMode === 'platformer') { applyPlatformerEffects(movers[i]); }
+                }
+                movers[i].display();
+            }
+        }
+    }
+
+    // Panel UI draws onto the separate overlay <canvas> every frame.
+    pctx.clearRect(0, 0, panelCanvas.width, panelCanvas.height);
+
+    // Home fills the whole overlay with its own dark background, so its nav
+    // buttons/coin badge must be drawn AFTER that fill or it paints over them.
+    if (appMode === 'home') {
+        drawHomeScreen();
+        drawModeButtons();
+        drawCoinBadge();
+        drawCreativityBadge();
+        return;
+    }
+
+    // Nav buttons: which ones show depends on appMode (see drawModeButtons).
+    drawModeButtons();
+
+    // --- Sandbox & Challenge share this panel UI ---
+    pctx.fillStyle = rgbStr(80, 80, 80);
+    pRoundRect(tabBtn.x, tabBtn.y, tabBtn.width, tabBtn.height, 4);
+    pctx.fill();
+    pctx.fillStyle = rgbStr(255, 255, 255);
+    pctx.font = '9px sans-serif';
+    pctx.textAlign = 'center';
+    pctx.textBaseline = 'middle';
+    pctx.fillText(panelVisible ? "v hide" : "^ show", tabBtn.x + tabBtn.width / 2, tabBtn.y + tabBtn.height / 2);
+
+    if (panelVisible) {
+        pctx.fillStyle = rgbStr(116, 116, 116, 220);
+        pctx.fillRect(PANEL_X, PANEL_Y, PANEL_W, PANEL_H);
+        pctx.fillStyle = rgbStr(116, 116, 116, 50);
+        pctx.fillRect(PANEL_X, PANEL_Y, PANEL_W, PANEL_H);
+
+        // Speed and Size are always available; everything else is locked
+        // until bought in the Home shop.
+        drawSliderGeneric(slider,     "Speed: " + getSpeed().toFixed(1));
+        drawSliderGeneric(sizeSlider, "Size: "  + getMoverSize().toFixed(0));
+
+        if (isUnlocked('wobble')) {
+            drawSliderGeneric(wobbleSlider, "Wobble: " + getWobble().toFixed(1));
+        } else {
+            drawLocked({ x: wobbleSlider.x, y: wobbleSlider.y - 11, width: wobbleSlider.width + 20, height: 22 }, "Wobble", findShopItem('wobble').cost);
+        }
+        if (isUnlocked('ghost')) {
+            drawSliderGeneric(ghostSlider, "Ghost: " + getMoverGhost().toFixed(0));
+        } else {
+            drawLocked({ x: ghostSlider.x, y: ghostSlider.y - 11, width: ghostSlider.width + 20, height: 22 }, "Ghost", findShopItem('ghost').cost);
+        }
+        if (isUnlocked('gravity')) {
+            drawSliderGeneric(gravSlider, "Gravity: " + getGravity().toFixed(2));
+        } else {
+            drawLocked({ x: gravSlider.x, y: gravSlider.y - 11, width: gravSlider.width + 20, height: 22 }, "Gravity", findShopItem('gravity').cost);
+        }
+        if (isUnlocked('wind')) {
+            drawSliderGeneric(windSlider, "Wind: " + getWind().toFixed(1));
+        } else {
+            drawLocked({ x: windSlider.x, y: windSlider.y - 11, width: windSlider.width + 20, height: 22 }, "Wind", findShopItem('wind').cost);
+        }
+
+        if (isUnlocked('wind')) {
+            drawDial();
+        } else {
+            drawLocked({ x: DIAL_X - DIAL_R, y: DIAL_Y - DIAL_R, width: DIAL_R * 2, height: DIAL_R * 2 + 12 }, "Wind dir", findShopItem('wind').cost);
+        }
+        if (isUnlocked('colorpicker')) {
+            drawColorPicker();
+        } else {
+            drawLocked({ x: CP_X, y: CP_Y, width: CP_W, height: CP_H + HB_H + 20 }, "Color", findShopItem('colorpicker').cost);
+        }
+
+        if (isUnlocked('ghost')) {
+            drawButton(gohstBtn, "Ghost:" + (gohst ? "ON" : "OFF"), gohst);
+        } else {
+            drawLocked(gohstBtn, "Ghost", findShopItem('ghost').cost);
+        }
+        if (isUnlocked('bounce')) {
+            drawButton(bounceBtn, "Bounce:" + (bounceMode ? "ON" : "OFF"), bounceMode);
+        } else {
+            drawLocked(bounceBtn, "Bounce", findShopItem('bounce').cost);
+        }
+        if (isUnlocked('flock')) {
+            drawButton(flockBtn, "Flock:" + (flockMode ? "ON" : "OFF"), flockMode);
+        } else {
+            drawLocked(flockBtn, "Flock", findShopItem('flock').cost);
+        }
+        if (isUnlocked('rainbow')) {
+            drawButton(rainbowBtn, "Rainbow:" + (rainbowMode ? "ON" : "OFF"), rainbowMode);
+        } else {
+            drawLocked(rainbowBtn, "Rainbow", findShopItem('rainbow').cost);
+        }
+
+        drawButton(resetBtn,   "Reset", false);
+        drawButton(saveBtn,    "Save PNG", false);
+        drawButton(pauseBtn,   isPaused ? "Play" : "Pause", isPaused);
+        if (appMode === 'sandbox') {
+            if (isUnlocked('randomize')) {
+                drawButton(randomBtn, "Randomize", false);
+            } else {
+                drawLocked(randomBtn, "Random", findShopItem('randomize').cost);
+            }
+        }
+        drawButton(recordBtn,  isRecording ? "Stop" : "Record", isRecording);
+        if (isRecording) {
+            recordingFrameCount++;
+            var recSecs = Math.floor(recordingFrameCount / 60);
+            var recM = Math.floor(recSecs / 60);
+            var recS = recSecs % 60;
+            var recLabel = '\u25CF REC ' + recM + ':' + (recS < 10 ? '0' : '') + recS;
+            pctx.fillStyle = (Math.floor(recordingFrameCount / 20) % 2 === 0) ? rgbStr(255, 60, 60) : rgbStr(180, 20, 20);
+            pctx.font = 'bold 10px sans-serif';
+            pctx.textAlign = 'left';
+            pctx.textBaseline = 'middle';
+            pctx.fillText(recLabel, recordBtn.x + recordBtn.width + 6, recordBtn.y + recordBtn.height / 2);
+        }
+        drawButton(screenWipeBtn, "", false);
+        pctx.fillStyle = rgbStr(0, 0, 0);
+        pctx.font = '9px sans-serif';
+        pctx.textAlign = 'left';
+        pctx.textBaseline = 'middle';
+        pctx.fillText("Sc", 189, 187);
+        pctx.fillText("re", 189, 196);
+        pctx.fillText("en", 189, 206);
+        pctx.fillText("Wi", 189, 223);
+        pctx.fillText("pe", 189, 232);
+
+        drawButton(shapeBtn.circle, "Circle", moverShape === "circle");
+        if (isUnlocked('shapes')) {
+            drawButton(shapeBtn.triangle, "Triangle", moverShape === "triangle");
+            drawButton(shapeBtn.square,   "Square",   moverShape === "square");
+            drawButton(shapeBtn.diamond,  "Diamond",  moverShape === "diamond");
+            drawButton(shapeBtn.star,     "Star",     moverShape === "star");
+        } else {
+            drawLocked(shapeBtn.triangle, "Shapes", findShopItem('shapes').cost);
+            drawLocked(shapeBtn.square,   "Shapes", findShopItem('shapes').cost);
+            drawLocked(shapeBtn.diamond,  "Shapes", findShopItem('shapes').cost);
+            drawLocked(shapeBtn.star,     "Shapes", findShopItem('shapes').cost);
+        }
+
+        drawArrowButton(arrowBtns.up,   "+");
+        drawArrowButton(arrowBtns.down, "-");
+        drawArrowButton(arrowBtns.m2,   "x2");
+        drawArrowButton(arrowBtns.d2,   "/2");
+
+        pctx.fillStyle = rgbStr(0, 0, 0);
+        pctx.font = '9px sans-serif';
+        pctx.textAlign = 'left';
+        pctx.textBaseline = 'middle';
+        pctx.fillText("movers: " + movers.length, 125, 281);
+
+        if (appMode === 'sandbox') {
+            pctx.fillStyle = rgbStr(255, 195, 60);
+            pRoundRect(finishBtn.x, finishBtn.y, finishBtn.width, finishBtn.height, 3);
+            pctx.fill();
+            pctx.fillStyle = '#000';
+            pctx.font = 'bold 9px sans-serif';
+            pctx.textAlign = 'center';
+            pctx.textBaseline = 'middle';
+            pctx.fillText('Finish (rate creativity)', finishBtn.x + finishBtn.width / 2, finishBtn.y + finishBtn.height / 2);
+        }
+    }
+
+    if (appMode === 'platformer') {
+        if (isUnlocked('bouncer')) {
+            drawButton(toolBtnBouncer, "Bouncer" + (placingTool === 'bouncer' ? ' *' : ''), placingTool === 'bouncer');
+        } else {
+            drawLocked(toolBtnBouncer, "Bouncer", findShopItem('bouncer').cost);
+        }
+        if (isUnlocked('ramp')) {
+            drawButton(toolBtnRamp, "Ramp" + (placingTool === 'ramp' ? ' *' : ''), placingTool === 'ramp');
+        } else {
+            drawLocked(toolBtnRamp, "Ramp", findShopItem('ramp').cost);
+        }
+        if (isUnlocked('portal')) {
+            drawButton(toolBtnPortal, "Portal" + (placingTool === 'portal' ? ' *' : ''), placingTool === 'portal');
+        } else {
+            drawLocked(toolBtnPortal, "Portal", findShopItem('portal').cost);
+        }
+        drawButton(clearObjectsBtn, "Clear Objects", false);
+
+        if (placingTool) {
+            pctx.fillStyle = '#ffd75c';
+            pctx.font = 'bold 11px sans-serif';
+            pctx.textAlign = 'left';
+            pctx.textBaseline = 'middle';
+            var hint = 'Click the canvas to place a ' + placingTool;
+            if (placingTool === 'ramp') { hint = 'Click and drag on the canvas to aim a ramp'; }
+            if (placingTool === 'portal' && pendingPortalA) { hint = 'Click again to place the matching portal'; }
+            pctx.fillText(hint, 20, 530);
+        }
+
+        if (rampDragStart) {
+            pctx.strokeStyle = 'rgba(90,200,255,0.9)';
+            pctx.lineWidth = 3;
+            pctx.beginPath();
+            pctx.moveTo(rampDragStart.x, rampDragStart.y);
+            pctx.lineTo(rampDragCurrent.x, rampDragCurrent.y);
+            pctx.stroke();
+            pctx.fillStyle = 'rgba(90,200,255,0.9)';
+            pctx.beginPath();
+            pctx.arc(rampDragStart.x, rampDragStart.y, 5, 0, Math.PI * 2);
+            pctx.fill();
+        }
+    }
+
+    if (appMode === 'challenge') {
+        drawChallengeBar();
+    }
+
+    if (appMode === 'sandbox' && finishMessageTimer > 0) {
+        pctx.fillStyle = 'rgba(20,20,20,0.85)';
+        pctx.fillRect(0, 0, panelCanvas.width, 30);
+        pctx.fillStyle = '#ffcf6b';
+        pctx.font = 'bold 13px sans-serif';
+        pctx.textAlign = 'center';
+        pctx.textBaseline = 'middle';
+        pctx.fillText(finishMessageText, panelCanvas.width / 2, 15);
+        finishMessageTimer--;
+    }
+
+    // Drawn last so nothing (like the Challenge bar) ever paints over them.
+    drawCoinBadge();
+    drawCreativityBadge();
+};
+</script>
+</body>
+</html>
