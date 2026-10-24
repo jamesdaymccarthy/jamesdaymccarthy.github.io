@@ -59,22 +59,28 @@ h1 {
 }
 
 .card {
-  display: block;
+  position: relative;
   background: var(--panel);
   border: 3px solid transparent;
   border-radius: 12px;
   overflow: hidden;
-  color: inherit;
-  text-decoration: none;
   transition: transform 0.15s;
 }
 
-.card:hover, .card:focus-visible {
+.card:hover, .card:focus-within {
   transform: translateY(-4px) rotate(-1deg);
   border-color: var(--link);
 }
 
 .card.fave { border-color: var(--accent); }
+
+.card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.card-link:focus-visible { outline: none; }
 
 .card img {
   display: block;
@@ -85,6 +91,36 @@ h1 {
 }
 
 .card h2 { font-size: 20px; margin: 12px 14px 2px; }
+.new-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 8px;
+  font-family: "Press Start 2P", monospace;
+  font-size: 11px;
+  color: var(--bg);
+  background: var(--accent);
+  border-radius: 6px;
+  transform: rotate(-6deg);
+  box-shadow: 2px 2px 0 #b13e53;
+}
+
+.heart {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(26, 28, 44, 0.7);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.heart:hover { transform: scale(1.15); }
+
 .card .star { margin-left: 8px; }
 .card .date { color: var(--muted); font-size: 14px; margin: 0 14px; }
 .card .blurb { margin: 8px 14px 16px; line-height: 1.4; }

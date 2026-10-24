@@ -12,6 +12,9 @@ all the games I make, so I can share them with friends.
   - `index.html` is the game itself (what opens when you click the card)
   - `card.png` is the picture on the card (the name is always the same, so we
     don't need to write it in the JSON. That's "convention over configuration"!)
+- Each visitor's browser remembers which games *they* played and ❤️'d, using
+  `localStorage` (a little notebook the browser keeps for our site). My ⭐ picks
+  are the `fave` field in `games.json`, and they're the same for everyone.
 - No build step: the files in the repo are exactly what the website shows.
 
 ## A game's info in games.json
@@ -35,6 +38,14 @@ Dates are written `YYYY-MM-DD` (ISO 8601) so sorting them like words also sorts 
 - [x] 3. Render the games as cards, newest first
 - [x] 4. Favorites get a ⭐ on their card, plus a filter button to show only favorites
 - [ ] 5. GitHub setup: create the `jamesdaymccarthy.github.io` repo and turn on Pages
+  (repo created; waiting for the first push)
+- [x] 6. Remember which games each visitor has played, and show "NEW!" on the ones they haven't
+- [x] 7. Visitors can ❤️ their own favorites (separate from my ⭐ picks in `games.json`)
+
+## To do later
+
+- [ ] **Growing Forest card:** play until the forest looks awesome, press Print
+  Screen, and select the game. Then ask Claude to make it the card.
 
 ## Tools
 
