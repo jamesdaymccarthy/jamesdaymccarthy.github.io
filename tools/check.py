@@ -48,6 +48,10 @@ for number, game in enumerate(games, start=1):
         for needed in ["index.html", "card.png"]:
             if not (ROOT / "games" / folder / needed).is_file():
                 problems.append(f"{name}: missing games/{folder}/{needed}")
+        # Without <meta charset="utf-8">, emoji like 🧀 turn into gibberish.
+        page = ROOT / "games" / folder / "index.html"
+        if page.is_file() and "charset" not in page.read_text(errors="replace")[:2000].lower():
+            problems.append(f"{name}: index.html needs <meta charset=\"utf-8\"> near the top")
 
 # Folders that exist but aren't in games.json won't show up on the home page.
 for path in sorted((ROOT / "games").glob("*/")):

@@ -43,6 +43,13 @@ Ask where the game is. It might be:
   Single-file HTML games just become `index.html`. If the game is React/JSX (not
   plain HTML), it needs a small HTML wrapper that loads React and Babel from
   cdnjs. Make that, then test it.
+- **Half a page from claude.ai.** Some claude.ai games download as a *fragment*:
+  the file starts with `<style>` or `<div>` instead of `<!doctype html>`, and has
+  no `<head>`, `<title>`, or `<meta charset="utf-8">`. Then emoji show up as
+  gibberish like `ðŸ§€`. Wrap it: add `<!doctype html>`, `<meta charset="utf-8">`,
+  a viewport meta tag, a `<title>`, and `<body>` around the original code. Also look for
+  `var(--something)` colors that claude.ai provided (`grep -o 'var(--[a-z-]*'`)
+  and define them in a `:root { }` style. Cheese Panic is an example.
 - **Khan Academy (Processing.js).** Have them paste the code into a file. Wrap
   it in an `index.html` that loads Processing.js 1.4.8 from cdnjs and runs the code inside
   `new Processing(canvas, function(processingInstance) { with (processingInstance) { size(400, 400); frameRate(30); /* code */ } })`.
