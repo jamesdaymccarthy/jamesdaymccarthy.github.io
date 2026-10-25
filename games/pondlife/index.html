@@ -1,4 +1,6 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pondlife</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -41,6 +43,8 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 #mpBadge button { background: rgba(237,240,214,.1); border: 1px solid var(--line); border-radius: 99px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
 #bag { position: absolute; left: 50%; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 5px; max-width: min(640px, 92vw); background: rgba(10,22,15,.7); border: 1px solid var(--line); border-radius: 14px; padding: 6px 8px; pointer-events: auto; }
 #bag[hidden], #mpBadge[hidden], #voiceHud[hidden] { display: none !important; }
+body.mindctl::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 4; background: radial-gradient(ellipse at center, rgba(140,60,220,0) 50%, rgba(140,60,220,.45) 100%); animation: mindpulse 2.4s ease-in-out infinite; }
+@keyframes mindpulse { 50% { opacity: .65; } }
 #voiceHud { position: absolute; left: 50%; top: calc(148px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); background: rgba(10,22,15,.75); border: 1px solid var(--line); border-radius: 99px; padding: 4px 12px; font-size: 13px; font-weight: 700; display: flex; gap: 8px; align-items: center; }
 #voiceHud.talk { border-color: #9fd15b; box-shadow: 0 0 12px rgba(159,209,91,.6); }
 #voiceHud i { width: 9px; height: 9px; border-radius: 50%; background: #6a7a60; }
@@ -256,7 +260,8 @@ select { background: var(--panel-2); color: var(--ink); border: 1px solid var(--
         <span class="kbd">C</span><p>Switch first and third person.</p>
         <span class="kbd">Q</span><p>Sneak (lower and quieter). Underwater: swim down.</p>
         <span class="kbd">X</span><p>Rest to recover energy.</p>
-        <span class="kbd">V</span><p>Insider Frog only: turn yourself inside out, or back again.</p>
+        <span class="kbd">V</span><p>Insider Frog: turn yourself inside out, or turn a creature next to you inside out so it sticks to you. Telepathic Frog: take over the mind of a nearby creature.</p>
+        <span class="kbd">Z</span><p>Insider Frog: shake off everything stuck to you.</p>
         <span class="kbd">B</span><p>Multiplayer: hold to talk (when voice chat is set to push to talk).</p>
         <span class="kbd">Tab</span><p>Status, field guide, achievements, home and map.</p>
         <span class="kbd">H</span><p>Hide the interface for screenshots.</p>
@@ -302,7 +307,7 @@ select { background: var(--panel-2); color: var(--ink); border: 1px solid var(--
   <div id="tbtns">
     <button data-k="KeyR">Croak</button><button data-k="KeyF">Dive</button><button data-k="KeyE">Act</button>
     <button data-k="KeyX">Rest</button><button data-k="tongue" class="big">Tongue</button><button data-k="Space" class="big">Jump</button>
-    <button data-k="KeyQ">Sneak</button><button data-k="ShiftLeft">Hop</button><button data-k="KeyC">Cam</button><button data-k="KeyV" id="tFlip" hidden>Flip</button>
+    <button data-k="KeyQ">Sneak</button><button data-k="ShiftLeft">Hop</button><button data-k="KeyC">Cam</button><button data-k="KeyV" id="tFlip" hidden>Flip</button><button data-k="KeyZ" id="tShake" hidden>Shake</button>
   </div>
 </div>
 
@@ -425,21 +430,21 @@ const SPECIES = {
   redeye: { name: 'Red-eyed Tree Frog', size: 0.75, jump: 0.95, swim: 0.8, speed: 1.08, tongue: 3.0, climb: true, hunger: 0.9, dry: 0.85, armor: 1,
     color: 0x52c23a, belly: 0xf0eadc, spot: 0x2a63c8, eye: 0xe0241a, throat: 0xf0ecd0, croak: 'redeye',
     desc: 'A climber with startling red eyes that make snakes hesitate.', habitat: 'Glowing mushroom caves', ability: 'Climbs; snakes hesitate' },
-  flying: { name: 'Flying Frog', size: 0.85, jump: 1.08, swim: 0.8, speed: 1.0, tongue: 3.0, climb: true, glide: true, silver: true, bigEyes: true, hunger: 0.95, dry: 0.9, armor: 1,
+  flying: { name: 'Flying Frog', size: 0.85, jump: 1.08, swim: 0.8, speed: 1.0, tongue: 3.0, climb: true, glide: true, fishOnly: true, silver: true, bigEyes: true, hunger: 0.95, dry: 0.9, armor: 1,
     color: 0xb8c0c8, belly: 0xe8ecf0, spot: 0x8a949e, eye: 0x8ec8f0, throat: 0xdde2e8, croak: 'flying',
-    desc: 'A shining silver frog with huge eyes and scaly silver wings. It really flies: hold Space to flap upward, Q to dive, WASD to steer.', habitat: 'High in the treetops', ability: 'Flies; climbs' },
+    desc: 'A shining silver frog with huge eyes and scaly silver wings. It really flies: hold Space to flap upward, Q to dive steeply, WASD to steer. It does not eat bugs: fly over water and click when the gold ring circles a fish to swoop down and snatch it.', habitat: 'High in the treetops', ability: 'Flies; climbs' },
   cannibal: { name: 'Horned Frog', size: 1.35, jump: 0.82, swim: 0.7, speed: 0.82, tongue: 4.3, climb: false, eatsFrogs: true, hunger: 1.5, dry: 0.9, armor: 0.75,
     color: 0x8a9a3a, belly: 0xe8dcb0, spot: 0x6a3a1a, eye: 0xc8a020, throat: 0xd8c890, croak: 'horned',
     desc: 'A wide-mouthed ambush hunter that swallows anything that fits in its mouth: frogs, tadpoles, fish, snails, beetles, even turtles and snakes.', habitat: 'Muddy marsh', ability: 'Eats anything that fits' },
   goliath: { name: 'Goliath Frog', size: 6.9, jump: 1.0, swim: 1.15, speed: 0.6, tongue: 5.2, climb: false, giant: true, hunger: 1.7, dry: 0.8, armor: 0.5,
     color: 0x5a6a38, belly: 0xd8b860, spot: 0x3a4422, eye: 0x6a4a20, throat: 0xc8b070, croak: 'bull',
-    desc: 'The biggest frog in the world. Very slow, but it knocks turtles onto their backs and herons back off when they see it.', habitat: 'Fast rivers and waterfalls', ability: 'Huge; knocks turtles over; scares herons' },
+    desc: 'The biggest frog in the world. Very slow, but it knocks turtles onto their backs and herons back off when they see it.', habitat: 'Deep mountain water', ability: 'Huge; knocks turtles over; scares herons' },
   tiny: { name: 'Tiny Frog', size: 0.3, jump: 1.15, swim: 0.7, speed: 1.25, tongue: 1.7, climb: false, tiny: true, hunger: 0.5, dry: 1.2, armor: 1.4,
     color: 0x9a6a30, belly: 0xf0a040, spot: 0x4a2a10, eye: 0x111111, throat: 0xf0c070, croak: 'tiny',
     desc: 'One of the smallest frogs in the world, no bigger than a fingernail. Herons and snakes can barely see it, but it is fragile.', habitat: 'Inside flowers', ability: 'Almost invisible to predators; lives inside a big frog' },
   insider: { name: 'Insider Frog', size: 0.95, jump: 1.0, swim: 1.0, speed: 1.0, tongue: 3.4, climb: false, insider: true, hunger: 1, dry: 0.7, armor: 0.9,
     color: 0x6e8e3c, belly: 0xe2d8a8, spot: 0x3a5222, eye: 0xd88a2a, throat: 0xd8cc98, croak: 'insider',
-    desc: 'Looks like an ordinary frog, until it presses V and turns itself inside out. Normal side out: a good tongue, tough skin that stays wet. Inside out: no tongue, but bugs stick to its slimy insides, it climbs anything, swims fast, and predators are too grossed out to eat it. It dries out very quickly and gets hurt more easily that way.', habitat: 'The Fallen Giant log', ability: 'Press V to turn inside out' },
+    desc: 'Looks like an ordinary frog, until it presses V and turns itself inside out. Normal side out: a good tongue, tough skin that stays wet. Inside out: no tongue, but bugs stick to its slimy insides, it climbs anything, swims fast, and predators are too grossed out to eat it. It dries out very quickly and gets hurt more easily that way.', habitat: 'Pitcher Plant Bog', ability: 'Press V to turn inside out' },
   hotspring: { name: 'Hot Springs Frog', size: 0.8, jump: 1.0, swim: 1.05, speed: 1.0, tongue: 3.0, climb: false, heatproof: true, hunger: 1, dry: 0.7, armor: 1,
     color: 0xd8784a, belly: 0xf4dcc0, spot: 0x9a3a24, eye: 0x30a0a0, throat: 0xf0c8a0, croak: 'hotspring',
     desc: 'A warm orange frog from the steaming pools. Heat and cold never bother it, and hot springs heal it twice as fast.', habitat: 'Hot Springs', ability: 'Never too hot or too cold; heals fast in hot water' },
@@ -448,11 +453,14 @@ const SPECIES = {
     desc: 'A big olive frog with a grunting call like a pig. A powerful swimmer that vanishes under duckweed: stay still in swamp water and predators cannot see you.', habitat: 'Cypress Swamp', ability: 'Fast swimmer; hides in swamp water' },
   desert: { name: 'Desert Rain Frog', size: 0.55, jump: 0.7, swim: 0.35, speed: 0.85, tongue: 2.4, climb: false, burrower: true, hunger: 0.8, dry: 0.45, armor: 1.1,
     color: 0xd8bc8a, belly: 0xf0e2c8, spot: 0xb89a6a, eye: 0x1a140e, throat: 0xe8d4b0, croak: 'desert', bigEyes: true,
-    desc: 'A tiny round sand-coloured frog that squeaks like a toy when it calls. It can barely swim, but press F on dry ground to burrow into the sand, where nothing can find you and you stay cool and damp.', habitat: 'Sand Dunes', ability: 'Burrows into sand with F; barely swims' }
+    desc: 'A tiny round sand-coloured frog that squeaks like a toy when it calls. It can barely swim, but press F on dry ground to burrow into the sand, where nothing can find you and you stay cool and damp.', habitat: 'Sand Dunes', ability: 'Burrows into sand with F; barely swims' },
+  telepath: { name: 'Telepathic Frog', size: 0.85, jump: 1.0, swim: 1.0, speed: 1.0, tongue: 3.2, climb: false, telepath: true, glowEyes: true, hunger: 1, dry: 1, armor: 1,
+    color: 0x7a5aa8, belly: 0xe0d0f0, spot: 0x4a2a78, eye: 0xc080ff, throat: 0xd8c0f0, croak: 'tele',
+    desc: 'A violet frog with glowing eyes. Stand near any creature and press V to take over its mind: you steer it around while your own body sits still and helpless. Press V again to return.', habitat: 'Bamboo Grove, at night', ability: 'V: mind control' }
 };
 // the Insider Frog's other side: a completely different set of abilities
 const INSIDE_OUT = Object.assign({}, SPECIES.insider, { name: 'Insider Frog (inside out)', tongue: 0, climb: true, swim: 1.75, speed: 0.9, jump: 0.9, dry: 3.2, armor: 1.4, toxic: true, croak: 'insiderOut' });
-const SPECIES_UNLOCK = { spadefoot: 'Find the Spadefoot Toad sleeping in the hidden burrow.', glass: 'Find the Glass Frog at the waterfall at night.', redeye: 'Find the Red-eyed Tree Frog where mushrooms glow.', flying: 'Spot the Flying Frog flying between the treetops near the old oak.', cannibal: 'Find the Horned Frog lurking half-buried in the Muddy Marsh.', tiny: 'Peek closely into the water lily flowers on the Lily Pond.', goliath: 'Look for a giant frog sitting on the big rocks of the waterfall pool.', hotspring: 'Find the warm orange frog basking at the edge of a hot spring.', swamp: 'Listen for grunting in the Cypress Swamp and find the frog making it.', desert: 'Something tiny squeaks among the dunes near the sandstone arch.', insider: 'Something strange keeps flipping over on the Fallen Giant log. Go and look.' };
+const SPECIES_UNLOCK = { spadefoot: 'Find the Spadefoot Toad sleeping in the hidden burrow.', glass: 'Find the Glass Frog at the waterfall at night.', redeye: 'Find the Red-eyed Tree Frog where mushrooms glow.', flying: 'Spot the Flying Frog flying between the treetops near the old oak.', cannibal: 'Find the Horned Frog lurking half-buried in the Muddy Marsh.', tiny: 'Peek closely into the water lily flowers on the Lily Pond.', goliath: 'Something enormous lurks in the cold Mountain Tarn. Watch the water closely, or try calling to it.', hotspring: 'Find the warm orange frog basking at the edge of a hot spring.', telepath: 'At night, two glowing eyes watch from the top of a stone lantern in the Bamboo Grove.', swamp: 'Listen for grunting in the Cypress Swamp and find the frog making it.', desert: 'Something tiny squeaks among the dunes near the sandstone arch.', insider: 'Something in the Pitcher Plant Bog does not look quite right. Search closely among the red moss.' };
 
 const PATTERNS = {
   classic: { name: 'Classic', how: 'Starter pattern' },
@@ -501,6 +509,7 @@ const GUIDE = {
   snail: { name: 'Pond Snail', cat: 'Mollusc', desc: 'Grazes slowly over stones and pulls into its shell when bumped.', hint: 'Rocks at the water edge.' },
   turtle: { name: 'Painted Turtle', cat: 'Reptile', desc: 'Basks on rocks and slips into the water if startled. A swimming turtle will carry a small frog.', hint: 'Sunny rocks and logs.' },
   heron: { name: 'Grey Heron', cat: 'Predator', desc: 'Stalks the shallows on stilt legs. When its neck pulls back into an S, a strike is coming. Dive or hide in reeds.', hint: 'Visits by day.' },
+  telefrog: { name: 'Telepathic Frog', cat: 'Rare amphibian', desc: 'A violet frog with glowing eyes that can slip into the mind of another animal and steer it around.', hint: 'Only comes out at night, somewhere high in the bamboo.' },
   hotspringfrog: { name: 'Hot Springs Frog', cat: 'Rare amphibian', desc: 'An orange frog that lives in water warm enough to steam. It does not mind heat or cold at all.', hint: 'The rims of the hot pools.' },
   swampfrog: { name: 'Swamp Frog', cat: 'Rare amphibian', desc: 'A big olive frog whose call sounds like a grunting pig. It hides under duckweed with only its eyes showing.', hint: 'Deep in the Cypress Swamp.' },
   desertfrog: { name: 'Desert Rain Frog', cat: 'Rare amphibian', desc: 'A round little frog that lives in sand dunes, digs instead of swimming, and squeaks when bothered.', hint: 'In the dunes, near the sandstone arch.' },
@@ -512,8 +521,8 @@ const GUIDE = {
   glassfrog: { name: 'Glass Frog', cat: 'Rare amphibian', desc: 'Its belly skin is see-through. It calls from spray-soaked rocks at night.', hint: 'The waterfall, after dark.' },
   redeye: { name: 'Red-eyed Tree Frog', cat: 'Rare amphibian', desc: 'Flashes huge red eyes to startle predators.', hint: 'Where mushrooms glow.' },
   flyingfrog: { name: 'Flying Frog', cat: 'Rare amphibian', desc: 'A silver frog with huge eyes. It flaps scaly silver wings and flies from tree to tree.', hint: 'Look up into the treetops near the old oak.' },
-  insiderfrog: { name: 'Insider Frog', cat: 'Rare amphibian', desc: 'A perfectly normal-looking frog that can turn itself completely inside out, organs and all. Bugs stick to its slimy insides and predators want nothing to do with it.', hint: 'It sits on the big fallen log, flipping inside out now and then.' },
-  goliathfrog: { name: 'Goliath Frog', cat: 'Rare amphibian', desc: 'The largest frog alive, as long as a house cat. Males push rocks around to build their own pools by the river.', hint: 'Big rocks by falling water.' },
+  insiderfrog: { name: 'Insider Frog', cat: 'Rare amphibian', desc: 'A perfectly normal-looking frog that can turn itself completely inside out, organs and all. Bugs stick to its slimy insides and predators want nothing to do with it.', hint: 'Hidden in the bog. Inside out, it looks just like the red moss.' },
+  goliathfrog: { name: 'Goliath Frog', cat: 'Rare amphibian', desc: 'The largest frog alive, as long as a house cat. Males push rocks around to build their own pools by the river.', hint: 'Deep, cold mountain water. It rarely comes up.' },
   tinyfrog: { name: 'Tiny Frog', cat: 'Rare amphibian', desc: 'Smaller than a fingernail. It naps inside water lily flowers where nothing can see it.', hint: 'Look very closely at the water lilies.' },
   hornedfrog: { name: 'Horned Frog', cat: 'Rare amphibian', desc: 'Buries itself in mud with only its eyes showing, then swallows anything that fits in its huge mouth, even other frogs.', hint: 'Something with a big mouth hides in the marsh mud.' }
 };
@@ -541,6 +550,9 @@ const ACH = {
   escape: { name: 'Narrow Escape', desc: 'Dodge a predator strike.' },
   chorus: { name: 'Pond Chorus', desc: 'Answer 5 other frogs with your own croak.' },
   inside_out: { name: 'Inside Out', desc: 'Turn yourself inside out as the Insider Frog and catch a bug with your guts.' },
+  puppeteer: { name: 'Puppeteer', desc: 'Take over the minds of 5 different kinds of creature as the Telepathic Frog.' },
+  sticky: { name: 'Sticky Situation', desc: 'Turn 3 creatures inside out and stick them to yourself as the Insider Frog.' },
+  fishhawk: { name: 'Fish Hawk', desc: 'Swoop down and snatch 5 fish as the Flying Frog.' },
   peak: { name: 'Top of the World', desc: 'Climb to the flag on the highest peak of the Mountains.' },
   geyser: { name: 'Blast Off', desc: 'Get launched into the sky by the Hot Springs geyser.' },
   bowling: { name: 'Turtle Bowling', desc: 'Knock a turtle onto its back as a Goliath Frog.' },
@@ -913,7 +925,7 @@ function makeFrog(spKey, pattern) {
   const skin = skinMaterial(spKey, pattern);
   const bellyM = new THREE.MeshStandardMaterial({ color: sp.belly, roughness: 0.55, transparent: !!sp.glass, opacity: sp.glass ? 0.55 : 1 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x14140e, roughness: 0.3 });
-  const iris = new THREE.MeshStandardMaterial({ color: sp.eye, roughness: 0.15, metalness: 0.15 });
+  const iris = new THREE.MeshStandardMaterial({ color: sp.eye, roughness: 0.15, metalness: 0.15, emissive: sp.glowEyes ? sp.eye : 0x000000, emissiveIntensity: sp.glowEyes ? 1.1 : 0 });
   const pupilM = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.05 });
   const throatM = new THREE.MeshStandardMaterial({ color: sp.throat, roughness: 0.4, transparent: true, opacity: 0.95 });
   const webM = new THREE.MeshStandardMaterial({ color: new THREE.Color(sp.color).multiplyScalar(0.75), roughness: 0.5, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
@@ -1041,7 +1053,7 @@ function insiderParts(F, m0) {
   F.out = false; F.m0 = m0;
   F.setOut = on => {
     on = !!on; if (F.out === on) return; F.out = on; g.visible = on;
-    F.root.traverse(o => { if (!o.isMesh || o.parent === g) return; if (o.userData.m0 === undefined) o.userData.m0 = o.material;
+    F.root.traverse(o => { if (!o.isMesh || o.parent === g || o.userData.foreign) return; if (o.userData.m0 === undefined) o.userData.m0 = o.material;
       const b = o.userData.m0, k = F.m0; o.material = !on ? b : b === k.skin ? M.flesh : (b === k.bellyM || b === k.throatM) ? M.pale : b === k.webM ? M.web : b; });
   };
 }
@@ -1102,21 +1114,55 @@ function frogAnimate(F, dt, st) {
 }
 
 /* -------- tadpole / spawn -------- */
-function makeTadpole(scale, legs) {
+function makeTadpole(scale, legs, tint) {
   const root = new THREE.Group();
-  const m = new THREE.MeshStandardMaterial({ color: 0x3a3a22, roughness: 0.35 });
-  const fin = new THREE.MeshStandardMaterial({ color: 0x5a5a3a, roughness: 0.4, transparent: true, opacity: 0.7, side: THREE.DoubleSide });
-  const b = new THREE.Mesh(G.sph, m); b.scale.set(0.2, 0.16, 0.26); b.position.y = 0.16; b.castShadow = true; root.add(b);
-  for (const s of [-1, 1]) { const e = new THREE.Mesh(G.sphT, new THREE.MeshStandardMaterial({ color: 0xd0b040, roughness: 0.2 })); e.scale.setScalar(0.035); e.position.set(s * 0.12, 0.22, 0.14); root.add(e); }
-  const segs = []; let p = root;
-  for (let i = 0; i < 5; i++) { const g = new THREE.Group(); g.position.set(0, i ? 0 : 0.16, i ? -0.11 : -0.2); p.add(g); const t = new THREE.Mesh(G.sphL, fin); t.scale.set(0.018, 0.09 * (1 - i * 0.12), 0.08); t.position.z = -0.06; g.add(t); segs.push(g); p = g; }
-  const legG = new THREE.Group(); root.add(legG);
-  for (const s of [-1, 1]) { const l = new THREE.Mesh(G.sphL, m); l.scale.set(0.03, 0.025, 0.1); l.position.set(s * 0.11, 0.1, -0.2); l.rotation.y = s * 0.4; legG.add(l); }
+  // young tadpoles are small, dark and round with feathery gills; older ones are bigger, greener, with real kicking legs
+  const base = new THREE.Color(legs ? 0x4a5a2a : 0x2e2c1c); if (legs && tint !== undefined) base.lerp(new THREE.Color(tint), 0.45);
+  const m = new THREE.MeshStandardMaterial({ color: base, roughness: 0.35 });
+  const belly = new THREE.MeshStandardMaterial({ color: legs ? 0xc8c08a : 0x6a6448, roughness: 0.4 });
+  const fin = new THREE.MeshStandardMaterial({ color: legs ? 0x7a8a50 : 0x5a5a3a, roughness: 0.4, transparent: true, opacity: 0.65, side: THREE.DoubleSide });
+  const eyeM = new THREE.MeshStandardMaterial({ color: 0xd0b040, roughness: 0.2 }), pupilM = new THREE.MeshStandardMaterial({ color: 0x080808, roughness: 0.1 });
+  const body = new THREE.Mesh(G.sph, m); body.castShadow = true; root.add(body);
+  if (legs) { body.scale.set(0.24, 0.18, 0.34); body.position.set(0, 0.18, 0.02); } else { body.scale.set(0.2, 0.17, 0.22); body.position.y = 0.16; }
+  const bl = new THREE.Mesh(G.sph, belly); bl.scale.set(legs ? 0.21 : 0.17, 0.1, legs ? 0.29 : 0.19); bl.position.set(0, legs ? 0.11 : 0.1, legs ? 0.03 : 0.01); root.add(bl);
+  // speckles
+  const spk = new THREE.MeshStandardMaterial({ color: legs ? 0x2a3418 : 0x1a1810, roughness: 0.5 });
+  for (let i = 0; i < (legs ? 10 : 6); i++) { const a = i * 2.39, d = (i % 3) * 0.05 + 0.04; const sp = new THREE.Mesh(G.sphT, spk); sp.scale.set(0.025, 0.012, 0.025); sp.position.set(Math.cos(a) * d, legs ? 0.355 : 0.32, Math.sin(a) * d * 1.4); root.add(sp); }
+  const eyes = [];
+  for (const s of [-1, 1]) {
+    const e = new THREE.Mesh(G.sphT, eyeM); const er = legs ? 0.055 : 0.035; e.scale.setScalar(er); e.position.set(s * (legs ? 0.14 : 0.12), legs ? 0.28 : 0.22, legs ? 0.22 : 0.14); root.add(e);
+    const p = new THREE.Mesh(G.sphT, pupilM); p.scale.setScalar(er * 0.55); p.position.set(s * (legs ? 0.17 : 0.145), legs ? 0.29 : 0.225, legs ? 0.25 : 0.165); root.add(p); eyes.push(e);
+  }
+  // feathery external gills on young tadpoles
+  const gills = new THREE.Group(); root.add(gills);
+  if (!legs) for (const s of [-1, 1]) for (let k = 0; k < 3; k++) { const gl = new THREE.Mesh(G.sphL, new THREE.MeshStandardMaterial({ color: 0xc86a5a, roughness: 0.5, transparent: true, opacity: 0.85 })); gl.scale.set(0.012, 0.012, 0.06); gl.position.set(s * 0.19, 0.17 + k * 0.025, 0.02 - k * 0.02); gl.rotation.y = s * (0.9 + k * 0.25); gills.add(gl); }
+  // tail: long and thin when young, shorter and broader with legs
+  const segs = []; let p = root, N = 5;
+  for (let i = 0; i < N; i++) { const g = new THREE.Group(); g.position.set(0, i ? 0 : (legs ? 0.18 : 0.16), i ? (legs ? -0.1 : -0.12) : (legs ? -0.3 : -0.2)); p.add(g); const t = new THREE.Mesh(G.sphL, fin); t.scale.set(0.018, (legs ? 0.11 : 0.09) * (1 - i * 0.13), legs ? 0.075 : 0.085); t.position.z = -0.06; g.add(t); segs.push(g); p = g; }
+  // back legs: thigh, shin and a webbed foot that kick while swimming; front leg buds
+  const legG = new THREE.Group(); root.add(legG); const legs2 = [];
+  if (legs) {
+    const webM = new THREE.MeshStandardMaterial({ color: base.clone().multiplyScalar(0.8), roughness: 0.5, side: THREE.DoubleSide });
+    for (const s of [-1, 1]) {
+      const hip = new THREE.Group(); hip.position.set(s * 0.17, 0.12, -0.2); legG.add(hip);
+      const th = new THREE.Mesh(G.sphL, m); th.scale.set(0.045, 0.04, 0.12); th.position.z = -0.09; hip.add(th);
+      const knee = new THREE.Group(); knee.position.z = -0.18; hip.add(knee);
+      const sh = new THREE.Mesh(G.sphL, m); sh.scale.set(0.032, 0.03, 0.1); sh.position.set(s * 0.04, 0, 0.06); knee.add(sh);
+      const foot = new THREE.Mesh(new THREE.CircleGeometry(0.09, 7), webM); foot.rotation.x = -Math.PI / 2; foot.scale.set(0.8, 1.4, 1); foot.position.set(s * 0.08, 0, 0.12); knee.add(foot);
+      hip.rotation.y = s * 0.5; knee.rotation.y = -s * 2.3; legs2.push({ hip, knee, s });
+      const bud = new THREE.Mesh(G.sphT, m); bud.scale.set(0.03, 0.025, 0.04); bud.position.set(s * 0.2, 0.12, 0.16); legG.add(bud);
+    }
+  }
   legG.visible = !!legs;
   root.scale.setScalar(scale);
-  return { root, segs, legG, t: Math.random() * 10 };
+  return { root, segs, legG, legs: legs2, eyes, gills, t: Math.random() * 10 };
 }
-function animTadpole(T, dt, speed) { T.t += dt * (6 + speed * 10); for (let i = 0; i < T.segs.length; i++) T.segs[i].rotation.y = Math.sin(T.t - i * 0.9) * (0.25 + speed * 0.3); }
+function animTadpole(T, dt, speed) {
+  T.t += dt * (6 + speed * 10);
+  for (let i = 0; i < T.segs.length; i++) T.segs[i].rotation.y = Math.sin(T.t - i * 0.9) * (0.25 + speed * 0.3);
+  if (T.legs) for (const L of T.legs) { const k = Math.sin(T.t * 0.5 + (L.s > 0 ? 0 : Math.PI)) * Math.min(1, 0.3 + speed); L.hip.rotation.y = L.s * (0.5 + k * 0.35); L.knee.rotation.y = -L.s * (2.3 - Math.max(0, k) * 1.4); }
+  if (T.gills) T.gills.children.forEach((g, i) => { g.scale.z = 0.06 * (1 + Math.sin(T.t * 0.7 + i) * 0.2); });
+}
 
 /* -------- other creatures -------- */
 function stdM(color, rough, extra) { return new THREE.MeshStandardMaterial(Object.assign({ color, roughness: rough === undefined ? 0.6 : rough }, extra || {})); }
@@ -1587,13 +1633,13 @@ function buildVegetation() {
   W.trees = [];
   W.trees.push({ x: OAK.x, z: OAK.z, R: 3.2, H: 44, oak: true });
   tries = 0;
-  while (W.trees.length < 420 && tries < 30000) {
+  while (W.trees.length < 900 && tries < 60000) {
     tries++;
     const a = rnd() * TAU, d = Math.sqrt(rr(0.015, 1)) * (WORLD_R - 30), x = Math.cos(a) * d, z = Math.sin(a) * d;
     if (!landOK(x, z, 1.1, 30, 0.6)) continue;
     if (Math.hypot(x - MEADOW.x, z - MEADOW.z) < 30 || Math.hypot(x - MARSH.x, z - MARSH.z) < 24 || segDist(x, z, LOGB.ax, LOGB.az, LOGB.bx, LOGB.bz) < 8) continue;
     if (Math.hypot(x - BURROW_ENT.x, z - BURROW_ENT.z) < 9 || inNewPlace(x, z, 8)) continue;
-    let ok = true; for (const t of W.trees) if (Math.hypot(t.x - x, t.z - z) < 13) { ok = false; break; }
+    let ok = true; for (const t of W.trees) if (Math.hypot(t.x - x, t.z - z) < 11.5) { ok = false; break; }
     if (!ok) continue;
     W.trees.push({ x, z, R: rr(1.4, 2.4), H: rr(24, 40) });
   }
@@ -2175,7 +2221,7 @@ function noiseHit(freq, q, dur, vol, pos, delay, type, buf) {
   const g = c.createGain(); env(g, t, 0.005, vol, dur);
   s.connect(f); f.connect(g); g.connect(outAt(pos)); s.start(t, Math.random()); s.stop(t + dur + 0.1);
 }
-const CROAK_GAIN = { green: 2.6, bull: 4.8, tree: 5.0, redeye: 2.6, dart: 6.5, glass: 2.3, flying: 5.0, tiny: 2.0, horned: 5.2, spade: 2.6, insider: 2.0, insiderOut: 5.5, desert: 2.2, swamp: 3.6, hotspring: 3.0 };
+const CROAK_GAIN = { green: 2.6, bull: 4.8, tree: 5.0, redeye: 2.6, dart: 6.5, glass: 2.3, flying: 5.0, tiny: 2.0, horned: 5.2, spade: 2.6, insider: 2.0, insiderOut: 5.5, desert: 2.2, swamp: 3.6, hotspring: 3.0, tele: 3.2 };
 const SFX = {
   croak(kind, pos, big) {
     if (!AU.ok) return; const c = AU.ctx, t0 = c.currentTime + 0.01, V = big ? 1 : 0.8;
@@ -2235,6 +2281,10 @@ const SFX = {
     } else if (kind === 'horned') {
       // a low, cow-like "mrrooo" grunt
       syl(t0, { dur: big ? 0.9 : 0.6, f0: 120, f1: 95, formants: [[260, 3, 2.2], [620, 4, 1], [1300, 6, 0.3]], pulses: 22, duty: 0.75, vol: 0.55, lp: 1400, noise: 0.12, shape: x => 0.5 + 0.5 * Math.sin(x * Math.PI) });
+    } else if (kind === 'tele') {
+      // an eerie, wobbling hum that slides up and down
+      syl(t0, { dur: big ? 1.1 : 0.8, f0: r(420, 460), f1: 620, wave: 'sine', formants: [[520, 3, 1.6], [1040, 5, 0.6]], vib: [6, 40], vol: 0.4, atk: 0.12, rel: 0.4, lp: 3000 });
+      syl(t0 + 0.05, { dur: big ? 1.0 : 0.7, f0: r(640, 680), f1: 460, wave: 'triangle', formants: [[700, 4, 1]], vib: [7, 30], vol: 0.2, atk: 0.15, rel: 0.4, lp: 3000 });
     } else if (kind === 'desert') {
       // a squeaky toy "eeeeek"
       syl(t0, { dur: big ? 0.55 : 0.4, f0: r(1900, 2100), f1: 2400, wave: 'triangle', formants: [[2200, 4, 2], [4400, 6, 0.6]], vib: [22, 60], vol: 0.35, atk: 0.02, rel: 0.12, lp: 8000 });
@@ -2415,8 +2465,9 @@ function stageInfo() { return [
   { name: 'Tadpole with legs', hint: 'Keep eating algae. Your back legs are growing.' },
   { name: 'Froglet', hint: 'Your tail is shrinking. Catch small insects with your tongue. Do not stay dry for long.' },
   { name: 'Adult frog', hint: '' }][PL.stage]; }
-function playerScale() { const s = SPECIES[GAME.species].size; return Math.min([0.3, 0.32, 0.4, 0.5 * s, s][PL.stage], W.inBurrow ? 2 : 99); } // giants shrink to fit through doorways
+function playerScale() { const s = SPECIES[GAME.species].size; return Math.min([0.3, 0.3, 0.42, 0.5 * s, s][PL.stage], W.inBurrow ? 2 : 99); } // giants shrink to fit through doorways
 function buildPlayerModel() {
+  if (PL.stuckList && PL.stuckList.length) unstickAll(true);
   for (const o of [PL.F && PL.F.root, PL.tad && PL.tad.root, PL.spawnM]) if (o) scene.remove(o);
   PL.F = PL.tad = PL.spawnM = null;
   PL.size = playerScale();
@@ -2425,7 +2476,7 @@ function buildPlayerModel() {
     const dot = new THREE.MeshStandardMaterial({ color: 0x141410, roughness: 0.4 });
     for (let i = 0; i < 34; i++) { const p = i === 0 ? new V3() : new V3(mr(-1, 1), mr(-0.5, 0.5), mr(-1, 1)).multiplyScalar(0.55); const e = new THREE.Mesh(G.sph, jelly); e.scale.setScalar(0.17); e.position.copy(p); g.add(e); const d = new THREE.Mesh(G.sphL, dot); d.scale.setScalar(0.05); d.position.copy(p); g.add(d); if (i === 0) { PL.embryo = d; } }
     PL.spawnM = g; scene.add(g);
-  } else if (PL.stage <= 2) { PL.tad = makeTadpole(PL.size * 2.4, PL.stage === 2); scene.add(PL.tad.root); }
+  } else if (PL.stage <= 2) { PL.tad = makeTadpole(PL.size * 2.4, PL.stage === 2, SPECIES[GAME.species].color); scene.add(PL.tad.root); }
   else {
     PL.F = makeFrog(GAME.species, GAME.pattern); PL.F.root.scale.setScalar(PL.size); scene.add(PL.F.root);
     const own = PL.F.skin.clone(); own.userData.base = PL.F.skin.userData.base.clone(); PL.F.root.traverse(o => { if (o.material === PL.F.skin) o.material = own; }); PL.F.skin = own; if (PL.F.m0) PL.F.m0.skin = own;
@@ -2713,7 +2764,8 @@ function toggleInsideOut() {
 }
 function insiderTick(dt) {
   PL.flipCD = Math.max(0, (PL.flipCD || 0) - dt);
-  { const fb = document.getElementById('tFlip'), on = !!SPECIES[GAME.species].insider; if (fb && fb.hidden === on) fb.hidden = !on; }
+  { const sb = document.getElementById('tShake'), has = !!(PL.stuckList && PL.stuckList.length); if (sb && sb.hidden === has) sb.hidden = !has; }
+  { const fb = document.getElementById('tFlip'), sp0 = SPECIES[GAME.species], on = !!(sp0.insider || sp0.telepath); if (fb) { if (fb.hidden === on) fb.hidden = !on; const lbl = sp0.telepath ? 'Mind' : 'Flip'; if (fb.textContent !== lbl) fb.textContent = lbl; } }
   if (!SPECIES[GAME.species].insider) { PL.insideOut = false; PL.flipT = 0; }
   const want = !!(PL.insideOut && PL.stage >= 3);
   if (PL.flipT > 0) PL.flipT = Math.max(0, PL.flipT - dt);
@@ -2722,7 +2774,7 @@ function insiderTick(dt) {
   // bugs stick to your insides, and the smell draws flies in
   const mp = PL.pos.clone(); mp.y += 0.45 * PL.size; const r = 0.7 + PL.size * 0.8;
   for (const i of INS.list) {
-    if (!i.alive || i.npc) continue;
+    if (!i.alive || i.npc || i.stuck || i.ctrl) continue;
     const d = i.pos.distanceTo(mp);
     if (d < r) { eatInsect(i); SAVE.stats.gutCatch = (SAVE.stats.gutCatch || 0) + 1; unlockAch('inside_out'); break; }
     if (d < 7 && INSECT[i.type].food > 0) i.pos.lerp(mp, Math.min(1, dt * 0.5));
@@ -2730,6 +2782,9 @@ function insiderTick(dt) {
 }
 function updatePlayer(dt) {
   insiderTick(dt);
+  if (PL.swoop && (PL.onGround || PL.inWater || PL.climbing || W.inBurrow || !curSp().glide)) PL.swoop = null;
+  stuckTick(dt);
+  if (PL.mind) { if (!SPECIES[GAME.species].telepath || W.inBurrow) mindRelease(); else { PL.vel.set(0, 0, 0); mindTick(dt); return; } }
   if (PL.F && PL.stage >= 3) { const want = playerScale(); if (want !== PL.size) { PL.size = want; PL.F.root.scale.setScalar(want); } }
   const sp = curSp(), S = PL.size, iv = inputVector(), spd = speedFactor();
   PL.invuln = Math.max(0, PL.invuln - dt); PL.croakT = Math.max(0, PL.croakT - dt); PL.land = Math.max(0, PL.land - dt * 4);
@@ -2896,11 +2951,13 @@ function updatePlayer(dt) {
       const tired = !easyMode() && PL.needs.energy < 4;
       const up = (IN.keys.Space || IN.keys.KeyG) && !tired, down = IN.keys.KeyQ || IN.keys.ControlLeft;
       PL.flapping = up;
-      const tv = up ? (PL.pos.y > 70 ? 0 : 5) : down ? -7 : -1.3;
-      PL.vel.y = lerp(PL.vel.y + 22 * dt, tv, 1 - Math.exp(-dt * 3.5));
+      const tv = up ? (PL.pos.y > 70 ? 0 : 5) : down ? -24 : -1.3;
+      PL.vel.y = lerp(PL.vel.y + 22 * dt, tv, 1 - Math.exp(-dt * (down ? 6 : 3.5)));
+      if (down) { const f = Math.hypot(PL.vel.x, PL.vel.z), boost = Math.min(16, f + dt * 8); if (f > 0.3) { PL.vel.x *= boost / f; PL.vel.z *= boost / f; } else { PL.vel.x += Math.sin(PL.yaw) * dt * 8; PL.vel.z += Math.cos(PL.yaw) * dt * 8; } if (Math.random() < dt * 3) SFX.flap(PL.pos); }
       const fast = IN.keys.ShiftLeft || IN.keys.ShiftRight || IN.sprint, sp2 = (fast ? 12 : 7.5) * spd;
-      if (moving) { PL.vel.x = lerp(PL.vel.x, iv.x * sp2, 1 - Math.exp(-dt * 2.5)); PL.vel.z = lerp(PL.vel.z, iv.z * sp2, 1 - Math.exp(-dt * 2.5)); }
-      else { PL.vel.x *= Math.exp(-dt * 1.2); PL.vel.z *= Math.exp(-dt * 1.2); }
+      if (moving) { const sp3 = down ? Math.max(sp2, 14) : sp2; PL.vel.x = lerp(PL.vel.x, iv.x * sp3, 1 - Math.exp(-dt * 2.5)); PL.vel.z = lerp(PL.vel.z, iv.z * sp3, 1 - Math.exp(-dt * 2.5)); }
+      else if (!down) { PL.vel.x *= Math.exp(-dt * 1.2); PL.vel.z *= Math.exp(-dt * 1.2); }
+      if (PL.swoop) swoopTick(dt);
       if (Math.hypot(PL.vel.x, PL.vel.z) > 0.5) PL.yaw += angDiff(PL.yaw, Math.atan2(PL.vel.x, PL.vel.z)) * Math.min(1, dt * 5);
       PL.glideT = (PL.glideT || 0) + dt; useEnergy(dt * (up ? 0.9 : 0.25));
       if (PL.glideT > 0.6 && !SAVE.ach.glider) unlockAch('glider');
@@ -2910,6 +2967,7 @@ function updatePlayer(dt) {
     if (moving) { PL.vel.x += iv.x * dt * 3; PL.vel.z += iv.z * dt * 3; }
     const prevY = PL.pos.y;
     let nx = PL.pos.x + PL.vel.x * dt, nz = PL.pos.z + PL.vel.z * dt, ny = PL.pos.y + PL.vel.y * dt;
+    if (PL.swoop) ny = Math.max(ny, waterLevelAt(nx, nz) + 0.35); // skim the surface, don't splash in
     const wr = resolveWalls(nx, nz, ny, rad);
     PL.grabCD = Math.max(0, (PL.grabCD || 0) - dt); if (PL.climbing) PL.lastTrunk = PL.climbing;
     if (wr.hit && sp.climb && wr.hit.tag === 'trunk' && PL.grabCD <= 0 && !PL.flapping) { PL.climbing = wr.hit; PL.vel.set(0, 0, 0); PL.pos.set(wr.x, ny, wr.z); unlockAchHint('climb'); }
@@ -2944,7 +3002,7 @@ function updatePlayer(dt) {
   F.root.position.copy(PL.pos); if (PL.buried) F.root.position.y -= 0.3 * PL.size;
   F.root.rotation.y = PL.yaw;
   let pitch = 0;
-  if (!PL.onGround && !PL.inWater && !PL.climbing && !PL.riding) pitch = clamp(-PL.vel.y * 0.04, -0.6, 0.5);
+  if (!PL.onGround && !PL.inWater && !PL.climbing && !PL.riding) pitch = clamp(-PL.vel.y * (PL.gliding ? 0.06 : 0.04), PL.gliding ? -1.2 : -0.6, 0.5);
   if (PL.climbing) pitch = -1.45;
   if (PL.diving) pitch = clamp(-PL.vel.y * 0.25, -0.8, 0.8);
   F.tilt.rotation.x = lerp(F.tilt.rotation.x, pitch, 1 - Math.exp(-dt * 10));
@@ -3002,6 +3060,7 @@ function croak() {
   if (PL.stage < 3 || PL.croakT > 0) return;
   PL.croakT = curSp().croak === 'bull' ? 1.6 : 0.6; MP.croakN++;
   SFX.croak(curSp().croak, null, true);
+  if (Math.hypot(PL.pos.x - TARN.x, PL.pos.z - TARN.z) < TARN.r * 1.6) W.goliathCall = 1;
   if (GAME.t - (W.lastNpcCroak || -9) < 3) { SAVE.stats.chorus++; if (SAVE.stats.chorus >= 5) unlockAch('chorus'); toast('A frog answers your call.', 'quiet'); }
   NPC.forEach(n => { if (n.pos.distanceTo(PL.pos) < 25 && Math.random() < 0.5) n.replyT = mr(0.6, 2); });
 }
@@ -3031,12 +3090,12 @@ function mouthPos(out) { const S = PL.size; return out.set(Math.sin(PL.yaw) * 0.
 function tongueRange() { return curSp().tongue * (PL.stage === 3 ? 0.5 : 1) * (CAM.fp ? 1.1 : 1); }
 function findAim() {
   INS.aim = null; STUDY.target = null;
-  if (GAME.state !== 'play' || PL.stage < 1) return;
+  if (GAME.state !== 'play' || PL.stage < 1 || PL.mind) return;
   const cp = camera.position, fw = _v.set(0, 0, -1).applyQuaternion(camera.quaternion).clone();
   const m = mouthPos(new V3()), range = tongueRange(), tol = IN.touch ? 0.32 : 0.2;
   let best = null, bs = 1e9;
-  if (PL.stage >= 3 && !PL.diving) for (const i of INS.list) {
-    if (!i.alive || INSECT[i.type].inedible) continue;
+  if (PL.stage >= 3 && !PL.diving && !(curSp().glide && PL.stage >= 4)) for (const i of INS.list) {
+    if (!i.alive || INSECT[i.type].inedible || i.stuck || i.ctrl) continue;
     const d = i.pos.distanceTo(m); if (d > range) continue;
     const to = i.pos.clone().sub(cp), dist = to.length(); to.divideScalar(dist);
     const ang = Math.acos(clamp(to.dot(fw), -1, 1)); if (ang > tol) continue;
@@ -3053,6 +3112,18 @@ function findAim() {
     const ang = Math.acos(clamp(to.dot(fw), -1, 1)); if (ang > tol + 0.08) continue;
     const s = ang + d * 0.02 - 0.05; if (s < bs) { bs = s; best = tg; }
   }
+  // Flying Frog: fish swimming below you over water can be targeted for a swoop
+  if (curSp().glide && PL.gliding && PL.stage >= 4 && !PL.swoop) {
+    let bf = null, bd = 1e9; const P = PL.pos;
+    for (const c of CREATURES) {
+      if ((c.kind !== 'fish' && c.kind !== 'catfish') || c.root.visible === false || c.eatenT > 0) continue;
+      const fp = c.root.position, wl = waterLevelAt(fp.x, fp.z); if (fp.y > wl || terrainH(fp.x, fp.z) > wl - 0.2) continue;
+      const h = P.y - wl; if (h < 1.2 || h > 45) continue;
+      const dh = Math.hypot(fp.x - P.x, fp.z - P.z); if (dh > 3 + h * 0.5) continue;
+      if (dh < bd) { bd = dh; bf = c; }
+    }
+    if (bf) { const tg = bf._ftgt || (bf._ftgt = { npc: bf, swoop: true, alive: true, type: 'fish', pos: new V3(), root: bf.root, dodge() {} }); tg.pos.copy(bf.root.position); best = tg; }
+  }
   INS.aim = best;
   // study target: creature or insect in view
   let sb = null, ss = 1e9;
@@ -3061,8 +3132,41 @@ function findAim() {
   for (const i of INS.list) if (i.alive) consider(i.type, i.pos, 8);
   STUDY.target = sb;
 }
+function startSwoop(c) {
+  PL.swoop = { c, phase: 'dive', t: 0, y0: PL.pos.y };
+  SFX.flap(PL.pos); SFX.thwip(PL.pos);
+}
+function swoopTick(dt) {
+  const S2 = PL.swoop; S2.t += dt;
+  const c = S2.c, fp = c.root.position, wl = waterLevelAt(fp.x, fp.z);
+  if (S2.phase === 'dive') {
+    // fold the wings and plunge straight at the fish
+    const dx = fp.x - PL.pos.x, dy = wl + 0.15 - PL.pos.y, dz = fp.z - PL.pos.z, L = Math.max(0.01, Math.hypot(dx, dy, dz)), v = 28;
+    PL.vel.set(dx / L * v, dy / L * v, dz / L * v); PL.yaw = Math.atan2(dx, dz);
+    if (L < 1.4 || S2.t > 3.5 || c.root.visible === false) {
+      if (c.root.visible !== false && L < 3) {
+        c.eatenT = mr(25, 45); c.root.visible = false;
+        splash(fp.x, wl, fp.z, 14, 1.1); ripple(fp.x, wl, fp.z, 1.8, 1.6); SFX.splash(new V3(fp.x, wl, fp.z), 0.8); SFX.gulp(PL.pos); sparkle(PL.pos.clone(), 8, 0xd8f0ff);
+        if (!easyMode() || GAME.mode === 'lifecycle') { PL.needs.hunger = clamp(PL.needs.hunger + (c.kind === 'catfish' ? 30 : 24), 0, 100); PL.needs.energy = clamp(PL.needs.energy + 6, 0, 100); }
+        SAVE.stats.fishSwoops = (SAVE.stats.fishSwoops || 0) + 1; persist(); markSeen(c.guide || 'fish');
+        toast(SAVE.stats.fishSwoops === 1 ? 'SWOOSH! You dove down, snatched a fish and gulped it in mid-air!' : 'Snatched a fish!', SAVE.stats.fishSwoops === 1 ? 'guide' : 'quiet');
+        if (SAVE.stats.fishSwoops >= 5) unlockAch('fishhawk');
+      }
+      S2.phase = 'up'; S2.t = 0; S2.dir = Math.atan2(PL.vel.x, PL.vel.z);
+    }
+  } else {
+    // swoop back up and out, carrying the speed forward
+    PL.vel.x = lerp(PL.vel.x, Math.sin(S2.dir) * 11, 1 - Math.exp(-dt * 4)); PL.vel.z = lerp(PL.vel.z, Math.cos(S2.dir) * 11, 1 - Math.exp(-dt * 4));
+    PL.vel.y = lerp(PL.vel.y, 15, 1 - Math.exp(-dt * 7)); PL.flapping = true;
+    if (Math.random() < dt * 6) SFX.flap(PL.pos);
+    if (S2.t > 1.3 || PL.pos.y > S2.y0 - 1) PL.swoop = null;
+  }
+}
 function fireTongue() {
   const T = PL.tongue;
+  if (PL.mind) return;
+  if (INS.aim && INS.aim.swoop && PL.gliding && !PL.swoop && GAME.state === 'play') { startSwoop(INS.aim.npc); return; }
+  if (curSp().glide && PL.stage >= 4) { if (GAME.t - (PL.noBugT || -9) > 5) { PL.noBugT = GAME.t; toast('Flying frogs do not eat bugs. Fly over water, and when the gold ring circles a fish, click to swoop down and snatch it.', 'quiet'); } return; }
   if (curSp().tongue <= 0) { if (GAME.t - (PL.noTongueT || -9) > 4) { PL.noTongueT = GAME.t; toast('No tongue while you are inside out. Touch bugs to catch them, or press V to flip back.', 'quiet'); } return; }
   if (T.state !== 'idle' || PL.stage < 3 || PL.diving || GAME.state !== 'play') return;
   const m = mouthPos(new V3());
@@ -3205,7 +3309,7 @@ function updateInsects(dt) {
     if (W.inBurrow && !hasT('goldscarab')) spawnInsect('goldscarab', new V3(3, BURROW_Y + 0.1, -2));
   }
   for (const o of INS.list) {
-    if (!o.alive) continue;
+    if (!o.alive || o.ctrl || o.stuck) continue;
     o.t += dt;
     const I = INSECT[o.type];
     const dP = o.pos.distanceTo(P);
@@ -3323,33 +3427,44 @@ function buildWildlife() {
     }, { F, A: perch(tA), B: perch(tB), at: 0, state: 'perch', timer: 4, t2: 0, seeR: 14, seeFlat: true });
     F.root.position.copy(c.A);
   }
-  // ---- Goliath Frog: sitting on a big rock in the waterfall pool ----
+  // ---- Goliath Frog: lurking deep in the Mountain Tarn, only its eyes above the water. It surfaces now and then, or when a frog calls nearby ----
   {
-    const fr = W.rocks.filter(r => r.tag === 'falls').sort((a, b) => Math.hypot(a.x - FALL_X, a.z - 43) - Math.hypot(b.x - FALL_X, b.z - 43));
-    const rk = fr[2] || fr[1] || fr[0];
-    if (rk) { const F = makeFrog('goliath', 'classic'); F.root.scale.setScalar(6.9); F.root.position.set(rk.x, rk.top, rk.z); F.root.rotation.y = Math.atan2(PLUNGE.x - rk.x, PLUNGE.z - rk.z);
-      makeCreature('rare', 'goliathfrog', F.root, function (dt) { this.ct = (this.ct || 4) - dt; if (this.ct <= 0) { this.ct = mr(6, 12); this.croakT = 1.4; if (F.root.position.distanceTo(PL.pos) < 50) SFX.croak('bull', F.root.position.clone(), true); } this.croakT = Math.max(0, (this.croakT || 0) - dt); frogAnimate(F, dt, { croak: this.croakT }); }, { F, seeR: 24 }); }
-  }
-  // ---- Tiny Frog: napping inside a water lily flower ----
-  {
-    const fp = (W.flowerPads || []).slice().sort((a, b) => Math.hypot(a.x + 6, a.z - 26) - Math.hypot(b.x + 6, b.z - 26))[0];
-    if (fp) {
-      const F = makeFrog('tiny', 'classic'); F.root.scale.setScalar(0.3);
-      makeCreature('rare', 'tinyfrog', F.root, function (dt) { F.root.position.set(fp.fx, fp.y + (fp.by || 0) + 0.12, fp.fz); F.root.rotation.y += dt * 0.05; frogAnimate(F, dt, {}); if (Math.random() < dt * 0.05 && F.root.position.distanceTo(PL.pos) < 20) SFX.croak('tiny', F.root.position.clone()); }, { F, seeR: 4 });
-    }
-  }
-  // ---- Insider Frog: on the Fallen Giant log, turning itself inside out now and then ----
-  {
-    const u = 0.42, x = lerp(LOGB.ax, LOGB.bx, u), z = lerp(LOGB.az, LOGB.bz, u), y = groundAt(x, z, 60, 120);
-    const F = makeFrog('insider', 'classic'); F.root.scale.setScalar(0.95); F.root.position.set(x, y, z); F.root.rotation.y = Math.atan2(LOGB.bx - LOGB.ax, LOGB.bz - LOGB.az) + Math.PI / 2;
-    makeCreature('rare', 'insiderfrog', F.root, function (dt) {
+    let spot = [TARN.x, TARN.z], deep = 0; for (let i = 0; i < 300; i++) { const a = rnd() * TAU, d = rnd() * TARN.r * 0.6, x = TARN.x + Math.cos(a) * d, z = TARN.z + Math.sin(a) * d, dp = UPPER_WATER - terrainH(x, z); if (dp > deep) { deep = dp; spot = [x, z]; } }
+    const F = makeFrog('goliath', 'classic'); F.root.scale.setScalar(6.9);
+    const lowY = UPPER_WATER - 3.25, highY = Math.max(terrainH(spot[0], spot[1]) + 0.2, UPPER_WATER - 1.3);
+    F.root.position.set(spot[0], lowY, spot[1]);
+    W.goliathCall = 0;
+    makeCreature('rare', 'goliathfrog', F.root, function (dt) {
       const k = this; k.timer -= dt;
-      if (k.timer <= 0) { k.timer = mr(4, 9); k.flip = 0.5; if (F.root.position.distanceTo(PL.pos) < 30) SFX.squelch(F.root.position.clone()); }
-      let fq = 0; if (k.flip > 0) { k.flip = Math.max(0, k.flip - dt); fq = Math.sin((1 - k.flip / 0.5) * Math.PI); if (k.flip <= 0.25 && !k.swapped) { k.swapped = true; F.setOut(!F.out); } if (k.flip <= 0) k.swapped = false; }
-      F.tilt.scale.set(1 + fq * 0.35, 1 - fq * 0.55, 1 + fq * 0.3);
-      k.ct -= dt; if (k.ct <= 0) { k.ct = mr(5, 11); k.croakT = 0.5; if (F.root.position.distanceTo(PL.pos) < 35) SFX.croak(F.out ? 'insiderOut' : 'insider', F.root.position.clone()); }
+      const near = F.root.position.distanceTo(PL.pos) < 60;
+      if (!k.up && (k.timer <= 0 || (W.goliathCall > 0 && near))) { k.up = mr(10, 16); k.timer = mr(80, 150); W.goliathCall = 0; if (near) { SFX.splash(F.root.position.clone().setY(UPPER_WATER), 1.2); ripple(F.root.position.x, UPPER_WATER, F.root.position.z, 3, 2.5); } }
+      if (k.up > 0) { k.up -= dt; if (k.up <= 0) { k.up = 0; if (near) ripple(F.root.position.x, UPPER_WATER, F.root.position.z, 3, 2.5); } }
+      const want = k.up > 0 ? highY : lowY; F.root.position.y = lerp(F.root.position.y, want, 1 - Math.exp(-dt * 1.5));
+      k.hidden = !(k.up > 1);
+      F.root.rotation.y += dt * 0.02;
+      k.ct -= dt; if (k.up > 0 && k.ct <= 0) { k.ct = mr(3, 6); k.croakT = 1.4; if (near) SFX.croak('bull', F.root.position.clone(), true); }
+      if (!k.up && Math.random() < dt * 0.15 && near) SFX.bubble(F.root.position.clone().setY(UPPER_WATER));
       k.croakT = Math.max(0, (k.croakT || 0) - dt); frogAnimate(F, dt, { croak: k.croakT });
-    }, { F, timer: 3, ct: 4, flip: 0, seeR: 9 });
+    }, { F, timer: mr(60, 120), up: 0, ct: 1, seeR: 16, seeFlat: true, hidden: true });
+  }
+  // ---- Insider Frog: hiding among the pitcher plants of the bog. Inside out it looks just like the red moss. It moves around and rarely flips ----
+  {
+    const F = makeFrog('insider', 'classic'); F.root.scale.setScalar(0.95);
+    const pick2 = () => { for (let i = 0; i < 80; i++) { const a = Math.random() * TAU, d = Math.sqrt(Math.random()) * BOG.r * 0.9, x = BOG.x + Math.cos(a) * d, z = BOG.z + Math.sin(a) * d, h = terrainH(x, z); if (h > UPPER_WATER + 0.05) return [x, h, z]; } return [BOG.x, terrainH(BOG.x, BOG.z), BOG.z]; };
+    const s0 = pick2(); F.root.position.set(s0[0], s0[1], s0[2]); F.setOut(true);
+    makeCreature('rare', 'insiderfrog', F.root, function (dt) {
+      const k = this, dP = F.root.position.distanceTo(PL.pos);
+      k.move -= dt; if (k.move <= 0 && dP > 45) { k.move = mr(90, 200); const s = pick2(); F.root.position.set(s[0], s[1], s[2]); F.root.rotation.y = Math.random() * TAU; }
+      F.root.visible = dP < 45;
+      k.timer -= dt;
+      if (k.timer <= 0) { k.timer = mr(25, 60); k.flip = 0.5; if (dP < 20) SFX.squelch(F.root.position.clone()); }
+      let fq = 0; if (k.flip > 0) { k.flip = Math.max(0, k.flip - dt); fq = Math.sin((1 - k.flip / 0.5) * Math.PI); if (k.flip <= 0.25 && !k.swapped) { k.swapped = true; F.setOut(!F.out); k.outT = F.out ? 0 : mr(4, 8); } if (k.flip <= 0) k.swapped = false; }
+      // it never stays right side out for long
+      if (!F.out && k.flip <= 0) { k.outT -= dt; if (k.outT <= 0) { k.flip = 0.5; } }
+      F.tilt.scale.set(1 + fq * 0.35, 1 - fq * 0.55, 1 + fq * 0.3);
+      k.ct -= dt; if (k.ct <= 0) { k.ct = mr(15, 35); k.croakT = 0.5; if (dP < 25) SFX.croak(F.out ? 'insiderOut' : 'insider', F.root.position.clone()); }
+      k.croakT = Math.max(0, (k.croakT || 0) - dt); frogAnimate(F, dt, { croak: k.croakT });
+    }, { F, timer: mr(20, 40), ct: 10, flip: 0, outT: 0, move: mr(90, 200), seeR: 4 });
   }
   // ---- Horned Frog: half-buried in the marsh mud ----
   {
@@ -3785,7 +3900,7 @@ function updateDiscovery(dt) {
   if (seenT <= 0) {
     seenT = 0.5;
     for (const c of CREATURES) {
-      if (!c.guide || (c.root.visible === false) || (!!c.burrow !== !!W.inBurrow)) continue;
+      if (!c.guide || c.hidden || (c.root.visible === false) || (!!c.burrow !== !!W.inBurrow)) continue;
       const pos = c.focus ? c.focus() : c.root.position;
       if ((c.seeFlat ? Math.hypot(pos.x - PL.pos.x, pos.z - PL.pos.z) : pos.distanceTo(PL.pos)) < (c.seeR || (c.kind === 'heron' || c.kind === 'pike' ? 14 : c.kind === 'rare' ? 9 : 5))) markSeen(c.guide);
     }
@@ -3812,7 +3927,7 @@ function markSeen(key) {
   if (!SAVE.guide[key]) {
     SAVE.guide[key] = { seen: 1 };
     toast('Field guide: ' + GUIDE[key].name + ' spotted', 'guide');
-    const unlockMap = { spadefoot: 'spadefoot', glassfrog: 'glass', redeye: 'redeye', flyingfrog: 'flying', hornedfrog: 'cannibal', tinyfrog: 'tiny', goliathfrog: 'goliath', insiderfrog: 'insider', hotspringfrog: 'hotspring', swampfrog: 'swamp', desertfrog: 'desert' };
+    const unlockMap = { spadefoot: 'spadefoot', glassfrog: 'glass', redeye: 'redeye', flyingfrog: 'flying', hornedfrog: 'cannibal', tinyfrog: 'tiny', goliathfrog: 'goliath', insiderfrog: 'insider', telefrog: 'telepath', hotspringfrog: 'hotspring', swampfrog: 'swamp', desertfrog: 'desert' };
     if (unlockMap[key] && !SAVE.unlocks.species.includes(unlockMap[key])) { SAVE.unlocks.species.push(unlockMap[key]); banner('New species unlocked', SPECIES[unlockMap[key]].name + ' is now playable.'); }
     if (Object.keys(SAVE.guide).length >= 15) unlockAch('naturalist');
     persist();
@@ -3867,7 +3982,7 @@ function findInteract() {
   if (PL.settled || PL.digProg > 0 && false) return;
   const T = homeType();
   if (!W.inBurrow && (nearHome() || ((T.kind === 'treehouse' || T.kind === 'skynest') && homePos() && PL.climbing && Math.hypot(PL.pos.x - homePos().x, PL.pos.z - homePos().z) < 3.5 && Math.abs(PL.pos.y - homePos().y) < 1.6))) {
-    const verb = { rockpool: 'Wade into your rock pool', fish: 'Climb inside your big frog', burrow: 'Crawl into your burrow', pad: 'Dive down to your bubble room', wallow: 'Wade into your mud lodge', treehouse: 'Go inside your tree house', leaf: 'Slip behind your dewdrop leaf', brom: 'Climb into your bromeliad', hide: 'Crawl into your canopy pod', skynest: 'Climb into your sky nest', lair: 'Slither into your mud lair', acorn: 'Open the door of your acorn cottage', insideout: 'Open the door of your inside-out house', steam: 'Duck into your steam grotto', stump: 'Climb into your stump hollow', sandden: 'Wriggle into your sand den' }[T.kind];
+    const verb = { rockpool: 'Wade into your rock pool', fish: 'Climb inside your big frog', burrow: 'Crawl into your burrow', pad: 'Dive down to your bubble room', wallow: 'Wade into your mud lodge', treehouse: 'Go inside your tree house', leaf: 'Slip behind your dewdrop leaf', brom: 'Climb into your bromeliad', hide: 'Crawl into your canopy pod', skynest: 'Climb into your sky nest', lair: 'Slither into your mud lair', acorn: 'Open the door of your acorn cottage', insideout: 'Open the door of your inside-out house', steam: 'Duck into your steam grotto', stump: 'Climb into your stump hollow', sandden: 'Wriggle into your sand den', crystal: 'Step into your crystal dome' }[T.kind];
     INTERACT.cur = { label: verb, act: () => enterBurrow('home') }; return; }
   if (T.kind === 'fish') {
     const f = W.homeFish; if (!f || W.inBurrow) return;
@@ -4177,7 +4292,7 @@ function buildInteriors() {
     const l = new THREE.PointLight(0xc8e070, 0.9, 14, 1.6); l.position.set(0, BURROW_Y + 3, -1); g.add(l);
     denDoor(g, 0xe8f0c8); g.visible = false;
   }
-  buildRooms(); buildRooms2(); buildFishRoom(); buildRockRoom(); buildInsideOutRoom(); buildNewRooms();
+  buildRooms(); buildRooms2(); buildFishRoom(); buildRockRoom(); buildInsideOutRoom(); buildNewRooms(); buildCrystalRoom();
 }
 function denTick(dt) {
   if (!W.inBurrow) return;
@@ -5486,7 +5601,7 @@ function regionTick(dt) {
     } else { Gz.col.visible = false; for (const s of Gz.spray) s.visible = false; }
   }
   // pitcher plants trap insects that wander too close
-  if (F.pitchers.length && Math.hypot(P.x - BOG.x, P.z - BOG.z) < BOG.r + 40) for (const i of INS.list) { if (!i.alive || i.npc || i.caught) continue; for (const m of F.pitchers) if (Math.abs(m.x - i.pos.x) < 0.5 && Math.abs(m.z - i.pos.z) < 0.5 && Math.abs(m.y - i.pos.y) < 0.6) { removeInsect(i); SFX.plop(m.clone()); break; } }
+  if (F.pitchers.length && Math.hypot(P.x - BOG.x, P.z - BOG.z) < BOG.r + 40) for (const i of INS.list) { if (!i.alive || i.npc || i.caught || i.stuck || i.ctrl) continue; for (const m of F.pitchers) if (Math.abs(m.x - i.pos.x) < 0.5 && Math.abs(m.z - i.pos.z) < 0.5 && Math.abs(m.y - i.pos.y) < 0.6) { removeInsect(i); SFX.plop(m.clone()); break; } }
   // the mountains: flag flutters, the eagle circles, snow falls up high, and reaching the top counts
   if (F.flag) { const p = F.flag.geometry.attributes.position; for (let i = 0; i < p.count; i++) { const x = p.getX(i); p.setZ(i, Math.sin(t * 6 - x * 3) * 0.12 * x); } p.needsUpdate = true; }
   if (F.eagle) { const a = t * 0.08, R = 70; F.eagle.g.position.set(MOUNT.x + Math.cos(a) * R, MOUNT.top + 26 + Math.sin(t * 0.3) * 4, MOUNT.z + Math.sin(a) * R); F.eagle.g.rotation.set(0, -a, 0.35); for (const w of F.eagle.wings) w.g.rotation.z = w.s * Math.sin(t * 2) * 0.12; }
@@ -5777,6 +5892,250 @@ function toggleBurrowSand() {
   if (!SAVE.stats.buried) { SAVE.stats.buried = 1; persist(); toast('You wriggle down into the sand. Predators cannot find you, and you stay cool and damp. Move, jump or press F to come back out.', 'guide'); }
 }
 /* ============================================================
+   Telepathic Frog (V: take over a creature's mind) and the
+   Insider Frog's grab (V next to a creature: turn it inside out,
+   and it sticks to you)
+   ============================================================ */
+const CONTROL_KINDS = { frog: 'hop', treefrog: 'hop', rare: 'hop', turtle: 'both', fish: 'water', pike: 'water', catfish: 'both', snake: 'snake', tadpole: 'water', wbeetle: 'water', snail: 'land', heron: 'fly', insect: 'fly' };
+const CONTROL_SPEED = { hop: 3.4, both: 2.2, water: 4.2, snake: 2.8, land: 0.6, fly: 5 };
+// insects are wrapped so they can be treated like any other creature
+function insectWrap(i) { return i._w || (i._w = { kind: 'insect', ins: i, root: i.root, guide: i.type, get ctrl() { return i.ctrl; }, set ctrl(v) { i.ctrl = v; }, get stuck() { return i.stuck; }, set stuck(v) { i.stuck = v; } }); }
+function creaturePos(c) { return c.kind === 'snake' ? c.head : c.kind === 'insect' ? c.ins.pos : c.root.position; }
+function creatureOK(c) { if (c.kind === 'insect') return c.ins.alive && !c.ins.caught && !c.stuck && !c.ctrl; return c.root.visible !== false && !(c.eatenT > 0) && !(c.dead > 0) && !c.burrow && !c.stuck && !c.ctrl && c !== PL.selfC && !(c.kind === 'heron' && HER.state === 'away'); }
+function nearestCreature(r) {
+  let best = null, bd = r;
+  const consider = c => { if (!creatureOK(c)) return; const q = c.focus && c.kind !== 'snake' ? c.focus() : creaturePos(c), d = Math.hypot(q.x - PL.pos.x, q.z - PL.pos.z); if (d < bd && Math.abs(q.y - PL.pos.y) < 5 + PL.size) { bd = d; best = c; } };
+  for (const c of CREATURES) consider(c);
+  for (const i of INS.list) if (i.alive) consider(insectWrap(i));
+  return best;
+}
+function creatureName(c) { const g = GUIDE[c.guide] || (c.kind === 'insect' && INSECT[c.ins.type]); return ((g && g.name) || c.kind || 'creature').toLowerCase(); }
+// what V does for each species
+function vPower() {
+  if (GAME.state !== 'play' || PL.stage < 3) return false;
+  const sp = SPECIES[GAME.species];
+  if (sp.telepath) { if (PL.mind) mindRelease(); else { const c = nearestCreature(7 + PL.size); if (c) mindTake(c); else toast('Get closer to a creature, then press V to take over its mind.', 'quiet'); } return true; }
+  if (sp.insider) { const c = nearestCreature(2.4 + PL.size * 0.8); if (c) { stickCreature(c); return true; } return toggleInsideOut(); }
+  return false;
+}
+
+/* ---------- mind control ---------- */
+function mindTake(c) {
+  PL.mind = { c, t: 0, vy: 0, hopT: 0 }; c.ctrl = true;
+  if (c.kind === 'frog' && c.pad) { c.pad.occ = null; c.pad = null; }
+  if (c.kind === 'snake') c.state = 'ctrl';
+  SFX.croak('tele', PL.pos.clone(), true); sparkle(creaturePos(c).clone().add(new V3(0, 0.5, 0)), 16, 0xc080ff);
+  const nm = creatureName(c);
+  toast(SAVE.stats.mindT ? 'You are inside the mind of the ' + nm + '.' : 'You took over the mind of the ' + nm + '! Move it with WASD (Space to jump or fly up, Q to go down). Your own body sits still and helpless, so be careful. Press V to return.', SAVE.stats.mindT ? 'quiet' : 'guide');
+  SAVE.stats.mindT = 1; SAVE.stats.minds = SAVE.stats.minds || []; if (!SAVE.stats.minds.includes(c.kind)) { SAVE.stats.minds.push(c.kind); if (SAVE.stats.minds.length >= 5) unlockAch('puppeteer'); } persist();
+  document.body.classList.add('mindctl'); CAM.fp = false;
+}
+function mindRelease(why) {
+  const M = PL.mind; if (!M) return; const c = M.c;
+  c.ctrl = false; if (c.kind === 'snake') { c.state = 'wander'; c.cool = 8; }
+  if (c.kind === 'heron') { HER.state = 'leave'; HER.t = 0; }
+  if (c.kind === 'insect') { c.ins.anchor.copy(c.ins.pos); }
+  if (c.kind === 'frog') { c.state = 'sit'; c.timer = 2; }
+  PL.mind = null; document.body.classList.remove('mindctl'); CAM.snap = true;
+  sparkle(PL.pos.clone().add(new V3(0, 0.5 * PL.size, 0)), 10, 0xc080ff);
+  toast(why || 'You return to your own body.', 'quiet');
+}
+function mediumAt(x, z) { const wl = waterLevelAt(x, z), h = terrainH(x, z); return { wl, h, water: wl - h > 0.3 }; }
+function mindTick(dt) {
+  const M = PL.mind, c = M.c; M.t += dt;
+  if (c.eatenT > 0 || c.dead > 0 || (c.kind === 'insect' && !c.ins.alive)) { mindRelease('The connection broke.'); return; }
+  c.root.visible = true; if (c.kind === 'heron') { HER.state = 'ctrl'; HER.root.visible = true; }
+  const mode = CONTROL_KINDS[c.kind], p = creaturePos(c), iv = inputVector();
+  if (!easyMode()) { PL.needs.energy = Math.max(0, PL.needs.energy - dt * 1.1); if (PL.needs.energy < 4) { mindRelease('You are too tired to hold on. You snap back to your body.'); return; } }
+  if (p.distanceTo(PL.pos) > 80) { mindRelease('Too far away! The link snaps and you are back in your body.'); return; }
+  const spd = CONTROL_SPEED[mode] * (IN.keys.ShiftLeft || IN.keys.ShiftRight || IN.sprint ? 1.6 : 1) * (c.kind === 'rare' && c.F && c.F.scale > 3 ? 1.6 : 1);
+  let nx = p.x + iv.x * spd * dt * iv.mag, nz = p.z + iv.z * spd * dt * iv.mag;
+  const here = mediumAt(p.x, p.z), there = mediumAt(nx, nz);
+  if ((mode === 'water' && !there.water) || (mode === 'land' && there.water) || Math.hypot(nx, nz) > WORLD_R) { nx = p.x; nz = p.z; }
+  const moved = Math.hypot(nx - p.x, nz - p.z) > 1e-4, med = mediumAt(nx, nz);
+  if (moved) { const yaw = Math.atan2(nx - p.x, nz - p.z); if (c.kind === 'snake') c.heading = yaw; else c.root.rotation.y += angDiff(c.root.rotation.y, yaw) * Math.min(1, dt * 8); }
+  // jumping (frogs) and up/down (swimmers)
+  if (mode === 'hop' && !med.water && IN.keys.Space && M.hopT <= 0 && M.vy === 0) { M.vy = 7; M.hopT = 0.5; SFX.land(p.clone(), false); }
+  M.hopT -= dt;
+  let y;
+  if (mode === 'fly') {
+    const g = Math.max(groundAt(nx, nz, p.y + 1, 3), med.wl), vy = ((IN.keys.Space ? 1 : 0) - (IN.keys.KeyQ ? 1 : 0)) * spd * 0.8;
+    y = clamp(p.y + vy * dt, g + 0.15, g + 60);
+  } else if (mode === 'water' || (mode === 'both' && med.water && (c.kind === 'catfish' || c.kind === 'fish'))) {
+    const top = med.wl - 0.25, bot = med.h + 0.25; M.depth = clamp((M.depth === undefined ? 0.5 : M.depth) + ((IN.keys.KeyQ ? 1 : 0) - (IN.keys.Space ? 1 : 0)) * dt * 0.6, 0, 1);
+    y = lerp(top, Math.min(top, bot + 0.1), M.depth);
+  } else if (med.water) { y = med.wl - 0.1; M.vy = 0; }
+  else { const g = groundAt(nx, nz, p.y + 1, 2); if (M.vy !== 0 || p.y > g + 0.05) { M.vy -= 22 * dt; y = p.y + M.vy * dt; if (y <= g) { y = g; M.vy = 0; } } else y = g; }
+  p.set(nx, y, nz);
+  // animate
+  if (c.kind === 'snake') { c.state = 'ctrl'; c.update.call(c, dt); }
+  else if (c.F) { const swim = med.water && mode !== 'land'; frogPose(c.F, swim ? { swim: M.t * 8 } : M.vy !== 0 ? { fold: 0.8 } : moved ? { crawl: M.t * 9 } : { fold: 0 }); frogAnimate(c.F, dt, {}); }
+  else if (c.kind === 'insect') { c.root.position.copy(p); c.root.rotation.y = Math.atan2(iv.x || Math.sin(c.root.rotation.y), iv.z || Math.cos(c.root.rotation.y)); for (const w of c.ins.wings) w.rotation.z = w.userData.s * Math.sin(M.t * 50) * 0.7; }
+  else if (c.kind === 'heron') { const Mh = HER.H; if (Mh && Mh.wings) Mh.wings.forEach((w, i) => { w.visible = p.y > groundAt(p.x, p.z, p.y + 1, 3) + 0.6; w.rotation.z = (i ? -1 : 1) * Math.sin(M.t * 6) * 0.6; }); }
+  else { const tail = c.tail || (c.Fi && c.Fi.tail); if (tail) tail.rotation.y = Math.sin(M.t * (moved ? 12 : 4)) * 0.4; if (c.fins) for (const f of c.fins) f.g.rotation.x = Math.sin(M.t * 10 + f.s) * (moved ? 0.6 : 0.1); }
+  if (W.mindRing) { W.mindRing.visible = true; W.mindRing.position.set(p.x, p.y + 1.2 + Math.sin(M.t * 4) * 0.1, p.z); }
+}
+
+/* ---------- Insider grab: the creature turns inside out, sticks to you and becomes part of you.
+   Right side out, it is hidden inside you as a lump the size of the creature. ---------- */
+const STICK_SLOTS = [[0, 0.6, -0.42], [-0.46, 0.4, -0.1], [0.46, 0.4, -0.1], [0, 0.5, -0.75], [-0.35, 0.55, -0.55], [0.35, 0.55, -0.55], [0, 0.66, 0.05]];
+let STICK_MATS = null;
+function stickMats() {
+  if (STICK_MATS) return STICK_MATS; const M = insideMats();
+  const wet = (o) => new THREE.MeshStandardMaterial(Object.assign({ roughness: 0.2, metalness: 0.05, envMap: W.skyCube, envMapIntensity: 0.7 }, o));
+  STICK_MATS = { a: M.flesh, b: M.pale, muscle: wet({ map: M.flesh.map, color: 0xd04050, emissive: 0x300810, emissiveIntensity: 0.4 }), fat: wet({ color: 0xf4d8a8, roughness: 0.4 }), vein: M.bluev, heart: M.heart, gut: M.gut, lung: M.lung, slime: wet({ color: 0xc0f080, transparent: true, opacity: 0.45, roughness: 0.05 }) };
+  return STICK_MATS;
+}
+// pick an inside-out material for each part, but keep eyes (dark, shiny bits) as they are
+function setCreatureOut(root, on) {
+  const S = stickMats(); let k = 0;
+  root.traverse(o => {
+    if (!o.isMesh || o.userData.kit) return;
+    if (on) {
+      if (o.userData.mo !== undefined) return; const m = Array.isArray(o.material) ? o.material[0] : o.material; o.userData.mo = o.material;
+      const c = m && m.color, lum = c ? c.r * 0.3 + c.g * 0.59 + c.b * 0.11 : 0.5;
+      if (lum < 0.08 && o.scale.x < 0.4) return; // eyes and pupils stay
+      o.material = [S.a, S.muscle, S.b, S.a, S.fat, S.muscle][k++ % 6];
+    } else if (o.userData.mo !== undefined) { o.material = o.userData.mo; delete o.userData.mo; }
+  });
+}
+// a little set of organs, veins and slime to make the creature look properly inside out
+function organKit(size) {
+  const S = stickMats(), g = new THREE.Group(), s = Math.max(size.x, size.y, size.z);
+  const put = (geo, mat, x, y, z, sx, sy, sz) => { const m = new THREE.Mesh(geo, mat); m.position.set(x * size.x, y * size.y, z * size.z); m.scale.set(sx * s, sy * s, sz * s); m.userData.kit = true; m.userData.foreign = true; g.add(m); return m; };
+  g.userData.heart = put(G.sph, S.heart, 0.05, 0.42, 0.1, 0.13, 0.12, 0.13);
+  put(G.sph, S.lung, -0.22, 0.36, 0, 0.12, 0.09, 0.2); put(G.sph, S.lung, 0.22, 0.36, 0, 0.12, 0.09, 0.2);
+  const pts = []; for (let i = 0; i <= 24; i++) { const a = i / 24 * TAU * 1.8, r = 0.08 + i / 24 * 0.18; pts.push(new THREE.Vector3(Math.cos(a) * r * size.x, 0.38 * size.y + Math.sin(i) * 0.01 * s, -0.2 * size.z + Math.sin(a) * r * size.z)); }
+  const gut = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, 0.035 * s, 6, false), S.gut); gut.userData.kit = true; gut.userData.foreign = true; g.add(gut);
+  for (let i = 0; i < 6; i++) { const a = i / 6 * TAU, v = put(G.cyl, S.vein, Math.cos(a) * 0.2, 0.45, Math.sin(a) * 0.2, 0.01, 0.22, 0.01); v.rotation.set(Math.sin(a) * 1.35, 0, -Math.cos(a) * 1.35); }
+  for (let i = 0; i < 4; i++) put(G.sphT, S.slime, (Math.random() - 0.5) * 0.7, -0.05, (Math.random() - 0.5) * 0.7, 0.05, 0.12, 0.05); // drips
+  return g;
+}
+function stickCreature(c) {
+  PL.stuckList = PL.stuckList || [];
+  const F = PL.F; if (!F) return;
+  const root = c.kind === 'snake' ? c.S.root : c.root;
+  if (c.kind === 'frog' && c.pad) { c.pad.occ = null; c.pad = null; }
+  if (c.kind === 'snake') { c.state = 'ctrl'; const segs = c.S.segs, n = segs.length; segs.forEach((m, i) => { const a = i * 0.55, r = 0.15 + i * 0.012; m.position.set(Math.cos(a) * r * 3, 0.15 + i * 0.006, Math.sin(a) * r * 3); m.rotation.set(0, -a, 0); }); }
+  if (c.kind === 'heron') { HER.state = 'stuck'; }
+  // measure it, then make it part of the frog
+  c.stuck = true;
+  const box = new THREE.Box3().setFromObject(root), size = box.getSize(new V3()), wq = root.getWorldQuaternion(new THREE.Quaternion()), ws = root.getWorldScale(new V3());
+  size.x = Math.max(size.x, 0.15); size.y = Math.max(size.y, 0.15); size.z = Math.max(size.z, 0.15);
+  const n = PL.stuckList.length;
+  let slot;
+  if (n < STICK_SLOTS.length) slot = STICK_SLOTS[n];
+  else { // pile them on: spiral outwards and upwards over the growing heap
+    const layer = Math.floor((n - STICK_SLOTS.length) / 8) + 1, a = n * 2.39996, r = 0.35 + layer * 0.22;
+    slot = [Math.cos(a) * r, 0.6 + layer * 0.38, -0.35 + Math.sin(a) * r];
+  }
+  const holder = new THREE.Group(); holder.position.set(slot[0], slot[1], slot[2]); holder.userData.foreign = true; F.tilt.add(holder);
+  const inner = new THREE.Group(); inner.scale.setScalar(1 / Math.max(PL.size, 0.01)); holder.add(inner);
+  const saved = { parent: root.parent, scale: root.scale.clone(), rot: root.rotation.clone() };
+  inner.add(root); root.position.set(0, size.y * 0.32, 0); root.rotation.set(0, Math.random() * TAU, 0); root.scale.copy(ws);
+  root.traverse(o => { o.userData.foreign = true; });
+  setCreatureOut(root, true);
+  const kit = organKit(size); kit.position.y = size.y * 0.1; inner.add(kit);
+  // the lump you see when you are right side out: skin stretched over the creature
+  const lump = null;
+  const e = { c, root, holder, inner, kit, lump, size, saved };
+  PL.stuckList.push(e);
+  SFX.squelch(PL.pos.clone()); sparkle(PL.pos.clone().add(new V3(0, 0.6 * PL.size, 0)), 16, 0xe06070);
+  toast(SAVE.stats.stuckT ? 'SQUELCH! The ' + creatureName(c) + ' is now part of you.' : 'SQUELCH! You turned the ' + creatureName(c) + ' inside out and it fused onto you! Press Z to shake everything off.', SAVE.stats.stuckT ? 'quiet' : 'guide');
+  SAVE.stats.stuckT = (SAVE.stats.stuckT || 0) + 1; if (SAVE.stats.stuckT >= 3) unlockAch('sticky'); persist();
+  stuckVisuals();
+}
+function unstickAll(quiet) {
+  const L = PL.stuckList || []; if (!L.length) return;
+  L.forEach((e, i) => {
+    const c = e.c, root = e.root;
+    const a = PL.yaw + Math.PI / 2 + i * 0.9, d = 0.9 + PL.size * 0.6, x = PL.pos.x + Math.sin(a) * d, z = PL.pos.z + Math.cos(a) * d, med = mediumAt(x, z);
+    setCreatureOut(root, false); root.traverse(o => { delete o.userData.foreign; });
+    e.inner.remove(root); if (e.holder.parent) e.holder.parent.remove(e.holder);
+    (c.kind === 'snake' || c.kind === 'insect' || c.kind === 'heron' ? scene : (e.saved.parent || scene)).add(root);
+    root.scale.copy(e.saved.scale); root.rotation.set(0, PL.yaw, 0);
+    const mode = CONTROL_KINDS[c.kind] || 'both';
+    const y = med.water && mode !== 'land' && mode !== 'fly' ? (mode === 'water' ? med.wl - 0.4 : med.wl - 0.1) : groundAt(x, z, PL.pos.y + 2, 4) + (mode === 'fly' ? 1 : 0);
+    if (c.kind === 'snake') { root.position.set(0, 0, 0); c.head.set(x, med.water ? WATER : y, z); c.S.trail.forEach(v => v.copy(c.head)); c.state = 'wander'; c.cool = 8; }
+    else if (c.kind === 'insect') { c.ins.pos.set(x, y + 0.6, z); c.ins.anchor.copy(c.ins.pos); root.position.copy(c.ins.pos); }
+    else root.position.set(x, y, z);
+    if (c.kind === 'frog') { c.state = 'sit'; c.timer = 2; }
+    if (c.kind === 'heron') { HER.state = 'leave'; HER.t = 0; }
+    c.stuck = false;
+  });
+  PL.stuckList = [];
+  if (!quiet) { SFX.squelch(PL.pos.clone()); toast('You shake yourself and everything pops off, right side out again.', 'quiet'); }
+}
+// right side out: creatures are hidden inside you as lumps; inside out: they show, organs and all
+function stuckVisuals() {
+  const out = !!(PL.F && PL.F.out);
+  for (const e of PL.stuckList || []) { e.root.visible = out; e.kit.visible = out; }
+}
+function stuckTick(dt) {
+  const L = PL.stuckList; if (!L || !L.length) return;
+  if (!SPECIES[GAME.species].insider) { unstickAll(); return; }
+  stuckVisuals();
+  const t = GAME.t;
+  for (const e of L) {
+    const h = e.kit.userData.heart; if (h) { const b = Math.pow(Math.max(0, Math.sin(t * 7 + e.size.x)), 8); h.scale.setScalar(Math.max(e.size.x, e.size.y, e.size.z) * (0.13 + b * 0.03)); }
+    e.holder.scale.set(1 + Math.sin(t * 3 + e.size.y) * 0.03, 1 - Math.sin(t * 3 + e.size.y) * 0.03, 1);
+    const c = e.c; if (c.F && e.root.visible) { frogPose(c.F, { fold: 0.5 + 0.3 * Math.sin(t * 5) }); frogAnimate(c.F, dt, {}); }
+    if (c.kind === 'insect') for (const w of c.ins.wings) w.rotation.z = w.userData.s * Math.sin(t * 40) * 0.5;
+  }
+}
+function buildMindFX() {
+  const c = mkCanvas(64, 64), x = c.getContext('2d'); const g = x.createRadialGradient(32, 32, 4, 32, 32, 30); g.addColorStop(0, 'rgba(220,170,255,1)'); g.addColorStop(0.5, 'rgba(170,90,255,.5)'); g.addColorStop(1, 'rgba(120,40,220,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64);
+  W.mindRing = new THREE.Sprite(new THREE.SpriteMaterial({ map: canvasTex(c), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); W.mindRing.scale.setScalar(1.6); W.mindRing.visible = false; scene.add(W.mindRing);
+}
+
+/* ---------- the Telepathic Frog's home and its wild spawn ---------- */
+HOME_TYPES.telepath = { kind: 'crystal', name: 'crystal dome', fx: 0xb080ff, verb: 'Hold to grow a crystal dome here', intro: 'Telepathic frogs live in glowing crystal domes. Find flat, soft ground away from water and hold E.', ok: softGround };
+HOT_HOMES.push('crystal');
+DEN.crystal = { name: 'crystal dome', fog: [0.12, 0.06, 0.2] };
+FLAT_DENS.add('crystal'); ROOM_CEIL.crystal = 6;
+HOME_BUILD.crystal = function (g, h, sp, add) {
+  const y = terrainH(h.x, h.z); g.position.y = y;
+  const glass = new THREE.MeshStandardMaterial({ color: 0xb890ff, roughness: 0.1, metalness: 0.2, transparent: true, opacity: 0.55, emissive: 0x401870, emissiveIntensity: 0.6, side: THREE.DoubleSide });
+  add(new THREE.Mesh(new THREE.IcosahedronGeometry(1.4, 1), glass), 0, 0.5, -0.2).scale.set(1, 0.8, 1);
+  const cry = new THREE.MeshStandardMaterial({ color: 0xc8a0ff, roughness: 0.15, emissive: 0x6a30c0, emissiveIntensity: 0.8, flatShading: true });
+  for (let i = 0; i < 9; i++) { const a = i / 9 * TAU + 0.3; if (Math.abs(angDiff(a, Math.PI / 2)) < 0.4) continue; const m = add(new THREE.Mesh(new THREE.ConeGeometry(0.18, 1, 5), cry), Math.cos(a) * 1.5, 0.4, Math.sin(a) * 1.5); m.scale.y = 0.7 + (i % 3) * 0.4; m.rotation.set(Math.sin(a) * 0.4, 0, -Math.cos(a) * 0.4); }
+  const door = add(new THREE.Mesh(new THREE.CircleGeometry(0.45, 18), new THREE.MeshBasicMaterial({ color: 0xe0c8ff })), 0, 0.45, 1.12); door.scale.y = 1.2;
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xb080ff, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false })); glow.position.set(0, 0.8, 0); glow.scale.setScalar(4); g.add(glow);
+};
+function buildCrystalRoom() {
+  SEED = 5656;
+  const g = new THREE.Group(); scene.add(g); W.interiors.crystal = g;
+  const floorT = rmCanvasTex(256, 256, (x, w, h) => { x.fillStyle = '#2a1840'; x.fillRect(0, 0, w, h); for (let i = 0; i < 40; i++) { x.strokeStyle = 'rgba(190,140,255,' + (0.15 + Math.random() * 0.3) + ')'; x.lineWidth = 1.5; x.beginPath(); const cx = Math.random() * w, cy = Math.random() * h; for (let k = 0; k < 6; k++) { const a = k / 6 * TAU; x.lineTo(cx + Math.cos(a) * 14, cy + Math.sin(a) * 14); } x.closePath(); x.stroke(); } }, [3, 3]);
+  rmFloor(g, floorT);
+  const dome = rmMesh(g, new THREE.IcosahedronGeometry(7, 2), new THREE.MeshStandardMaterial({ color: 0x8a60c8, roughness: 0.2, metalness: 0.3, side: THREE.BackSide, flatShading: true, emissive: 0x241040 }), 0, RY, 0, 1, 0.85, 1); dome.castShadow = false;
+  const cry = new THREE.MeshStandardMaterial({ color: 0xd0a8ff, roughness: 0.1, emissive: 0x7030d0, emissiveIntensity: 0.9, flatShading: true, transparent: true, opacity: 0.9 });
+  for (let i = 0; i < 26; i++) { const a = rnd() * TAU; if (Math.abs(angDiff(a, 0)) < 0.45) continue; const [x, z] = rmAt(a, rr(5, 6.4)); const m = rmMesh(g, new THREE.ConeGeometry(0.4, 1, 6), cry, x, RY + 0.5, z, 1, rr(1.2, 3.5), 1); m.rotation.set(rr(-0.3, 0.3), 0, rr(-0.3, 0.3)); }
+  // floating thought-orbs that drift around the room
+  const orbM = new THREE.MeshStandardMaterial({ color: 0xf0e0ff, emissive: 0xb080ff, emissiveIntensity: 1.2, transparent: true, opacity: 0.85 });
+  for (let i = 0; i < 9; i++) { const o = rmMesh(g, G.sph, orbM, rr(-4, 4), RY + rr(1.5, 4), rr(-4, 3), rr(0.15, 0.35)); o.castShadow = false; W.denAnim.push({ o, kind: 'feather', base: o.position.clone(), ph: rnd() * 6 }); }
+  // a meditation cushion bed
+  const BX = 2.6, BZ = -1.2;
+  rmMesh(g, new THREE.CylinderGeometry(1.2, 1.3, 0.35, 8), new THREE.MeshStandardMaterial({ color: 0x6a2a9a, roughness: 0.8 }), BX, RY + 0.18, BZ);
+  rmMesh(g, new THREE.TorusGeometry(1.05, 0.12, 6, 16), new THREE.MeshStandardMaterial({ color: 0xe8c040, metalness: 0.6, roughness: 0.3 }), BX, RY + 0.36, BZ).rotation.x = Math.PI / 2;
+  W.bedPos.crystal = { x: BX, z: BZ, y: RY + 0.5 };
+  rmGlowDoor(g, 0xe8d8ff, 1.6, 2.4);
+  const l = new THREE.PointLight(0xc090ff, 1.4, 16, 1.4); l.position.set(0, RY + 3.5, 0); g.add(l);
+  g.visible = false;
+}
+function buildTelepathWild() {
+  const Ls = (W.regionFX && W.regionFX.lanterns) || []; const L = Ls[Ls.length - 1]; if (!L) return;
+  const lg = L.glow.parent, F = makeFrog('telepath', 'classic'); F.root.scale.setScalar(0.85);
+  F.root.position.set(lg.position.x, lg.position.y + 2.62, lg.position.z);
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xb080ff, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false })); halo.scale.setScalar(1.6); halo.position.y = 0.7; F.root.add(halo);
+  makeCreature('rare', 'telefrog', F.root, function (dt) {
+    const k = this, night = !isDay(); F.root.visible = night && F.root.position.distanceTo(PL.pos) < 60; k.hidden = !night;
+    halo.material.opacity = 0.35 + 0.25 * Math.sin(GAME.t * 2);
+    F.root.rotation.y = Math.atan2(PL.pos.x - F.root.position.x, PL.pos.z - F.root.position.z);
+    k.ct -= dt; if (night && k.ct <= 0) { k.ct = mr(8, 16); k.croakT = 0.8; if (F.root.position.distanceTo(PL.pos) < 30) SFX.croak('tele', F.root.position.clone()); }
+    k.croakT = Math.max(0, (k.croakT || 0) - dt); frogAnimate(F, dt, { croak: k.croakT });
+  }, { F, ct: 3, croakT: 0, seeR: 6 });
+}
+/* ============================================================
    Multiplayer servers (claude.ai live rooms)
    lobby presence: { hosting: "1234" } advertises a running server
    server room "pond-<n>" presence: this player's frog state
@@ -5902,7 +6261,7 @@ function mpBuildRemote(r) {
   const s = r.s; if (r.root) scene.remove(r.root);
   r.sp = SPECIES[s.sp] ? s.sp : 'green'; r.pt = PATTERNS[s.pt] ? s.pt : 'classic'; r.sg = s.sg | 0;
   r.root = new THREE.Group(); scene.add(r.root);
-  const size = [0.3, 0.32, 0.4, 0.5 * SPECIES[r.sp].size, SPECIES[r.sp].size][clamp(r.sg, 0, 4)];
+  const size = [0.3, 0.3, 0.42, 0.5 * SPECIES[r.sp].size, SPECIES[r.sp].size][clamp(r.sg, 0, 4)];
   r.F = null; r.T = null;
   if (r.sg <= 2) { r.T = makeTadpole(size * 2.4, r.sg === 2); r.root.add(r.T.root); }
   else { r.F = makeFrog(r.sp, r.pt); r.F.root.scale.setScalar(size); r.F.tail.visible = r.sg === 3; r.root.add(r.F.root); }
@@ -6201,8 +6560,8 @@ function updateCamera(dt) {
     camera.lookAt(cx, 1, cz); return;
   }
   const S = Math.max(PL.size, 0.45);
-  const target = PL.pos.clone(); target.y += (PL.stage <= 2 ? 0.25 : 0.6) * S;
-  if (CAM.fp && PL.stage >= 3) {
+  const target = (PL.mind ? creaturePos(PL.mind.c) : PL.pos).clone(); target.y += (PL.stage <= 2 ? 0.25 : 0.6) * S;
+  if (CAM.fp && PL.stage >= 3 && !PL.mind) {
     const eye = new V3(Math.sin(PL.yaw) * 0.42 * S, 0.55 * S, Math.cos(PL.yaw) * 0.42 * S).add(PL.pos);
     if (PL.climbing) eye.y += 0.3 * S;
     camera.position.copy(eye);
@@ -6553,7 +6912,8 @@ function pressAction(code) {
   if (code === 'KeyX') { if (PL.onGround) { PL.resting = !PL.resting; PL.idle = PL.resting ? 6 : 0; toast(PL.resting ? 'Resting…' : 'Up and about.', 'quiet'); } return true; }
   if (code === 'KeyH') { H.hud.classList.toggle('hidden'); return true; }
   if (code === 'KeyT') { cycleBag(1); return true; }
-  if (code === 'KeyV') return toggleInsideOut();
+  if (code === 'KeyV') return vPower();
+  if (code === 'KeyZ') { if (PL.stuckList && PL.stuckList.length) { unstickAll(); return true; } return false; }
   return false;
 }
 function setupInput() {
@@ -6627,6 +6987,7 @@ function setupInput() {
   addEventListener('resize', onResize);
 }
 function swapFrog() {
+  if (PL.mind) mindRelease(); if (PL.stuckList && PL.stuckList.length) unstickAll(true);
   const pos = PL.pos.clone(), wasClimbing = PL.climbing; PL.settled = false; PL.digProg = 0;
   buildPlayerModel(); PL.pos.copy(pos);
   if (wasClimbing && !curSp().climb) { PL.climbing = null; PL.onGround = false; PL.vel.set(0, 0, 0); }
@@ -6634,7 +6995,8 @@ function swapFrog() {
   if (PL.riding && PL.size > 1.6) PL.riding = null;
   sparkle(PL.pos.clone().add(new V3(0, 0.5 * PL.size, 0)), 10, 0xc0ff90);
   buildHomes(); buildDecor(); homeHint(); renderBag();
-  if (SPECIES[GAME.species].insider) toast('Press V (or the Flip button) to turn yourself inside out. Each side has different powers.', 'guide');
+  if (SPECIES[GAME.species].insider) toast('Press V (or the Flip button) to turn yourself inside out. Each side has different powers. Press V right next to another creature to turn IT inside out and stick it to yourself!', 'guide');
+  if (SPECIES[GAME.species].telepath) toast('Walk up to any creature and press V (or the Mind button) to take over its mind. Press V again to come back.', 'guide');
   saveRun(); persist(); renderMenu();
 }
 function setTouch() {
@@ -6669,6 +7031,7 @@ function tick(dt) {
   for (const c of CREATURES) {
     if (c._tgt && c._tgt.caught) continue;
     if (c.eatenT > 0 && c.kind !== 'frog' && c.kind !== 'treefrog') { c.eatenT -= dt; c.root.visible = false; if (c.eatenT <= 0) respawnPrey(c); continue; }
+    if (c.ctrl || c.stuck) continue;
     c.update.call(c, dt);
   }
   updateNeeds(dt); updateGrowth(dt); updateDiscovery(dt); ambientOneShots(dt);
@@ -6719,7 +7082,7 @@ async function boot() {
     W.mainWorld = scene.children.filter(o => !skyBits.has(o) && !o.isLight);
     buildSea(); buildRipples(); buildTongue();
     setLoad(0.82, 'Waking up the wildlife…'); await nextFrame();
-    buildWildlife(); buildNewWildlife(); buildHomeFish(); buildHomes(); buildPickups();
+    buildWildlife(); buildNewWildlife(); buildTelepathWild(); buildMindFX(); buildHomeFish(); buildHomes(); buildPickups();
     buildMapImage(); hudInit();
     applyEnv(SAVE.last.env || 'summer');
     applyQuality();
@@ -6743,5 +7106,3 @@ function startPondlife() {
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startPondlife); else startPondlife();
 </script>
-
-</body></html>
