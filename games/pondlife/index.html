@@ -260,7 +260,8 @@ select { background: var(--panel-2); color: var(--ink); border: 1px solid var(--
         <span class="kbd">C</span><p>Switch first and third person.</p>
         <span class="kbd">Q</span><p>Sneak (lower and quieter). Underwater: swim down.</p>
         <span class="kbd">X</span><p>Rest to recover energy.</p>
-        <span class="kbd">V</span><p>Insider Frog: turn yourself inside out, or turn a creature next to you inside out so it sticks to you. Telepathic Frog: take over the mind of a nearby creature.</p>
+        <span class="kbd">V</span><p>Insider Frog: turn yourself inside out, or turn a creature next to you inside out so it sticks to you. Telepathic Frog: take over the mind of a nearby creature. Fire Frog: breathe fire.</p>
+        <span class="kbd">G</span><p>Telepathic Frog: hold to fire the telelaser. It discovers the nearest frog you have not found yet, but makes you lose a random one of your other frogs.</p>
         <span class="kbd">Z</span><p>Insider Frog: shake off everything stuck to you.</p>
         <span class="kbd">B</span><p>Multiplayer: hold to talk (when voice chat is set to push to talk).</p>
         <span class="kbd">Tab</span><p>Status, field guide, achievements, home and map.</p>
@@ -307,7 +308,7 @@ select { background: var(--panel-2); color: var(--ink); border: 1px solid var(--
   <div id="tbtns">
     <button data-k="KeyR">Croak</button><button data-k="KeyF">Dive</button><button data-k="KeyE">Act</button>
     <button data-k="KeyX">Rest</button><button data-k="tongue" class="big">Tongue</button><button data-k="Space" class="big">Jump</button>
-    <button data-k="KeyQ">Sneak</button><button data-k="ShiftLeft">Hop</button><button data-k="KeyC">Cam</button><button data-k="KeyV" id="tFlip" hidden>Flip</button><button data-k="KeyZ" id="tShake" hidden>Shake</button>
+    <button data-k="KeyQ">Sneak</button><button data-k="ShiftLeft">Hop</button><button data-k="KeyC">Cam</button><button data-k="KeyV" id="tFlip" hidden>Flip</button><button data-k="KeyZ" id="tShake" hidden>Shake</button><button data-k="KeyG" id="tLaser" hidden>Laser</button>
   </div>
 </div>
 
@@ -456,11 +457,24 @@ const SPECIES = {
     desc: 'A tiny round sand-coloured frog that squeaks like a toy when it calls. It can barely swim, but press F on dry ground to burrow into the sand, where nothing can find you and you stay cool and damp.', habitat: 'Sand Dunes', ability: 'Burrows into sand with F; barely swims' },
   telepath: { name: 'Telepathic Frog', size: 0.85, jump: 1.0, swim: 1.0, speed: 1.0, tongue: 3.2, climb: false, telepath: true, glowEyes: true, hunger: 1, dry: 1, armor: 1,
     color: 0x7a5aa8, belly: 0xe0d0f0, spot: 0x4a2a78, eye: 0xc080ff, throat: 0xd8c0f0, croak: 'tele',
-    desc: 'A violet frog with glowing eyes. Stand near any creature and press V to take over its mind: you steer it around while your own body sits still and helpless. Press V again to return.', habitat: 'Bamboo Grove, at night', ability: 'V: mind control' }
+    desc: 'A violet frog with glowing eyes. Stand near any creature and press V to take over its mind: you steer it around while your own body sits still and helpless. Press V again to return.', habitat: 'Bamboo Grove, at night', ability: 'V: mind control. Hold G: telelaser' },
+  cavefrog: { name: 'Cave Frog', size: 0.7, jump: 0.95, swim: 1.1, speed: 1.0, tongue: 3.0, climb: true, caveSight: true, sunburn: true, hunger: 0.75, dry: 0.4, armor: 1,
+    color: 0xe8cfcf, belly: 0xf8ecec, spot: 0xd0a8b0, eye: 0x6a1018, throat: 0xf4dede, croak: 'cave',
+    desc: 'A pale, pinkish-white frog from the deep Underground. It sees well in the dark, climbs wet rock, swims well in cold cave water and hardly ever dries out.', habitat: 'Underground lakes', ability: 'Sees far in the dark; climbs; dries out slowly. Sunlight burns it!' },
+  bird: { name: 'Bird Frog', size: 0.75, jump: 1.1, swim: 0.7, speed: 1.05, tongue: 3.0, climb: false, glide: true, feathers: true, hunger: 1.1, dry: 0.9, armor: 1,
+    color: 0x4a8ad0, belly: 0xf4ecd8, spot: 0x24508a, eye: 0x20180c, throat: 0xf8d890, croak: 'bird',
+    desc: "A feathered frog from Heron's Domain, high above the clouds. Hold Space in the air to flap and fly. It can fly so high that it reaches the floating islands all by itself, and it still eats bugs like a proper frog.", habitat: "Heron's Domain", ability: 'Real flight: hold Space to flap; fly up into the sky level' },
+  fire: { name: 'Fire Frog', size: 0.8, jump: 1.05, swim: 0.3, speed: 1.1, tongue: 3.0, climb: false, heatproof: true, fireproof: true, fireBreath: true, glowEyes: true, hunger: 1.15, dry: 0.3, armor: 1,
+    color: 0xe8501a, belly: 0xffd060, spot: 0xffe040, eye: 0xfff0a0, throat: 0xffb040, croak: 'fire',
+    desc: 'A blazing orange frog from the Mantle with real flames flickering on its back. Heat and lava cannot hurt it: it walks right across the top of lava lakes. Press V to breathe fire, which toasts bugs and scares herons. But water puts it out!', habitat: 'The Mantle', ability: 'V: breathe fire. Walks on lava. Water hurts it' },
+  lava: { name: 'Lava Frog', size: 1.0, jump: 0.85, swim: 1.25, speed: 0.85, tongue: 3.4, climb: false, heatproof: true, lavaSwim: true, lavaSkin: true, glowEyes: true, hunger: 1.2, dry: 1.2, armor: 0.7,
+    color: 0x2a1c16, belly: 0x5a2c14, spot: 0x1a100c, eye: 0xffa020, throat: 0x7a3010, croak: 'lava',
+    desc: 'A heavy frog with a crust of cooled rock and glowing cracks of magma underneath. It swims and dives in lava the way other frogs swim in water, and lava is what keeps it from drying out. Cold water makes it stiff and crusty.', habitat: 'Lava lakes of the Mantle', ability: 'Swims and dives in lava; tough crusty skin' }
 };
+const UNLOCK_MAP = { spadefoot: 'spadefoot', glassfrog: 'glass', redeye: 'redeye', flyingfrog: 'flying', hornedfrog: 'cannibal', tinyfrog: 'tiny', goliathfrog: 'goliath', insiderfrog: 'insider', telefrog: 'telepath', hotspringfrog: 'hotspring', swampfrog: 'swamp', desertfrog: 'desert', cavefrog: 'cavefrog', birdfrog: 'bird', firefrog: 'fire', lavafrog: 'lava' };
 // the Insider Frog's other side: a completely different set of abilities
 const INSIDE_OUT = Object.assign({}, SPECIES.insider, { name: 'Insider Frog (inside out)', tongue: 0, climb: true, swim: 1.75, speed: 0.9, jump: 0.9, dry: 3.2, armor: 1.4, toxic: true, croak: 'insiderOut' });
-const SPECIES_UNLOCK = { spadefoot: 'Find the Spadefoot Toad sleeping in the hidden burrow.', glass: 'Find the Glass Frog at the waterfall at night.', redeye: 'Find the Red-eyed Tree Frog where mushrooms glow.', flying: 'Spot the Flying Frog flying between the treetops near the old oak.', cannibal: 'Find the Horned Frog lurking half-buried in the Muddy Marsh.', tiny: 'Peek closely into the water lily flowers on the Lily Pond.', goliath: 'Something enormous lurks in the cold Mountain Tarn. Watch the water closely, or try calling to it.', hotspring: 'Find the warm orange frog basking at the edge of a hot spring.', telepath: 'At night, two glowing eyes watch from the top of a stone lantern in the Bamboo Grove.', swamp: 'Listen for grunting in the Cypress Swamp and find the frog making it.', desert: 'Something tiny squeaks among the dunes near the sandstone arch.', insider: 'Something in the Pitcher Plant Bog does not look quite right. Search closely among the red moss.' };
+const SPECIES_UNLOCK = { spadefoot: 'Find the Spadefoot Toad sleeping in the hidden burrow.', glass: 'Find the Glass Frog at the waterfall at night.', redeye: 'Find the Red-eyed Tree Frog where mushrooms glow.', flying: 'Spot the Flying Frog flying between the treetops near the old oak.', cannibal: 'Find the Horned Frog lurking half-buried in the Muddy Marsh.', tiny: 'Peek closely into the water lily flowers on the Lily Pond.', goliath: 'Something enormous lurks in the cold Mountain Tarn. Watch the water closely, or try calling to it.', hotspring: 'Find the warm orange frog basking at the edge of a hot spring.', telepath: 'At night, two glowing eyes watch from the top of a stone lantern in the Bamboo Grove.', swamp: 'Listen for grunting in the Cypress Swamp and find the frog making it.', desert: 'Something tiny squeaks among the dunes near the sandstone arch.', insider: 'Something in the Pitcher Plant Bog does not look quite right. Search closely among the red moss.', cavefrog: 'Deep in the Underground, by a still black lake far from any way in, something pale is calling.', bird: "High above the world, in Heron's Domain, something blue sings on a tiny island northwest of the big heron rookery, at the far left edge of the middle group of islands. Ride a whirlwind up to find it.", fire: 'Deep in the Mantle, something small and blazing sits at the edge of the lava.', lava: 'In the lava lakes of the Mantle, two glowing eyes poke up out of the molten rock.' };
 
 const PATTERNS = {
   classic: { name: 'Classic', how: 'Starter pattern' },
@@ -509,6 +523,12 @@ const GUIDE = {
   snail: { name: 'Pond Snail', cat: 'Mollusc', desc: 'Grazes slowly over stones and pulls into its shell when bumped.', hint: 'Rocks at the water edge.' },
   turtle: { name: 'Painted Turtle', cat: 'Reptile', desc: 'Basks on rocks and slips into the water if startled. A swimming turtle will carry a small frog.', hint: 'Sunny rocks and logs.' },
   heron: { name: 'Grey Heron', cat: 'Predator', desc: 'Stalks the shallows on stilt legs. When its neck pulls back into an S, a strike is coming. Dive or hide in reeds.', hint: 'Visits by day.' },
+  cavefrog: { name: 'Cave Frog', cat: 'Rare amphibian', desc: 'A pale frog that has lived in the dark so long it has lost its colour. It calls with an echoing plink across underground lakes.', hint: 'Lives by an underground lake, as far as it can get from daylight.' },
+  birdfrog: { name: 'Bird Frog', cat: 'Rare amphibian', desc: 'A blue frog with real feathers and wings. It nests on the floating islands of Heron\'s Domain, right under the herons\' beaks.', hint: 'Sings on a tiny island northwest of the big heron rookery, at the far left edge of the middle group of islands.' },
+  firefrog: { name: 'Fire Frog', cat: 'Rare amphibian', desc: 'A frog that is actually on fire. It basks by the lava lakes of the Mantle and hisses if it gets wet.', hint: 'Basks at the edge of the lava, deep in the Mantle.' },
+  lavafrog: { name: 'Lava Frog', cat: 'Rare amphibian', desc: 'A rock-crusted frog with glowing cracks that swims in molten lava.', hint: 'Swims in a lava lake in the Mantle.' },
+  cavefish: { name: 'Blind Cave Fish', cat: 'Fish', desc: 'A see-through pinkish fish with no eyes at all. It finds its way through flooded caves by feeling the water move.', hint: 'Swims in the underground lakes.' },
+  bat: { name: 'Cave Bat', cat: 'Mammal', desc: 'Bats hang from cave ceilings by day and flit about squeaking, finding their way by echoes.', hint: 'Look up in the big Underground chambers.' },
   telefrog: { name: 'Telepathic Frog', cat: 'Rare amphibian', desc: 'A violet frog with glowing eyes that can slip into the mind of another animal and steer it around.', hint: 'Only comes out at night, somewhere high in the bamboo.' },
   hotspringfrog: { name: 'Hot Springs Frog', cat: 'Rare amphibian', desc: 'An orange frog that lives in water warm enough to steam. It does not mind heat or cold at all.', hint: 'The rims of the hot pools.' },
   swampfrog: { name: 'Swamp Frog', cat: 'Rare amphibian', desc: 'A big olive frog whose call sounds like a grunting pig. It hides under duckweed with only its eyes showing.', hint: 'Deep in the Cypress Swamp.' },
@@ -550,6 +570,13 @@ const ACH = {
   escape: { name: 'Narrow Escape', desc: 'Dodge a predator strike.' },
   chorus: { name: 'Pond Chorus', desc: 'Answer 5 other frogs with your own croak.' },
   inside_out: { name: 'Inside Out', desc: 'Turn yourself inside out as the Insider Frog and catch a bug with your guts.' },
+  telelaser: { name: 'Pew Pew', desc: 'Fire the telelaser as the Telepathic Frog.' },
+  firebreath: { name: 'Dragon Frog', desc: 'Breathe fire as the Fire Frog.' },
+  mantle: { name: 'Hot Under the Collar', desc: 'Go all the way down to the Mantle.' },
+  skyhigh: { name: 'Head in the Clouds', desc: "Go up to Heron's Domain." },
+  allfour: { name: 'Top to Bottom', desc: 'Visit all four levels of the world.' },
+  deepdown: { name: 'Deep Down', desc: 'Find your way into the Underground.' },
+  cavefrog: { name: 'Pale Plinker', desc: 'Find the Cave Frog by its underground lake.' },
   puppeteer: { name: 'Puppeteer', desc: 'Take over the minds of 5 different kinds of creature as the Telepathic Frog.' },
   sticky: { name: 'Sticky Situation', desc: 'Turn 3 creatures inside out and stick them to yourself as the Insider Frog.' },
   fishhawk: { name: 'Fish Hawk', desc: 'Swoop down and snatch 5 fish as the Flying Frog.' },
@@ -563,18 +590,18 @@ const ACH = {
   secret_sea: { name: '???', desc: 'Find the way through the wall.', reward: ['decor', 'shells'] }
 };
 
-const REGIONS = ['Lily Pond', 'Big Lake', 'Babbling Stream', 'Waterfall', 'Pond Cave', 'Muddy Marsh', 'Wildflower Meadow', 'Fallen Giant', 'Hidden Burrow', 'Cypress Swamp', 'Sand Dunes', 'Old Mill Pond', 'Rainforest', 'Hot Springs', 'Mountain Tarn', 'Pitcher Plant Bog', 'Bamboo Grove', 'The Mountains'];
+const REGIONS = ['Lily Pond', 'Big Lake', 'Babbling Stream', 'Waterfall', 'Pond Cave', 'Muddy Marsh', 'Wildflower Meadow', 'Fallen Giant', 'Hidden Burrow', 'Cypress Swamp', 'Sand Dunes', 'Old Mill Pond', 'Rainforest', 'Hot Springs', 'Mountain Tarn', 'Pitcher Plant Bog', 'Bamboo Grove', 'The Mountains', 'The Underground', 'Flooded Caves', 'The Mantle', "Heron's Domain"];
 
 /* ---------------- World layout ---------------- */
 const WATER = 0, UPPER_WATER = 7.6, FALL_X = -127.3;
 const POND = { x: 0, z: 0, r: 34, d: 4.6 };
-const LAKE = { x: 112, z: -80, r: 52, d: 9 };
+const LAKE = { x: 130, z: -85, r: 78, d: 11 };
 const PLUNGE = { x: -121, z: 43, r: 6.6, d: 2.7 };
 const CAVE = { x: -60, z: -180, r: 14 };
 const CAVEPOOL = { x: -60, z: -181, r: 5.5, d: 1.5 };
 const MARSH = { x: -40, z: 150, r: 34 };
 const MEADOW = { x: 140, z: 140, r: 40 };
-const ISLAND = { x: 122, z: -88, r: 6.5 };
+const ISLAND = { x: 140, z: -92, r: 7.5 };
 const OAK = { x: 190, z: 30 };
 const BURROW_ENT = { x: 192.5, z: 34.4 };
 const CHANNEL = [[24, -19], [48, -38], [66, -52], [76, -60]];
@@ -721,6 +748,7 @@ const HG = { min: -MAP_H, size: MAP_H * 2, res: 0.8, n: 0, data: null }; // fill
 function buildHeightGrid() { HG.n = Math.round(HG.size / HG.res) + 1; HG.data = new Float32Array(HG.n * HG.n).fill(NaN); }
 function hgAt(i, j) { const k = j * HG.n + i; let v = HG.data[k]; if (v !== v) { v = rawHeight(HG.min + i * HG.res, HG.min + j * HG.res); HG.data[k] = v; } return v; }
 function terrainH(x, z) {
+  if (W.offTop && !W.inBurrow) { if (W.inSky) return skyH(x, z); const f = caveFloorH(x, z); return W.inMantle && SPECIES[GAME.species].fireproof ? Math.max(f, MANTLE.water) : f; }
   if (x > SEA_EDGE) return seaH(x, z);
   if (!HG.data) return rawHeight(x, z);
   const fx = (x - HG.min) / HG.res, fz = (z - HG.min) / HG.res;
@@ -728,11 +756,14 @@ function terrainH(x, z) {
   const u = clamp(fx - i, 0, 1), v = clamp(fz - j, 0, 1);
   return lerp(lerp(hgAt(i, j), hgAt(i + 1, j), u), lerp(hgAt(i, j + 1), hgAt(i + 1, j + 1), u), v);
 }
-function waterLevelAt(x, z) { if (W.inBurrow) return -999; return x < FALL_X ? UPPER_WATER : WATER; }
+function waterLevelAt(x, z) { if (W.inBurrow) return -999; if (W.inCaves) return CL === MANTLE ? (SPECIES[GAME.species].lavaSwim ? MANTLE.water : -999) : UG.water; if (W.inSky) return -999; return x < FALL_X ? UPPER_WATER : WATER; }
 function slopeAt(x, z) { const e = 0.6; return Math.hypot(terrainH(x + e, z) - terrainH(x - e, z), terrainH(x, z + e) - terrainH(x, z - e)) / (2 * e); }
 
 function regionAt(x, z, inBurrow) {
   if (inBurrow) return W.burrowKind === 'home' ? 'Your ' + DEN[W.denKind].name.replace(/^./, c => c.toUpperCase()) : 'Hidden Burrow';
+  if (W.inSky) return "Heron's Domain";
+  if (W.inMantle) return 'The Mantle';
+  if (W.inCaves) return caveFloorH(x, z) < UG.water - 0.5 && caveCeilH(x, z) < UG.water + 2 ? 'Flooded Caves' : 'The Underground';
   if (x > SEA_EDGE) return '???';
   for (const [name, P, k] of NEW_PLACES) if (Math.hypot(x - P.x, z - P.z) < P.r * k * 1.15) return name;
   if (Math.hypot(x - CAVE.x, z - CAVE.z) < CAVE.r) return 'Pond Cave';
@@ -909,6 +940,13 @@ function skinMaterial(spKey, pattern) {
   for (let i = 0; i < warts; i++) { const gr = bx.createRadialGradient(0, 0, 0, 0, 0, 1); const px = Math.random() * 128, py = Math.random() * 80, r = 1 + Math.random() * 2.6; bx.fillStyle = 'rgba(255,255,255,' + (0.25 + Math.random() * 0.4) + ')'; bx.beginPath(); bx.arc(px, py, r, 0, TAU); bx.fill(); }
   const mat = new THREE.MeshStandardMaterial({ map: canvasTex(c), bumpMap: canvasTex(b), bumpScale: 0.018, roughness: 0.38, metalness: 0.02 });
   if (sp.glass) { mat.transparent = true; mat.opacity = 0.72; }
+  if (sp.lavaSkin) {
+    // a crust of dark rock split by glowing cracks of magma
+    const e = mkCanvas(W, H), ex = e.getContext('2d'); ex.fillStyle = '#000'; ex.fillRect(0, 0, W, H);
+    for (let i = 0; i < 40; i++) { let px = Math.random() * W, py = Math.random() * H; for (const cx of [x, ex]) { cx.strokeStyle = cx === x ? '#ff7a20' : '#ffb040'; cx.lineWidth = 1.5 + Math.random() * 2; } const pts = [[px, py]]; for (let k = 0; k < 5; k++) { px += (Math.random() - 0.5) * 40; py += (Math.random() - 0.5) * 40; pts.push([px, py]); } for (const cx of [x, ex]) { cx.beginPath(); cx.moveTo(pts[0][0], pts[0][1]); for (const p of pts) cx.lineTo(p[0], p[1]); cx.stroke(); } }
+    mat.emissiveMap = canvasTex(e); mat.emissive = new THREE.Color(0xffffff); mat.emissiveIntensity = 1.2; mat.roughness = 0.8; mat.map.needsUpdate = true;
+  }
+  if (sp.fireproof) { mat.emissive = new THREE.Color(0x802008); mat.emissiveIntensity = 0.6; }
   if (sp.silver) { mat.metalness = 0.35; mat.roughness = 0.3; mat.envMap = W.skyCube; mat.envMapIntensity = 0.9; mat.emissive = new THREE.Color(0x5a626c); mat.emissiveIntensity = 0.55; }
   mat.userData.base = mat.color.clone();
   _skinCache[key] = mat; return mat;
@@ -989,7 +1027,8 @@ function makeFrog(spKey, pattern) {
   tail.visible = false;
   root.traverse(o => { if (o.isMesh) o.receiveShadow = false; });
   const wings = [];
-  if (sp.glide) {
+  if (sp.feathers) birdParts(tilt, head, rump, wings, sp);
+  if (sp.glide && !sp.feathers) {
     const wc = mkCanvas(128, 128), wx = wc.getContext('2d');
     const gr = wx.createLinearGradient(0, 0, 128, 0); gr.addColorStop(0, '#aeb8c2'); gr.addColorStop(1, '#e8eef4'); wx.fillStyle = gr; wx.fillRect(0, 0, 128, 128);
     for (let j = 0; j < 140; j += 10) for (let i = -10; i < 140; i += 14) { const ox = i + ((j / 10) % 2) * 7; const g2 = wx.createRadialGradient(ox, j - 2, 1, ox, j, 8); g2.addColorStop(0, 'rgba(255,255,255,.75)'); g2.addColorStop(1, 'rgba(120,132,146,.3)'); wx.fillStyle = g2; wx.beginPath(); wx.arc(ox, j, 7, 0, Math.PI); wx.fill(); wx.strokeStyle = 'rgba(60,70,82,.55)'; wx.lineWidth = 1.3; wx.beginPath(); wx.arc(ox, j, 7, 0.1, Math.PI - 0.1); wx.stroke(); }
@@ -1008,8 +1047,33 @@ function makeFrog(spKey, pattern) {
   const F = { root, tilt, head, jaw, throat, eyes, pupils, legs, arms, tail, tailSegs, skin, sp, spKey, scale: sp.size, wings, wingOpen: 0,
     blink: 0, blinkT: 2 + Math.random() * 3, breathe: Math.random() * 6, croakT: 0, look: null };
   if (sp.insider) insiderParts(F, { skin, bellyM, throatM, webM });
+  if (sp.fireproof) F.flames = flameParts(tilt, head);
   frogPose(F, { fold: 0, t: 0 });
   return F;
+}
+/* ---------- Bird Frog feathers and Fire Frog flames ---------- */
+function birdParts(tilt, head, rump, wings, sp) {
+  const base = new THREE.Color(sp.color), tipC = base.clone().lerp(new THREE.Color(0xffffff), 0.45), dark = base.clone().multiplyScalar(0.55);
+  const fShape = new THREE.Shape(); fShape.moveTo(0, 0); fShape.quadraticCurveTo(0.07, 0.1, 0.04, 0.42); fShape.quadraticCurveTo(0, 0.48, -0.04, 0.42); fShape.quadraticCurveTo(-0.07, 0.1, 0, 0);
+  const fGeo = new THREE.ShapeGeometry(fShape, 6); fGeo.rotateX(-Math.PI / 2); fGeo.rotateY(Math.PI / 2);
+  const mats = [base, tipC, dark].map(c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.6, side: THREE.DoubleSide }));
+  for (const s of [-1, 1]) {
+    const pv = pivot(tilt, s * 0.3, 0.34, -0.02);
+    for (let i = 0; i < 7; i++) { const m = new THREE.Mesh(fGeo, mats[i % 3 === 2 ? 1 : i % 2]); const L = 0.95 - Math.abs(i - 2) * 0.08; m.scale.set(s * L * 1.9, 1, 1.2); m.position.set(0, 0.004 * i, 0.12 - i * 0.07); m.rotation.y = s * (-0.1 - i * 0.09); m.castShadow = true; pv.add(m); }
+    wings.push({ pv, s });
+  }
+  // a little crest and tail fan, and a tiny beak on the snout
+  for (let i = 0; i < 3; i++) { const c = new THREE.Mesh(G.cone, mats[i === 1 ? 1 : 0]); c.scale.set(0.035, 0.2 - i * 0.03, 0.035); c.position.set(0, 0.22 - i * 0.02, 0.06 - i * 0.07); c.rotation.x = -0.9; c.castShadow = true; head.add(c); }
+  for (let i = 0; i < 5; i++) { const t = new THREE.Mesh(fGeo, mats[i % 2 ? 1 : 0]); t.scale.set(1.3, 1, 1); t.position.set(0, 0.32, -0.55); t.rotation.set(0.35, -Math.PI / 2 + (i - 2) * 0.25, 0, 'YXZ'); tilt.add(t); }
+  const beak = new THREE.Mesh(G.cone, new THREE.MeshStandardMaterial({ color: 0xf0b030, roughness: 0.4 })); beak.scale.set(0.06, 0.12, 0.04); beak.rotation.x = Math.PI / 2; beak.position.set(0, 0.02, 0.47); head.add(beak);
+}
+function flameParts(tilt, head) {
+  const out = [];
+  const mk = (parent, x, y, z, r, col) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: col, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false })); s.position.set(x, y, z); parent.add(s); out.push({ s, r, y, ph: Math.random() * 6, sp: 9 + Math.random() * 8 }); };
+  for (let i = 0; i < 5; i++) { mk(tilt, (i % 2 ? 0.08 : -0.08), 0.52 + Math.sin(i) * 0.03, 0.15 - i * 0.13, 0.32 - i * 0.03, i % 2 ? 0xff8020 : 0xffc040); }
+  mk(head, 0, 0.26, 0.05, 0.22, 0xffd060);
+  for (let i = 0; i < 4; i++) mk(tilt, (i < 2 ? -1 : 1) * 0.3, 0.38, 0.05 - (i % 2) * 0.25, 0.18, 0xff5010);
+  return out;
 }
 /* ---------- the Insider Frog's inside: wet pink flesh, veins and organs on the outside ---------- */
 let INSIDE_MATS = null;
@@ -1084,6 +1148,7 @@ function frogPose(F, o) {
   }
 }
 function frogAnimate(F, dt, st) {
+  if (F.flames) for (const f of F.flames) { const k = 0.75 + Math.sin(GAME.t * f.sp + f.ph) * 0.15 + Math.random() * 0.12; f.s.scale.set(f.r * k, f.r * (1.4 + k * 0.6), 1); f.s.position.y = f.y + k * f.r * 0.25; f.s.material.opacity = 0.75 + Math.random() * 0.2; }
   if (F.wings && F.wings.length) {
     F.wingOpen = lerp(F.wingOpen, st.wing ? 1 : 0, 1 - Math.exp(-dt * 8));
     F.flapPh = (F.flapPh || 0) + dt * (st.flap ? 20 : 4);
@@ -1344,6 +1409,7 @@ function platSpan(p, x, z) {
 // highest walkable surface at or below y+step
 function groundAt(x, z, y, step, out) {
   if (W.inBurrow) { if (out) out.plat = null; return denGround(x, z); }
+  if (W.offTop) { if (out) out.plat = null; const h = terrainH(x, z); return W.inSky && h > y + Math.max(step || 0, 1.5) ? SKY.y0 - 500 : h; }
   let h = terrainH(x, z), best = null;
   const list = nearby(x, z);
   for (let i = 0; i < list.length; i++) { const p = list[i]; if (p.k === 'coll') continue; const s = platSpan(p, x, z); if (s && s[0] > h && s[0] <= y + step) { h = s[0]; best = p; } }
@@ -1352,6 +1418,7 @@ function groundAt(x, z, y, step, out) {
 }
 // tallest obstacle at x,z that would block a body at height y..y+hgt
 function blockAt(x, z, y, step, hgt) {
+  if (W.offTop && !W.inBurrow) return null;
   const list = nearby(x, z);
   for (let i = 0; i < list.length; i++) { const p = list[i]; if (p.k === 'coll') continue; const s = platSpan(p, x, z); if (s && s[0] > y + step && s[1] < y + hgt) return p; }
   return null;
@@ -1598,7 +1665,7 @@ function buildVegetation() {
     tries++;
     const zone = rnd(); let cx, cz;
     if (zone < 0.45) { const a = rnd() * TAU, d = rr(8, 32); cx = POND.x + Math.cos(a) * d; cz = POND.z + Math.sin(a) * d; }
-    else if (zone < 0.7) { const a = rnd() * TAU, d = rr(10, 50); cx = LAKE.x + Math.cos(a) * d; cz = LAKE.z + Math.sin(a) * d; }
+    else if (zone < 0.7) { const a = rnd() * TAU, d = rr(10, LAKE.r * 0.85); cx = LAKE.x + Math.cos(a) * d; cz = LAKE.z + Math.sin(a) * d; }
     else if (zone < 0.8) { cx = MARSH.x + rr(-30, 30); cz = MARSH.z + rr(-30, 30); }
     else if (zone < 0.86) { const a = rnd() * TAU, d = rr(3, 15); cx = MILL.x + Math.cos(a) * d; cz = MILL.z + Math.sin(a) * d; }
     else if (zone < 0.92) { cx = SWAMP.x + rr(-35, 35); cz = SWAMP.z + rr(-35, 35); }
@@ -2221,7 +2288,7 @@ function noiseHit(freq, q, dur, vol, pos, delay, type, buf) {
   const g = c.createGain(); env(g, t, 0.005, vol, dur);
   s.connect(f); f.connect(g); g.connect(outAt(pos)); s.start(t, Math.random()); s.stop(t + dur + 0.1);
 }
-const CROAK_GAIN = { green: 2.6, bull: 4.8, tree: 5.0, redeye: 2.6, dart: 6.5, glass: 2.3, flying: 5.0, tiny: 2.0, horned: 5.2, spade: 2.6, insider: 2.0, insiderOut: 5.5, desert: 2.2, swamp: 3.6, hotspring: 3.0, tele: 3.2 };
+const CROAK_GAIN = { green: 2.6, bull: 4.8, tree: 5.0, redeye: 2.6, dart: 6.5, glass: 2.3, flying: 5.0, tiny: 2.0, horned: 5.2, spade: 2.6, insider: 2.0, insiderOut: 5.5, desert: 2.2, swamp: 3.6, hotspring: 3.0, tele: 3.2, cave: 3.0, bird: 3.0, fire: 3.4, lava: 4.4 };
 const SFX = {
   croak(kind, pos, big) {
     if (!AU.ok) return; const c = AU.ctx, t0 = c.currentTime + 0.01, V = big ? 1 : 0.8;
@@ -2285,6 +2352,20 @@ const SFX = {
       // an eerie, wobbling hum that slides up and down
       syl(t0, { dur: big ? 1.1 : 0.8, f0: r(420, 460), f1: 620, wave: 'sine', formants: [[520, 3, 1.6], [1040, 5, 0.6]], vib: [6, 40], vol: 0.4, atk: 0.12, rel: 0.4, lp: 3000 });
       syl(t0 + 0.05, { dur: big ? 1.0 : 0.7, f0: r(640, 680), f1: 460, wave: 'triangle', formants: [[700, 4, 1]], vib: [7, 30], vol: 0.2, atk: 0.15, rel: 0.4, lp: 3000 });
+    } else if (kind === 'bird') {
+      // a bright, warbling birdsong "tweedle-eet!"
+      for (let i = 0; i < (big ? 5 : 4); i++) syl(t0 + i * 0.11, { dur: 0.08, f0: r(2400, 3000), f1: r(3200, 4200), wave: 'sine', formants: [[3200, 5, 1.6]], vib: [30, 120], vol: 0.3, atk: 0.005, rel: 0.05, lp: 9000 });
+      syl(t0 + (big ? 0.6 : 0.48), { dur: 0.22, f0: 2600, f1: 4400, wave: 'sine', formants: [[3800, 5, 1.6]], vol: 0.32, atk: 0.01, rel: 0.1, lp: 9000 });
+    } else if (kind === 'fire') {
+      // a crackling, popping hiss like a campfire
+      for (let i = 0; i < (big ? 6 : 4); i++) syl(t0 + i * 0.07 + Math.random() * 0.04, { dur: 0.04, f0: r(300, 900), f1: 200, formants: [[2500, 2, 1.5]], vol: 0.35, atk: 0.002, rel: 0.03, lp: 7000, noise: 0.9 });
+      syl(t0 + 0.35, { dur: big ? 0.6 : 0.4, f0: 180, f1: 120, formants: [[400, 3, 1.4], [3000, 2, 0.8]], vol: 0.3, atk: 0.05, rel: 0.2, lp: 5000, noise: 0.7 });
+    } else if (kind === 'lava') {
+      // a deep, gloopy "blorp... blorp"
+      for (let i = 0; i < (big ? 3 : 2); i++) syl(t0 + i * 0.45, { dur: 0.3, f0: r(70, 90), f1: 150, wave: 'sine', formants: [[180, 3, 2.2], [420, 4, 0.8]], vol: 0.7, atk: 0.02, rel: 0.15, lp: 900, noise: 0.08 });
+    } else if (kind === 'cave') {
+      // a drippy, echoing "plink... plink" that rings round the cave
+      for (let i = 0; i < (big ? 4 : 3); i++) { syl(t0 + i * 0.3, { dur: 0.09, f0: r(1250, 1350), f1: 900, wave: 'sine', formants: [[1200, 5, 1.8]], vol: 0.35, atk: 0.003, rel: 0.08, lp: 6000 }); syl(t0 + i * 0.3 + 0.16, { dur: 0.09, f0: 1150, f1: 820, wave: 'sine', formants: [[1100, 5, 1.2]], vol: 0.12, atk: 0.003, rel: 0.1, lp: 5000 }); }
     } else if (kind === 'desert') {
       // a squeaky toy "eeeeek"
       syl(t0, { dur: big ? 0.55 : 0.4, f0: r(1900, 2100), f1: 2400, wave: 'triangle', formants: [[2200, 4, 2], [4400, 6, 0.6]], vib: [22, 60], vol: 0.35, atk: 0.02, rel: 0.12, lp: 8000 });
@@ -2369,12 +2450,12 @@ function audioUpdate(dt) {
   else { L.setPosition(p.x, p.y, p.z); L.setOrientation(fw.x, fw.y, fw.z, 0, 1, 0); }
   const under = W.camUnder ? 1 : 0;
   AU.lp.frequency.setTargetAtTime(under ? 520 : 20000, t, 0.08);
-  const indoor = W.inBurrow || W.inCave ? 1 : 0;
+  const indoor = W.inBurrow || W.inCave || W.inCaves ? 1 : 0;
   const wz = WEATHER.cur;
   AU.wind.g.gain.setTargetAtTime((0.05 + wz.wind * 0.18) * (1 - indoor * 0.85), t, 0.5); AU.wind.f.frequency.setTargetAtTime(300 + wz.wind * 400 + Math.sin(t * 0.3) * 120, t, 0.5);
   AU.rain.g.gain.setTargetAtTime(wz.rain * 0.22 * (1 - indoor * 0.8), t, 0.5); AU.rainLow.g.gain.setTargetAtTime(wz.rain * 0.15 * (1 - indoor * 0.7), t, 0.5);
   const dStream = Math.min(polyDist(PL.pos.x, PL.pos.z, STREAM), Math.hypot(PL.pos.x - PLUNGE.x, PL.pos.z - PLUNGE.z) * 0.5, polyDist(PL.pos.x, PL.pos.z, UPCREEK));
-  AU.stream.g.gain.setTargetAtTime(W.inBurrow ? 0 : clamp(1 - dStream / 30, 0, 1) * 0.22, t, 0.4);
+  AU.stream.g.gain.setTargetAtTime(W.inBurrow || W.offTop ? 0 : clamp(1 - dStream / 30, 0, 1) * 0.22, t, 0.4);
   AU.water.g.gain.setTargetAtTime(under ? 0.25 : 0, t, 0.3);
   const atSea = PL.pos.x > SEA_EDGE ? 1 : 0; AU.surf.g.gain.setTargetAtTime(atSea * (0.05 + 0.03 * Math.sin(t * 0.3)) * (under ? 0.4 : 1), t, 0.6);
   // assign buzz voices to the nearest flying insects
@@ -2393,7 +2474,7 @@ function audioUpdate(dt) {
 // ambient one-shots: birds by day, crickets & owls at night, distant frogs
 let ambT = 0;
 function ambientOneShots(dt) {
-  if (!AU.ok || W.inBurrow || PL.pos.x > SEA_EDGE) return;
+  if (!AU.ok || W.inBurrow || W.inCaves || PL.pos.x > SEA_EDGE) return;
   ambT -= dt; if (ambT > 0) return; ambT = 0.6 + Math.random() * 1.6;
   const day = isDay(), rain = WEATHER.cur.rain;
   const far = () => new THREE.Vector3(PL.pos.x + mr(-60, 60), PL.pos.y + mr(5, 25), PL.pos.z + mr(-60, 60));
@@ -2490,7 +2571,7 @@ function placePlayer(x, z, y) {
   PL.onGround = true; PL.inWater = false; PL.diving = false; PL.surfacing = false; PL.climbing = null; PL.riding = null;
 }
 function spawnPoint() {
-  const hp = homePos(); if (hp) { if (hp.kind === 'treehouse' || hp.kind === 'skynest') { const t = hp.h.trunk; return [t.x + (hp.h.tr || 1) + 0.8, t.z, hp.y + 0.05]; } return [hp.x, hp.z, (hp.pad || hp.kind === 'leaf' || hp.kind === 'brom') ? hp.y + 0.02 : undefined]; }
+  const hp = homePos(); setLevel(hp && hp.h ? homeLevel(hp.h) : 'top'); if (hp) { if (hp.kind === 'treehouse' || hp.kind === 'skynest') { const t = hp.h.trunk; return [t.x + (hp.h.tr || 1) + 0.8, t.z, hp.y + 0.05]; } return [hp.x, hp.z, (hp.pad || hp.kind === 'leaf' || hp.kind === 'brom') ? hp.y + 0.02 : undefined]; }
   let best = W.pads[0], bd = 1e9; for (const p of W.pads) { const d = Math.hypot(p.x + 6, p.z - 26); if (d < bd && !p.occ) { bd = d; best = p; } }
   return [best.x, best.z, best.y];
 }
@@ -2500,14 +2581,14 @@ function startRun(cont) {
   if (cont && run) {
     Object.assign(GAME, { mode: run.mode, species: run.species, pattern: run.pattern, env: run.env, time: run.time, day: run.day || 1 });
     PL.stage = run.stage; PL.growth = run.growth || 0; Object.assign(PL.needs, run.needs);
-    applyEnv(GAME.env); buildPlayerModel();
+    applyEnv(GAME.env); buildPlayerModel(); setLevel(run.level || (run.caves ? 'ug' : 'top'));
     placePlayer(run.pos[0], run.pos[2], run.pos[1] + 0.2); PL.onGround = false;
   } else {
     GAME.time = GAME.mode === 'lifecycle' ? 10 : 7.5; GAME.day = 1;
     applyEnv(GAME.env);
     PL.stage = GAME.mode === 'lifecycle' ? 0 : 4; PL.growth = 0; resetNeeds(true);
     buildPlayerModel();
-    if (PL.stage === 0) { placePlayer(-14, 27, -0.45); PL.onGround = false; }
+    if (PL.stage === 0) { setLevel('top'); placePlayer(-14, 27, -0.45); PL.onGround = false; }
     else { const s = spawnPoint(); placePlayer(s[0], s[1], s[2]); }
     WEATHER.type = ENVS[GAME.env].weather; WEATHER.timer = 140; Object.assign(WEATHER.cur, WTYPES[WEATHER.type]);
   }
@@ -2521,8 +2602,8 @@ function startRun(cont) {
 function saveRun() {
   if (GAME.state !== 'play') return;
   const hp0 = W.burrowKind === 'home' && homePos();
-  const p = W.inBurrow && hp0 ? [hp0.x, terrainH(hp0.x, hp0.z) + 0.3, hp0.z] : W.inBurrow ? [BURROW_ENT.x + 2, terrainH(BURROW_ENT.x + 2, BURROW_ENT.z + 2), BURROW_ENT.z + 2] : [PL.pos.x, PL.pos.y, PL.pos.z];
-  SAVE.run = { mode: GAME.mode, species: GAME.species, pattern: GAME.pattern, env: GAME.env, time: GAME.time, day: GAME.day, stage: PL.stage, growth: PL.growth, needs: Object.assign({}, PL.needs), pos: p };
+  const p = W.inBurrow && hp0 && hp0.h && homeLevel(hp0.h) !== 'top' ? [hp0.x, hp0.y + 0.3, hp0.z] : W.inBurrow && hp0 ? [hp0.x, terrainH(hp0.x, hp0.z) + 0.3, hp0.z] : W.inBurrow ? [BURROW_ENT.x + 2, terrainH(BURROW_ENT.x + 2, BURROW_ENT.z + 2), BURROW_ENT.z + 2] : [PL.pos.x, PL.pos.y, PL.pos.z];
+  SAVE.run = { mode: GAME.mode, species: GAME.species, pattern: GAME.pattern, env: GAME.env, time: GAME.time, day: GAME.day, stage: PL.stage, growth: PL.growth, needs: Object.assign({}, PL.needs), pos: p, level: W.inBurrow ? (hp0 && hp0.h ? homeLevel(hp0.h) : 'top') : curLevel() };
   SAVE.last = { mode: GAME.mode, species: GAME.species, pattern: GAME.pattern, env: GAME.env };
   persist();
 }
@@ -2550,6 +2631,7 @@ function speedFactor() {
 function useEnergy(a) { if (!easyMode()) PL.needs.energy = clamp(PL.needs.energy - a, 0, 100); }
 const CAVE_WALL = CAVE.r - 0.9;
 function resolveWalls(nx, nz, y, r) {
+  if (W.offTop && !W.inBurrow) return W.inSky ? skyWalls(nx, nz) : caveWalls(nx, nz, y, r);
   // trunks
   const list = nearby(nx, nz); let hit = null;
   for (const c of list) { if (c.k !== 'coll' || y > c.top) continue; const dx = nx - c.x, dz = nz - c.z, d = Math.hypot(dx, dz), m = c.r + r; if (d < m && d > 0.0001) { nx = c.x + dx / d * m; nz = c.z + dz / d * m; hit = c; } }
@@ -2686,6 +2768,7 @@ function buildHome(sp) {
 function homeSpot() {
   // the position and extras saved for a new home of the current species
   const T = homeType(), P = PL.pos, base = { x: P.x, z: P.z, y: P.y, rot: PL.yaw };
+  if (W.offTop) base.level = curLevel();
   if (T.kind === 'burrow' || T.kind === 'insideout' || HOT_HOMES.includes(T.kind)) base.y = terrainH(P.x, P.z);
   if (T.kind === 'wallow') base.y = WATER;
   if (T.kind === 'treehouse' || T.kind === 'skynest') { const c = PL.climbing || PL.lastTrunk; const Rt = (c.r / 0.95) * (1 - 0.45 * clamp((P.y - (c.base || 0)) / (c.H || 30), 0, 1)); base.trunk = { x: c.x, z: c.z }; base.tr = Rt; base.y = P.y; }
@@ -2712,6 +2795,7 @@ function finishDig() {
 function settleIn() { if (placeAtHome()) { PL.settled = homePos().kind; PL.resting = true; PL.charging = false; PL.charge = 0; toast('Settled in. You are safe here, and time passes quickly. Move or press E to get up.', 'quiet'); } }
 function placeAtHome() {
   const h = homePos(); if (!h) return false;
+  if (h.h && homeLevel(h.h) !== curLevel()) setLevel(homeLevel(h.h));
   PL.climbing = null; PL.riding = null; PL.diving = false; PL.vel.set(0, 0, 0);
   if (h.kind === 'treehouse' || h.kind === 'skynest' || h.kind === 'leaf' || h.kind === 'brom') {
     if (h.kind === 'treehouse' || h.kind === 'skynest') { const t = h.h.trunk, a = Math.atan2(PL.pos.z - t.z, PL.pos.x - t.x), r = (h.h.tr || 1) + 0.8; PL.pos.set(t.x + Math.cos(a) * r, h.y, t.z + Math.sin(a) * r); PL.yaw = a + Math.PI / 2; }
@@ -2765,7 +2849,7 @@ function toggleInsideOut() {
 function insiderTick(dt) {
   PL.flipCD = Math.max(0, (PL.flipCD || 0) - dt);
   { const sb = document.getElementById('tShake'), has = !!(PL.stuckList && PL.stuckList.length); if (sb && sb.hidden === has) sb.hidden = !has; }
-  { const fb = document.getElementById('tFlip'), sp0 = SPECIES[GAME.species], on = !!(sp0.insider || sp0.telepath); if (fb) { if (fb.hidden === on) fb.hidden = !on; const lbl = sp0.telepath ? 'Mind' : 'Flip'; if (fb.textContent !== lbl) fb.textContent = lbl; } }
+  { const fb = document.getElementById('tFlip'), sp0 = SPECIES[GAME.species], on = !!(sp0.insider || sp0.telepath || sp0.fireBreath); if (fb) { if (fb.hidden === on) fb.hidden = !on; const lbl = sp0.telepath ? 'Mind' : sp0.fireBreath ? 'Fire' : 'Flip'; if (fb.textContent !== lbl) fb.textContent = lbl; } const lb = document.getElementById('tLaser'); if (lb && lb.hidden === !!sp0.telepath) lb.hidden = !sp0.telepath; }
   if (!SPECIES[GAME.species].insider) { PL.insideOut = false; PL.flipT = 0; }
   const want = !!(PL.insideOut && PL.stage >= 3);
   if (PL.flipT > 0) PL.flipT = Math.max(0, PL.flipT - dt);
@@ -2951,7 +3035,7 @@ function updatePlayer(dt) {
       const tired = !easyMode() && PL.needs.energy < 4;
       const up = (IN.keys.Space || IN.keys.KeyG) && !tired, down = IN.keys.KeyQ || IN.keys.ControlLeft;
       PL.flapping = up;
-      const tv = up ? (PL.pos.y > 70 ? 0 : 5) : down ? -24 : -1.3;
+      const ceilY = W.inSky ? SKY.y0 + 70 : sp.feathers ? 999 : 70, tv = up ? (PL.pos.y > ceilY ? 0 : sp.feathers ? 7 : 5) : down ? -24 : -1.3;
       PL.vel.y = lerp(PL.vel.y + 22 * dt, tv, 1 - Math.exp(-dt * (down ? 6 : 3.5)));
       if (down) { const f = Math.hypot(PL.vel.x, PL.vel.z), boost = Math.min(16, f + dt * 8); if (f > 0.3) { PL.vel.x *= boost / f; PL.vel.z *= boost / f; } else { PL.vel.x += Math.sin(PL.yaw) * dt * 8; PL.vel.z += Math.cos(PL.yaw) * dt * 8; } if (Math.random() < dt * 3) SFX.flap(PL.pos); }
       const fast = IN.keys.ShiftLeft || IN.keys.ShiftRight || IN.sprint, sp2 = (fast ? 12 : 7.5) * spd;
@@ -2996,6 +3080,7 @@ function updatePlayer(dt) {
     }
     if (PL.gliding) pose = { fold: 1, arm: -0.4, land: 1 }; else pose = { fold: clamp(0.4 + PL.vel.y * -0.04 + (PL.airT < 0.25 ? 0.6 : 0), 0.15, 1), arm: clamp(-PL.vel.y * 0.05, -0.4, 0.6) };
   }
+  caveClamp();
   // -------- rest --------
   if (PL.idle > 5 && PL.onGround && !PL.resting) PL.resting = true;
   // -------- model --------
@@ -3094,7 +3179,7 @@ function findAim() {
   const cp = camera.position, fw = _v.set(0, 0, -1).applyQuaternion(camera.quaternion).clone();
   const m = mouthPos(new V3()), range = tongueRange(), tol = IN.touch ? 0.32 : 0.2;
   let best = null, bs = 1e9;
-  if (PL.stage >= 3 && !PL.diving && !(curSp().glide && PL.stage >= 4)) for (const i of INS.list) {
+  if (PL.stage >= 3 && !PL.diving && !(curSp().fishOnly && PL.stage >= 4)) for (const i of INS.list) {
     if (!i.alive || INSECT[i.type].inedible || i.stuck || i.ctrl) continue;
     const d = i.pos.distanceTo(m); if (d > range) continue;
     const to = i.pos.clone().sub(cp), dist = to.length(); to.divideScalar(dist);
@@ -3113,7 +3198,7 @@ function findAim() {
     const s = ang + d * 0.02 - 0.05; if (s < bs) { bs = s; best = tg; }
   }
   // Flying Frog: fish swimming below you over water can be targeted for a swoop
-  if (curSp().glide && PL.gliding && PL.stage >= 4 && !PL.swoop) {
+  if (curSp().fishOnly && PL.gliding && PL.stage >= 4 && !PL.swoop) {
     let bf = null, bd = 1e9; const P = PL.pos;
     for (const c of CREATURES) {
       if ((c.kind !== 'fish' && c.kind !== 'catfish') || c.root.visible === false || c.eatenT > 0) continue;
@@ -3166,7 +3251,7 @@ function fireTongue() {
   const T = PL.tongue;
   if (PL.mind) return;
   if (INS.aim && INS.aim.swoop && PL.gliding && !PL.swoop && GAME.state === 'play') { startSwoop(INS.aim.npc); return; }
-  if (curSp().glide && PL.stage >= 4) { if (GAME.t - (PL.noBugT || -9) > 5) { PL.noBugT = GAME.t; toast('Flying frogs do not eat bugs. Fly over water, and when the gold ring circles a fish, click to swoop down and snatch it.', 'quiet'); } return; }
+  if (curSp().fishOnly && PL.stage >= 4) { if (GAME.t - (PL.noBugT || -9) > 5) { PL.noBugT = GAME.t; toast('Flying frogs do not eat bugs. Fly over water, and when the gold ring circles a fish, click to swoop down and snatch it.', 'quiet'); } return; }
   if (curSp().tongue <= 0) { if (GAME.t - (PL.noTongueT || -9) > 4) { PL.noTongueT = GAME.t; toast('No tongue while you are inside out. Touch bugs to catch them, or press V to flip back.', 'quiet'); } return; }
   if (T.state !== 'idle' || PL.stage < 3 || PL.diving || GAME.state !== 'play') return;
   const m = mouthPos(new V3());
@@ -3313,7 +3398,7 @@ function updateInsects(dt) {
     o.t += dt;
     const I = INSECT[o.type];
     const dP = o.pos.distanceTo(P);
-    const off = W.inBurrow !== (o.pos.y < -30);
+    const off = (W.inBurrow || W.inCaves) !== (o.pos.y < -30) || (W.inSky && o.pos.y < SKY.y0 - 40) || (W.inCaves && !W.inBurrow && o.pos.y < -80 && o.pos.y > caveCeilH(o.pos.x, o.pos.z));
     if (dP > 62 || off || (o.type === 'firefly' && day) || (o.type === 'butterfly' && !day) || (o.type === 'moth' && day && dP > 15)) { removeInsect(o); continue; }
     if (o.caught) continue;
     for (const w of o.wings) w.rotation.z = w.userData.s * Math.sin(o.t * (o.type === 'butterfly' ? 14 : o.type === 'moth' || o.type === 'lunamoth' ? 22 : 60)) * (o.type === 'grasshopper' ? 0 : 0.7);
@@ -3493,7 +3578,7 @@ function buildWildlife() {
   }
   // ---- minnows ----
   for (let i = 0; i < 16; i++) {
-    const inLake = i % 2 === 0; const p = waterPointNear(inLake ? LAKE.x : 0, inLake ? LAKE.z : 0, inLake ? 40 : 26, 1.2, 99) || new V3(0, -2, 0);
+    const inLake = i % 2 === 0; const p = waterPointNear(inLake ? LAKE.x : 0, inLake ? LAKE.z : 0, inLake ? LAKE.r * 0.75 : 26, 1.2, 99) || new V3(0, -2, 0);
     const Fi = makeFish('minnow');
     makeCreature('fish', 'minnow', Fi.root, updateMinnow, { Fi, heading: rnd() * TAU, depth: rr(0.4, 0.8) });
     Fi.root.position.set(p.x, lerp(p.y, 0, 0.5), p.z);
@@ -3769,7 +3854,7 @@ function updateHeron(dt) {
     H.root.visible = false;
     if (H.timer <= 0) {
       H.timer = 30;
-      if (isDay() && WEATHER.cur.storm < 0.5 && !W.inBurrow && !W.inCave && PL.stage >= 1 && PL.pos.x < SEA_EDGE) {
+      if (isDay() && WEATHER.cur.storm < 0.5 && !W.inBurrow && !W.inCave && !W.offTop && PL.stage >= 1 && PL.pos.x < SEA_EDGE) {
         let spot = null;
         for (let k = 0; k < 40 && !spot; k++) { const a = Math.random() * TAU, d = mr(13, 20); const x = PL.pos.x + Math.cos(a) * d, z = PL.pos.z + Math.sin(a) * d; const dep = waterLevelAt(x, z) - terrainH(x, z); if (dep > -1 && dep < 1.2 && x > FALL_X && Math.hypot(x - CAVE.x, z - CAVE.z) > CAVE.r + 3) spot = new V3(x, Math.max(terrainH(x, z), -1.2), z); }
         if (spot) { H.state = 'arrive'; H.t = 0; H.spot = spot; H.from = spot.clone().add(new V3(mr(-1, 1) * 120, 45, mr(-1, 1) * 120)); p.copy(H.from); H.root.visible = true; SFX.kraak(spot.clone().add(new V3(0, 20, 0))); H.strikes = 0; }
@@ -3825,7 +3910,7 @@ const STUDY = { target: null, t: 0, key: null };
 function updateNeeds(dt) {
   const n = PL.needs, sp = curSp();
   // shade & reeds
-  PL.shade = W.inCave || W.inBurrow || W.trees.some(t => Math.hypot(t.x - PL.pos.x, t.z - PL.pos.z) < t.canopy) || W.bushData.some(b => Math.hypot(b.x - PL.pos.x, b.z - PL.pos.z) < b.s);
+  PL.shade = W.inCave || W.inBurrow || W.inCaves || (!W.offTop && W.trees.some(t => Math.hypot(t.x - PL.pos.x, t.z - PL.pos.z) < t.canopy) || W.bushData.some(b => Math.hypot(b.x - PL.pos.x, b.z - PL.pos.z) < b.s)) || (W.inSky && skyShade(PL.pos.x, PL.pos.z));
   let reeds = 0; for (const r of W.reedSpots) if (Math.abs(r[0] - PL.pos.x) < 2.2 && Math.abs(r[1] - PL.pos.z) < 2.2) reeds++;
   PL.inReeds = reeds * 3;
   if (easyMode()) { n.hunger = 100; n.energy = 100; n.hydration = 100; n.temp = 50; PL.oxygen = 100; if (noDamage()) n.health = 100; else n.health = Math.min(100, n.health + 0.8 * dt); return; }
@@ -3833,12 +3918,14 @@ function updateNeeds(dt) {
   let amb = lerp(32, 74, day) - wz.cloud * 14 * day - wz.rain * 14 - wz.fog * 5;
   if (PL.shade) amb -= 12 * day;
   const clim = W.inBurrow || W.inCave ? [0, 1] : regionClimate(); amb += clim[0] * (GAME.region === 'Sand Dunes' ? day : 1);
-  if (W.inCave || W.inBurrow) amb = 46;
+  if (W.inCave || W.inBurrow || W.inCaves) amb = 46;
+  if (W.inMantle && !W.inBurrow) amb = 97;
+  if (W.inSky && !W.inBurrow) amb -= 8;
   if (PL.inWater || PL.stage <= 2) amb = lerp(amb, 46, 0.65);
   if (sp.heatproof) amb = clamp(amb, 38, 62);
   if (PL.buried) amb = lerp(amb, 48, 0.8);
   if (inHotPool()) { amb = 66; n.health = Math.min(100, n.health + (sp.heatproof ? 6 : 3) * dt); n.energy = Math.min(100, n.energy + 2 * dt); if (!W.hotToast) { W.hotToast = 1; toast('Ahh, a hot spring. Soaking here warms you up and heals you.'); } }
-  n.temp = lerp(n.temp, amb, 1 - Math.exp(-dt / 25));
+  n.temp = lerp(n.temp, amb, 1 - Math.exp(-dt / (W.inMantle && !sp.heatproof ? 10 : 25)));
   // hunger
   const rate = (PL.stage <= 2 ? 0.22 : 0.27) * sp.hunger * (n.temp < 25 ? 0.7 : 1);
   n.hunger = clamp(n.hunger - rate * dt, 0, 100);
@@ -3869,6 +3956,13 @@ function updateNeeds(dt) {
   if (n.temp < 14) { drain += 0.5; why = 'Cold'; }
   if (n.temp > 86) { drain += 0.5; why = 'Overheating'; }
   if (PL.oxygen <= 0) { drain += 4; why = 'Running out of air'; }
+  if (W.inMantle && !W.inBurrow && !sp.heatproof && n.temp > 80) { drain += 1.5; why = 'The heat of the Mantle'; }
+  if (sp.sunburn && PL.stage >= 3 && !W.inCaves && !W.inBurrow && !W.inCave && !PL.shade && !PL.diving && !PL.buried && day > 0.25) {
+    drain += 3.5 * day * (1 - wz.cloud * 0.6); why = 'Sunburn';
+    if (GAME.t - (PL.sunT || -99) > 25) { PL.sunT = GAME.t; toast('Ow! Sunlight burns cave frogs. Get into shade, water, a cave or underground!'); }
+  }
+  if (sp.fireproof && PL.inWater && PL.stage >= 3) { drain += 2.5; why = 'Fizzled out in water'; if (GAME.t - (PL.fizT || -99) > 20) { PL.fizT = GAME.t; toast('Tssss! Water puts out a fire frog. Get out!'); } }
+  if (sp.lavaSwim && PL.inWater && !W.inMantle && PL.stage >= 3) { drain += 1.2; why = 'Cooled down too fast'; if (GAME.t - (PL.fizT || -99) > 20) { PL.fizT = GAME.t; toast('Brrr. Cold water makes a lava frog stiff and crusty. Lava is much nicer.'); } }
   if (drain > 0) { n.health = Math.max(0, n.health - drain * dt); if (n.health < 30) GAME.deathReason = why; }
   else if (n.hunger > 35 && n.hydration > 35 && n.temp > 25 && n.temp < 75 && n.energy > 15) n.health = Math.min(100, n.health + 0.45 * dt);
   if (n.health <= 0 && GAME.state === 'play') faint();
@@ -3906,7 +4000,7 @@ function updateDiscovery(dt) {
     }
     for (const i of INS.list) if (i.alive && i.pos.distanceTo(PL.pos) < 2.5) markSeen(i.type);
     const reg = regionAt(PL.pos.x, PL.pos.z, W.inBurrow);
-    if (PL.pos.x < FALL_X && PL.pos.y > UPPER_WATER - 1) unlockAch('summit');
+    if (!W.offTop && PL.pos.x < FALL_X && PL.pos.y > UPPER_WATER - 1) unlockAch('summit');
     if (reg !== GAME.region) {
       GAME.region = reg;
       if (reg !== 'Woodland') { regionToast(reg); if (!SAVE.stats.regions.includes(reg)) { SAVE.stats.regions.push(reg); persist(); if (PLACE_HINT[reg]) toast(PLACE_HINT[reg], 'guide'); if (REGIONS.every(r => SAVE.stats.regions.includes(r))) unlockAch('explorer'); } }
@@ -3927,7 +4021,7 @@ function markSeen(key) {
   if (!SAVE.guide[key]) {
     SAVE.guide[key] = { seen: 1 };
     toast('Field guide: ' + GUIDE[key].name + ' spotted', 'guide');
-    const unlockMap = { spadefoot: 'spadefoot', glassfrog: 'glass', redeye: 'redeye', flyingfrog: 'flying', hornedfrog: 'cannibal', tinyfrog: 'tiny', goliathfrog: 'goliath', insiderfrog: 'insider', telefrog: 'telepath', hotspringfrog: 'hotspring', swampfrog: 'swamp', desertfrog: 'desert' };
+    const unlockMap = UNLOCK_MAP;
     if (unlockMap[key] && !SAVE.unlocks.species.includes(unlockMap[key])) { SAVE.unlocks.species.push(unlockMap[key]); banner('New species unlocked', SPECIES[unlockMap[key]].name + ' is now playable.'); }
     if (Object.keys(SAVE.guide).length >= 15) unlockAch('naturalist');
     persist();
@@ -3982,7 +4076,7 @@ function findInteract() {
   if (PL.settled || PL.digProg > 0 && false) return;
   const T = homeType();
   if (!W.inBurrow && (nearHome() || ((T.kind === 'treehouse' || T.kind === 'skynest') && homePos() && PL.climbing && Math.hypot(PL.pos.x - homePos().x, PL.pos.z - homePos().z) < 3.5 && Math.abs(PL.pos.y - homePos().y) < 1.6))) {
-    const verb = { rockpool: 'Wade into your rock pool', fish: 'Climb inside your big frog', burrow: 'Crawl into your burrow', pad: 'Dive down to your bubble room', wallow: 'Wade into your mud lodge', treehouse: 'Go inside your tree house', leaf: 'Slip behind your dewdrop leaf', brom: 'Climb into your bromeliad', hide: 'Crawl into your canopy pod', skynest: 'Climb into your sky nest', lair: 'Slither into your mud lair', acorn: 'Open the door of your acorn cottage', insideout: 'Open the door of your inside-out house', steam: 'Duck into your steam grotto', stump: 'Climb into your stump hollow', sandden: 'Wriggle into your sand den', crystal: 'Step into your crystal dome' }[T.kind];
+    const verb = { rockpool: 'Wade into your rock pool', fish: 'Climb inside your big frog', burrow: 'Crawl into your burrow', pad: 'Dive down to your bubble room', wallow: 'Wade into your mud lodge', treehouse: 'Go inside your tree house', leaf: 'Slip behind your dewdrop leaf', brom: 'Climb into your bromeliad', hide: 'Crawl into your canopy pod', skynest: 'Climb into your sky nest', lair: 'Slither into your mud lair', acorn: 'Open the door of your acorn cottage', insideout: 'Open the door of your inside-out house', steam: 'Duck into your steam grotto', stump: 'Climb into your stump hollow', sandden: 'Wriggle into your sand den', crystal: 'Step into your crystal dome', grotto: 'Crawl into your glowworm grotto', cloudnest: 'Climb into your cloud nest', emberden: 'Step into your ember den', lavatube: 'Slide into your lava tube' }[T.kind];
     INTERACT.cur = { label: verb, act: () => enterBurrow('home') }; return; }
   if (T.kind === 'fish') {
     const f = W.homeFish; if (!f || W.inBurrow) return;
@@ -4292,7 +4386,7 @@ function buildInteriors() {
     const l = new THREE.PointLight(0xc8e070, 0.9, 14, 1.6); l.position.set(0, BURROW_Y + 3, -1); g.add(l);
     denDoor(g, 0xe8f0c8); g.visible = false;
   }
-  buildRooms(); buildRooms2(); buildFishRoom(); buildRockRoom(); buildInsideOutRoom(); buildNewRooms(); buildCrystalRoom();
+  buildRooms(); buildRooms2(); buildFishRoom(); buildRockRoom(); buildInsideOutRoom(); buildNewRooms(); buildCrystalRoom(); buildGrottoRoom(); buildLevelRooms();
 }
 function denTick(dt) {
   if (!W.inBurrow) return;
@@ -5147,8 +5241,8 @@ function pickupTick(dt) {
   const night = !isDay(), on = decoOn();
   for (const pk of W.pickups) {
     if (pk.respawn > 0) { pk.respawn -= dt; if (pk.respawn <= 0) placePickup(pk); continue; }
-    if (pk.t === 'lantern') pk.mesh.visible = on && night && !W.inBurrow && PL.pos.x < SEA_EDGE;
-    else pk.mesh.visible = on && !W.inBurrow && PL.pos.x < SEA_EDGE;
+    if (pk.t === 'lantern') pk.mesh.visible = on && night && !W.inBurrow && !W.offTop && PL.pos.x < SEA_EDGE;
+    else pk.mesh.visible = on && !W.inBurrow && !W.offTop && PL.pos.x < SEA_EDGE;
     if (pk.mesh.visible) { pk.glint.material.opacity = 0.25 + 0.3 * Math.max(0, Math.sin(GAME.t * 2 + pk.ph)); pk.mesh.rotation.y += dt * 0.3; }
   }
 }
@@ -5581,7 +5675,7 @@ function buildMountains() {
 }
 /* ---------- living details: the wheel, steam, the geyser, pitchers, lanterns, and how each place feels ---------- */
 function regionTick(dt) {
-  const F = W.regionFX; if (!F || W.inBurrow || PL.pos.x > SEA_EDGE) return;
+  const F = W.regionFX; if (!F || W.inBurrow || W.offTop || PL.pos.x > SEA_EDGE) return;
   const t = GAME.t, P = PL.pos;
   if (F.wheel) F.wheel.rotation.x -= dt * 0.6;
   const nearHot = Math.hypot(P.x - HOTS.x, P.z - HOTS.z) < HOTS.r + 90;
@@ -5914,6 +6008,7 @@ function creatureName(c) { const g = GUIDE[c.guide] || (c.kind === 'insect' && I
 function vPower() {
   if (GAME.state !== 'play' || PL.stage < 3) return false;
   const sp = SPECIES[GAME.species];
+  if (sp.fireBreath) { fireBreath(); return true; }
   if (sp.telepath) { if (PL.mind) mindRelease(); else { const c = nearestCreature(7 + PL.size); if (c) mindTake(c); else toast('Get closer to a creature, then press V to take over its mind.', 'quiet'); } return true; }
   if (sp.insider) { const c = nearestCreature(2.4 + PL.size * 0.8); if (c) { stickCreature(c); return true; } return toggleInsideOut(); }
   return false;
@@ -6136,6 +6231,997 @@ function buildTelepathWild() {
   }, { F, ct: 3, croakT: 0, seeR: 6 });
 }
 /* ============================================================
+   The Underground: a cave system under the whole middle of the
+   world, with flooded (underwater) caves, glowing mushrooms,
+   crystals, glowworms, cave fish, bats and the Cave Frog.
+   It lives at y ~ -100 under the same x/z as the surface; going
+   in or out swaps which "layer" the physics and drawing use.
+   ============================================================ */
+// ways in from the surface (sinkholes) and from the bottom of lakes (underwater holes)
+const UG_DOORS = [
+  { name: 'Pond Cave', x: CAVE.x - Math.cos(CAVE_OPEN) * 8, z: CAVE.z - Math.sin(CAVE_OPEN) * 8, kind: 'sink' },
+  { name: 'Wildflower Meadow', x: MEADOW.x + 20, z: MEADOW.z + 22, kind: 'sink' },
+  { name: 'Fallen Giant', x: LOGB.ax - 6, z: LOGB.az - 5, kind: 'sink' },
+  { name: 'Mountain foot', x: -330, z: 110, kind: 'sink' },
+  { name: 'Cypress Swamp', x: SWAMP.x + 30, z: SWAMP.z + 70, kind: 'sink' },
+  { name: 'Sand Dunes', x: DUNES.x - 40, z: DUNES.z - 60, kind: 'sink' },
+  { name: 'Big Lake', x: 0, z: 0, kind: 'water', lake: 'LAKE' },
+  { name: 'Mountain Tarn', x: 0, z: 0, kind: 'water', lake: 'TARN' }
+];
+// magma vents: deep red pits in the Underground that drop you into the Mantle (positions picked once the caves exist)
+const MAGMA_VENTS = [];
+// a cave "layer": the Underground (y ~ -100) and the Mantle (y ~ -200) share the same machinery
+const UG = { key: 'ug', y0: -100, water: -99.4, half: 420, res: 2, n: 0, open: null, floor: null, ceil: null, hub: { x: 10, z: -40 }, doors: UG_DOORS, segs: [],
+  tunnelW: 4.5, cham: [0.16, 0.3], Hbase: 4.2, Hcham: 10, lakeT: [0.18, 0.34], lakeD: 7, extra: 26, seed: 6061 };
+const MANTLE = { key: 'mantle', y0: -200, water: -199.0, half: 420, res: 2, n: 0, open: null, floor: null, ceil: null, hub: { x: 0, z: 0 }, doors: MAGMA_VENTS, segs: [],
+  tunnelW: 7.5, cham: [0.02, 0.18], Hbase: 9, Hcham: 22, lakeT: [0.02, 0.2], lakeD: 4.5, extra: 18, seed: 7171 };
+const UG_HUB = UG.hub;
+let CL = UG, UG_SEGS = UG.segs;
+function layerSetupDoors(L) {
+  if (L === UG) for (const D of UG_DOORS) if (D.kind === 'water') {
+    // underwater holes go in the deepest spot of their lake
+    const Lk = D.lake === 'LAKE' ? LAKE : TARN, lvl = D.lake === 'LAKE' ? WATER : UPPER_WATER; let best = null;
+    for (let i = 0; i < 500; i++) { const a = i * 2.39996, d = Math.sqrt(i / 500) * Lk.r * 0.7, x = Lk.x + Math.cos(a) * d, z = Lk.z + Math.sin(a) * d, h = rawHeight(x, z); if (!best || h < best[2]) best = [x, z, h]; }
+    D.x = best[0]; D.z = best[1]; D.bottom = best[2]; D.lvl = lvl;
+  }
+  // tunnels: every door to the hub, plus a ring joining neighbours
+  const segs = L.segs; segs.length = 0; const H = L.hub;
+  const ring = L.doors.slice().sort((a, b) => Math.atan2(a.z - H.z, a.x - H.x) - Math.atan2(b.z - H.z, b.x - H.x));
+  for (const D of L.doors) segs.push(ugWiggle(H.x, H.z, D.x, D.z, D.kind === 'water'));
+  for (let i = 0; i < ring.length; i++) { const A = ring[i], B = ring[(i + 1) % ring.length]; if (A !== B && Math.hypot(A.x - B.x, A.z - B.z) < 420) segs.push(ugWiggle(A.x, A.z, B.x, B.z, false)); }
+  // more winding side passages that branch off into the far corners
+  SEED = L.seed; const nodes = [H].concat(L.doors);
+  for (let i = 0; i < L.extra; i++) {
+    const a = rnd() * TAU, d = Math.sqrt(rnd()) * (L.half - 30), p = { x: Math.cos(a) * d, z: Math.sin(a) * d };
+    let best = null, bd = 1e9; for (const q of nodes) { const dd = Math.hypot(q.x - p.x, q.z - p.z); if (dd < bd) { bd = dd; best = q; } }
+    segs.push(ugWiggle(best.x, best.z, p.x, p.z, false)); nodes.push(p);
+  }
+}
+function ugWiggle(ax, az, bx, bz, flooded) {
+  const pts = [], n = Math.max(3, Math.round(Math.hypot(bx - ax, bz - az) / 30)), nx = -(bz - az), nz = bx - ax, L = Math.hypot(nx, nz) || 1;
+  for (let i = 0; i <= n; i++) { const t = i / n, w = (i === 0 || i === n) ? 0 : vnoise(ax * 0.01 + i * 1.7, az * 0.01) * 26; pts.push([lerp(ax, bx, t) + nx / L * w, lerp(az, bz, t) + nz / L * w]); }
+  return { pts, flooded, minX: Math.min(ax, bx) - 40, maxX: Math.max(ax, bx) + 40, minZ: Math.min(az, bz) - 40, maxZ: Math.max(az, bz) + 40 };
+}
+// openness 0..1 (solid rock below ~0.5), cave height, floor height, flooding
+function layerSample(L, x, z) {
+  let o = 0, flood = 0; const off = L === MANTLE ? 31.7 : 0;
+  for (const S of L.segs) {
+    if (x < S.minX || x > S.maxX || z < S.minZ || z > S.maxZ) continue;
+    const d = polyDist(x, z, S.pts), w = L.tunnelW + 2.5 * (vnoise(x * 0.03 + off, z * 0.03) * 0.5 + 0.5);
+    const k = smooth(w + 2.5, w - 1.5, d); if (k > o) o = k;
+    if (S.flooded) { const along = Math.hypot(x - S.pts[S.pts.length - 1][0], z - S.pts[S.pts.length - 1][1]); flood = Math.max(flood, k * smooth(120, 40, along)); }
+  }
+  const n = fbm(x * 0.008 + 7.3 + off, z * 0.008 - 3.1, 3), cham = smooth(L.cham[0], L.cham[1], n); if (cham > o) o = cham;
+  for (const D of L.doors) { const d = Math.hypot(x - D.x, z - D.z), k = smooth(16, 8, d); if (k > o) o = k; if (D.kind === 'water') flood = Math.max(flood, smooth(24, 12, d)); }
+  const dh = Math.hypot(x - L.hub.x, z - L.hub.z); if (dh < 26) o = Math.max(o, smooth(26, 16, dh));
+  let lake = smooth(L.lakeT[0], L.lakeT[1], fbm(x * 0.012 - 11 + off, z * 0.012 + 5, 2)) * smooth(0.5, 0.8, o);
+  if (L === MANTLE) for (const D of L.doors) lake *= smooth(10, 20, Math.hypot(x - D.x, z - D.z)); // keep the vents dry
+  const H = (L.Hbase + L.Hcham * smooth(0.3, 0.55, n) + 2.5 * (vnoise(x * 0.06, z * 0.06) * 0.5 + 0.5) + 6 * lake) * smooth(0.45, 0.68, o);
+  let floor = L.y0 + 1.6 + fbm(x * 0.05 + off, z * 0.05, 2) * 1.2 - lake * L.lakeD;
+  let ceil = floor + H;
+  if (flood > 0.05) { floor -= flood * 9; ceil = Math.min(ceil, floor + lerp(H, 3.2, flood) + flood * 0.2); if (flood > 0.6) ceil = Math.min(ceil, L.water - 0.8 + (1 - flood) * 4); ceil = Math.max(ceil, floor + 0.01); }
+  return { o, H: ceil - floor, floor, ceil, lake, flood };
+}
+function ugSample(x, z) { return layerSample(UG, x, z); }
+function buildLayerGrid(L) {
+  layerSetupDoors(L);
+  L.n = Math.round(L.half * 2 / L.res) + 1; const N = L.n * L.n;
+  L.floor = new Float32Array(N); L.ceil = new Float32Array(N); L.open = new Float32Array(N);
+  for (let j = 0; j < L.n; j++) for (let i = 0; i < L.n; i++) { const s = layerSample(L, -L.half + i * L.res, -L.half + j * L.res), k = j * L.n + i; L.floor[k] = s.floor; L.ceil[k] = s.ceil; L.open[k] = s.H; }
+  // seal off pockets you could never reach from the ways in
+  const n = L.n, seen = new Uint8Array(N), q = new Int32Array(N); let qh = 0, qt = 0;
+  const cell = (x, z) => clamp(Math.round((z + L.half) / L.res), 0, n - 1) * n + clamp(Math.round((x + L.half) / L.res), 0, n - 1);
+  for (const P of [L.hub].concat(L.doors)) { const k = cell(P.x, P.z); if (!seen[k]) { seen[k] = 1; q[qt++] = k; } }
+  while (qh < qt) { const k = q[qh++], i = k % n, j = (k - i) / n; for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = i + di, b = j + dj; if (a < 0 || b < 0 || a >= n || b >= n) continue; const kk = b * n + a; if (!seen[kk] && L.open[kk] > 1.0) { seen[kk] = 1; q[qt++] = kk; } } }
+  for (let k = 0; k < N; k++) if (!seen[k]) { L.open[k] = 0; L.ceil[k] = L.floor[k]; }
+}
+function pickMagmaVents() {
+  // three vents in roomy, dry spots, well away from the ways in from the surface and from each other
+  SEED = 5151; const want = 3;
+  for (let k = 0; k < 20000 && MAGMA_VENTS.length < want; k++) {
+    const x = rr(-UG.half + 40, UG.half - 40), z = rr(-UG.half + 40, UG.half - 40);
+    if (lr(UG, x, z) < 7 || lf(UG, x, z) < UG.water + 0.4) continue;
+    if (UG_DOORS.some(D => Math.hypot(D.x - x, D.z - z) < 90) || MAGMA_VENTS.some(D => Math.hypot(D.x - x, D.z - z) < 180)) continue;
+    MAGMA_VENTS.push({ name: 'Magma vent', x, z, kind: 'vent' });
+  }
+}
+function buildUGGrid() { buildLayerGrid(UG); pickMagmaVents(); buildLayerGrid(MANTLE); buildSkyGrid(); }
+function lbil(L, arr, x, z) {
+  const fx = (x + L.half) / L.res, fz = (z + L.half) / L.res, n = L.n;
+  const i = clamp(Math.floor(fx), 0, n - 2), j = clamp(Math.floor(fz), 0, n - 2), u = clamp(fx - i, 0, 1), v = clamp(fz - j, 0, 1);
+  return lerp(lerp(arr[j * n + i], arr[j * n + i + 1], u), lerp(arr[(j + 1) * n + i], arr[(j + 1) * n + i + 1], u), v);
+}
+function lf(L, x, z) { if (Math.abs(x) > L.half - 2 || Math.abs(z) > L.half - 2) return L.y0 + 40; return lbil(L, L.floor, x, z); }
+function lc(L, x, z) { if (Math.abs(x) > L.half - 2 || Math.abs(z) > L.half - 2) return L.y0 + 40; return lbil(L, L.ceil, x, z); }
+function lr(L, x, z) { if (Math.abs(x) > L.half - 3 || Math.abs(z) > L.half - 3) return 0; return lbil(L, L.open, x, z); }
+function caveFloorH(x, z) { return lf(CL, x, z); }
+function caveCeilH(x, z) { return lc(CL, x, z); }
+function caveRoom(x, z) { return lr(CL, x, z); }
+function caveSolid(x, z, need) { return caveRoom(x, z) < (need || 1.0); }
+
+/* ---------- surface entrances (in the main world) ---------- */
+function buildCaveEntrances() {
+  buildUpdrafts();
+  W.ugDoorMeshes = [];
+  const rockM = new THREE.MeshStandardMaterial({ color: 0x6a6458, roughness: 0.9, flatShading: true, map: TEX.detail });
+  for (const D of UG_DOORS) {
+    if (D.kind === 'sink') {
+      const y = terrainH(D.x, D.z);
+      const hole = new THREE.Mesh(new THREE.CircleGeometry(1.8, 24), new THREE.MeshBasicMaterial({ color: 0x050403 })); hole.rotation.x = -Math.PI / 2; hole.position.set(D.x, y + 0.05, D.z); scene.add(hole);
+      const grad = new THREE.Mesh(new THREE.RingGeometry(1.7, 2.6, 24), new THREE.MeshBasicMaterial({ map: TEX.glow, color: 0x000000, transparent: true, opacity: 0.6, depthWrite: false })); grad.rotation.x = -Math.PI / 2; grad.position.set(D.x, y + 0.06, D.z); scene.add(grad);
+      for (let i = 0; i < 9; i++) { const a = i / 9 * TAU, r = 2.3 + (i % 2) * 0.3, m = new THREE.Mesh(lumpyGeo(1, 0.3, i + D.x), rockM); const s = 0.5 + (i % 3) * 0.2; m.scale.set(s, s * 0.7, s); m.position.set(D.x + Math.cos(a) * r, terrainH(D.x + Math.cos(a) * r, D.z + Math.sin(a) * r), D.z + Math.sin(a) * r); m.castShadow = true; scene.add(m); }
+      D.y = y;
+    } else {
+      // a dark hole in the lake bed with a faint blue glow from the caves below
+      const hole = new THREE.Mesh(new THREE.CircleGeometry(2.4, 24), new THREE.MeshBasicMaterial({ color: 0x02060a })); hole.rotation.x = -Math.PI / 2; hole.position.set(D.x, D.bottom + 0.08, D.z); scene.add(hole);
+      const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0x40a0ff, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false })); glow.position.set(D.x, D.bottom + 0.6, D.z); glow.scale.setScalar(5); scene.add(glow);
+      D.y = D.bottom;
+    }
+  }
+}
+
+/* ---------- the caves themselves (only drawn while you are underground) ---------- */
+function buildUnderground() {
+  CL = UG; buildUGLayer(); buildCaveMap(UG); W.caveMap = UG.map;
+  CL = MANTLE; buildMantleLayer(); buildCaveMap(MANTLE);
+  buildSkyLayer();
+  CL = UG; W.level = 'top'; W.levelShown = 'top';
+}
+function buildUGLayer() {
+  SEED = 8080;
+  const g = new THREE.Group(); g.visible = false; scene.add(g); W.ugGroup = g; UG.group = g;
+  const S = UG.half * 2, N = 300;
+  const mk = (ceiling) => {
+    const geo = new THREE.PlaneGeometry(S, S, N, N); geo.rotateX(ceiling ? Math.PI / 2 : -Math.PI / 2);
+    const p = geo.attributes.position, col = [];
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), z = p.getZ(i), f = caveFloorH(x, z), c = caveCeilH(x, z), H = c - f, s = smooth(0, 1.5, H), shut = f + 2 * (1 - s);
+      const y = ceiling ? Math.max(c, shut) : (H < 1.5 ? shut : f); p.setY(i, y);
+      const n = vnoise(x * 0.2, z * 0.2) * 0.5 + 0.5, wet = ceiling ? 0 : smooth(UG.water + 0.8, UG.water - 0.2, y);
+      let r = lerp(0.3, 0.42, n), gg = lerp(0.27, 0.36, n), b = lerp(0.24, 0.3, n);
+      if (ceiling) { r *= 0.75; gg *= 0.75; b *= 0.8; }
+      r = lerp(r, 0.16, wet); gg = lerp(gg, 0.2, wet); b = lerp(b, 0.22, wet);
+      for (const D of UG_DOORS) { const k = smooth(14, 4, Math.hypot(x - D.x, z - D.z)); if (k > 0 && D.kind === 'sink' && !ceiling) { r = lerp(r, 0.3, k * 0.6); gg = lerp(gg, 0.42, k * 0.6); b = lerp(b, 0.2, k * 0.6); } }
+      col.push(r, gg, b);
+    }
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
+    const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, map: TEX.detail, flatShading: false }));
+    m.receiveShadow = false; m.castShadow = false; g.add(m); return m;
+  };
+  W.ugFloor = mk(false); W.ugCeil = mk(true);
+  // underground water: lakes and flooded tunnels
+  const wm = new THREE.MeshStandardMaterial({ color: 0x1a4a5a, transparent: true, opacity: 0.78, roughness: 0.08, metalness: 0.2, normalMap: TEX.waterN, normalScale: new THREE.Vector2(0.2, 0.2), side: THREE.DoubleSide, emissive: 0x06202a });
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(S, S, 1, 1), wm); water.rotation.x = -Math.PI / 2; water.position.y = UG.water; water.renderOrder = 2; g.add(water); W.ugWater = water;
+  // spots to dress
+  const spots = (want, ok, tries) => { const out = []; for (let k = 0; k < (tries || want * 30) && out.length < want; k++) { const x = rr(-UG.half + 6, UG.half - 6), z = rr(-UG.half + 6, UG.half - 6); if (ok(x, z)) out.push([x, z]); } return out; };
+  const dry = (x, z) => caveRoom(x, z) > 3 && caveFloorH(x, z) > UG.water + 0.2;
+  // stalactites and stalagmites
+  const coneG = new THREE.ConeGeometry(1, 1, 7); coneG.translate(0, -0.5, 0);
+  const rockM = new THREE.MeshStandardMaterial({ color: 0x8a8070, roughness: 0.7, flatShading: true });
+  const st = spots(1400, (x, z) => caveRoom(x, z) > 3.5); const tites = inst(coneG, rockM, st.length, false); W.ugGroup.add(tites); scene.remove(tites);
+  st.forEach(([x, z], i) => { const c = caveCeilH(x, z), r = rr(0.12, 0.5), L = Math.min(rr(0.6, 3.2), (c - caveFloorH(x, z)) * 0.45); setInst(tites, i, x, c + 0.2, z, rnd() * TAU, r, L, r); });
+  const coneU = new THREE.ConeGeometry(1, 1, 7); coneU.translate(0, 0.5, 0);
+  const sm = spots(700, dry); const mites = inst(coneU, rockM, sm.length, false); g.add(mites);
+  sm.forEach(([x, z], i) => { const f = caveFloorH(x, z), r = rr(0.15, 0.6), L = Math.min(rr(0.5, 2.6), (caveCeilH(x, z) - f) * 0.4); setInst(mites, i, x, f - 0.1, z, rnd() * TAU, r, L, r); });
+  // glowing mushrooms in clusters
+  const stemG = new THREE.CylinderGeometry(0.06, 0.09, 1, 6); stemG.translate(0, 0.5, 0);
+  const capG = new THREE.SphereGeometry(1, 10, 6, 0, TAU, 0, Math.PI / 2); capG.scale(1, 0.5, 1);
+  const glowM = new THREE.MeshStandardMaterial({ color: 0x90f0ff, emissive: 0x30d0f0, emissiveIntensity: 1.4, roughness: 0.4 });
+  const glowM2 = new THREE.MeshStandardMaterial({ color: 0xa0ffa0, emissive: 0x40e070, emissiveIntensity: 1.3, roughness: 0.4 });
+  const ms = spots(160, dry); const stems = inst(stemG, new THREE.MeshStandardMaterial({ color: 0xd8e8e0, emissive: 0x204040 }), ms.length * 5, false), caps = inst(capG, glowM, ms.length * 5, false), caps2 = inst(capG, glowM2, ms.length * 5, false); g.add(stems); g.add(caps); g.add(caps2);
+  let nm = 0, n1 = 0, n2 = 0; W.ugLights = [];
+  ms.forEach(([x, z], k) => { for (let i = 0; i < 5; i++) { const px = x + rr(-1.2, 1.2), pz = z + rr(-1.2, 1.2), f = caveFloorH(px, pz), H = rr(0.25, 0.8), R = rr(0.12, 0.35); setInst(stems, nm++, px, f - 0.02, pz, 0, 1, H, 1); if (k % 2) setInst(caps, n1++, px, f + H, pz, rnd() * TAU, R, R, R); else setInst(caps2, n2++, px, f + H, pz, rnd() * TAU, R, R, R); } });
+  stems.count = nm; caps.count = n1; caps2.count = n2;
+  // crystals
+  const cryG = new THREE.OctahedronGeometry(1, 0); cryG.scale(0.35, 1.4, 0.35);
+  const cryM = new THREE.MeshStandardMaterial({ color: 0xc8a8ff, emissive: 0x7040d0, emissiveIntensity: 1.1, roughness: 0.1, metalness: 0.2, transparent: true, opacity: 0.9, flatShading: true });
+  const cs = spots(120, (x, z) => dry(x, z) && caveRoom(x, z) > 6); const crys = inst(cryG, cryM, cs.length * 6, false); g.add(crys); let nc = 0;
+  cs.forEach(([x, z]) => { const f = caveFloorH(x, z); for (let i = 0; i < 6; i++) { const s = rr(0.3, 1.1); setInst(crys, nc++, x + rr(-0.8, 0.8), f + s * 0.6, z + rr(-0.8, 0.8), rnd() * TAU, s, s, s, rr(-0.5, 0.5), rr(-0.5, 0.5)); } });
+  crys.count = nc;
+  // glowworms on the ceiling
+  const gp = []; for (const [x, z] of spots(5000, (x, z) => caveRoom(x, z) > 3)) gp.push(x, caveCeilH(x, z) - 0.05, z);
+  const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.Float32BufferAttribute(gp, 3));
+  W.ugWorms = new THREE.Points(gg, new THREE.PointsMaterial({ color: 0x80ffd8, size: 0.16, transparent: true, opacity: 0.9, depthWrite: false })); g.add(W.ugWorms);
+  // shafts of daylight under each sinkhole, and glowing rings under the lake holes
+  W.ugShafts = [];
+  for (const D of UG_DOORS) {
+    const f = caveFloorH(D.x, D.z), c = caveCeilH(D.x, D.z);
+    if (D.kind === 'sink') {
+      const beam = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 2.6, 30, 16, 1, true), new THREE.MeshBasicMaterial({ color: 0xfff0c8, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
+      beam.position.set(D.x, f + 15, D.z); g.add(beam);
+      const pool = new THREE.Mesh(new THREE.CircleGeometry(2.6, 24), new THREE.MeshBasicMaterial({ map: TEX.glow, color: 0xfff0c8, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false })); pool.rotation.x = -Math.PI / 2; pool.position.set(D.x, f + 0.05, D.z); g.add(pool);
+      // a hanging root to climb out by
+      const vine = new THREE.Mesh(G.cyl, new THREE.MeshStandardMaterial({ color: 0x6a7a3a })); vine.scale.set(0.035, c - f + 4, 0.035); vine.position.set(D.x + 1, (c + f) / 2 + 2, D.z); g.add(vine);
+      W.ugShafts.push({ D, beam });
+    } else {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(2.3, 0.05, 6, 32), new THREE.MeshBasicMaterial({ color: 0x80d0ff, transparent: true, opacity: 0.7 })); ring.rotation.x = Math.PI / 2;
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 3.2, c - f, 16, 1, true), new THREE.MeshBasicMaterial({ color: 0x60b0ff, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false })); shaft.position.set(D.x, (c + f) / 2, D.z); g.add(shaft); ring.position.set(D.x, c - 0.2, D.z); g.add(ring);
+      const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0x80d0ff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false })); glow.position.set(D.x, c - 0.6, D.z); glow.scale.setScalar(6); g.add(glow);
+    }
+  }
+  // magma vents down to the Mantle: a glowing red pit with heat shimmer
+  UG.ventFX = [];
+  for (const D of MAGMA_VENTS) {
+    const f = caveFloorH(D.x, D.z);
+    const pit = new THREE.Mesh(new THREE.CircleGeometry(2.2, 28), new THREE.MeshBasicMaterial({ color: 0xff5010 })); pit.rotation.x = -Math.PI / 2; pit.position.set(D.x, f + 0.06, D.z); g.add(pit);
+    const core = new THREE.Mesh(new THREE.CircleGeometry(1.3, 24), new THREE.MeshBasicMaterial({ color: 0xffd060 })); core.rotation.x = -Math.PI / 2; core.position.set(D.x, f + 0.08, D.z); g.add(core);
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xff6020, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false })); glow.position.set(D.x, f + 1.2, D.z); glow.scale.setScalar(8); g.add(glow);
+    for (let i = 0; i < 10; i++) { const a = i / 10 * TAU, r = 2.6 + (i % 2) * 0.3, m = new THREE.Mesh(lumpyGeo(1, 0.3, i + D.z), new THREE.MeshStandardMaterial({ color: 0x2a2220, roughness: 0.6, flatShading: true, emissive: 0x401004 })); const sc = 0.5 + (i % 3) * 0.2; m.scale.set(sc, sc * 0.7, sc); m.position.set(D.x + Math.cos(a) * r, caveFloorH(D.x + Math.cos(a) * r, D.z + Math.sin(a) * r), D.z + Math.sin(a) * r); g.add(m); }
+    const l = new THREE.PointLight(0xff6020, 1.6, 22, 1.5); l.position.set(D.x, f + 2, D.z); g.add(l);
+    UG.ventFX.push({ glow, core, l });
+  }
+  // your own glow so you can see where you are going
+  W.ugLight = new THREE.PointLight(0xffe0b0, 1.3, 26, 1.4); g.add(W.ugLight);
+  const amb = new THREE.HemisphereLight(0x6a80a0, 0x3a3020, 0.7); g.add(amb); W.ugAmb = amb;
+}
+function buildCaveMap(L) {
+  const N = 420, c = mkCanvas(N, N), x = c.getContext('2d'), img = x.createImageData(N, N);
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+    const wx = -L.half + (i + 0.5) * L.half * 2 / N, wz = -L.half + (j + 0.5) * L.half * 2 / N, room = lr(L, wx, wz), f = lf(L, wx, wz), k = (j * N + i) * 4;
+    let r = 22, g = 20, b = 18;
+    if (L === MANTLE) { r = 26; g = 14; b = 12; if (room > 1) { if (f < L.water) { r = 240; g = 100; b = 20; } else { const e = clamp(room / 24, 0, 1); r = lerp(80, 120, e); g = lerp(50, 66, e); b = lerp(44, 52, e); } } }
+    else if (room > 1) { if (f < L.water) { r = 30; g = 80; b = 110; } else { const e = clamp(room / 14, 0, 1); r = lerp(90, 140, e); g = lerp(82, 128, e); b = lerp(70, 110, e); } }
+    img.data[k] = r; img.data[k + 1] = g; img.data[k + 2] = b; img.data[k + 3] = 255;
+  }
+  x.putImageData(img, 0, 0);
+  const dots = L === UG ? UG_DOORS.concat(MAGMA_VENTS) : MAGMA_VENTS;
+  for (const D of dots) { x.fillStyle = D.kind === 'sink' ? '#fff0b0' : D.kind === 'vent' ? (L === UG ? '#ff6020' : '#f0f0f0') : '#60c0ff'; x.beginPath(); x.arc((D.x + L.half) / (L.half * 2) * N, (D.z + L.half) / (L.half * 2) * N, 4, 0, TAU); x.fill(); }
+  L.map = { img: c, x0: -L.half, z0: -L.half, span: L.half * 2 };
+}
+
+/* ---------- the four levels: 'sky' (Heron's Domain), 'top', 'ug' (the Underground), 'mantle' ---------- */
+const LEVEL_NAMES = { sky: "Heron's Domain", top: 'The Top', ug: 'The Underground', mantle: 'The Mantle' };
+function curLevel() { return W.level || 'top'; }
+function homeLevel(h) { return h ? (h.level || (h.cave ? 'ug' : 'top')) : 'top'; }
+function setLevel(lv) {
+  lv = lv || 'top'; const was = W.levelShown || 'top';
+  if ((W.level || 'top') === lv && was === lv) return;
+  W.level = lv; W.inCaves = lv === 'ug' || lv === 'mantle'; W.inSky = lv === 'sky'; W.inMantle = lv === 'mantle'; W.offTop = lv !== 'top';
+  CL = lv === 'mantle' ? MANTLE : UG;
+  if (!W.mainWorld || !UG.group) return;
+  W.levelShown = lv;
+  // the surface world and its animals are only drawn on the top level
+  if ((was === 'top') !== (lv === 'top')) {
+    const hide = lv !== 'top';
+    for (const o of W.mainWorld.concat(CREATURES.filter(c => !c.burrow && !c.level).map(c => c.root))) { if (hide) { o.userData.vu = o.visible; o.visible = false; } else o.visible = o.userData.vu !== false; }
+  }
+  for (const c of CREATURES) if (c.level) c.root.visible = c.level === lv;
+  UG.group.visible = lv === 'ug'; if (MANTLE.group) MANTLE.group.visible = lv === 'mantle'; if (SKY.group) SKY.group.visible = lv === 'sky';
+  if (W.homeMesh) for (const k in W.homeMesh) { const h = SAVE.homes[k]; if (W.homeMesh[k]) W.homeMesh[k].visible = homeLevel(h) === lv; }
+  INS.list.forEach(removeInsect); INS.list.length = 0;
+  HER.state = 'away'; HER.root.visible = false; HER.timer = 60;
+  if (PL.mind) mindRelease();
+  GAME.region = '';
+}
+function setCaves(on) { setLevel(on ? 'ug' : 'top'); }
+// move to another level with a fade; place() runs once the new level is showing
+function travel(lv, place, msgKey, msg) {
+  if (W.ugBusy) return; W.ugBusy = true; clearKeys();
+  fadeTo(() => {
+    setLevel(lv); place(); CAM.snap = true;
+    if (msgKey && !SAVE.stats[msgKey]) { SAVE.stats[msgKey] = 1; persist(); toast(msg, 'guide'); }
+    if (lv === 'ug') unlockAch('deepdown');
+    if (lv === 'mantle') unlockAch('mantle');
+    if (lv === 'sky') unlockAch('skyhigh');
+    banner(LEVEL_NAMES[lv], { sky: 'The highest level: floating islands where the herons nest.', top: 'Back on the surface.', ug: 'The second level down: caves under the whole world.', mantle: 'The deepest level: rivers of lava and black glass.' }[lv]);
+    setTimeout(() => { W.ugBusy = false; }, 800);
+  });
+}
+function enterCaves(D, under) {
+  travel('ug', () => {
+    if (under) { const f = caveFloorH(D.x, D.z); placePlayer(D.x + 1, D.z + 1, Math.min(caveCeilH(D.x, D.z) - 2.2, f + 1.2)); PL.vel.y = -2; PL.inWater = true; PL.onGround = false; PL.diving = true; }
+    else placePlayer(D.x + 2.5, D.z + 2.5);
+  }, 'ugVisit', under ? 'You swam down through the hole into a flooded cave! Find air before you run out of breath.' : 'You climbed down into the Underground! Glowing mushrooms, crystals and glowworms light the way. Walk into a beam of daylight to climb back out, or find a glowing red magma vent to go even deeper.');
+}
+function exitCaves(D) {
+  travel('top', () => {
+    if (D.kind === 'water') { placePlayer(D.x + 2.6, D.z + 2.6, Math.max(D.bottom + 2.5, terrainH(D.x + 2.6, D.z + 2.6) + 0.8)); PL.vel.y = 2; PL.inWater = true; PL.onGround = false; PL.diving = true; }
+    else { const a = Math.random() * TAU; placePlayer(D.x + Math.cos(a) * 4, D.z + Math.sin(a) * 4); }
+  });
+}
+function enterMantle(D) {
+  travel('mantle', () => { placePlayer(D.x + 3, D.z + 3); },
+    'mantleVisit', 'You dropped into the Mantle! Rivers of lava glow all around and it is very hot: most frogs overheat down here, and touching lava hurts badly. Walk into a column of white steam to ride back up.');
+}
+function exitMantle(D) { travel('ug', () => { placePlayer(D.x + 3.4, D.z + 3.4); }); }
+// push you back out of solid rock
+function caveWalls(nx, nz, y, r) {
+  const need = 0.9 + Math.min(PL.size, 2) * 0.3, half = CL.half;
+  if (Math.abs(nx) > half - 4) nx = Math.sign(nx) * (half - 4);
+  if (Math.abs(nz) > half - 4) nz = Math.sign(nz) * (half - 4);
+  for (let it = 0; it < 6 && caveRoom(nx, nz) < need; it++) {
+    const e = 0.6, gx = caveRoom(nx + e, nz) - caveRoom(nx - e, nz), gz = caveRoom(nx, nz + e) - caveRoom(nx, nz - e), L = Math.hypot(gx, gz);
+    if (L < 1e-4) { nx = PL.pos.x; nz = PL.pos.z; break; }
+    nx += gx / L * 0.35; nz += gz / L * 0.35;
+  }
+  if (caveRoom(nx, nz) < need * 0.6 && caveRoom(PL.pos.x, PL.pos.z) >= caveRoom(nx, nz)) { nx = PL.pos.x; nz = PL.pos.z; }
+  return { x: nx, z: nz, hit: null };
+}
+// keep you under the ceiling, and treat flooded tunnels as underwater
+function caveClamp() {
+  if (W.inBurrow) return;
+  if (W.inSky) { skyClamp(); return; }
+  if (!W.inCaves) return;
+  const c = caveCeilH(PL.pos.x, PL.pos.z) - 0.55 * Math.max(PL.size, 0.4);
+  if (PL.pos.y > c) { PL.pos.y = Math.max(c, caveFloorH(PL.pos.x, PL.pos.z)); if (PL.vel.y > 0) PL.vel.y = 0; if (PL.climbing) PL.climbing = null; }
+  if (PL.inWater && !PL.diving && c < waterLevelAt(PL.pos.x, PL.pos.z)) { PL.diving = true; }
+}
+function caveTick(dt) {
+  if (GAME.state !== 'play' || W.inBurrow || W.ugBusy || PL.stage < 1) return;
+  const P = PL.pos, lv = curLevel();
+  const near = (D, r) => Math.abs(P.x - D.x) < r && Math.abs(P.z - D.z) < r ? Math.hypot(P.x - D.x, P.z - D.z) : 1e9;
+  if (lv === 'top') {
+    for (const D of UG_DOORS) {
+      const d = near(D, 4);
+      if (D.kind === 'sink' && d < 1.6 && P.y < D.y + 1.5 && !PL.climbing) { enterCaves(D, false); return; }
+      if (D.kind === 'water' && d < 2.4 && PL.inWater && P.y < D.bottom + 2.2) { enterCaves(D, true); return; }
+    }
+    topSkyTick(dt);
+    return;
+  }
+  if (lv === 'sky') { skyTick(dt); return; }
+  if (lv === 'ug') {
+    for (const D of UG_DOORS) {
+      const d = near(D, 4);
+      if (D.kind === 'sink' && d < 1.8) { exitCaves(D); return; }
+      if (D.kind === 'water' && d < 2.4 && P.y > caveCeilH(D.x, D.z) - 1.1) { exitCaves(D); return; }
+    }
+    for (const D of MAGMA_VENTS) if (near(D, 3) < 1.6 && P.y < caveFloorH(D.x, D.z) + 1.5) { enterMantle(D); return; }
+    for (const v of UG.ventFX || []) { v.glow.material.opacity = 0.65 + Math.sin(GAME.t * 3 + v.l.position.x) * 0.2; v.l.intensity = 1.4 + Math.sin(GAME.t * 5 + v.l.position.z) * 0.3; }
+  }
+  if (lv === 'mantle') {
+    for (const D of MAGMA_VENTS) if (near(D, 3) < 1.8) { exitMantle(D); return; }
+    mantleTick(dt);
+  }
+  const sight = SPECIES[GAME.species].caveSight;
+  if (W.ugLight) { const L = lv === 'mantle' ? MANTLE.light : W.ugLight; L.position.set(P.x, P.y + 2.2, P.z); L.distance = sight ? 48 : 26; L.intensity = sight ? 1.9 : 1.3; }
+  if (lv === 'ug') {
+    if (W.ugWorms) W.ugWorms.material.opacity = 0.65 + Math.sin(GAME.t * 0.8) * 0.25;
+    for (const s of W.ugShafts || []) s.beam.material.opacity = (isDay() ? 0.18 : 0.06) * (0.85 + Math.sin(GAME.t * 0.5) * 0.15);
+    if (AU.ok && Math.random() < dt * 0.7) { const p = P.clone().add(new V3(mr(-15, 15), 0, mr(-15, 15))); p.y = caveCeilH(p.x, p.z); tone('sine', 1400 + Math.random() * 900, 600, 0.09, 0.08, p); }
+  }
+}
+
+/* ---------- cave animals: blind cave fish, bats, and the Cave Frog ---------- */
+function makeCaveFish() {
+  const root = new THREE.Group(), m = stdM(0xf0dcd8, 0.3, { transparent: true, opacity: 0.85 });
+  addM(root, G.sph, m, 0.09, 0.1, 0.3, 0, 0, 0);
+  const tail = new THREE.Group(); tail.position.z = -0.28; root.add(tail); addM(tail, G.cone, m, 0.02, 0.15, 0.12, 0, 0, -0.05).rotation.x = Math.PI / 2;
+  for (const s of [-1, 1]) addM(root, G.sphT, stdM(0xe07080, 0.3), 0.02, 0.02, 0.02, s * 0.06, 0.03, 0.2);
+  return { root, tail };
+}
+function makeBat() {
+  const root = new THREE.Group(), m = stdM(0x2a2228, 0.8);
+  addM(root, G.sph, m, 0.12, 0.12, 0.2, 0, 0, 0); addM(root, G.sph, m, 0.08, 0.08, 0.08, 0, 0.02, 0.18);
+  for (const s of [-1, 1]) addM(root, G.cone, m, 0.03, 0.08, 0.03, s * 0.04, 0.1, 0.2);
+  const wings = []; for (const s of [-1, 1]) { const gp = new THREE.Group(); gp.position.x = s * 0.08; const w = new THREE.Mesh(new THREE.CircleGeometry(0.35, 6, 0, Math.PI), stdM(0x3a2e34, 0.8, { side: THREE.DoubleSide })); w.rotation.set(-Math.PI / 2, 0, s > 0 ? -Math.PI / 2 : Math.PI / 2); w.position.x = s * 0.25; gp.add(w); root.add(gp); wings.push({ gp, s }); }
+  return { root, wings };
+}
+function buildCaveLife() {
+  SEED = 9393;
+  const wetSpots = []; for (let k = 0; k < 4000 && wetSpots.length < 40; k++) { const x = rr(-UG.half + 10, UG.half - 10), z = rr(-UG.half + 10, UG.half - 10); if (caveRoom(x, z) > 2 && caveFloorH(x, z) < UG.water - 1.2) wetSpots.push([x, z]); }
+  wetSpots.forEach(([x, z], i) => {
+    const Fi = makeCaveFish(), home = new V3(x, 0, z);
+    const c = makeCreature('fish', 'cavefish', Fi.root, function (dt) {
+      const k = this; k.t += dt; k.heading += vnoise(k.t * 0.3, i) * dt * 2; const p = k.root.position;
+      const nx = p.x + Math.sin(k.heading) * 0.9 * dt, nz = p.z + Math.cos(k.heading) * 0.9 * dt;
+      if (caveFloorH(nx, nz) > UG.water - 0.6 || Math.hypot(nx - home.x, nz - home.z) > 12) k.heading += 2 * dt + 0.3; else { p.x = nx; p.z = nz; }
+      const f = caveFloorH(p.x, p.z), top = Math.min(UG.water, caveCeilH(p.x, p.z)) - 0.25; p.y = lerp(f + 0.3, top, 0.4 + Math.sin(k.t * 0.4) * 0.2);
+      k.root.rotation.y = k.heading; Fi.tail.rotation.y = Math.sin(k.t * 9) * 0.4;
+    }, { level: 'ug', heading: rnd() * TAU, tail: Fi.tail });
+    Fi.root.position.set(x, caveFloorH(x, z) + 0.5, z); Fi.root.visible = false;
+  });
+  for (let i = 0; i < 14; i++) {
+    let s = null; for (let k = 0; k < 300 && !s; k++) { const x = rr(-UG.half + 10, UG.half - 10), z = rr(-UG.half + 10, UG.half - 10); if (caveRoom(x, z) > 7) s = [x, z]; }
+    if (!s) continue;
+    const B = makeBat(), cx = s[0], cz = s[1];
+    makeCreature('bat', 'bat', B.root, function (dt) {
+      const k = this; k.t += dt; const a = k.t * 0.6 + k.ph, r = 4 + Math.sin(k.t * 0.3) * 2, x = cx + Math.cos(a) * r, z = cz + Math.sin(a * 1.3) * r;
+      const top = caveCeilH(x, z), f = caveFloorH(x, z); k.root.position.set(x, lerp(f, top, 0.75) + Math.sin(k.t * 3) * 0.3, z); k.root.rotation.y = -a;
+      for (const w of B.wings) w.gp.rotation.z = w.s * Math.sin(k.t * 18) * 0.8;
+      if (Math.random() < dt * 0.3 && k.root.position.distanceTo(PL.pos) < 20) tone('sine', 6000 + Math.random() * 2000, 9000, 0.04, 0.03, k.root.position);
+    }, { level: 'ug', ph: rnd() * 6, seeR: 8 });
+    B.root.visible = false;
+  }
+  // the Cave Frog sits by an underground lake far from the ways in
+  let best = null, bd = -1;
+  for (let k = 0; k < 6000; k++) { const x = rr(-UG.half + 15, UG.half - 15), z = rr(-UG.half + 15, UG.half - 15); if (caveRoom(x, z) < 3) continue; const f = caveFloorH(x, z); if (f < UG.water + 0.1 || f > UG.water + 1.2) continue; let dd = 1e9; for (const D of UG_DOORS) dd = Math.min(dd, Math.hypot(x - D.x, z - D.z)); if (dd > bd) { bd = dd; best = [x, z, f]; } }
+  if (best) {
+    const F = makeFrog('cavefrog', 'classic'); F.root.scale.setScalar(0.7); F.root.position.set(best[0], best[2], best[1]); F.root.visible = false;
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xffd0d0, transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false })); halo.position.y = 0.4; halo.scale.setScalar(1.6); F.root.add(halo);
+    makeCreature('rare', 'cavefrog', F.root, function (dt) {
+      const k = this; k.ct -= dt; if (k.ct <= 0) { k.ct = mr(7, 14); k.croakT = 0.6; if (F.root.position.distanceTo(PL.pos) < 40) SFX.croak('cave', F.root.position.clone()); }
+      k.croakT = Math.max(0, (k.croakT || 0) - dt); frogAnimate(F, dt, { croak: k.croakT }); if (SAVE.guide.cavefrog && !SAVE.ach.cavefrog) unlockAch('cavefrog'); F.root.rotation.y += dt * 0.03;
+    }, { F, level: 'ug', ct: 3, seeR: 6 });
+    W.caveFrogSpot = best;
+  }
+}
+
+/* ---------- the Cave Frog's home: a glowworm grotto, dug underground ---------- */
+HOME_TYPES.cavefrog = { kind: 'grotto', name: 'glowworm grotto', fx: 0x80ffd8, verb: 'Hold to dig a glowworm grotto here', intro: 'Cave frogs live in glowworm grottos deep underground. Go down into the Underground, find flat dry rock and hold E.',
+  ok() { return W.level === 'ug' && !W.inBurrow && PL.onGround && !PL.inWater && !PL.plat && caveRoom(PL.pos.x, PL.pos.z) > 3; } };
+HOT_HOMES.push('grotto');
+DEN.grotto = { name: 'glowworm grotto', fog: [0.02, 0.05, 0.07] };
+FLAT_DENS.add('grotto'); ROOM_CEIL.grotto = 5.5;
+HOME_BUILD.grotto = function (g, h, sp, add) {
+  const y = h.y; g.position.y = y;
+  const rock = new THREE.MeshStandardMaterial({ color: 0x5a5448, roughness: 0.9, flatShading: true });
+  const m = add(new THREE.Mesh(lumpyGeo(1, 0.3, h.x), rock), 0, 0.3, -0.4); m.scale.set(1.6, 1.1, 1.4);
+  const hole = add(new THREE.Mesh(new THREE.CircleGeometry(0.5, 16), new THREE.MeshBasicMaterial({ color: 0x041014 })), 0, 0.42, 0.98); hole.scale.y = 1.2;
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0x80ffd8, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false })); glow.position.set(0, 0.6, 1.1); glow.scale.setScalar(2.4); g.add(glow);
+  for (let i = 0; i < 12; i++) { const t = add(new THREE.Mesh(G.cyl, new THREE.MeshBasicMaterial({ color: 0xb0fff0, transparent: true, opacity: 0.6 })), rr(-0.9, 0.9), 1.1, rr(-0.5, 0.6)); t.scale.set(0.006, rr(0.3, 0.8), 0.006); t.castShadow = false; }
+};
+function buildGrottoRoom() {
+  SEED = 4747;
+  const g = new THREE.Group(); scene.add(g); W.interiors.grotto = g;
+  rmFloor(g, rmCanvasTex(256, 256, (x, w, h) => { x.fillStyle = '#3a3630'; x.fillRect(0, 0, w, h); for (let i = 0; i < 300; i++) { x.fillStyle = 'rgba(' + (60 + Math.random() * 40) + ',' + (56 + Math.random() * 30) + ',' + (48 + Math.random() * 20) + ',.6)'; x.fillRect(Math.random() * w, Math.random() * h, 3 + Math.random() * 8, 2 + Math.random() * 5); } }, [3, 3]));
+  const dome = rmMesh(g, new THREE.SphereGeometry(7, 28, 12, 0, TAU, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x4a4440, roughness: 0.95, side: THREE.BackSide, flatShading: true }), 0, RY, 0, 1, 0.8, 1); dome.castShadow = false;
+  // a ceiling full of glowworms with dangling silk threads
+  const pts = []; for (let i = 0; i < 900; i++) { const a = rnd() * TAU, e = rr(0.35, 1.5), r = 6.8; pts.push(Math.sin(a) * Math.cos(e) * r, RY + Math.sin(e) * r * 0.8 - 0.05, Math.cos(a) * Math.cos(e) * r); }
+  const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3)); g.add(new THREE.Points(pg, new THREE.PointsMaterial({ color: 0x90ffe0, size: 0.09, transparent: true, opacity: 0.95 })));
+  for (let i = 0; i < 60; i++) { const a = rnd() * TAU, d = rr(1, 5.5); const t = rmMesh(g, G.cyl, new THREE.MeshBasicMaterial({ color: 0xc0fff0, transparent: true, opacity: 0.5 }), Math.cos(a) * d, RY + rr(3, 4.5), Math.sin(a) * d, 0.006, rr(0.5, 1.6), 0.006); t.castShadow = false; }
+  // a still black pool and glowing mushrooms
+  const pool = rmMesh(g, new THREE.CircleGeometry(2, 28), new THREE.MeshStandardMaterial({ color: 0x0a2028, roughness: 0.03, metalness: 0.4, emissive: 0x041418 }), -2, RY + 0.04, -2); pool.rotation.x = -Math.PI / 2; pool.castShadow = false;
+  const glowM = new THREE.MeshStandardMaterial({ color: 0x90f0ff, emissive: 0x30d0f0, emissiveIntensity: 1.4 });
+  for (let i = 0; i < 14; i++) { const a = rnd() * TAU, d = rr(4, 6), x = Math.sin(a) * d, z = Math.cos(a) * d; if (Math.abs(angDiff(a, 0)) < 0.5) continue; rmMesh(g, G.cyl, new THREE.MeshStandardMaterial({ color: 0xd8e8e0 }), x, RY + 0.2, z, 0.06, 0.4, 0.06); rmMesh(g, G.sph, glowM, x, RY + 0.42, z, 0.25, 0.12, 0.25); }
+  const BX = 2.6, BZ = -1.2;
+  rmMesh(g, lumpyGeo(1, 0.25, 2.3), new THREE.MeshStandardMaterial({ color: 0x5a7a4a, roughness: 1, flatShading: true }), BX, RY + 0.25, BZ, 1.3, 0.3, 1);
+  W.bedPos.grotto = { x: BX, z: BZ, y: RY + 0.55 };
+  rmGlowDoor(g, 0xb0fff0, 1.6, 2.4);
+  const l = new THREE.PointLight(0x80ffd8, 1.0, 16, 1.5); l.position.set(0, RY + 3.5, 0); g.add(l);
+  g.visible = false;
+}
+
+/* ---------- the Telepathic Frog's telelaser (hold G) ----------
+   Finds the nearest frog you have not discovered and blasts it with a purple
+   beam, which discovers it for you. But the laser takes a price: one of your
+   other frogs, picked at random, is forgotten and must be found all over again. */
+const TL = { charge: 0, cd: 0, beam: null, t: 0 };
+function telelaserFX() {
+  if (TL.beam) return;
+  const geo = new THREE.CylinderGeometry(1, 1, 1, 10, 1, true); geo.translate(0, 0.5, 0); geo.rotateX(Math.PI / 2);
+  const mk = (c, o) => new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, side: THREE.DoubleSide }));
+  const g = new THREE.Group(); const core = mk(0xffe8ff, 0.95), glow = mk(0xa040ff, 0.45), outer = mk(0x6020c0, 0.2); g.add(core, glow, outer); g.visible = false; scene.add(g);
+  const orb = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xb060ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false })); scene.add(orb);
+  const hit = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xd090ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false })); scene.add(hit);
+  TL.beam = { g, core, glow, outer, orb, hit };
+}
+function undiscoveredFrogs() {
+  const have = SAVE.unlocks.species, out = [];
+  for (const k in UNLOCK_MAP) if (!have.includes(UNLOCK_MAP[k]) && SPECIES[UNLOCK_MAP[k]]) out.push(k);
+  return out;
+}
+function telelaserTarget() {
+  const want = undiscoveredFrogs(); if (!want.length) return null;
+  let best = null, bd = 1e9;
+  for (const c of CREATURES) {
+    if (!want.includes(c.guide)) continue;
+    let p = c.focus ? c.focus() : c.root.position;
+    if (c.burrow) p = new V3(BURROW_ENT.x, terrainH(BURROW_ENT.x, BURROW_ENT.z) - 1, BURROW_ENT.z);
+    const d = Math.hypot(p.x - PL.pos.x, p.z - PL.pos.z) + Math.abs(p.y - PL.pos.y) * 0.5; if (d < bd) { bd = d; best = { c, key: c.guide, p: p.clone() }; }
+  }
+  if (!best) { const key = want[Math.floor(Math.random() * want.length)]; best = { key, p: PL.pos.clone().add(new V3(Math.sin(PL.yaw) * 40, 60, Math.cos(PL.yaw) * 40)) }; }
+  return best;
+}
+function fireTelelaser() {
+  const T = telelaserTarget();
+  if (!T) { toast('The telelaser hums… but there are no frogs left that you have not discovered!', 'quiet'); tone('sine', 300, 200, 0.4, 0.2); return; }
+  telelaserFX();
+  const B = TL.beam, a = PL.pos.clone(); a.y += 0.45 * PL.size;
+  const dir = T.p.clone().sub(a); let len = dir.length(); dir.normalize();
+  const far = len > 160; if (far) len = 160;
+  B.g.position.copy(a); B.g.lookAt(a.clone().add(dir)); B.g.visible = true; TL.t = 0.9; TL.len = len;
+  B.hit.position.copy(a).addScaledVector(dir, len);
+  // zap sound: a falling sci-fi "pew" plus a fizzy hum
+  tone('sawtooth', 1800, 220, 0.6, 0.35, PL.pos, 0, 4000); tone('square', 900, 120, 0.7, 0.18, PL.pos, 0.02, 2500); tone('sine', 140, 60, 0.9, 0.4, PL.pos);
+  CAM.shake = Math.max(CAM.shake || 0, 0.4);
+  // discover the target
+  const key = T.key, sp = UNLOCK_MAP[key];
+  if (T.c) { T.c.zapT = 1.2; }
+  markSeen(key);
+  if (!SAVE.unlocks.species.includes(sp)) SAVE.unlocks.species.push(sp);
+  // …and pay for it with a random one of your other frogs
+  const pool = SAVE.unlocks.species.filter(s => SPECIES_UNLOCK[s] && s !== sp && s !== GAME.species);
+  let lost = null;
+  if (pool.length) {
+    lost = pool[Math.floor(Math.random() * pool.length)];
+    SAVE.unlocks.species = SAVE.unlocks.species.filter(s => s !== lost);
+    for (const k in UNLOCK_MAP) if (UNLOCK_MAP[k] === lost) delete SAVE.guide[k];
+  }
+  persist();
+  setTimeout(() => {
+    banner('Telelaser!', SPECIES[sp].name + ' discovered' + (far ? ' (far away)' : '') + '. ' + (lost ? 'But the laser took your ' + SPECIES[lost].name + '. Find it again to get it back.' : 'You had no other frogs for it to take.'));
+    if (lost) tone('sine', 520, 160, 0.9, 0.25, null, 0.1);
+  }, 450);
+  unlockAch('telelaser');
+}
+function telelaserTick(dt) {
+  TL.cd = Math.max(0, TL.cd - dt);
+  const B = TL.beam;
+  if (B && TL.t > 0) {
+    TL.t -= dt; const k = clamp(TL.t / 0.9, 0, 1), grow = clamp((0.9 - TL.t) / 0.12, 0, 1), L = TL.len * grow, w = 0.04 + 0.03 * Math.sin(GAME.t * 60);
+    B.core.scale.set(w * k + 0.01, w * k + 0.01, L); B.glow.scale.set(0.16 * k + 0.02, 0.16 * k + 0.02, L); B.outer.scale.set(0.42 * k, 0.42 * k, L);
+    B.hit.material.opacity = k * grow; B.hit.scale.setScalar(3 + Math.sin(GAME.t * 40) * 0.6);
+    if (TL.t <= 0) { B.g.visible = false; B.hit.material.opacity = 0; }
+  }
+  const sp = SPECIES[GAME.species];
+  const on = GAME.state === 'play' && !GAME.paused && sp && sp.telepath && PL.stage >= 3 && !PL.mind && !W.inBurrow && IN.keys.KeyG && TL.cd <= 0;
+  if (on) {
+    if (TL.charge === 0) { tone('sine', 200, 900, 1.2, 0.16, PL.pos); }
+    TL.charge += dt / 1.2;
+    if (TL.charge >= 1) { TL.charge = 0; TL.cd = 2.5; fireTelelaser(); }
+  } else TL.charge = Math.max(0, TL.charge - dt * 3);
+  if (TL.charge > 0 || (B && B.orb.material.opacity > 0)) {
+    telelaserFX(); const o = TL.beam.orb; o.position.copy(PL.pos); o.position.y += 0.5 * PL.size + 0.2; o.scale.setScalar(0.3 + TL.charge * 1.6); o.material.opacity = TL.charge * 0.9;
+  }
+}
+/* ============================================================
+   The other two levels of the world:
+   - Heron's Domain: floating islands high above everything (y ~ 160),
+     reached by whirlwind updrafts (or by a Bird Frog flying up).
+     Herons nest here and they are hungry. Fall off an edge and you
+     drift back down to the top level.
+   - The Mantle: the deepest level (y ~ -200), reached through magma
+     vents in the Underground. Lava lakes, black glass, terrible heat.
+   Plus the Bird Frog, Fire Frog and Lava Frog.
+   ============================================================ */
+const SKY = { y0: 160, half: 420, res: 2, n: 0, h: null, islands: [], VOID: -1e4 };
+const UPDRAFTS = [];
+
+/* ---------- Heron's Domain: the islands ---------- */
+function skyIslandR(I, a) { return I.r * (1 + 0.12 * Math.sin(3 * a + I.ph) + 0.06 * Math.sin(5 * a + I.ph * 2)); }
+function skyIslandTop(I, x, z) {
+  const dx = x - I.x, dz = z - I.z, d = Math.hypot(dx, dz), R = skyIslandR(I, Math.atan2(dz, dx)), t = d / R;
+  if (t > 1) return SKY.VOID;
+  return I.y + (1 - t * t) * I.dome + vnoise(x * 0.15 + I.ph, z * 0.15) * 0.25 - smooth(0.85, 1, t) * 0.4;
+}
+function pickUpdrafts() {
+  const want = [[MOUNT_PEAKS[0][0] + 20, MOUNT_PEAKS[0][1] - 40, 'The Mountains'], [MEADOW.x - 25, MEADOW.z - 22, 'Wildflower Meadow'], [DUNES.x + 26, DUNES.z - 30, 'Sand Dunes'], [RAIN.x - 60, RAIN.z + 10, 'Rainforest'], [BAMBOO.x + 40, BAMBOO.z - 40, 'Bamboo Grove'], [-150, -300, 'Woods']];
+  for (const [x0, z0, name] of want) {
+    let p = null;
+    for (let i = 0; i < 400 && !p; i++) { const a = i * 2.4, d = Math.sqrt(i) * 2.5, x = x0 + Math.cos(a) * d, z = z0 + Math.sin(a) * d, h = rawHeight(x, z); if (h > WATER + 0.4 && h > waterLevelAt(x, z) + 0.4 && slopeAt(x, z) < 0.5 && Math.hypot(x, z) < WORLD_R - 30) p = [x, z]; }
+    if (p) UPDRAFTS.push({ x: p[0], z: p[1], name });
+  }
+}
+function buildSkyGrid() {
+  pickUpdrafts();
+  SEED = 2468; const I = SKY.islands; I.length = 0;
+  const add = (x, z, r, y, kind) => { const o = { x, z, r, y, dome: r * rr(0.08, 0.16), ph: rnd() * 6, kind: kind || 'plain', depth: r * rr(0.9, 1.5) }; I.push(o); return o; };
+  // the big rookery in the middle, an island over every updraft, then lots of smaller ones growing outward
+  add(0, 0, 30, SKY.y0 + 4, 'rookery');
+  for (const U of UPDRAFTS) add(U.x, U.z, 13, SKY.y0 + rr(-2, 3), 'arrival');
+  const free = (x, z, r) => Math.abs(x) < SKY.half - r - 10 && Math.abs(z) < SKY.half - r - 10 && I.every(o => Math.hypot(o.x - x, o.z - z) > o.r + r + 1.6);
+  for (let k = 0; k < 4000 && I.length < 120; k++) {
+    const A = I[Math.floor(rnd() * I.length)], r = rr(6, 17), a = rnd() * TAU, d = A.r + r + rr(2.2, 4.8), x = A.x + Math.cos(a) * d, z = A.z + Math.sin(a) * d;
+    if (!free(x, z, r)) continue;
+    add(x, z, r, clamp(A.y + rr(-3, 3), SKY.y0 - 8, SKY.y0 + 14), r > 13 && rnd() < 0.5 ? 'nest' : 'plain');
+  }
+  SKY.n = Math.round(SKY.half * 2 / SKY.res) + 1; SKY.h = new Float32Array(SKY.n * SKY.n).fill(SKY.VOID);
+  for (const o of I) {
+    const R = o.r * 1.2, i0 = Math.max(0, Math.floor((o.x - R + SKY.half) / SKY.res)), i1 = Math.min(SKY.n - 1, Math.ceil((o.x + R + SKY.half) / SKY.res)), j0 = Math.max(0, Math.floor((o.z - R + SKY.half) / SKY.res)), j1 = Math.min(SKY.n - 1, Math.ceil((o.z + R + SKY.half) / SKY.res));
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const h = skyIslandTop(o, -SKY.half + i * SKY.res, -SKY.half + j * SKY.res), k = j * SKY.n + i; if (h > SKY.h[k]) SKY.h[k] = h; }
+  }
+}
+function skyH(x, z) {
+  const fx = (x + SKY.half) / SKY.res, fz = (z + SKY.half) / SKY.res, n = SKY.n;
+  if (fx < 0 || fz < 0 || fx > n - 1.01 || fz > n - 1.01) return SKY.y0 - 500;
+  const i = Math.floor(fx), j = Math.floor(fz), u = fx - i, v = fz - j, A = SKY.h;
+  const a = A[j * n + i], b = A[j * n + i + 1], c = A[(j + 1) * n + i], d = A[(j + 1) * n + i + 1];
+  if (a > -1e3 && b > -1e3 && c > -1e3 && d > -1e3) return lerp(lerp(a, b, u), lerp(c, d, u), v);
+  const near = u < 0.5 ? (v < 0.5 ? a : c) : (v < 0.5 ? b : d);
+  return near > -1e3 ? near : SKY.y0 - 500;
+}
+function skyIslandAt(x, z) { for (const o of SKY.islands) if (Math.abs(x - o.x) < o.r * 1.2 && Math.abs(z - o.z) < o.r * 1.2 && skyIslandTop(o, x, z) > -1e3) return o; return null; }
+function skyShade(x, z) { for (const t of SKY.trees || []) if (Math.hypot(t.x - x, t.z - z) < t.r) return true; return false; }
+function skyWalls(nx, nz) { const L = SKY.half - 6; return { x: clamp(nx, -L, L), z: clamp(nz, -L, L), hit: null }; }
+function skyClamp() {}
+
+function buildSkyLayer() {
+  SEED = 1357;
+  const g = new THREE.Group(); g.visible = false; scene.add(g); SKY.group = g;
+  // every island as one mesh: a grassy dome on top, a craggy rock cone hanging underneath
+  const pos = [], col = [], idx = [];
+  const RINGS = 9, SEGS = 40;
+  for (const o of SKY.islands) {
+    const base = pos.length / 3, grass = o.kind === 'rookery' || o.kind === 'nest' ? [0.62, 0.66, 0.36] : [0.42, 0.66, 0.3];
+    for (let half = 0; half < 2; half++) for (let r = 0; r <= RINGS; r++) for (let s = 0; s < SEGS; s++) {
+      const a = s / SEGS * TAU, t = r / RINGS, R = skyIslandR(o, a) * t, x = o.x + Math.cos(a) * R, z = o.z + Math.sin(a) * R;
+      let y, c;
+      if (half === 0) { y = o.y + (1 - t * t) * o.dome + vnoise(x * 0.15 + o.ph, z * 0.15) * 0.25 - smooth(0.85, 1, t) * 0.4; const n = vnoise(x * 0.3, z * 0.3) * 0.08; c = r === RINGS ? [0.42, 0.38, 0.3] : [grass[0] + n, grass[1] + n, grass[2] + n * 0.5]; }
+      else { const k = Math.pow(1 - t, 1.6); y = o.y - 0.5 - k * o.depth * (0.8 + 0.3 * vnoise(x * 0.2, z * 0.2 + o.ph)) - (1 - t) * 0.5; const n = vnoise(x * 0.25, y * 0.4) * 0.07; c = [0.5 + n - k * 0.12, 0.44 + n - k * 0.1, 0.36 + n - k * 0.06]; }
+      pos.push(x, y, z); col.push(c[0], c[1], c[2]);
+    }
+    const ringV = (half, r, s) => base + half * (RINGS + 1) * SEGS + r * SEGS + (s % SEGS);
+    for (let half = 0; half < 2; half++) for (let r = 0; r < RINGS; r++) for (let s = 0; s < SEGS; s++) {
+      const a = ringV(half, r, s), b = ringV(half, r, s + 1), c = ringV(half, r + 1, s), d = ringV(half, r + 1, s + 1);
+      if (half === 0) idx.push(a, b, c, b, d, c); else idx.push(a, c, b, b, c, d);
+    }
+    // stitch the rim of the top to the rim of the underside
+    for (let s = 0; s < SEGS; s++) { const a = ringV(0, RINGS, s), b = ringV(0, RINGS, s + 1), c = ringV(1, RINGS, s), d = ringV(1, RINGS, s + 1); idx.push(a, b, c, b, d, c); }
+  }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.setIndex(idx); geo.computeVertexNormals();
+  const land = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, map: TEX.detail })); land.castShadow = true; land.receiveShadow = true; g.add(land);
+  const spots = (want, ok) => { const out = []; for (let k = 0; k < want * 40 && out.length < want; k++) { const o = SKY.islands[Math.floor(rnd() * SKY.islands.length)], a = rnd() * TAU, d = Math.sqrt(rnd()) * o.r * 0.85, x = o.x + Math.cos(a) * d, z = o.z + Math.sin(a) * d; if (!ok || ok(x, z, o)) out.push([x, z, o]); } return out; };
+  // tufts of pale sky-grass and little white flowers
+  const tuft = new THREE.ConeGeometry(0.05, 0.45, 3); tuft.translate(0, 0.3, 0);
+  const tg = spots(9000); const tufts = inst(tuft, new THREE.MeshStandardMaterial({ color: 0x7aa848, roughness: 0.9 }), tg.length, false); g.add(tufts);
+  tg.forEach(([x, z], i) => { const s = rr(0.6, 1.5); setInst(tufts, i, x, skyH(x, z) - 0.05, z, rnd() * TAU, s, s * rr(0.7, 1.6), s, rr(-0.3, 0.3), rr(-0.3, 0.3)); });
+  const fl = spots(1400); const flowers = inst(G.sphL, new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x404040 }), fl.length, false); g.add(flowers);
+  fl.forEach(([x, z], i) => setInst(flowers, i, x, skyH(x, z) + 0.12, z, 0, 0.09));
+  // cloud puffs sitting on the islands like bushes
+  const puffM = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, emissive: 0x9aa0b0, emissiveIntensity: 0.4 });
+  const pf = spots(260); const puffs = inst(G.sphM, puffM, pf.length * 3, false); g.add(puffs); let np = 0;
+  pf.forEach(([x, z]) => { const y = skyH(x, z); for (let i = 0; i < 3; i++) { const s = rr(0.7, 1.6); setInst(puffs, np++, x + rr(-1, 1), y + s * 0.4, z + rr(-1, 1), 0, s, s * 0.7, s); } });
+  // wind-twisted trees with round canopies (shade from the sun)
+  SKY.trees = [];
+  const trunkM = new THREE.MeshStandardMaterial({ color: 0x8a7a64, roughness: 0.9, map: TEX.bark }), leafM = new THREE.MeshStandardMaterial({ color: 0x8ac0a0, roughness: 0.85, flatShading: true });
+  for (const [x, z] of spots(70, (x, z, o) => o.kind !== 'arrival' && skyH(x, z) > -1e3)) {
+    const y = skyH(x, z), H = rr(4, 8), t = new THREE.Mesh(G.cyl, trunkM); t.scale.set(0.25, H, 0.25); t.position.set(x, y + H / 2, z); t.rotation.z = rr(-0.25, 0.25); t.castShadow = true; g.add(t);
+    const c = new THREE.Mesh(lumpyGeo(1, 0.25, x), leafM); const s = rr(2.2, 3.6); c.scale.set(s, s * 0.6, s); c.position.set(x + t.rotation.z * -H * 0.5, y + H, z); c.castShadow = true; g.add(c);
+    SKY.trees.push({ x, z, r: s });
+  }
+  // heron nests: rings of sticks with pale blue eggs
+  const stickM = new THREE.MeshStandardMaterial({ color: 0x8a6a40, roughness: 1 }), eggM = new THREE.MeshStandardMaterial({ color: 0xc8e4ee, roughness: 0.4 });
+  SKY.nests = [];
+  for (const o of SKY.islands) if (o.kind === 'nest' || o.kind === 'rookery') for (let k = 0; k < (o.kind === 'rookery' ? 5 : 1); k++) {
+    const a = rnd() * TAU, d = k ? o.r * rr(0.35, 0.6) : (o.kind === 'rookery' ? 0 : o.r * 0.2), x = o.x + Math.cos(a) * d, z = o.z + Math.sin(a) * d, y = skyH(x, z);
+    const nest = new THREE.Group(); nest.position.set(x, y, z); g.add(nest);
+    for (let i = 0; i < 46; i++) { const b = i / 46 * TAU * 2.3, rad = 1.9 + (i % 5) * 0.12, st = new THREE.Mesh(G.cyl, stickM); st.scale.set(0.07, 1.6, 0.07); st.position.set(Math.cos(b) * rad, 0.25 + (i % 4) * 0.12, Math.sin(b) * rad); st.rotation.set(Math.PI / 2, 0, b + 1.2, 'YXZ'); st.rotation.y = -b; st.rotation.z = Math.PI / 2 + rr(-0.3, 0.3); nest.add(st); }
+    const bowl = new THREE.Mesh(new THREE.CylinderGeometry(1.9, 1.4, 0.4, 16), stickM); bowl.position.y = 0.15; nest.add(bowl);
+    for (let i = 0; i < 3; i++) { const e = new THREE.Mesh(G.sph, eggM); e.scale.set(0.32, 0.42, 0.32); e.position.set(Math.cos(i * 2.1) * 0.5, 0.55, Math.sin(i * 2.1) * 0.5); nest.add(e); }
+    SKY.nests.push({ x, z, y, o });
+  }
+  // a sea of cloud far below, and drifting cloud banks all around
+  const ct = TEX.cloud.clone(); ct.needsUpdate = true; ct.wrapS = ct.wrapT = THREE.RepeatWrapping; ct.repeat.set(10, 10); SKY.cloudTex = ct;
+  const sea = new THREE.Mesh(new THREE.PlaneGeometry(2400, 2400), new THREE.MeshBasicMaterial({ map: ct, color: 0xffffff, transparent: true, opacity: 0.95, depthWrite: false })); sea.rotation.x = -Math.PI / 2; sea.position.y = SKY.y0 - 45; g.add(sea); SKY.sea = sea;
+  const under = new THREE.Mesh(new THREE.PlaneGeometry(2400, 2400), new THREE.MeshBasicMaterial({ color: 0xdfe8f2 })); under.rotation.x = -Math.PI / 2; under.position.y = SKY.y0 - 48; g.add(under);
+  SKY.banks = [];
+  for (let i = 0; i < 70; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.cloud, color: 0xffffff, transparent: true, opacity: rr(0.5, 0.85), depthWrite: false })); const a = rnd() * TAU, d = rr(60, 420); s.position.set(Math.cos(a) * d, SKY.y0 + rr(-38, 30), Math.sin(a) * d); s.scale.set(rr(40, 90), rr(16, 30), 1); g.add(s); SKY.banks.push(s); }
+  // the whirlwind arriving under each updraft island
+  SKY.drafts = [];
+  for (const U of UPDRAFTS) { const sw = makeSwirl(4, 60); sw.position.set(U.x, SKY.y0 - 60, U.z); g.add(sw); SKY.drafts.push(sw); }
+  buildSkyMap();
+}
+function buildSkyMap() {
+  const N = 420, c = mkCanvas(N, N), x = c.getContext('2d'), img = x.createImageData(N, N);
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+    const wx = -SKY.half + (i + 0.5) * SKY.half * 2 / N, wz = -SKY.half + (j + 0.5) * SKY.half * 2 / N, h = skyH(wx, wz), k = (j * N + i) * 4;
+    const land = h > SKY.y0 - 100, v = vnoise(wx * 0.05, wz * 0.05) * 10;
+    img.data[k] = land ? 120 + v : 214 + v; img.data[k + 1] = land ? 168 + v : 228 + v; img.data[k + 2] = land ? 96 : 244; img.data[k + 3] = 255;
+  }
+  x.putImageData(img, 0, 0);
+  for (const n of SKY.nests) { x.fillStyle = '#8a6a40'; x.beginPath(); x.arc((n.x + SKY.half) / (SKY.half * 2) * N, (n.z + SKY.half) / (SKY.half * 2) * N, 3, 0, TAU); x.fill(); }
+  SKY.map = { img: c, x0: -SKY.half, z0: -SKY.half, span: SKY.half * 2 };
+}
+// a whirling column of wind with leaves caught in it
+function makeSwirl(r, h) {
+  const g = new THREE.Group();
+  const sc = mkCanvas(64, 256), sx = sc.getContext('2d'); sx.clearRect(0, 0, 64, 256);
+  for (let i = 0; i < 26; i++) { sx.strokeStyle = 'rgba(255,255,255,' + (0.2 + Math.random() * 0.5) + ')'; sx.lineWidth = 1 + Math.random() * 2.5; const y = Math.random() * 256; sx.beginPath(); sx.moveTo(0, y); sx.lineTo(64, y - 30 - Math.random() * 40); sx.stroke(); }
+  const tex = canvasTex(sc); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(3, h / 12);
+  for (const [rad, op] of [[r, 0.55], [r * 0.7, 0.4]]) {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad * 0.8, h, 20, 1, true), new THREE.MeshBasicMaterial({ map: tex, color: 0xeaf6ff, transparent: true, opacity: op, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+    m.position.y = h / 2; g.add(m);
+  }
+  const lp = []; for (let i = 0; i < 120; i++) lp.push(0, 0, 0);
+  const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(lp, 3));
+  const leaves = new THREE.Points(lg, new THREE.PointsMaterial({ color: 0xb8e070, size: 0.3, map: TEX.glow, transparent: true, depthWrite: false })); g.add(leaves);
+  g.userData = { tex, leaves, r, h, ph: Math.random() * 10 };
+  return g;
+}
+function animSwirl(sw, dt) {
+  const u = sw.userData; u.tex.offset.x += dt * 0.6; u.tex.offset.y -= dt * 1.2; u.ph += dt;
+  const p = u.leaves.geometry.attributes.position;
+  for (let i = 0; i < p.count; i++) { const t = (u.ph * 0.25 + i / p.count) % 1, a = u.ph * 3 + i * 2.4, rr2 = u.r * (0.4 + 0.6 * ((i * 7) % 10) / 10); p.setXYZ(i, Math.cos(a) * rr2, t * u.h, Math.sin(a) * rr2); }
+  p.needsUpdate = true;
+}
+// updraft whirlwinds on the top level (built before the main-world snapshot so they hide with it)
+function buildUpdrafts() {
+  W.updrafts = [];
+  for (const U of UPDRAFTS) {
+    const sw = makeSwirl(2.4, 150); const y = terrainH(U.x, U.z); sw.position.set(U.x, y - 0.5, U.z); scene.add(sw); W.updrafts.push(sw); U.y = y;
+    const ring = new THREE.Mesh(new THREE.RingGeometry(2.2, 3.2, 28), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.35, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.position.set(U.x, y + 0.08, U.z); scene.add(ring);
+  }
+}
+function topSkyTick(dt) {
+  const P = PL.pos;
+  if (W.updrafts) for (const sw of W.updrafts) if (Math.abs(sw.position.x - P.x) < 120 && Math.abs(sw.position.z - P.z) < 120) animSwirl(sw, dt);
+  for (const U of UPDRAFTS) {
+    if (Math.abs(P.x - U.x) > 3 || Math.abs(P.z - U.z) > 3) continue;
+    if (Math.hypot(P.x - U.x, P.z - U.z) < 2.4 && P.y < U.y + 12) {
+      SFX.flap && SFX.flap(P);
+      travel('sky', () => { placePlayer(U.x + 3, U.z + 3); }, 'skyVisit', "Whoosh! The whirlwind carried you all the way up to Heron's Domain, the highest level of the world. Herons nest up here, so keep your distance from them! Jump off any edge to drift back down.");
+      return;
+    }
+  }
+  // a Bird Frog can simply fly up there
+  if (SPECIES[GAME.species].feathers && PL.stage >= 4 && P.y > 128) {
+    const x = P.x, z = P.z, vx = PL.vel.x, vz = PL.vel.z;
+    travel('sky', () => { const h = skyH(x, z); if (h > SKY.y0 - 100) placePlayer(x, z); else { placePlayer(x, z, SKY.y0 - 10); PL.onGround = false; PL.vel.set(vx, 4, vz); PL.airT = 0.2; } }, 'skyVisit', "You flew so high you reached Heron's Domain, the floating islands above the clouds! Herons nest up here, so be careful.");
+  }
+}
+function skyTick(dt) {
+  const P = PL.pos;
+  for (const sw of SKY.drafts || []) animSwirl(sw, dt);
+  if (SKY.cloudTex) { SKY.cloudTex.offset.x += dt * 0.004; SKY.cloudTex.offset.y += dt * 0.002; }
+  for (const b of SKY.banks || []) { b.position.x += dt * 1.2; if (b.position.x > 440) b.position.x -= 880; }
+  if (P.y < SKY.y0 - 32) {
+    // fell off: drift down through the clouds to the same spot on the top level
+    let x = clamp(P.x, -WORLD_R + 10, Math.min(WORLD_R - 10, SEA_EDGE - 10)), z = P.z; const R = Math.hypot(x, z); if (R > WORLD_R - 10) { x *= (WORLD_R - 10) / R; z *= (WORLD_R - 10) / R; }
+    const bird = SPECIES[GAME.species].feathers && PL.stage >= 4, vx = PL.vel.x, vz = PL.vel.z;
+    travel('top', () => {
+      if (bird) { placePlayer(x, z, Math.max(terrainH(x, z) + 25, 110)); PL.onGround = false; PL.vel.set(vx, -2, vz); PL.airT = 0.2; }
+      else { placePlayer(x, z, Math.max(groundAt(x, z, 999, 999), waterLevelAt(x, z) - 0.1)); if (waterLevelAt(x, z) > terrainH(x, z) + 0.3) { PL.inWater = true; PL.onGround = false; } }
+    }, 'skyFall', 'You tumbled off the edge of the clouds and floated gently back down to the ground. Ride a whirlwind to go back up.');
+  }
+}
+
+/* ---------- the Mantle: lava, black glass and terrible heat ---------- */
+function lavaTexture() {
+  const c = mkCanvas(256, 256), x = c.getContext('2d');
+  x.fillStyle = '#ff6a10'; x.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 140; i++) { const g = x.createRadialGradient(0, 0, 0, 0, 0, 1); x.fillStyle = 'rgba(' + (255) + ',' + (140 + Math.random() * 100) + ',' + (Math.random() * 60) + ',' + (0.3 + Math.random() * 0.4) + ')'; x.beginPath(); x.arc(Math.random() * 256, Math.random() * 256, 4 + Math.random() * 16, 0, TAU); x.fill(); }
+  for (let i = 0; i < 60; i++) { x.fillStyle = 'rgba(40,10,4,' + (0.35 + Math.random() * 0.5) + ')'; x.beginPath(); const px = Math.random() * 256, py = Math.random() * 256; x.ellipse(px, py, 6 + Math.random() * 22, 4 + Math.random() * 12, Math.random() * 3, 0, TAU); x.fill(); }
+  const t = canvasTex(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(70, 70); return t;
+}
+function buildMantleLayer() {
+  SEED = 9191; const L = MANTLE;
+  const g = new THREE.Group(); g.visible = false; scene.add(g); L.group = g;
+  const S = L.half * 2, N = 300, lava = L.water;
+  const glowMat = () => { const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, map: TEX.detail, emissive: 0xffffff }); m.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace('vec3 totalEmissiveRadiance = emissive;', 'vec3 totalEmissiveRadiance = emissive * vColor.rgb * vColor.rgb * vColor.rgb * 1.6;'); }; return m; };
+  const mk = (ceiling) => {
+    const geo = new THREE.PlaneGeometry(S, S, N, N); geo.rotateX(ceiling ? Math.PI / 2 : -Math.PI / 2);
+    const p = geo.attributes.position, col = [];
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), z = p.getZ(i), f = caveFloorH(x, z), c = caveCeilH(x, z), H = c - f, s = smooth(0, 1.5, H), shut = f + 2 * (1 - s);
+      const y = ceiling ? Math.max(c, shut) : (H < 1.5 ? shut : f); p.setY(i, y);
+      const n = vnoise(x * 0.2, z * 0.2) * 0.5 + 0.5;
+      let r = lerp(0.16, 0.24, n), gg = lerp(0.12, 0.16, n), b = lerp(0.11, 0.14, n);
+      if (!ceiling) { const hot = smooth(lava + 0.45, lava - 0.1, y); r = lerp(r, 1.0, hot); gg = lerp(gg, 0.42, hot); b = lerp(b, 0.08, hot); const vein = smooth(0.92, 0.98, vnoise(x * 0.35, z * 0.35) * 0.5 + 0.5); r = lerp(r, 0.95, vein * 0.7); gg = lerp(gg, 0.3, vein * 0.7); }
+      else { const below = smooth(lava + 0.5, lava - 1.5, f) * smooth(26, 6, H); r = lerp(r, 0.55, below); gg = lerp(gg, 0.16, below); b = lerp(b, 0.06, below); }
+      col.push(r, gg, b);
+    }
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
+    const m = new THREE.Mesh(geo, glowMat()); g.add(m); return m;
+  };
+  mk(false); mk(true);
+  // the lava itself
+  L.lavaTex = lavaTexture();
+  const lavaM = new THREE.MeshStandardMaterial({ map: L.lavaTex, emissiveMap: L.lavaTex, emissive: 0xffffff, emissiveIntensity: 1.1, roughness: 0.6 });
+  const lp = new THREE.Mesh(new THREE.PlaneGeometry(S, S), lavaM); lp.rotation.x = -Math.PI / 2; lp.position.y = lava; g.add(lp); L.lavaPlane = lp;
+  const spots = (want, ok) => { const out = []; for (let k = 0; k < want * 30 && out.length < want; k++) { const x = rr(-L.half + 6, L.half - 6), z = rr(-L.half + 6, L.half - 6); if (ok(x, z)) out.push([x, z]); } return out; };
+  const dry = (x, z) => caveRoom(x, z) > 4 && caveFloorH(x, z) > lava + 0.3;
+  // spikes of black volcanic glass, up and down
+  const obsM = new THREE.MeshStandardMaterial({ color: 0x14100e, roughness: 0.15, metalness: 0.5, flatShading: true, emissive: 0x200402 });
+  const coneD = new THREE.ConeGeometry(1, 1, 5); coneD.translate(0, -0.5, 0);
+  const st = spots(1000, (x, z) => caveRoom(x, z) > 5); const tites = inst(coneD, obsM, st.length, false); g.add(tites);
+  st.forEach(([x, z], i) => { const c = caveCeilH(x, z), r = rr(0.3, 1.2), H = Math.min(rr(1, 6), (c - caveFloorH(x, z)) * 0.4); setInst(tites, i, x, c + 0.3, z, rnd() * TAU, r, H, r); });
+  const coneU = new THREE.ConeGeometry(1, 1, 5); coneU.translate(0, 0.5, 0);
+  const sm = spots(700, dry); const mites = inst(coneU, obsM, sm.length, false); g.add(mites);
+  sm.forEach(([x, z], i) => { const f = caveFloorH(x, z), r = rr(0.3, 1.0), H = Math.min(rr(1, 5), (caveCeilH(x, z) - f) * 0.35); setInst(mites, i, x, f - 0.1, z, rnd() * TAU, r, H, r, rr(-0.15, 0.15), rr(-0.15, 0.15)); });
+  // glowing magma crystals
+  const cryG = new THREE.OctahedronGeometry(1, 0); cryG.scale(0.35, 1.4, 0.35);
+  const cryM = new THREE.MeshStandardMaterial({ color: 0xffa040, emissive: 0xff5010, emissiveIntensity: 1.4, roughness: 0.2, flatShading: true });
+  const cs = spots(150, dry); const crys = inst(cryG, cryM, cs.length * 5, false); g.add(crys); let nc = 0;
+  cs.forEach(([x, z]) => { const f = caveFloorH(x, z); for (let i = 0; i < 5; i++) { const s = rr(0.3, 1.1); setInst(crys, nc++, x + rr(-0.8, 0.8), f + s * 0.6, z + rr(-0.8, 0.8), rnd() * TAU, s, s, s, rr(-0.5, 0.5), rr(-0.5, 0.5)); } });
+  crys.count = nc;
+  // steam columns at the vents: walk in to ride back up to the Underground
+  L.steam = [];
+  for (const D of MAGMA_VENTS) {
+    const f = caveFloorH(D.x, D.z), c = caveCeilH(D.x, D.z);
+    const col = makeSwirl(2.2, c - f + 4); col.position.set(D.x, f - 0.5, D.z); col.children.forEach(m => { if (m.material && m.material.color) m.material.color.setHex(0xffffff); }); g.add(col); L.steam.push(col);
+    const ring = new THREE.Mesh(new THREE.RingGeometry(2, 3, 28), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.position.set(D.x, f + 0.06, D.z); g.add(ring);
+  }
+  // embers drifting up around you
+  const ep = []; for (let i = 0; i < 500; i++) ep.push(0, -999, 0);
+  const eg = new THREE.BufferGeometry(); eg.setAttribute('position', new THREE.Float32BufferAttribute(ep, 3));
+  L.embers = new THREE.Points(eg, new THREE.PointsMaterial({ color: 0xffa040, size: 0.12, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false })); L.embers.frustumCulled = false; g.add(L.embers);
+  L.emberSeed = []; for (let i = 0; i < 500; i++) L.emberSeed.push([Math.random() * 60 - 30, Math.random() * 20, Math.random() * 60 - 30, 0.5 + Math.random() * 1.5]);
+  L.light = new THREE.PointLight(0xffc080, 1.3, 26, 1.4); g.add(L.light);
+  g.add(new THREE.HemisphereLight(0x80402a, 0x601808, 0.9));
+}
+function mantleTick(dt) {
+  const L = MANTLE, P = PL.pos, sp = SPECIES[GAME.species];
+  if (L.lavaTex) { L.lavaTex.offset.x += dt * 0.006; L.lavaTex.offset.y += dt * 0.004; }
+  for (const s of L.steam) if (Math.abs(s.position.x - P.x) < 80 && Math.abs(s.position.z - P.z) < 80) animSwirl(s, dt);
+  // embers rise and wrap around you
+  if (L.embers) { const a = L.embers.geometry.attributes.position, t = GAME.t; for (let i = 0; i < a.count; i++) { const s = L.emberSeed[i], x = P.x + ((s[0] - P.x * 0 + 30) % 60) - 30, y = L.water + ((s[1] + t * s[3]) % 20), z = P.z + s[2]; a.setXYZ(i, x + Math.sin(t + i) * 0.5, y, z); } a.needsUpdate = true; }
+  // touching lava
+  const f = caveFloorH(P.x, P.z);
+  if (!W.inBurrow && f < L.water - 0.05 && P.y < L.water + 0.15 && !sp.lavaSwim && !sp.fireproof) {
+    const e = 1.2, gx = caveFloorH(P.x + e, P.z) - caveFloorH(P.x - e, P.z), gz = caveFloorH(P.x, P.z + e) - caveFloorH(P.x, P.z - e), gl = Math.hypot(gx, gz) || 1;
+    let dx = gx / gl, dz = gz / gl; if (Math.hypot(gx, gz) < 0.01) { dx = -Math.sin(PL.yaw); dz = -Math.cos(PL.yaw); }
+    const kb = new V3(dx * 7, 9, dz * 7);
+    if (!hurt(30, 'Lava', kb)) { PL.vel.copy(kb); PL.onGround = false; }
+    noiseHit(2500, 0.5, 0.35, 0.3, P);
+    if (GAME.t - (PL.lavaT || -99) > 8) { PL.lavaT = GAME.t; toast('Ouch, lava! Only fire frogs and lava frogs can touch it.'); }
+  }
+  if (sp.lavaSwim && PL.inWater && Math.random() < dt * 0.8) tone('sine', 90, 160, 0.25, 0.25, P);
+  if (AU.ok && Math.random() < dt * 0.5) { const p = P.clone().add(new V3(mr(-20, 20), 0, mr(-20, 20))); if (caveFloorH(p.x, p.z) < L.water) { p.y = L.water; tone('sine', 70 + Math.random() * 40, 140, 0.3, 0.2, p, 0, 600); } }
+}
+
+/* ---------- creatures of the sky and the deep ---------- */
+function buildLevelLife() {
+  SEED = 4242;
+  // herons: one at every nest, and they do not like visitors
+  const nests = SKY.nests.slice(0, 12);
+  nests.forEach((N, i) => {
+    const Hm = makeHeron(); Hm.root.scale.setScalar(0.55); Hm.root.position.set(N.x + 2.5, N.y, N.z); Hm.root.visible = false;
+    for (const w of Hm.wings) w.visible = false;
+    makeCreature('skyheron', 'heron', Hm.root, function (dt) { skyHeronTick(this, dt); }, { level: 'sky', Hm, nest: N, state: 'nest', t: rnd() * 10, cd: 0, scared: 0, heading: rnd() * TAU, seeR: 16, focus() { return Hm.head.getWorldPosition(new V3()); } });
+  });
+  // the Bird Frog: on an island near the middle of the sky, away from the whirlwinds
+  let far = null, fd = -1; for (const o of SKY.islands) { if (o.kind !== 'plain') continue; let d = 1e9; for (const U of UPDRAFTS) d = Math.min(d, Math.hypot(o.x - U.x, o.z - U.z)); if (d > fd) { fd = d; far = o; } }
+  if (far) {
+    const F = makeFrog('bird', 'classic'); F.root.scale.setScalar(0.75); const y = skyH(far.x, far.z); F.root.position.set(far.x, y, far.z); F.root.visible = false;
+    makeCreature('rare', 'birdfrog', F.root, function (dt) {
+      const k = this; k.ct -= dt; k.hopT = Math.max(0, (k.hopT || 0) - dt);
+      if (k.ct <= 0) { k.ct = mr(5, 10); k.croakT = 0.6; k.hopT = 1.6; if (F.root.position.distanceTo(PL.pos) < 45) SFX.croak('bird', F.root.position.clone()); }
+      k.croakT = Math.max(0, (k.croakT || 0) - dt);
+      const up = Math.sin((1.6 - k.hopT) / 1.6 * Math.PI) * (k.hopT > 0 ? 2.2 : 0); F.root.position.y = skyH(F.root.position.x, F.root.position.z) + up;
+      frogAnimate(F, dt, { croak: k.croakT, wing: k.hopT > 0, flap: k.hopT > 0 }); F.root.rotation.y += dt * 0.2;
+    }, { F, level: 'sky', ct: 2, seeR: 9 });
+  }
+  // the Fire Frog basks on a ledge right at the edge of the lava; the Lava Frog swims in a lava lake
+  CL = MANTLE;
+  let ledge = null, lake = null;
+  for (let k = 0; k < 20000 && (!ledge || !lake); k++) {
+    const x = rr(-MANTLE.half + 20, MANTLE.half - 20), z = rr(-MANTLE.half + 20, MANTLE.half - 20); if (caveRoom(x, z) < 6) continue;
+    const f = caveFloorH(x, z), far = MAGMA_VENTS.every(D => Math.hypot(D.x - x, D.z - z) > 60);
+    if (!ledge && far && f > MANTLE.water + 0.2 && f < MANTLE.water + 0.9 && caveFloorH(x + 4, z) < MANTLE.water - 0.5) ledge = [x, z, f];
+    if (!lake && far && f < MANTLE.water - 2 && caveFloorH(x + 3, z) < MANTLE.water - 1.5 && caveFloorH(x - 3, z) < MANTLE.water - 1.5) lake = [x, z];
+  }
+  if (ledge) {
+    const F = makeFrog('fire', 'classic'); F.root.scale.setScalar(0.8); F.root.position.set(ledge[0], ledge[2], ledge[1]); F.root.visible = false;
+    const l = new THREE.PointLight(0xff8030, 1.2, 10, 1.5); l.position.y = 0.8; F.root.add(l);
+    makeCreature('rare', 'firefrog', F.root, function (dt) {
+      const k = this; k.ct -= dt; if (k.ct <= 0) { k.ct = mr(5, 11); k.croakT = 0.6; if (F.root.position.distanceTo(PL.pos) < 40) SFX.croak('fire', F.root.position.clone()); }
+      k.croakT = Math.max(0, (k.croakT || 0) - dt); frogAnimate(F, dt, { croak: k.croakT, hot: true }); F.root.rotation.y += dt * 0.05; l.intensity = 1 + Math.random() * 0.4;
+    }, { F, level: 'mantle', ct: 2, seeR: 10 });
+  }
+  if (lake) {
+    const F = makeFrog('lava', 'classic'); const hx = lake[0], hz = lake[1]; F.root.position.set(hx, MANTLE.water - 0.2, hz); F.root.visible = false;
+    makeCreature('rare', 'lavafrog', F.root, function (dt) {
+      const k = this; k.t += dt; k.ct -= dt; if (k.ct <= 0) { k.ct = mr(6, 12); k.croakT = 0.8; if (F.root.position.distanceTo(PL.pos) < 45) SFX.croak('lava', F.root.position.clone()); }
+      k.croakT = Math.max(0, (k.croakT || 0) - dt);
+      const a = k.t * 0.15, x = hx + Math.cos(a) * 3, z = hz + Math.sin(a) * 3; F.root.position.set(x, MANTLE.water - 0.25 + Math.sin(k.t * 1.3) * 0.08, z); F.root.rotation.y = -a;
+      frogPose(F, { swim: k.t * 3 }); frogAnimate(F, dt, { croak: k.croakT });
+    }, { F, level: 'mantle', ct: 3, seeR: 11 });
+  }
+  CL = UG;
+}
+function skyHeronTick(k, dt) {
+  const Hm = k.Hm, p = k.root.position, P = PL.pos; k.t += dt; k.cd = Math.max(0, k.cd - dt); k.scared = Math.max(0, k.scared - dt);
+  const toP = new V3(P.x - p.x, 0, P.z - p.z), d = toP.length(), hidden = playerHidden() || W.inBurrow || PL.stage < 1, sameLevel = Math.abs(P.y - p.y) < 5;
+  let speed = 0, want = k.heading;
+  if (k.scared > 0) { k.state = 'flee'; want = Math.atan2(-toP.x, -toP.z); speed = 4; }
+  else if (k.state === 'strike') {
+    k.st += dt; const s = k.st;
+    Hm.neck[0].rotation.x = s < 0.45 ? -0.6 * (s / 0.45) : lerp(-0.6, 1.1, clamp((s - 0.45) / 0.12, 0, 1));
+    if (s > 0.57 && !k.hit) { k.hit = true; const tip = Hm.head.getWorldPosition(new V3()); if (!hidden && tip.distanceTo(P) < 2.2 + PL.size * 0.5 + 1.2) hurt(40, 'A sky heron', new V3(toP.x / Math.max(d, 0.01) * 6, 7, toP.z / Math.max(d, 0.01) * 6)); else toast('The heron jabbed and missed!'); SFX.kraak && SFX.kraak(p.clone()); }
+    if (s > 1.1) { k.state = 'stalk'; k.cd = 3.5; Hm.neck[0].rotation.x = 0; }
+    want = Math.atan2(toP.x, toP.z);
+  } else if (!hidden && sameLevel && d < 16) {
+    if (k.state !== 'stalk') { k.state = 'stalk'; if (GAME.t - (W.skyHeronT || -99) > 12) { W.skyHeronT = GAME.t; toast('A heron has spotted you! Get away from it, hide, or fly off.'); } }
+    want = Math.atan2(toP.x, toP.z); speed = d > 4 ? 2.6 : 0;
+    raiseThreat(0.6, 'A sky heron is coming for you!', p);
+    if (d < 4.2 && k.cd <= 0) { k.state = 'strike'; k.st = 0; k.hit = false; }
+  } else {
+    // wander near the nest
+    const N = k.nest, dn = Math.hypot(p.x - N.x, p.z - N.z); k.state = 'nest';
+    if (dn > 6) want = Math.atan2(N.x - p.x, N.z - p.z); else if (Math.random() < dt * 0.3) want = k.heading + mr(-1.5, 1.5);
+    speed = Math.sin(k.t * 0.4) > 0.3 ? 0.9 : 0;
+    Hm.neck[0].rotation.x = lerp(Hm.neck[0].rotation.x, Math.sin(k.t * 0.7) > 0.8 ? 0.9 : 0, dt * 3);
+  }
+  k.heading += angDiff(k.heading, want) * Math.min(1, dt * 4);
+  if (speed > 0) { const nx = p.x + Math.sin(k.heading) * speed * dt, nz = p.z + Math.cos(k.heading) * speed * dt; if (skyH(nx, nz) > SKY.y0 - 50) { p.x = nx; p.z = nz; } else k.heading += 1.5; }
+  p.y = skyH(p.x, p.z); if (p.y < SKY.y0 - 50) p.y = SKY.y0;
+  k.root.rotation.y = k.heading;
+  for (const [i, l] of Hm.legs.entries()) l.rotation.x = speed > 0 ? Math.sin(k.t * 6 + i * Math.PI) * 0.35 : 0;
+  for (const w of Hm.wings) { w.visible = k.state === 'flee'; w.rotation.z = Math.sin(k.t * 10) * 0.5; }
+}
+
+/* ---------- Fire Frog: breathe fire (V) ---------- */
+const FIREB = { cd: 0, parts: null };
+function fireBreath() {
+  if (FIREB.cd > 0) return; FIREB.cd = 1.1;
+  if (!FIREB.parts) { FIREB.parts = []; for (let i = 0; i < 40; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xff8020, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false })); scene.add(s); FIREB.parts.push({ s, v: new V3(), t: 0 }); } }
+  const m = mouthPos(new V3()), fx = Math.sin(PL.yaw), fz = Math.cos(PL.yaw);
+  for (const p of FIREB.parts) { p.s.position.copy(m); p.v.set(fx * mr(6, 11) + mr(-1.5, 1.5), mr(-0.5, 2), fz * mr(6, 11) + mr(-1.5, 1.5)); p.t = mr(0.4, 0.7); p.s.material.color.setHex(Math.random() < 0.5 ? 0xff6010 : 0xffc040); }
+  tone('sawtooth', 160, 60, 0.6, 0.2, PL.pos, 0, 900); noiseHit(1800, 0.6, 0.55, 0.35, PL.pos); noiseHit(500, 0.8, 0.5, 0.3, PL.pos);
+  // toast bugs, scare herons
+  let n = 0;
+  for (const i of INS.list.slice()) { if (!i.alive || i.stuck || i.ctrl) continue; const dx = i.pos.x - PL.pos.x, dz = i.pos.z - PL.pos.z, d = Math.hypot(dx, dz); if (d < 6 && (dx * fx + dz * fz) / Math.max(d, 0.01) > 0.6 && !INSECT[i.type].inedible) { PL.needs.hunger = Math.min(100, PL.needs.hunger + Math.max(0, INSECT[i.type].food) * 0.7); removeInsect(i); n++; } }
+  if (n) toast('Toasted ' + n + ' bug' + (n > 1 ? 's' : '') + '! Crunchy.', 'quiet');
+  for (const c of CREATURES) if (c.kind === 'skyheron' && c.root.visible && c.root.position.distanceTo(PL.pos) < 12) { c.scared = 5; c.state = 'flee'; }
+  if (HER.state && HER.state !== 'away' && HER.state !== 'leave' && HER.root.position.distanceTo(PL.pos) < 14) { HER.state = 'leave'; HER.t = 0; toast('The heron flinched at your fire and flew off!'); }
+  unlockAch('firebreath');
+}
+function fireBreathTick(dt) {
+  FIREB.cd = Math.max(0, FIREB.cd - dt);
+  if (!FIREB.parts) return;
+  for (const p of FIREB.parts) { if (p.t <= 0) { p.s.material.opacity = 0; continue; } p.t -= dt; p.s.position.addScaledVector(p.v, dt); p.v.y += dt * 3; const k = clamp(p.t / 0.6, 0, 1); p.s.material.opacity = k * 0.9; p.s.scale.setScalar(0.4 + (1 - k) * 1.8); }
+}
+
+/* ---------- homes for the new frogs ---------- */
+HOME_TYPES.bird = { kind: 'cloudnest', name: 'cloud nest', fx: 0xffffff, verb: 'Hold to weave a cloud nest here', intro: "Bird frogs weave cloud nests on the floating islands of Heron's Domain. Fly up there, land on an island and hold E.",
+  ok() { return W.inSky && !W.inBurrow && PL.onGround && !PL.plat; } };
+HOME_TYPES.fire = { kind: 'emberden', name: 'ember den', fx: 0xff6020, verb: 'Hold to build an ember den here', intro: 'Fire frogs live in ember dens in the Mantle. Go down there, find dry rock near the lava and hold E.',
+  ok() { return W.inMantle && !W.inBurrow && PL.onGround && caveFloorH(PL.pos.x, PL.pos.z) > MANTLE.water + 0.1 && caveRoom(PL.pos.x, PL.pos.z) > 3; } };
+HOME_TYPES.lava = { kind: 'lavatube', name: 'lava tube', fx: 0xff4010, verb: 'Hold to dig a lava tube here', intro: 'Lava frogs live in lava tubes in the Mantle. Go down there, find dry rock and hold E.',
+  ok() { return W.inMantle && !W.inBurrow && PL.onGround && caveFloorH(PL.pos.x, PL.pos.z) > MANTLE.water + 0.1 && caveRoom(PL.pos.x, PL.pos.z) > 3; } };
+HOT_HOMES.push('cloudnest', 'emberden', 'lavatube');
+DEN.cloudnest = { name: 'cloud nest', fog: [0.78, 0.86, 0.95] };
+DEN.emberden = { name: 'ember den', fog: [0.16, 0.05, 0.02] };
+DEN.lavatube = { name: 'lava tube', fog: [0.12, 0.04, 0.02] };
+for (const k of ['cloudnest', 'emberden', 'lavatube']) FLAT_DENS.add(k);
+ROOM_CEIL.cloudnest = 6; ROOM_CEIL.emberden = 5.5; ROOM_CEIL.lavatube = 5;
+HOME_BUILD.cloudnest = function (g, h, sp, add) {
+  g.position.y = h.y;
+  const stick = new THREE.MeshStandardMaterial({ color: 0x9a7a4a, roughness: 1 });
+  for (let i = 0; i < 34; i++) { const b = i / 34 * TAU * 2, r = 1.5 + (i % 3) * 0.1, st = add(new THREE.Mesh(G.cyl, stick), Math.cos(b) * r, 0.2 + (i % 4) * 0.12, Math.sin(b) * r); st.scale.set(0.06, 1.3, 0.06); st.rotation.set(0, -b, Math.PI / 2 + rr(-0.3, 0.3)); }
+  const puff = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, emissive: 0x9aa0b0, emissiveIntensity: 0.4 });
+  for (let i = 0; i < 7; i++) { const a = i / 7 * TAU, m = add(new THREE.Mesh(G.sphM, puff), Math.cos(a) * 1.1, 0.9 + (i % 2) * 0.2, Math.sin(a) * 1.1); m.scale.setScalar(0.7); }
+  const door = add(new THREE.Mesh(new THREE.CircleGeometry(0.45, 18), new THREE.MeshBasicMaterial({ color: 0xa8d0ff })), 0, 0.5, 1.7); door.scale.y = 1.1;
+};
+HOME_BUILD.emberden = function (g, h, sp, add) {
+  g.position.y = h.y;
+  const obs = new THREE.MeshStandardMaterial({ color: 0x18120e, roughness: 0.15, metalness: 0.5, flatShading: true, emissive: 0x300802 });
+  const m = add(new THREE.Mesh(new THREE.IcosahedronGeometry(1.4, 1), obs), 0, 0.5, -0.2); m.scale.set(1, 0.8, 1);
+  const door = add(new THREE.Mesh(new THREE.CircleGeometry(0.45, 18), new THREE.MeshBasicMaterial({ color: 0xff8030 })), 0, 0.45, 1.12); door.scale.y = 1.2;
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xff6020, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false })); glow.position.set(0, 0.6, 1.3); glow.scale.setScalar(3); g.add(glow);
+};
+HOME_BUILD.lavatube = function (g, h, sp, add) {
+  g.position.y = h.y;
+  const rock = new THREE.MeshStandardMaterial({ color: 0x2a1e18, roughness: 0.9, flatShading: true, emissive: 0x200602 });
+  const m = add(new THREE.Mesh(lumpyGeo(1, 0.3, h.x), rock), 0, 0.3, -0.4); m.scale.set(1.7, 1.0, 1.5);
+  const hole = add(new THREE.Mesh(new THREE.CircleGeometry(0.5, 16), new THREE.MeshBasicMaterial({ color: 0xff5010 })), 0, 0.42, 1.02); hole.scale.y = 1.1;
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xff4010, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false })); glow.position.set(0, 0.6, 1.2); glow.scale.setScalar(2.6); g.add(glow);
+};
+function simpleRoom(kind, o) {
+  const g = new THREE.Group(); scene.add(g); W.interiors[kind] = g;
+  rmFloor(g, rmCanvasTex(256, 256, (x, w, h) => { x.fillStyle = o.floor; x.fillRect(0, 0, w, h); for (let i = 0; i < 300; i++) { x.fillStyle = o.fleck(); x.fillRect(Math.random() * w, Math.random() * h, 3 + Math.random() * 8, 2 + Math.random() * 5); } }, [3, 3]));
+  const dome = rmMesh(g, new THREE.SphereGeometry(7, 28, 12, 0, TAU, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: o.wall, roughness: 0.9, side: THREE.BackSide, flatShading: true, emissive: o.wallGlow || 0x000000 }), 0, RY, 0, 1, 0.8, 1); dome.castShadow = false;
+  o.deco(g);
+  W.bedPos[kind] = { x: o.bed[0], z: o.bed[1], y: RY + o.bed[2] };
+  rmGlowDoor(g, o.door, 1.6, 2.4);
+  const l = new THREE.PointLight(o.light, 1.1, 16, 1.5); l.position.set(0, RY + 3.5, 0); g.add(l);
+  g.visible = false;
+}
+function buildLevelRooms() {
+  SEED = 3131;
+  simpleRoom('cloudnest', { floor: '#e8eef6', fleck: () => 'rgba(255,255,255,.8)', wall: 0x9ac4f0, wallGlow: 0x203850, door: 0xffffff, light: 0xfff4e0, bed: [2.4, -1.4, 0.55],
+    deco(g) {
+      const puff = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, emissive: 0xa0a8b8, emissiveIntensity: 0.5 });
+      for (let i = 0; i < 22; i++) { const a = rnd() * TAU, d = rr(4.5, 6.3); if (Math.abs(angDiff(a, 0)) < 0.5) continue; rmMesh(g, G.sphM, puff, Math.sin(a) * d, RY + rr(0.2, 1.2), Math.cos(a) * d, rr(0.7, 1.4), rr(0.5, 0.9), rr(0.7, 1.4)).castShadow = false; }
+      const stick = new THREE.MeshStandardMaterial({ color: 0x9a7a4a, roughness: 1 });
+      for (let i = 0; i < 26; i++) { const b = i / 26 * TAU, st = rmMesh(g, G.cyl, stick, 2.4 + Math.cos(b) * 1.1, RY + 0.25, -1.4 + Math.sin(b) * 1.1, 0.05, 1, 0.05); st.rotation.set(0, -b, Math.PI / 2); }
+      for (let i = 0; i < 9; i++) { const f = rmMesh(g, G.sphL, new THREE.MeshStandardMaterial({ color: [0x4a8ad0, 0xf4ecd8, 0x24508a][i % 3] }), rr(-4, 4), RY + rr(2.5, 4.5), rr(-4, 4), 0.06, 0.02, 0.4); f.rotation.set(rr(0, 3), rr(0, 3), 0); }
+    } });
+  simpleRoom('emberden', { floor: '#1a1210', fleck: () => 'rgba(' + (200 + Math.random() * 55) + ',' + (60 + Math.random() * 60) + ',10,.5)', wall: 0x1a1210, wallGlow: 0x2a0802, door: 0xff8030, light: 0xff9040, bed: [2.4, -1.2, 0.45],
+    deco(g) {
+      const coal = new THREE.MeshStandardMaterial({ color: 0x2a1a14, emissive: 0xff4010, emissiveIntensity: 0.9, flatShading: true });
+      for (let i = 0; i < 16; i++) rmMesh(g, lumpyGeo(0, 0.3, i), coal, 2.4 + rr(-0.9, 0.9), RY + 0.15, -1.2 + rr(-0.7, 0.7), rr(0.18, 0.32));
+      const cry = new THREE.MeshStandardMaterial({ color: 0xffa040, emissive: 0xff5010, emissiveIntensity: 1.3, flatShading: true });
+      for (let i = 0; i < 12; i++) { const a = rnd() * TAU, d = rr(4.5, 6); if (Math.abs(angDiff(a, 0)) < 0.5) continue; const m = rmMesh(g, new THREE.OctahedronGeometry(1, 0), cry, Math.sin(a) * d, RY + 0.5, Math.cos(a) * d, 0.25, 0.9, 0.25); m.rotation.z = rr(-0.4, 0.4); }
+    } });
+  simpleRoom('lavatube', { floor: '#2a1e18', fleck: () => 'rgba(' + (90 + Math.random() * 60) + ',40,20,.5)', wall: 0x2a1e18, wallGlow: 0x300a02, door: 0xff6020, light: 0xff7030, bed: [2.4, -1.2, 0.2],
+    deco(g) {
+      const lt = lavaTexture(); lt.repeat.set(2, 2); L_TUBE_TEX = lt;
+      const pool = rmMesh(g, new THREE.CircleGeometry(1.4, 28), new THREE.MeshStandardMaterial({ map: lt, emissiveMap: lt, emissive: 0xffffff, emissiveIntensity: 1 }), 2.4, RY + 0.06, -1.2); pool.rotation.x = -Math.PI / 2; pool.castShadow = false;
+      const pool2 = rmMesh(g, new THREE.CircleGeometry(1.6, 28), new THREE.MeshStandardMaterial({ map: lt, emissiveMap: lt, emissive: 0xffffff, emissiveIntensity: 1 }), -2.6, RY + 0.05, -2.2); pool2.rotation.x = -Math.PI / 2; pool2.castShadow = false;
+      const rock = new THREE.MeshStandardMaterial({ color: 0x2a1e18, roughness: 0.9, flatShading: true });
+      for (let i = 0; i < 10; i++) { const a = rnd() * TAU, d = rr(4.5, 6.2); if (Math.abs(angDiff(a, 0)) < 0.5) continue; rmMesh(g, lumpyGeo(1, 0.3, i), rock, Math.sin(a) * d, RY + 0.3, Math.cos(a) * d, rr(0.5, 1.1), rr(0.4, 0.9), rr(0.5, 1.1)); }
+    } });
+}
+let L_TUBE_TEX = null;
+function levelsTick(dt) {
+  fireBreathTick(dt);
+  if (L_TUBE_TEX && W.inBurrow) L_TUBE_TEX.offset.x += dt * 0.02;
+  const lv = curLevel(); SAVE.stats.levels = SAVE.stats.levels || [];
+  if (GAME.state === 'play' && !W.inBurrow && !SAVE.stats.levels.includes(lv)) { SAVE.stats.levels.push(lv); persist(); if (SAVE.stats.levels.length >= 4) unlockAch('allfour'); }
+}
+/* ============================================================
    Multiplayer servers (claude.ai live rooms)
    lobby presence: { hosting: "1234" } advertises a running server
    server room "pond-<n>" presence: this player's frog state
@@ -6216,7 +7302,7 @@ async function mpLeave(quiet) {
 }
 function mpState() {
   const p = PL.pos, st = PL.settled ? 's' : PL.diving ? 'd' : PL.inWater ? 'w' : PL.climbing ? 'c' : PL.onGround ? 'g' : 'a';
-  return { x: +p.x.toFixed(2), y: +p.y.toFixed(2), z: +p.z.toFixed(2), r: +PL.yaw.toFixed(2), sp: GAME.species, pt: GAME.pattern, sg: PL.stage, m: st, cr: MP.croakN, den: W.inBurrow ? 1 : 0, h: MP.hosting ? 1 : 0, t: +GAME.time.toFixed(2), wx: WEATHER.type, env: GAME.env, io: PL.insideOut ? 1 : 0, n: myName() };
+  return { x: +p.x.toFixed(2), y: +p.y.toFixed(2), z: +p.z.toFixed(2), r: +PL.yaw.toFixed(2), sp: GAME.species, pt: GAME.pattern, sg: PL.stage, m: st, cr: MP.croakN, den: W.inBurrow ? 1 : 0, h: MP.hosting ? 1 : 0, t: +GAME.time.toFixed(2), wx: WEATHER.type, env: GAME.env, io: PL.insideOut ? 1 : 0, lv: W.level || 'top', n: myName() };
 }
 function mpSend(force) {
   if (!MP.srv) return;
@@ -6274,7 +7360,7 @@ function mpTick(dt) {
   const meSea = PL.pos.x > SEA_EDGE;
   for (const r of MP.remotes.values()) {
     if (!r.root || !r.s) continue;
-    const s = r.s, visible = !s.den && !W.inBurrow && ((s.x > SEA_EDGE) === meSea);
+    const s = r.s, visible = !s.den && !W.inBurrow && ((s.x > SEA_EDGE) === meSea) && (s.lv || 'top') === (W.level || 'top');
     r.root.visible = visible; if (!visible) continue;
     if (r.F && r.F.setOut) r.F.setOut(!!s.io);
     const before = r.pos.clone();
@@ -6427,7 +7513,7 @@ function voiceLevel(an, buf) { an.getByteTimeDomainData(buf); let s = 0; for (le
 // place each voice where that player's frog is, and show a speaker icon above them while they talk
 function voiceUpdateRemote(r) {
   const v = VC.calls.get(r.peer); if (!v || !v.pn) return;
-  const s = r.s || {}, apart = !!s.den !== !!W.inBurrow || (s.x > SEA_EDGE) !== (PL.pos.x > SEA_EDGE) || (W.inBurrow && s.den);
+  const s = r.s || {}, apart = !!s.den !== !!W.inBurrow || (s.lv || 'top') !== (W.level || 'top') || (s.x > SEA_EDGE) !== (PL.pos.x > SEA_EDGE) || (W.inBurrow && s.den);
   setPos(v.pn, r.pos.x, r.pos.y + 0.5, r.pos.z);
   v.g.gain.value = apart ? 0 : (SAVE.settings.voiceVol === undefined ? 1 : SAVE.settings.voiceVol);
   const talking = !apart && voiceLevel(v.an, v.buf) > 0.03;
@@ -6469,8 +7555,8 @@ function updateWorldVisuals(dt) {
   _sd.set(Math.cos(ang) * 0.85, Math.sin(ang), 0.42).normalize(); _md.set(-Math.cos(ang) * 0.85, -Math.sin(ang), 0.3).normalize();
   const useSun = el > -0.04, dir = useSun ? _sd : _md, focus = W.inBurrow ? new V3(0, BURROW_Y, 0) : PL.pos;
   sun.position.copy(focus).addScaledVector(dir, 160); sun.target.position.copy(focus); sun.target.updateMatrixWorld();
-  const cl = wz.cloud, indoor = W.inBurrow ? 0.05 : W.inCave ? 0.4 : 1;
-  sun.intensity = (useSun ? 1.3 * dayK * (1 - cl * 0.65) : 0.24 * (1 - cl * 0.6) * smooth(-0.05, -0.3, el)) * (W.inBurrow ? 0 : 1);
+  const cl = wz.cloud, UGN = W.inCaves && !W.inBurrow, indoor = W.inBurrow ? 0.05 : UGN ? 0 : W.inCave ? 0.4 : 1;
+  sun.intensity = (useSun ? 1.3 * dayK * (1 - cl * 0.65) : 0.24 * (1 - cl * 0.6) * smooth(-0.05, -0.3, el)) * (W.inBurrow || UGN ? 0 : 1);
   sun.color.setRGB(1, 0.95, 0.86).lerp(_tmpC.setRGB(1, 0.62, 0.36), dawn * 0.8); if (!useSun) sun.color.setRGB(0.62, 0.72, 1);
   _top.setRGB(0.02, 0.035, 0.085).lerp(_tmpC.setRGB(0.24, 0.5, 0.86), dayK).lerp(_tmpC.setRGB(0.3, 0.36, 0.62), dawn * 0.6);
   _hor.setRGB(0.06, 0.09, 0.17).lerp(_tmpC.setRGB(0.66, 0.8, 0.9), dayK).lerp(_tmpC.setRGB(0.98, 0.6, 0.4), dawn * 0.75);
@@ -6480,9 +7566,9 @@ function updateWorldVisuals(dt) {
   if (WEATHER.flash > 0) { _top.lerp(_tmpC.setRGB(0.9, 0.92, 1), WEATHER.flash * 0.7); _hor.lerp(_tmpC.setRGB(0.9, 0.92, 1), WEATHER.flash * 0.6); }
   W.skyU.top.value.copy(_top); W.skyU.hor.value.copy(_hor); W.skyU.bot.value.copy(_hor).multiplyScalar(0.35); W.skyU.sunDir.value.copy(_sd); W.skyU.sunVis.value = dayK * (1 - cl * 0.9);
   W.sky.position.copy(camera.position);
-  W.sky.visible = W.stars.visible = !W.inBurrow; for (const c of W.clouds) c.visible = !W.inBurrow;
+  W.sky.visible = W.stars.visible = !W.inBurrow && !W.inCaves; for (const c of W.clouds) c.visible = !W.inBurrow && !W.inCaves; W.moon.visible = !W.inCaves;
   hemi.color.copy(_top).lerp(_tmpC.setRGB(1, 1, 1), 0.35); hemi.groundColor.setRGB(0.22, 0.2, 0.12).multiplyScalar(0.4 + dayK * 0.6);
-  hemi.intensity = (0.2 + 0.48 * dayK + WEATHER.flash * 1.6) * indoor + (W.inCave ? 0.08 : 0) + (W.inBurrow ? 0.18 : 0);
+  hemi.intensity = (0.2 + 0.48 * dayK + WEATHER.flash * 1.6) * indoor + (W.inCave ? 0.08 : 0) + (W.inBurrow ? 0.18 : 0) + (UGN ? 0.12 : 0);
   // fog
   const Q = QUALITY[SAVE.settings.quality];
   const fogAmt = clamp(wz.fog * 0.92 + wz.rain * 0.3, 0, 1);
@@ -6491,8 +7577,13 @@ function updateWorldVisuals(dt) {
   { const mk = regionFog(); if (mk > 0) { far = Math.min(far, lerp(far, 55, mk)); near = Math.min(near, far * 0.1); scene.fog.color.lerp(_tmpC.setRGB(0.5, 0.58, 0.48).multiplyScalar(0.35 + 0.65 * dayK), mk * 0.7); } }
   W.camUnder = !W.inBurrow && camera.position.y < waterLevelAt(camera.position.x, camera.position.z) - 0.03 && terrainH(camera.position.x, camera.position.z) < waterLevelAt(camera.position.x, camera.position.z);
   if (W.camUnder) { const murky = regionAt(camera.position.x, camera.position.z) === 'Muddy Marsh' ? 0.6 : 1; scene.fog.color.setRGB(0.06, 0.2, 0.19).multiplyScalar(0.3 + 0.7 * dayK); near = 0.4; far = (W.envFog > 1.5 ? 11 : 17) * murky + 6 * dayK; }
+  if (UGN && !W.camUnder && !W.inMantle) { scene.fog.color.setRGB(0.025, 0.03, 0.035); near = 4; far = SPECIES[GAME.species].caveSight ? 70 : 42; }
+  if (UGN && W.inMantle && !W.camUnder) { scene.fog.color.setRGB(0.16, 0.05, 0.02); near = 6; far = 80; }
+  if (UGN && W.inMantle && W.camUnder) { scene.fog.color.setRGB(1, 0.35, 0.05); near = 0.2; far = 5; }
+  if (W.inSky && !W.inBurrow) { far = Math.max(far, 420); near = Math.max(near, 60); }
+  if (UGN && W.camUnder && !W.inMantle) { scene.fog.color.setRGB(0.02, 0.07, 0.09); near = 0.5; far = SPECIES[GAME.species].caveSight ? 26 : 14; }
   if (W.inBurrow) { const fc = (DEN[W.denKind] || DEN.burrow).fog; scene.fog.color.setRGB(fc[0], fc[1], fc[2]); near = 6; far = 30; }
-  const atSea = PL.pos.x > SEA_EDGE; if (atSea && !W.camUnder) { near = 30; far = Math.min(far, 300); }
+  const atSea = PL.pos.x > SEA_EDGE && !W.offTop; if (atSea && !W.camUnder) { near = 30; far = Math.min(far, 300); }
   if (atSea !== !!W.seaShown) {
     W.seaShown = atSea;
     for (const o of W.mainWorld.concat(CREATURES.filter(c => !c.burrow).map(c => c.root))) { if (atSea) { o.userData.v = o.visible; o.visible = false; } else o.visible = o.userData.v !== false; }
@@ -6501,7 +7592,7 @@ function updateWorldVisuals(dt) {
   scene.fog.near = near; scene.fog.far = far;
   renderer.setClearColor(scene.fog.color);
   W.stars.material.opacity = (1 - dayK) * (1 - cl) * 0.95; W.stars.position.copy(camera.position);
-  W.moon.position.copy(camera.position).addScaledVector(_md, 600); W.moon.visible = _md.y > -0.05; W.moon.material.opacity = (1 - dayK) * (1 - cl * 0.8);
+  W.moon.position.copy(camera.position).addScaledVector(_md, 600); W.moon.visible = _md.y > -0.05 && !W.inCaves; W.moon.material.opacity = (1 - dayK) * (1 - cl * 0.8);
   const cb = 0.25 + 0.75 * dayK;
   for (const c of W.clouds) { c.position.x += dt * c.userData.v * (0.5 + wz.wind) * 2; if (c.position.x > 500) c.position.x -= 1000; c.material.opacity = 0.18 + cl * 0.7; c.material.color.setRGB(cb, cb, cb * 1.03).lerp(_tmpC.setRGB(0.32, 0.33, 0.36), cl * 0.6 * cb).lerp(_tmpC.setRGB(1, 0.7, 0.55), dawn * 0.4); }
   skyPaintT -= dt; if (skyPaintT <= 0) { skyPaintT = 1.2; paintSkyCube(_top, _hor, _tmpC.setRGB(0.12, 0.16, 0.1).multiplyScalar(0.3 + dayK)); }
@@ -6533,7 +7624,7 @@ function updateWorldVisuals(dt) {
     g.children.forEach(c => { if (c === u.roof || (c.geometry === G.sphL && c.position.y > u.roofY + 1)) { c.material.transparent = true; c.material.opacity = op; c.material.depthWrite = op === 1; } }); }
   if (W.inBurrow && W.burrowDust) { W.burrowDust.rotation.y = Math.sin(GAME.t * 0.05) * 0.05; W.burrowDust.position.y = Math.sin(GAME.t * 0.3) * 0.15; W.burrowLight.intensity = 0.6 + 1.1 * dayK; }
   // rain
-  const rain = W.inBurrow ? 0 : wz.rain;
+  const rain = W.inBurrow || W.offTop ? 0 : wz.rain;
   W.rain.visible = rain > 0.02;
   if (W.rain.visible) {
     const pa = W.rain.geometry.attributes.position.array, cp = camera.position, n = Math.floor(W.rainN * rain), t = GAME.t;
@@ -6575,6 +7666,7 @@ function updateCamera(dt) {
       const pt = target.clone().addScaledVector(L, -step * k);
       const g = W.inBurrow ? BURROW_Y + 0.4 : terrainH(pt.x, pt.z) + 0.25;
       if (pt.y < g) { d = step * (k - 1); break; }
+      if (W.inCaves && !W.inBurrow && (pt.y > caveCeilH(pt.x, pt.z) - 0.35 || caveRoom(pt.x, pt.z) < 1.2)) { d = step * (k - 1); break; }
     }
     const want = target.clone().addScaledVector(L, -Math.max(d, 0.6));
     if (!W.inBurrow) {
@@ -6582,7 +7674,8 @@ function updateCamera(dt) {
       if (!under && want.y < wl + 0.25 && target.y > wl) want.y = wl + 0.25;
       if (under && want.y > wl - 0.2) want.y = wl - 0.2;
       // inside the cave dome
-      const dc = Math.hypot(PL.pos.x - CAVE.x, PL.pos.z - CAVE.z);
+      const dc = W.inCaves ? 1e9 : Math.hypot(PL.pos.x - CAVE.x, PL.pos.z - CAVE.z);
+      if (W.inCaves) want.y = clamp(want.y, caveFloorH(want.x, want.z) + 0.25, Math.max(caveFloorH(want.x, want.z) + 0.3, caveCeilH(want.x, want.z) - 0.35));
       if (dc < CAVE_WALL) {
         const ox = want.x - CAVE.x, oz = want.z - CAVE.z, od = Math.hypot(ox, oz), lim = CAVE.r - 1.6;
         if (od > lim) { want.x = CAVE.x + ox / od * lim; want.z = CAVE.z + oz / od * lim; }
@@ -6644,9 +7737,9 @@ function drawMinimap() {
   c.clearRect(0, 0, N, N); c.save(); c.beginPath(); c.arc(R, R, R - 2, 0, TAU); c.clip();
   if (W.inBurrow) { c.fillStyle = '#2a1e14'; c.fillRect(0, 0, N, N); c.fillStyle = '#4a3624'; c.beginPath(); c.arc(R, R, BURROW_R * scale * 3, 0, TAU); c.fill(); c.fillStyle = '#ffd890'; c.beginPath(); c.arc(R + W.burrowExit.x * scale * 3, R + W.burrowExit.z * scale * 3, 7, 0, TAU); c.fill(); }
   else {
-    const M = PL.pos.x > SEA_EDGE ? W.seaMap : { img: mapImg, x0: -MAP_H, z0: -MAP_H, span: MAP_H * 2 };
+    const M = W.inCaves ? CL.map : W.inSky ? SKY.map : PL.pos.x > SEA_EDGE ? W.seaMap : { img: mapImg, x0: -MAP_H, z0: -MAP_H, span: MAP_H * 2 };
     const mi = M.img.width, span = N / scale, sx = (PL.pos.x - span / 2 - M.x0) / M.span * mi, sz = (PL.pos.z - span / 2 - M.z0) / M.span * mi, sw = span / M.span * mi;
-    c.fillStyle = PL.pos.x > SEA_EDGE ? '#1c5a8a' : '#3a4a30'; c.fillRect(0, 0, N, N);
+    c.fillStyle = W.inCaves ? '#161412' : W.inSky ? '#a8c8e8' : PL.pos.x > SEA_EDGE ? '#1c5a8a' : '#3a4a30'; c.fillRect(0, 0, N, N);
     c.drawImage(M.img, sx, sz, sw, sw, 0, 0, N, N);
     const pt = (wx, wz) => [R + (wx - PL.pos.x) * scale, R + (wz - PL.pos.z) * scale];
     const hpM = homePos(); if (hpM && PL.pos.x < SEA_EDGE) { const [x, y] = pt(hpM.x, hpM.z); c.fillStyle = '#f4c24d'; c.strokeStyle = '#13280f'; c.lineWidth = 2; c.beginPath(); c.arc(x, y, 7, 0, TAU); c.fill(); c.stroke(); }
@@ -6809,8 +7902,8 @@ function renderMenu() {
   } else if (menuTab === 'map') {
     B.innerHTML = '<canvas id="bigmap" width="768" height="768"></canvas><p class="note" style="text-align:center;margin-inline:auto">White arrow: you. Gold: home. Labels appear once you visit a region.</p>';
     const c = $('#bigmap').getContext('2d');
-    if (PL.pos.x > SEA_EDGE) {
-      const M = W.seaMap; c.fillStyle = '#1c5a8a'; c.fillRect(0, 0, 768, 768); c.drawImage(M.img, 0, 0, 768, 768);
+    if (PL.pos.x > SEA_EDGE || (W.offTop && !W.inBurrow)) {
+      const M = W.inCaves ? CL.map : W.inSky ? SKY.map : W.seaMap; c.fillStyle = W.inCaves ? '#161412' : W.inSky ? '#a8c8e8' : '#1c5a8a'; c.fillRect(0, 0, 768, 768); c.drawImage(M.img, 0, 0, 768, 768);
       const Q = (x, z) => [(x - M.x0) / M.span * 768, (z - M.z0) / M.span * 768];
       const [qx, qy] = Q(PL.pos.x, PL.pos.z); c.save(); c.translate(qx, qy); c.rotate(heading()); c.fillStyle = '#fff'; c.strokeStyle = '#000'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, -16); c.lineTo(11, 12); c.lineTo(0, 6); c.lineTo(-11, 12); c.closePath(); c.stroke(); c.fill(); c.restore();
       return;
@@ -6820,6 +7913,8 @@ function renderMenu() {
     const labels = { 'Lily Pond': [0, 0], 'Big Lake': [LAKE.x, LAKE.z], 'Babbling Stream': [-80, 25], 'Waterfall': [-125, 55], 'Pond Cave': [CAVE.x, CAVE.z - 18], 'Muddy Marsh': [MARSH.x, MARSH.z], 'Wildflower Meadow': [MEADOW.x + 12, MEADOW.z - 8], 'Fallen Giant': [40, 56], 'Hidden Burrow': [BURROW_ENT.x, BURROW_ENT.z - 6], 'Cypress Swamp': [SWAMP.x, SWAMP.z], 'Sand Dunes': [DUNES.x, DUNES.z + 14], 'Old Mill Pond': [MILL.x, MILL.z - 26], 'Rainforest': [RAIN.x, RAIN.z], 'Hot Springs': [HOTS.x, HOTS.z + 30], 'Mountain Tarn': [TARN.x, TARN.z - 28], 'Pitcher Plant Bog': [BOG.x, BOG.z - 30], 'Bamboo Grove': [BAMBOO.x, BAMBOO.z], 'The Mountains': [MOUNT.x, MOUNT.z + 50] };
     c.font = '700 20px Atkinson Hyperlegible, sans-serif'; c.textAlign = 'center';
     for (const r in labels) { if (!SAVE.stats.regions.includes(r)) continue; const [x, y] = P(labels[r][0], labels[r][1]); c.lineWidth = 4; c.strokeStyle = 'rgba(10,22,15,.8)'; c.strokeText(r, x, y); c.fillStyle = '#edf0d6'; c.fillText(r, x, y); }
+    if (SAVE.stats.skyVisit) for (const U of UPDRAFTS) { const [x, y] = P(U.x, U.z); c.fillStyle = '#ffffff'; c.strokeStyle = '#4a7ab0'; c.lineWidth = 3; c.beginPath(); c.arc(x, y, 6, 0, TAU); c.fill(); c.stroke(); }
+    if (SAVE.stats.ugVisit) for (const D of UG_DOORS) { const [x, y] = P(D.x, D.z); c.fillStyle = D.kind === 'sink' ? '#1a1410' : '#0a2a40'; c.strokeStyle = '#edf0d6'; c.lineWidth = 2; c.beginPath(); c.arc(x, y, 5, 0, TAU); c.fill(); c.stroke(); }
     const hpB = homePos(); if (hpB) { const [x, y] = P(hpB.x, hpB.z); c.fillStyle = '#f4c24d'; c.beginPath(); c.arc(x, y, 9, 0, TAU); c.fill(); }
     const [px, py] = W.inBurrow ? P(BURROW_ENT.x, BURROW_ENT.z) : P(PL.pos.x, PL.pos.z); c.save(); c.translate(px, py); c.rotate(heading()); c.fillStyle = '#fff'; c.strokeStyle = '#000'; c.lineWidth = 3; c.beginPath(); c.moveTo(0, -16); c.lineTo(11, 12); c.lineTo(0, 6); c.lineTo(-11, 12); c.closePath(); c.stroke(); c.fill(); c.restore();
   }
@@ -6865,7 +7960,7 @@ function renderPause() {
   on('#sDay', 'change', e => { s.dayLen = +e.target.value; persist(); });
   on('#sWx', 'change', e => { WEATHER.lock = e.target.value; if (e.target.value === 'auto') WEATHER.timer = 60; });
   on('#sTime', 'input', e => { GAME.time = +e.target.value; });
-  on('#pHome', 'click', () => { closePause(); fadeTo(() => { W.inBurrow = false; W.chamber.visible = false; const s2 = spawnPoint(); if (PL.stage <= 2) placePlayer(-14, 27, -0.6); else placePlayer(s2[0], s2[1], s2[2]); CAM.snap = true; }); });
+  on('#pHome', 'click', () => { closePause(); fadeTo(() => { W.inBurrow = false; W.chamber.visible = false; const s2 = spawnPoint(); if (PL.stage <= 2) { setCaves(false); placePlayer(-14, 27, -0.6); } else placePlayer(s2[0], s2[1], s2[2]); CAM.snap = true; }); });
   on('#pQuit', 'click', () => { saveRun(); closePause(); mpLeave(true); showTitle(); });
   on('#sName', 'change', e => { s.username = cleanName(e.target.value); e.target.value = s.username; persist(); mpSend(true); });
   on('#sVoice', 'change', e => voiceSetMode(e.target.value));
@@ -6962,7 +8057,7 @@ function setupInput() {
   const endLook = e => { for (const t of e.changedTouches) if (look && t.identifier === look.id) look = null; };
   cv.addEventListener('touchend', endLook); cv.addEventListener('touchcancel', endLook);
   document.querySelectorAll('#touch button').forEach(b => {
-    const k = b.dataset.k, hold = k === 'Space' || k === 'ShiftLeft' || k === 'KeyQ' || k === 'KeyE';
+    const k = b.dataset.k, hold = k === 'Space' || k === 'ShiftLeft' || k === 'KeyQ' || k === 'KeyE' || k === 'KeyG';
     b.addEventListener('touchstart', e => { e.preventDefault(); IN.touch = true; audioInit(); if (k === 'tongue') fireTongue(); else { if (!pressAction(k) || hold) IN.keys[k] = true; if (hold) IN.keys[k] = true; } });
     b.addEventListener('touchend', e => { e.preventDefault(); IN.keys[k] = false; });
   });
@@ -7024,14 +8119,15 @@ function tick(dt) {
   if (GAME.time >= 20 && GAME.time < 21) GAME.nightWatch = true;
   if (GAME.nightWatch && GAME.time >= 6 && GAME.time < 7) { GAME.nightWatch = false; SAVE.stats.nights++; unlockAch('night_owl'); }
   updateWeather(dt);
-  W.inCave = !W.inBurrow && Math.hypot(PL.pos.x - CAVE.x, PL.pos.z - CAVE.z) < CAVE_WALL;
-  updatePlayer(dt); seaTick(dt); denTick(dt); roomTick(dt); roomTick2(dt); fishRoomTick(dt); regionTick(dt); roomTick3(dt); pickupTick(dt); mpTick(dt); voiceTick(dt); updateTongue(dt); findAim(); findInteract(); digTick(dt);
+  W.inCave = !W.inBurrow && !W.offTop && Math.hypot(PL.pos.x - CAVE.x, PL.pos.z - CAVE.z) < CAVE_WALL;
+  updatePlayer(dt); caveTick(dt); telelaserTick(dt); levelsTick(dt); seaTick(dt); denTick(dt); roomTick(dt); roomTick2(dt); fishRoomTick(dt); regionTick(dt); roomTick3(dt); pickupTick(dt); mpTick(dt); voiceTick(dt); updateTongue(dt); findAim(); findInteract(); digTick(dt);
   if (PL.settled) GAME.time += dt * 24 / (SAVE.settings.dayLen * 60) * 6;
   updateInsects(dt);
   for (const c of CREATURES) {
     if (c._tgt && c._tgt.caught) continue;
     if (c.eatenT > 0 && c.kind !== 'frog' && c.kind !== 'treefrog') { c.eatenT -= dt; c.root.visible = false; if (c.eatenT <= 0) respawnPrey(c); continue; }
     if (c.ctrl || c.stuck) continue;
+    if (!c.burrow && (c.level || 'top') !== (W.level || 'top')) continue;
     c.update.call(c, dt);
   }
   updateNeeds(dt); updateGrowth(dt); updateDiscovery(dt); ambientOneShots(dt);
@@ -7077,12 +8173,14 @@ async function boot() {
     setLoad(0.5, 'Growing reeds and lily pads…'); await nextFrame();
     buildVegetation();
     setLoad(0.7, 'Placing logs, rocks and a secret or two…'); await nextFrame();
-    buildLandmarks(); buildRegions(); buildInteriors();
+    buildUGGrid(); buildLandmarks(); buildRegions(); buildCaveEntrances(); buildInteriors();
     const skyBits = new Set([W.sky, W.stars, W.moon, sun, sun.target, hemi, ...W.clouds]);
+    for (const k in W.interiors) skyBits.add(W.interiors[k]); if (W.chamber) skyBits.add(W.chamber);
     W.mainWorld = scene.children.filter(o => !skyBits.has(o) && !o.isLight);
+    buildUnderground();
     buildSea(); buildRipples(); buildTongue();
     setLoad(0.82, 'Waking up the wildlife…'); await nextFrame();
-    buildWildlife(); buildNewWildlife(); buildTelepathWild(); buildMindFX(); buildHomeFish(); buildHomes(); buildPickups();
+    buildWildlife(); buildNewWildlife(); buildTelepathWild(); buildMindFX(); buildHomeFish(); buildCaveLife(); buildLevelLife(); buildHomes(); buildPickups();
     buildMapImage(); hudInit();
     applyEnv(SAVE.last.env || 'summer');
     applyQuality();
