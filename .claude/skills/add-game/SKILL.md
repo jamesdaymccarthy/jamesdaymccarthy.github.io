@@ -59,11 +59,15 @@ Ask where the game is. It might be:
   (`cmp`/`diff`), and read `git log --stat` to see what was renamed or copied.
   Copy only the pages that are really used, and make the "front door" page
   `index.html` (fixing links to it). VeilCode is an example.
-- **Khan Academy (Processing.js).** Have them paste the code into a file. Wrap
-  it in an `index.html` that loads Processing.js 1.4.8 from cdnjs and runs the code inside
-  `new Processing(canvas, function(processingInstance) { with (processingInstance) { size(400, 400); frameRate(30); /* code */ } })`.
-  Khan Academy's `getImage(...)` and `getSound(...)` won't work outside Khan Academy.
-  If the code uses them, say so and help find a fix.
+- **Khan Academy (Processing.js).** Have them save the code as a `.js` file.
+  Move it to `games/<folder>/<name>.js`, then copy `games/puzzling/index.html`
+  and change the title and the `fetch("puzzling.js")` file name. That wrapper
+  loads Processing.js 1.4.8 and adds what Khan Academy secretly adds: angles in
+  degrees, 60 frames per second, `keyIsPressed`/`mouseIsPressed`. It also
+  stretches the 400x400 canvas to fill the window and fixes the mouse position
+  to match. Khan Academy's `getImage(...)` and `getSound(...)` won't work
+  outside Khan Academy. If the code uses them, say so and help find a fix.
+  For the card, zoom in on the canvas with an iframe page (Puzzling's card did this).
 - **Scratch.** Best option: they download the `.sb3` (File → Save to your
   computer), then go to https://packager.turbowarp.org, load it, choose
   "Plain HTML", and package it. The resulting `.html` becomes `index.html`.

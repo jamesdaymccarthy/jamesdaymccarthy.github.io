@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Puzzling</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/processing.js/1.4.8/processing.min.js"></script>
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #1a1c2c; }
+  /* Stretch the 400x400 game to fill the window (but keep it square) */
+  canvas { outline: none; width: min(100vw, 100vh) !important; height: min(100vw, 100vh) !important; }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<script>
+// The canvas is stretched, but the game thinks it's 400x400. So before the game
+// sees a mouse event, we shrink the mouse position by the same amount.
+const canvas = document.getElementById("game");
+for (const type of ["mousedown", "mousemove", "mouseup", "click", "dblclick"]) {
+  window.addEventListener(type, event => {
+    if (!event.isTrusted) return;  // it's one of our shrunk copies, let it through
+    event.stopImmediatePropagation();
+    const box = canvas.getBoundingClientRect();
+    const stretch = box.width / 400;
+    event.target.dispatchEvent(new MouseEvent(type, {
+      bubbles: true, cancelable: true, view: window,
+      button: event.button, buttons: event.buttons,
+      shiftKey: event.shiftKey, ctrlKey: event.ctrlKey, altKey: event.altKey, metaKey: event.metaKey,
+      clientX: box.left + (event.clientX - box.left) / stretch,
+      clientY: box.top + (event.clientY - box.top) / stretch,
+    }));
+  }, true);
+}
+
+// The game is Khan Academy code (Processing.js). Khan Academy adds a few
+// extras that plain Processing.js doesn't have, so we add them here.
+fetch("puzzling.js")
+  .then(response => response.text())
+  .then(code => {
+    const runGame = new Function("processingInstance",
+      "with (processingInstance) {\n" + code + "\n}");
+
+    new Processing(document.getElementById("game"), p => {
+      p.size(400, 400);
+      p.frameRate(60);  // Khan Academy runs at 60 frames per second
+
+      // Khan Academy measures angles in degrees (0-360), Processing.js in radians.
+      const rad = a => a * Math.PI / 180;
+      const deg = a => a * 180 / Math.PI;
+      p.sin = a => Math.sin(rad(a));
+      p.cos = a => Math.cos(rad(a));
+      p.tan = a => Math.tan(rad(a));
+      p.asin = x => deg(Math.asin(x));
+      p.acos = x => deg(Math.acos(x));
+      p.atan = x => deg(Math.atan(x));
+      p.atan2 = (y, x) => deg(Math.atan2(y, x));
+      const rotate = p.rotate, arc = p.arc;
+      p.rotate = a => rotate(rad(a));
+      p.arc = (x, y, w, h, start, stop) => arc(x, y, w, h, rad(start), rad(stop));
+
+      // Khan Academy calls these keyIsPressed and mouseIsPressed.
+      Object.defineProperty(p, "keyIsPressed", { get: () => p.__keyPressed });
+      Object.defineProperty(p, "mouseIsPressed", { get: () => p.__mousePressed });
+
+      p.textFont(p.createFont("Arial"), 12);
+      runGame(p);
+    });
+  });
+</script>
+</body>
+</html>
