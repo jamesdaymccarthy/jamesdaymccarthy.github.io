@@ -44,12 +44,8 @@ Dates are written `YYYY-MM-DD` (ISO 8601) so sorting them like words also sorts 
 
 ## To do later
 
-- [ ] **Growing Forest card:** play until the forest looks awesome, press Print
-  Screen, and select the game. Then ask Claude to make it the card.
-- [ ] **Wild Bunny label:** in PICO-8, `load wild_bunny`, `run`, press **F7** at a
-  cool moment, then Esc and `save`. Then ask Claude to add it. Card info is ready:
-  "Wild Bunny", not a fave, 2026-09-24, "You are a bunny doing something but I
-  haven't figured out the plot of the game yet"
+- [x] **Growing Forest card:** done! Snakes battling under the trees.
+- [x] **Wild Bunny label:** done! Added to the site on 2026-10-25.
 - [ ] **Image Mashup card:** make a funny "strange abomination" and Print Screen it
   for the card. The site is public, so use animals, cartoons, or my own face,
   not a friend's photo without asking them.
