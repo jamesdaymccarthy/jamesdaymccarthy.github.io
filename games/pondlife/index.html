@@ -474,7 +474,7 @@ const SPECIES = {
 const UNLOCK_MAP = { spadefoot: 'spadefoot', glassfrog: 'glass', redeye: 'redeye', flyingfrog: 'flying', hornedfrog: 'cannibal', tinyfrog: 'tiny', goliathfrog: 'goliath', insiderfrog: 'insider', telefrog: 'telepath', hotspringfrog: 'hotspring', swampfrog: 'swamp', desertfrog: 'desert', cavefrog: 'cavefrog', birdfrog: 'bird', firefrog: 'fire', lavafrog: 'lava' };
 // the Insider Frog's other side: a completely different set of abilities
 const INSIDE_OUT = Object.assign({}, SPECIES.insider, { name: 'Insider Frog (inside out)', tongue: 0, climb: true, swim: 1.75, speed: 0.9, jump: 0.9, dry: 3.2, armor: 1.4, toxic: true, croak: 'insiderOut' });
-const SPECIES_UNLOCK = { spadefoot: 'Find the Spadefoot Toad sleeping in the hidden burrow.', glass: 'Find the Glass Frog at the waterfall at night.', redeye: 'Find the Red-eyed Tree Frog where mushrooms glow.', flying: 'Spot the Flying Frog flying between the treetops near the old oak.', cannibal: 'Find the Horned Frog lurking half-buried in the Muddy Marsh.', tiny: 'Peek closely into the water lily flowers on the Lily Pond.', goliath: 'Something enormous lurks in the cold Mountain Tarn. Watch the water closely, or try calling to it.', hotspring: 'Find the warm orange frog basking at the edge of a hot spring.', telepath: 'At night, two glowing eyes watch from the top of a stone lantern in the Bamboo Grove.', swamp: 'Listen for grunting in the Cypress Swamp and find the frog making it.', desert: 'Something tiny squeaks among the dunes near the sandstone arch.', insider: 'Something in the Pitcher Plant Bog does not look quite right. Search closely among the red moss.', cavefrog: 'Deep in the Underground, by a still black lake far from any way in, something pale is calling.', bird: "High above the world, in Heron's Domain, something blue sings on a tiny island northwest of the big heron rookery, at the far left edge of the middle group of islands. Ride a whirlwind up to find it.", fire: 'Deep in the Mantle, something small and blazing sits at the edge of the lava.', lava: 'In the lava lakes of the Mantle, two glowing eyes poke up out of the molten rock.' };
+const SPECIES_UNLOCK = { spadefoot: 'Find the Spadefoot Toad sleeping in the hidden burrow.', glass: 'Find the Glass Frog at the waterfall at night.', redeye: 'Find the Red-eyed Tree Frog where mushrooms glow.', flying: 'Spot the Flying Frog flying between the treetops near the old oak.', cannibal: 'Find the Horned Frog lurking half-buried in the Muddy Marsh.', tiny: 'Peek closely into the water lily flowers on the Lily Pond.', goliath: 'Something enormous lurks in the cold Mountain Tarn. Watch the water closely, or try calling to it.', hotspring: 'Find the warm orange frog basking at the edge of a hot spring.', telepath: 'At night, two glowing eyes watch from the top of a stone lantern in the Bamboo Grove.', swamp: 'Listen for grunting in the Cypress Swamp and find the frog making it.', desert: 'Something tiny squeaks among the dunes near the sandstone arch.', insider: 'Something in the Pitcher Plant Bog does not look quite right. Search closely among the red moss.', cavefrog: 'Deep in the Underground, by a still black lake far from any way in, something pale is calling.', bird: "High above the world, in Heron's Domain, something blue sings on a tiny island west-northwest of the big heron rookery, at the far left edge of the middle group of islands. Ride a whirlwind up to find it.", fire: 'Deep in the Mantle, something small and blazing sits at the edge of the lava.', lava: 'In the lava lakes of the Mantle, two glowing eyes poke up out of the molten rock.' };
 
 const PATTERNS = {
   classic: { name: 'Classic', how: 'Starter pattern' },
@@ -524,7 +524,7 @@ const GUIDE = {
   turtle: { name: 'Painted Turtle', cat: 'Reptile', desc: 'Basks on rocks and slips into the water if startled. A swimming turtle will carry a small frog.', hint: 'Sunny rocks and logs.' },
   heron: { name: 'Grey Heron', cat: 'Predator', desc: 'Stalks the shallows on stilt legs. When its neck pulls back into an S, a strike is coming. Dive or hide in reeds.', hint: 'Visits by day.' },
   cavefrog: { name: 'Cave Frog', cat: 'Rare amphibian', desc: 'A pale frog that has lived in the dark so long it has lost its colour. It calls with an echoing plink across underground lakes.', hint: 'Lives by an underground lake, as far as it can get from daylight.' },
-  birdfrog: { name: 'Bird Frog', cat: 'Rare amphibian', desc: 'A blue frog with real feathers and wings. It nests on the floating islands of Heron\'s Domain, right under the herons\' beaks.', hint: 'Sings on a tiny island northwest of the big heron rookery, at the far left edge of the middle group of islands.' },
+  birdfrog: { name: 'Bird Frog', cat: 'Rare amphibian', desc: 'A blue frog with real feathers and wings. It nests on the floating islands of Heron\'s Domain, right under the herons\' beaks.', hint: 'Sings on a tiny island west-northwest of the big heron rookery, at the far left edge of the middle group of islands.' },
   firefrog: { name: 'Fire Frog', cat: 'Rare amphibian', desc: 'A frog that is actually on fire. It basks by the lava lakes of the Mantle and hisses if it gets wet.', hint: 'Basks at the edge of the lava, deep in the Mantle.' },
   lavafrog: { name: 'Lava Frog', cat: 'Rare amphibian', desc: 'A rock-crusted frog with glowing cracks that swims in molten lava.', hint: 'Swims in a lava lake in the Mantle.' },
   cavefish: { name: 'Blind Cave Fish', cat: 'Fish', desc: 'A see-through pinkish fish with no eyes at all. It finds its way through flooded caves by feeling the water move.', hint: 'Swims in the underground lakes.' },
@@ -7064,12 +7064,21 @@ function buildLevelLife() {
   }
   // the Fire Frog basks on a ledge right at the edge of the lava; the Lava Frog swims in a lava lake
   CL = MANTLE;
+  // which dry rock can you actually walk to from the steam vents without touching lava?
+  const L = MANTLE, n = L.n, N = n * n, reach = new Uint8Array(N), q = new Int32Array(N); let qh = 0, qt = 0;
+  const walk = k => L.open[k] > 1.6 && L.floor[k] > L.water + 0.1;
+  const cell = (x, z) => clamp(Math.round((z + L.half) / L.res), 0, n - 1) * n + clamp(Math.round((x + L.half) / L.res), 0, n - 1);
+  for (const D of MAGMA_VENTS) { const k = cell(D.x, D.z); if (!reach[k]) { reach[k] = 1; q[qt++] = k; } }
+  while (qh < qt) { const k = q[qh++], i = k % n, j = (k - i) / n; for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const a = i + di, b = j + dj; if (a < 1 || b < 1 || a >= n - 1 || b >= n - 1) continue; const kk = b * n + a; if (!reach[kk] && walk(kk)) { reach[kk] = 1; q[qt++] = kk; } } }
+  const canWalk = (x, z) => { const fx = (x + L.half) / L.res, fz = (z + L.half) / L.res, i = Math.floor(fx), j = Math.floor(fz); for (let dj = 0; dj < 2; dj++) for (let di = 0; di < 2; di++) if (!reach[(j + dj) * n + i + di]) return false; return true; };
+  const shoreNear = (x, z, r) => { for (let a = 0; a < TAU; a += 0.4) for (let d = 2; d <= r; d += 2) if (canWalk(x + Math.cos(a) * d, z + Math.sin(a) * d)) return true; return false; };
+  MANTLE.canWalk = canWalk;
   let ledge = null, lake = null;
-  for (let k = 0; k < 20000 && (!ledge || !lake); k++) {
+  for (let k = 0; k < 40000 && (!ledge || !lake); k++) {
     const x = rr(-MANTLE.half + 20, MANTLE.half - 20), z = rr(-MANTLE.half + 20, MANTLE.half - 20); if (caveRoom(x, z) < 6) continue;
     const f = caveFloorH(x, z), far = MAGMA_VENTS.every(D => Math.hypot(D.x - x, D.z - z) > 60);
-    if (!ledge && far && f > MANTLE.water + 0.2 && f < MANTLE.water + 0.9 && caveFloorH(x + 4, z) < MANTLE.water - 0.5) ledge = [x, z, f];
-    if (!lake && far && f < MANTLE.water - 2 && caveFloorH(x + 3, z) < MANTLE.water - 1.5 && caveFloorH(x - 3, z) < MANTLE.water - 1.5) lake = [x, z];
+    if (!ledge && far && f > MANTLE.water + 0.2 && f < MANTLE.water + 0.9 && caveFloorH(x + 4, z) < MANTLE.water - 0.5 && canWalk(x, z) && canWalk(x - 2, z) && canWalk(x - 4, z)) ledge = [x, z, f];
+    if (!lake && far && f < MANTLE.water - 2 && caveFloorH(x + 3, z) < MANTLE.water - 1.5 && caveFloorH(x - 3, z) < MANTLE.water - 1.5 && shoreNear(x, z, 7)) lake = [x, z];
   }
   if (ledge) {
     const F = makeFrog('fire', 'classic'); F.root.scale.setScalar(0.8); F.root.position.set(ledge[0], ledge[2], ledge[1]); F.root.visible = false;
@@ -7080,11 +7089,13 @@ function buildLevelLife() {
     }, { F, level: 'mantle', ct: 2, seeR: 10 });
   }
   if (lake) {
-    const F = makeFrog('lava', 'classic'); const hx = lake[0], hz = lake[1]; F.root.position.set(hx, MANTLE.water - 0.2, hz); F.root.visible = false;
+    const F = makeFrog('lava', 'classic'); const hx = lake[0], hz = lake[1]; F.root.position.set(hx, MANTLE.water, hz); F.root.visible = false;
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xffe0a0, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })); halo.position.y = 0.5; halo.scale.setScalar(2.4); F.root.add(halo);
+    const ll = new THREE.PointLight(0xffd080, 0.8, 8, 1.5); ll.position.y = 1.2; F.root.add(ll);
     makeCreature('rare', 'lavafrog', F.root, function (dt) {
       const k = this; k.t += dt; k.ct -= dt; if (k.ct <= 0) { k.ct = mr(6, 12); k.croakT = 0.8; if (F.root.position.distanceTo(PL.pos) < 45) SFX.croak('lava', F.root.position.clone()); }
       k.croakT = Math.max(0, (k.croakT || 0) - dt);
-      const a = k.t * 0.15, x = hx + Math.cos(a) * 3, z = hz + Math.sin(a) * 3; F.root.position.set(x, MANTLE.water - 0.25 + Math.sin(k.t * 1.3) * 0.08, z); F.root.rotation.y = -a;
+      const a = k.t * 0.15, x = hx + Math.cos(a) * 3, z = hz + Math.sin(a) * 3; F.root.position.set(x, MANTLE.water + 0.05 + Math.sin(k.t * 1.3) * 0.06, z); F.root.rotation.y = -a;
       frogPose(F, { swim: k.t * 3 }); frogAnimate(F, dt, { croak: k.croakT });
     }, { F, level: 'mantle', ct: 3, seeR: 11 });
   }
@@ -7579,7 +7590,7 @@ function updateWorldVisuals(dt) {
   if (W.camUnder) { const murky = regionAt(camera.position.x, camera.position.z) === 'Muddy Marsh' ? 0.6 : 1; scene.fog.color.setRGB(0.06, 0.2, 0.19).multiplyScalar(0.3 + 0.7 * dayK); near = 0.4; far = (W.envFog > 1.5 ? 11 : 17) * murky + 6 * dayK; }
   if (UGN && !W.camUnder && !W.inMantle) { scene.fog.color.setRGB(0.025, 0.03, 0.035); near = 4; far = SPECIES[GAME.species].caveSight ? 70 : 42; }
   if (UGN && W.inMantle && !W.camUnder) { scene.fog.color.setRGB(0.16, 0.05, 0.02); near = 6; far = 80; }
-  if (UGN && W.inMantle && W.camUnder) { scene.fog.color.setRGB(1, 0.35, 0.05); near = 0.2; far = 5; }
+  if (UGN && W.inMantle && W.camUnder) { scene.fog.color.setRGB(0.5, 0.13, 0.03); near = 1; far = 22; }
   if (W.inSky && !W.inBurrow) { far = Math.max(far, 420); near = Math.max(near, 60); }
   if (UGN && W.camUnder && !W.inMantle) { scene.fog.color.setRGB(0.02, 0.07, 0.09); near = 0.5; far = SPECIES[GAME.species].caveSight ? 26 : 14; }
   if (W.inBurrow) { const fc = (DEN[W.denKind] || DEN.burrow).fog; scene.fog.color.setRGB(fc[0], fc[1], fc[2]); near = 6; far = 30; }
