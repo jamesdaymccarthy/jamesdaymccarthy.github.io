@@ -253,7 +253,7 @@ select { background: var(--panel-2); color: var(--ink); border: 1px solid var(--
         <span class="kbd">C</span><p>Switch first and third person.</p>
         <span class="kbd">Q</span><p>Sneak (lower and quieter). Underwater: swim down.</p>
         <span class="kbd">X</span><p>Rest to recover energy.</p>
-        <span class="kbd">V</span><p>Insider Frog: turn yourself inside out, or turn a creature next to you inside out so it sticks to you. Telepathic Frog: take over the mind of a nearby creature. Fire Frog: breathe fire.</p>
+        <span class="kbd">V</span><p>Insider Frog: turn yourself inside out, or turn a creature next to you inside out so it sticks to you. Telepathic Frog: take over the mind of a nearby creature. Fire Frog: breathe fire. QWERTY Frog: type a magic word.</p>
         <span class="kbd">G</span><p>Telepathic Frog: hold to fire the telelaser. It discovers the nearest frog you have not found yet, but makes you lose a random one of your other frogs.</p>
         <span class="kbd">Z</span><p>Insider Frog: shake off everything stuck to you.</p>
         <span class="kbd">B</span><p>Multiplayer: hold to talk (when voice chat is set to push to talk).</p>
@@ -468,12 +468,18 @@ const SPECIES = {
     desc: 'A frog of living gold, born from lava poured over the Worm Idol in the Temple of The Worm. Its metal skin takes only half the damage, heat cannot hurt it, and every bug it eats is worth double. It is heavy, so it swims badly.', habitat: 'Temple of The Worm', ability: 'Half damage; heatproof; bugs are worth double' },
   worm: { name: 'Worm Frog', size: 0.8, jump: 0.8, swim: 1.0, speed: 0.95, tongue: 3.6, climb: false, wormy: true, burrower: true, hunger: 0.9, dry: 0.5, armor: 0.9,
     color: 0xe0909a, belly: 0xf4c8c8, spot: 0xb05a6a, eye: 0x2a0a10, throat: 0xf0b0b0, croak: 'lava',
-    desc: 'A long, squishy, pink frog that lives inside the Great Worm and has started to look like it. Press F almost anywhere to wriggle down into the ground and hide, and it hardly ever dries out. Snakes, pike and beetles think it is just a worm and leave it alone. Only herons hunt it, and snakes love it so much that they follow it around and chase herons away.', habitat: 'Inside the Great Worm', ability: 'F: burrow anywhere; only herons hunt it' }
+    desc: 'A long, squishy, pink frog that lives inside the Great Worm and has started to look like it. Press F almost anywhere to wriggle down into the ground and hide, and it hardly ever dries out. Snakes, pike and beetles think it is just a worm and leave it alone. Only herons hunt it, and snakes love it so much that they follow it around and chase herons away.', habitat: 'Inside the Great Worm', ability: 'F: burrow anywhere; only herons hunt it' },
+  poop: { name: 'Poop Frog', size: 0.8, jump: 0.9, swim: 0.8, speed: 0.95, tongue: 3.8, climb: false, stinky: true, toxic: true, hunger: 0.8, dry: 0.5, armor: 1,
+    color: 0x6a4424, belly: 0x8a6a40, spot: 0x4a2c14, eye: 0xd8c040, throat: 0x9a7a50, croak: 'poop',
+    desc: 'A brown, lumpy frog that lives in a pile of poop at the very end of the Great Worm. It smells so bad that nothing wants to eat it, and a cloud of flies follows it everywhere: free snacks! Its tongue is extra long from catching them.', habitat: 'The poop pile at the end of the Worm', ability: 'Too stinky to eat; flies follow it around' },
+  qwerty: { name: 'QWERTY Frog', size: 0.8, jump: 1.0, swim: 1.0, speed: 1.0, tongue: 3.2, climb: false, qwerty: true, hunger: 1, dry: 1, armor: 1,
+    color: 0x8a8e94, belly: 0xe0e0dc, spot: 0x5a5e64, eye: 0x101010, throat: 0xd0d0cc, croak: 'qwerty',
+    desc: "A pale grey frog with real keyboard keys on its back, from a secret island in the very corner of Heron's Domain. Press V and type a magic word, and it happens! Try JUMP, FLOAT, BUGS, DAY, NIGHT, RAIN, SUN, HEAL, HOME, SKY, TOP, UNDERGROUND or MANTLE.", habitat: "A secret island in the corner of Heron's Domain", ability: 'V: type a magic word and it comes true' }
 };
-const UNLOCK_MAP = { spadefoot: 'spadefoot', glassfrog: 'glass', redeye: 'redeye', flyingfrog: 'flying', hornedfrog: 'cannibal', tinyfrog: 'tiny', goliathfrog: 'goliath', insiderfrog: 'insider', telefrog: 'telepath', hotspringfrog: 'hotspring', swampfrog: 'swamp', desertfrog: 'desert', cavefrog: 'cavefrog', birdfrog: 'bird', firefrog: 'fire', lavafrog: 'lava', goldenfrog: 'golden', wormfrog: 'worm' };
+const UNLOCK_MAP = { spadefoot: 'spadefoot', glassfrog: 'glass', redeye: 'redeye', flyingfrog: 'flying', hornedfrog: 'cannibal', tinyfrog: 'tiny', goliathfrog: 'goliath', insiderfrog: 'insider', telefrog: 'telepath', hotspringfrog: 'hotspring', swampfrog: 'swamp', desertfrog: 'desert', cavefrog: 'cavefrog', birdfrog: 'bird', firefrog: 'fire', lavafrog: 'lava', goldenfrog: 'golden', wormfrog: 'worm', poopfrog: 'poop', qwertyfrog: 'qwerty' };
 // the Insider Frog's other side: a completely different set of abilities
 const INSIDE_OUT = Object.assign({}, SPECIES.insider, { name: 'Insider Frog (inside out)', tongue: 0, climb: true, swim: 1.75, speed: 0.9, jump: 0.9, dry: 3.2, armor: 1.4, toxic: true, croak: 'insiderOut' });
-const SPECIES_UNLOCK = { spadefoot: 'Find the Spadefoot Toad sleeping in the hidden burrow.', glass: 'Find the Glass Frog at the waterfall at night.', redeye: 'Find the Red-eyed Tree Frog where mushrooms glow.', flying: 'Spot the Flying Frog flying between the treetops near the old oak.', cannibal: 'Find the Horned Frog lurking half-buried in the Muddy Marsh.', tiny: 'Peek closely into the water lily flowers on the Lily Pond.', goliath: 'Something enormous lurks in the cold Mountain Tarn. Watch the water closely, or try calling to it.', hotspring: 'Find the warm orange frog basking at the edge of a hot spring.', telepath: 'At night, two glowing eyes watch from the top of a stone lantern in the Bamboo Grove.', swamp: 'Listen for grunting in the Cypress Swamp and find the frog making it.', desert: 'Something tiny squeaks among the dunes near the sandstone arch.', insider: 'Something in the Pitcher Plant Bog does not look quite right. Search closely among the red moss.', cavefrog: 'Deep in the Underground, by a still black lake far from any way in, something pale is calling.', bird: "High above the world, in Heron's Domain, something blue sings on a tiny island west-northwest of the big heron rookery, at the far left edge of the middle group of islands. Ride a whirlwind up to find it.", fire: 'Deep in the Mantle, something small and blazing sits at the edge of the lava.', lava: 'In the lava lakes of the Mantle, two glowing eyes poke up out of the molten rock.', golden: 'The altar at the top of the Temple of The Worm is empty. What belongs there was swallowed long ago.', worm: 'Something pink and squishy lives deep inside the Great Worm. Jump into its mouth to find it.' };
+const SPECIES_UNLOCK = { spadefoot: 'Find the Spadefoot Toad sleeping in the hidden burrow.', glass: 'Find the Glass Frog at the waterfall at night.', redeye: 'Find the Red-eyed Tree Frog where mushrooms glow.', flying: 'Spot the Flying Frog flying between the treetops near the old oak.', cannibal: 'Find the Horned Frog lurking half-buried in the Muddy Marsh.', tiny: 'Peek closely into the water lily flowers on the Lily Pond.', goliath: 'Something enormous lurks in the cold Mountain Tarn. Watch the water closely, or try calling to it.', hotspring: 'Find the warm orange frog basking at the edge of a hot spring.', telepath: 'At night, two glowing eyes watch from the top of a stone lantern in the Bamboo Grove.', swamp: 'Listen for grunting in the Cypress Swamp and find the frog making it.', desert: 'Something tiny squeaks among the dunes near the sandstone arch.', insider: 'Something in the Pitcher Plant Bog does not look quite right. Search closely among the red moss.', cavefrog: 'Deep in the Underground, by a still black lake far from any way in, something pale is calling.', bird: "High above the world, in Heron's Domain, something blue sings on a tiny island west-northwest of the big heron rookery, at the far left edge of the middle group of islands. Ride a whirlwind up to find it.", fire: 'Deep in the Mantle, something small and blazing sits at the edge of the lava.', lava: 'In the lava lakes of the Mantle, two glowing eyes poke up out of the molten rock.', golden: 'The altar at the top of the Temple of The Worm is empty. What belongs there was swallowed long ago.', worm: 'Something pink and squishy lives deep inside the Great Worm. Jump into its mouth to find it.', poop: 'At the very end of the Great Worm\'s tail there is a stinking pile. Something lives in it.', qwerty: "In the very corner of Heron's Domain, a faint trail of clouds leads to an island no one can see. Something there is clicking." };
 
 const PATTERNS = {
   classic: { name: 'Classic', how: 'Starter pattern' },
@@ -482,7 +488,7 @@ const PATTERNS = {
   speckled: { name: 'Speckled', how: 'Achievement: Full Menu' },
   moss: { name: 'Moss', how: 'Achievement: Metamorphosis' },
   melanistic: { name: 'Melanistic', how: 'Achievement: Storm Chaser' },
-  golden: { name: 'Golden', how: 'Achievement: Field Guide Complete' }
+  golden: { name: 'Golden', how: 'Achievement: Pond Chorus (answer 5 frogs with your croak)' }
 };
 
 const ENVS = {
@@ -525,6 +531,8 @@ const GUIDE = {
   birdfrog: { name: 'Bird Frog', cat: 'Rare amphibian', desc: 'A blue frog with real feathers and wings. It nests on the floating islands of Heron\'s Domain, right under the herons\' beaks.', hint: 'Sings on a tiny island west-northwest of the big heron rookery, at the far left edge of the middle group of islands.' },
   firefrog: { name: 'Fire Frog', cat: 'Rare amphibian', desc: 'A frog that is actually on fire. It basks by the lava lakes of the Mantle and hisses if it gets wet.', hint: 'Basks at the edge of the lava, deep in the Mantle.' },
   lavafrog: { name: 'Lava Frog', cat: 'Rare amphibian', desc: 'A rock-crusted frog with glowing cracks that swims in molten lava.', hint: 'Swims in a lava lake in the Mantle.' },
+  qwertyfrog: { name: 'QWERTY Frog', cat: 'Rare amphibian', desc: 'A frog with a keyboard growing on its back. It sits alone on a secret island in the clouds, clicking away. Some say whatever it types comes true.', hint: "Look for a faint trail of clouds in the very corner of Heron's Domain." },
+  poopfrog: { name: 'Poop Frog', cat: 'Rare amphibian', desc: 'A lumpy brown frog that lives in the poop pile at the end of the Great Worm. It pokes its head out of the top to catch flies.', hint: 'Lives in the poop pile at the very end of the Worm\'s tail.' },
   wormfrog: { name: 'Worm Frog', cat: 'Rare amphibian', desc: 'A long pink frog that lives in the belly of the Great Worm, eating whatever the Worm swallows. It has started to look a bit like a worm itself.', hint: 'Lives inside the Great Worm.' },
   goldenfrog: { name: 'Golden Frog', cat: 'Legend', desc: 'A frog made of living gold. It only appears when the Worm Idol is put back on its altar and the temple pours lava over it.', hint: 'The empty altar in the Temple of The Worm is waiting for something.' },
   greatworm: { name: 'The Great Worm', cat: 'Legend', desc: 'A worm as long as a river, pale and ringed, with a round mouth full of teeth. It circles its temple deep in the Mantle forever, and sometimes rears up and roars at the ceiling. Nobody knows who built the temple for it.', hint: 'Circles its temple in the middle of the Mantle.' },
@@ -564,14 +572,17 @@ const ACH = {
   storm: { name: 'Storm Chaser', desc: 'Be outside during a thunderstorm.', reward: ['pattern', 'melanistic'] },
   hitchhiker: { name: 'Hitchhiker', desc: 'Ride a turtle.' },
   naturalist: { name: 'Naturalist', desc: 'Record 15 field guide entries.', reward: ['env', 'bog'] },
-  complete: { name: 'Field Guide Complete', desc: 'Study every species in the guide.', reward: ['pattern', 'golden'] },
+  complete: { name: 'Field Guide Complete', desc: 'Study every species in the guide.' },
   metamorph: { name: 'Metamorphosis', desc: 'Grow from frogspawn into an adult frog.', reward: ['pattern', 'moss'] },
   home: { name: 'Home Sweet Home', desc: 'Claim a lily pad as home.', reward: ['decor', 'flowers'] },
   magpie: { name: 'Magpie', desc: 'Collect all 10 shiny pebbles.', reward: ['decor', 'cairn'] },
   escape: { name: 'Narrow Escape', desc: 'Dodge a predator strike.' },
-  chorus: { name: 'Pond Chorus', desc: 'Answer 5 other frogs with your own croak.' },
+  chorus: { name: 'Pond Chorus', desc: 'Answer 5 other frogs with your own croak.', reward: ['pattern', 'golden'] },
   inside_out: { name: 'Inside Out', desc: 'Turn yourself inside out as the Insider Frog and catch a bug with your guts.' },
   telelaser: { name: 'Pew Pew', desc: 'Fire the telelaser as the Telepathic Frog.' },
+  typist: { name: 'Typist', desc: 'Type a magic word as the QWERTY Frog.' },
+  secretisle: { name: 'Head Above the Clouds', desc: "Find the secret island in Heron's Domain." },
+  immune: { name: 'Immune to Immunity', desc: 'Survive until the Great Worm forgets you are inside it.' },
   brainpoke: { name: 'Brain Poker', desc: 'Touch the brain of the Great Worm from the inside.' },
   tailend: { name: 'The Bitter End', desc: 'Reach the very tip of the Great Worm\'s tail.' },
   snakepal: { name: 'Snake Bodyguard', desc: 'Have a snake chase off a heron for you as the Worm Frog.' },
@@ -596,7 +607,7 @@ const ACH = {
   temple: { name: 'Worm Worshipper', desc: 'Find the Temple of The Worm deep in the Mantle.' }
 };
 
-const REGIONS = ['Lily Pond', 'Big Lake', 'Babbling Stream', 'Waterfall', 'Pond Cave', 'Muddy Marsh', 'Wildflower Meadow', 'Fallen Giant', 'Hidden Burrow', 'Cypress Swamp', 'Sand Dunes', 'Old Mill Pond', 'Rainforest', 'Hot Springs', 'Mountain Tarn', 'Pitcher Plant Bog', 'Bamboo Grove', 'The Mountains', 'The Underground', 'Flooded Caves', 'The Mantle', "Heron's Domain", 'Temple of The Worm', 'The Worm', 'The Worm: Stomach', 'The Worm: Heart', 'The Worm: Brain', 'The Worm: Lungs', 'The Worm: Gizzard', 'The Worm: Acid River', 'The Worm: Swallowed Junk', 'The Worm: Parasite Pit', 'The Worm: Tail', 'The Worm: Idol Chamber', 'The Worm: Worm Frog Nest'];
+const REGIONS = ['Lily Pond', 'Big Lake', 'Babbling Stream', 'Waterfall', 'Pond Cave', 'Muddy Marsh', 'Wildflower Meadow', 'Fallen Giant', 'Hidden Burrow', 'Cypress Swamp', 'Sand Dunes', 'Old Mill Pond', 'Rainforest', 'Hot Springs', 'Mountain Tarn', 'Pitcher Plant Bog', 'Bamboo Grove', 'The Mountains', 'The Underground', 'Flooded Caves', 'The Mantle', "Heron's Domain", 'Temple of The Worm', 'The Worm', 'The Worm: Stomach', 'The Worm: Heart', 'The Worm: Brain', 'The Worm: Lungs', 'The Worm: Gizzard', 'The Worm: Acid River', 'The Worm: Swallowed Junk', 'The Worm: Parasite Pit', 'The Worm: Tail', 'The Worm: Idol Chamber', 'The Worm: Worm Frog Nest', 'The Worm: Throat', 'The Worm: Spine Hall', 'The Worm: Liver', 'The Worm: Kidneys', 'The Worm: Fat Caverns', 'The Worm: Egg Chamber', 'The Worm: Gallstone Grotto'];
 
 /* ---------------- World layout ---------------- */
 const WATER = 0, UPPER_WATER = 7.6, FALL_X = -127.3;
@@ -954,6 +965,7 @@ function skinMaterial(spKey, pattern) {
     for (let i = 0; i < 40; i++) { let px = Math.random() * W, py = Math.random() * H; for (const cx of [x, ex]) { cx.strokeStyle = cx === x ? '#ff7a20' : '#ffb040'; cx.lineWidth = 1.5 + Math.random() * 2; } const pts = [[px, py]]; for (let k = 0; k < 5; k++) { px += (Math.random() - 0.5) * 40; py += (Math.random() - 0.5) * 40; pts.push([px, py]); } for (const cx of [x, ex]) { cx.beginPath(); cx.moveTo(pts[0][0], pts[0][1]); for (const p of pts) cx.lineTo(p[0], p[1]); cx.stroke(); } }
     mat.emissiveMap = canvasTex(e); mat.emissive = new THREE.Color(0xffffff); mat.emissiveIntensity = 1.2; mat.roughness = 0.8; mat.map.needsUpdate = true;
   }
+  if (sp.stinky) { mat.roughness = 0.6; mat.bumpScale = 0.04; }
   if (sp.gold) { mat.metalness = 0.9; mat.roughness = 0.22; mat.envMap = W.skyCube; mat.envMapIntensity = 1.2; mat.emissive = new THREE.Color(0x6a4a08); mat.emissiveIntensity = 0.5; }
   if (sp.fireproof) { mat.emissive = new THREE.Color(0x802008); mat.emissiveIntensity = 0.6; }
   if (sp.silver) { mat.metalness = 0.35; mat.roughness = 0.3; mat.envMap = W.skyCube; mat.envMapIntensity = 0.9; mat.emissive = new THREE.Color(0x5a626c); mat.emissiveIntensity = 0.55; }
@@ -1057,6 +1069,20 @@ function makeFrog(spKey, pattern) {
     blink: 0, blinkT: 2 + Math.random() * 3, breathe: Math.random() * 6, croakT: 0, look: null };
   if (sp.insider) insiderParts(F, { skin, bellyM, throatM, webM });
   if (sp.fireproof) F.flames = flameParts(tilt, head);
+  if (sp.qwerty) {
+    F.keys = []; const letters = 'QWERTYASDFGH', capG = new THREE.BoxGeometry(0.105, 0.07, 0.105);
+    for (let i = 0; i < 12; i++) {
+      const c = mkCanvas(32, 32), x = c.getContext('2d'); x.fillStyle = '#f4f4f0'; x.fillRect(0, 0, 32, 32); x.fillStyle = '#202020'; x.font = 'bold 22px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(letters[i], 16, 17);
+      const top = new THREE.MeshStandardMaterial({ map: canvasTex(c), roughness: 0.4, emissive: 0x000000 }), side = new THREE.MeshStandardMaterial({ color: 0xc8c8c0, roughness: 0.5 });
+      const k = new THREE.Mesh(capG, [side, side, top, side, side, side]); const row = i < 6 ? 0 : 1, col = i % 6;
+      k.position.set((col - 2.5) * 0.115 + row * 0.04, 0.6 - row * 0.035 - Math.abs(col - 2.5) * 0.022, 0.06 - row * 0.13); k.rotation.x = -0.2; k.rotation.z = -(col - 2.5) * 0.08; tilt.add(k); F.keys.push({ k, top, t: 0 });
+    }
+  }
+  if (sp.stinky) {
+    F.flyCloud = []; const fm = new THREE.MeshBasicMaterial({ color: 0x101010 });
+    for (let i = 0; i < 7; i++) { const fl = new THREE.Mesh(G.sphT, fm); fl.scale.set(0.035, 0.03, 0.05); root.add(fl); F.flyCloud.push({ fl, a: Math.random() * TAU, r: 0.5 + Math.random() * 0.5, h: 0.4 + Math.random() * 0.7, sp: (2 + Math.random() * 2) * (Math.random() < 0.5 ? 1 : -1) }); }
+    F.stinkFx = []; for (let i = 0; i < 3; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0x9ac040, transparent: true, opacity: 0, depthWrite: false })); root.add(s); F.stinkFx.push({ s, ph: i / 3 }); }
+  }
   if (sp.wormy) {
     body.scale.z *= 1.3; const bandM = new THREE.MeshStandardMaterial({ color: new THREE.Color(sp.spot), roughness: 0.5 });
     for (let i = 0; i < 3; i++) { const b = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.03, 6, 20), bandM); b.position.set(0, 0.3, 0.18 - i * 0.2); b.scale.set(1.2, 0.8, 1); tilt.add(b); }
@@ -1170,6 +1196,8 @@ function frogPose(F, o) {
   }
 }
 function frogAnimate(F, dt, st) {
+  if (F.keys) for (const q of F.keys) { if (Math.random() < dt * 0.6) q.t = 0.2; q.t = Math.max(0, q.t - dt); q.k.position.y += ((q.t > 0 ? -0.02 : 0) - (q.k.userData.dy || 0)); q.k.userData.dy = q.t > 0 ? -0.02 : 0; q.top.emissive.setHex(q.t > 0 ? 0x4080ff : 0x000000); }
+  if (F.flyCloud) { for (const q of F.flyCloud) { q.a += q.sp * dt; q.fl.position.set(Math.cos(q.a) * q.r, q.h + Math.sin(GAME.t * 6 + q.a) * 0.1, Math.sin(q.a) * q.r); } for (const s of F.stinkFx) { const k = (GAME.t * 0.4 + s.ph) % 1; s.s.position.set(Math.sin(s.ph * 9) * 0.2, 0.4 + k * 1.2, Math.cos(s.ph * 7) * 0.2); s.s.scale.setScalar(0.4 + k * 0.6); s.s.material.opacity = Math.sin(k * Math.PI) * 0.3; } }
   if (F.wormSegs) { F.wormPh = (F.wormPh || 0) + dt * (st.moving || st.crawl ? 7 : 2); F.wormSegs.forEach((s, i) => { s.position.x = Math.sin(F.wormPh - i * 0.6) * 0.012 * i; s.position.y = 0.24 - i * 0.012 + Math.max(0, Math.sin(F.wormPh * 0.5 - i * 0.5)) * 0.03; }); }
   if (F.flames) for (const f of F.flames) { const k = 0.75 + Math.sin(GAME.t * f.sp + f.ph) * 0.15 + Math.random() * 0.12; f.s.scale.set(f.r * k, f.r * (1.4 + k * 0.6), 1); f.s.position.y = f.y + k * f.r * 0.25; f.s.material.opacity = 0.75 + Math.random() * 0.2; }
   if (F.wings && F.wings.length) {
@@ -2311,7 +2339,7 @@ function noiseHit(freq, q, dur, vol, pos, delay, type, buf) {
   const g = c.createGain(); env(g, t, 0.005, vol, dur);
   s.connect(f); f.connect(g); g.connect(outAt(pos)); s.start(t, Math.random()); s.stop(t + dur + 0.1);
 }
-const CROAK_GAIN = { green: 2.6, bull: 4.8, tree: 5.0, redeye: 2.6, dart: 6.5, glass: 2.3, flying: 5.0, tiny: 2.0, horned: 5.2, spade: 2.6, insider: 2.0, insiderOut: 5.5, desert: 2.2, swamp: 3.6, hotspring: 3.0, tele: 3.2, cave: 3.0, bird: 3.0, fire: 3.4, lava: 4.4, gold: 2.6 };
+const CROAK_GAIN = { green: 2.6, bull: 4.8, tree: 5.0, redeye: 2.6, dart: 6.5, glass: 2.3, flying: 5.0, tiny: 2.0, horned: 5.2, spade: 2.6, insider: 2.0, insiderOut: 5.5, desert: 2.2, swamp: 3.6, hotspring: 3.0, tele: 3.2, cave: 3.0, bird: 3.0, fire: 3.4, lava: 4.4, gold: 2.6, poop: 4.0, qwerty: 2.4 };
 const SFX = {
   croak(kind, pos, big) {
     if (!AU.ok) return; const c = AU.ctx, t0 = c.currentTime + 0.01, V = big ? 1 : 0.8;
@@ -2375,6 +2403,13 @@ const SFX = {
       // an eerie, wobbling hum that slides up and down
       syl(t0, { dur: big ? 1.1 : 0.8, f0: r(420, 460), f1: 620, wave: 'sine', formants: [[520, 3, 1.6], [1040, 5, 0.6]], vib: [6, 40], vol: 0.4, atk: 0.12, rel: 0.4, lp: 3000 });
       syl(t0 + 0.05, { dur: big ? 1.0 : 0.7, f0: r(640, 680), f1: 460, wave: 'triangle', formants: [[700, 4, 1]], vib: [7, 30], vol: 0.2, atk: 0.15, rel: 0.4, lp: 3000 });
+    } else if (kind === 'qwerty') {
+      // clackety typing, then a little typewriter bell
+      for (let i = 0; i < (big ? 9 : 6); i++) syl(t0 + i * 0.07 + Math.random() * 0.02, { dur: 0.025, f0: r(1800, 2600), f1: 1500, formants: [[3000, 3, 1.5]], vol: 0.3, atk: 0.001, rel: 0.02, lp: 8000, noise: 0.9 });
+      syl(t0 + (big ? 0.75 : 0.5), { dur: 0.5, f0: 2490, f1: 2490, wave: 'sine', formants: [[2490, 6, 1.8]], vol: 0.25, atk: 0.002, rel: 0.4, lp: 9000 });
+    } else if (kind === 'poop') {
+      // a long, wet, rumbling "pbbbbbt"
+      syl(t0, { dur: big ? 0.8 : 0.55, f0: r(85, 100), f1: 60, formants: [[220, 2, 2.2], [520, 3, 0.9]], pulses: big ? 34 : 24, duty: 0.55, vol: 0.65, lp: 1100, noise: 0.45 });
     } else if (kind === 'gold') {
       // a bright, ringing "ting-ting-tiiing" like a little bell
       for (let i = 0; i < (big ? 4 : 3); i++) syl(t0 + i * 0.16, { dur: i === (big ? 3 : 2) ? 0.5 : 0.12, f0: [1560, 1960, 2340, 2620][i], f1: [1560, 1960, 2340, 2620][i], wave: 'sine', formants: [[2000, 3, 1.4]], vol: 0.3, atk: 0.003, rel: 0.3, lp: 9000 });
@@ -2689,6 +2724,8 @@ const HOME_TYPES = {
     ok() { return PL.onGround && !PL.inWater && !(PL.plat && PL.plat.tag === 'pad') && !W.inBurrow && nearRunningWater(); } },
   dart: { kind: 'brom', name: 'bromeliad', fx: 0x3a8a3a, verb: 'Hold to grow a bromeliad home here', intro: 'Poison dart frogs live in bromeliad cups. Find flat ground in deep shade under the trees and hold E.',
     ok() { return softGround() && PL.shade; } },
+  qwerty: { kind: 'burrow', name: 'burrow', fx: 0xa8a8a0, verb: 'Hold to dig a burrow here', intro: 'QWERTY frogs live in burrows. Stand on flat, soft ground away from water and hold E to dig.', ok: softGround },
+  poop: { kind: 'burrow', name: 'burrow', fx: 0x6a4424, verb: 'Hold to dig a burrow here', intro: 'Poop frogs live in burrows. Stand on flat, soft ground away from water and hold E to dig.', ok: softGround },
   worm: { kind: 'burrow', name: 'burrow', fx: 0xb05a6a, verb: 'Hold to dig a burrow here', intro: 'Worm frogs live underground in burrows. Stand on flat, soft ground away from water and hold E to dig.', ok: softGround },
   spadefoot: { kind: 'burrow', name: 'burrow', fx: 0x5a4028, verb: 'Hold to dig a burrow here', intro: 'Spadefoot toads live underground. Stand on flat, soft ground away from water and hold E to dig.', ok: softGround },
   redeye: { kind: 'hide', name: 'leaf hideaway', fx: 0x4fa83a, verb: 'Hold to make a leaf hideaway here', intro: 'Red-eyed tree frogs sleep under big leaves up high. Climb onto a tree branch or a big mushroom cap and hold E.',
@@ -2876,7 +2913,7 @@ function toggleInsideOut() {
 function insiderTick(dt) {
   PL.flipCD = Math.max(0, (PL.flipCD || 0) - dt);
   { const sb = document.getElementById('tShake'), has = !!(PL.stuckList && PL.stuckList.length); if (sb && sb.hidden === has) sb.hidden = !has; }
-  { const fb = document.getElementById('tFlip'), sp0 = SPECIES[GAME.species], on = !!(sp0.insider || sp0.telepath || sp0.fireBreath); if (fb) { if (fb.hidden === on) fb.hidden = !on; const lbl = sp0.telepath ? 'Mind' : sp0.fireBreath ? 'Fire' : 'Flip'; if (fb.textContent !== lbl) fb.textContent = lbl; } const lb = document.getElementById('tLaser'); if (lb && lb.hidden === !!sp0.telepath) lb.hidden = !sp0.telepath; }
+  { const fb = document.getElementById('tFlip'), sp0 = SPECIES[GAME.species], on = !!(sp0.insider || sp0.telepath || sp0.fireBreath || sp0.qwerty); if (fb) { if (fb.hidden === on) fb.hidden = !on; const lbl = sp0.telepath ? 'Mind' : sp0.fireBreath ? 'Fire' : sp0.qwerty ? 'Type' : 'Flip'; if (fb.textContent !== lbl) fb.textContent = lbl; } const lb = document.getElementById('tLaser'); if (lb && lb.hidden === !!sp0.telepath) lb.hidden = !sp0.telepath; }
   if (!SPECIES[GAME.species].insider) { PL.insideOut = false; PL.flipT = 0; }
   const want = !!(PL.insideOut && PL.stage >= 3);
   if (PL.flipT > 0) PL.flipT = Math.max(0, PL.flipT - dt);
@@ -3031,7 +3068,7 @@ function updatePlayer(dt) {
       if (sprint && !PL.buried && PL.hopT <= 0 && (easyMode() || PL.needs.energy > 4)) {
         launch(0.12 * spd, Math.sin(PL.yaw), Math.cos(PL.yaw), 0.75); PL.hopT = 0.08; PL.sprintHop = true; useEnergy(0.4);
       } else if (!sprint || PL.buried) {
-        const v = (IN.keys.KeyQ ? 0.9 : 2.1) * Math.sqrt(S) * sp.speed * spd * iv.mag * (PL.buried && sp.wormy ? (sprint ? 6 : 4.5) : 1);
+        const v = (IN.keys.KeyQ ? 0.9 : 2.1) * Math.sqrt(S) * sp.speed * spd * iv.mag * (PL.buried && sp.wormy ? (sprint ? 6 : 4.5) : 1) * (PL.fastT > 0 ? 2.5 : 1);
         moveGround(Math.sin(PL.yaw) * v * dt, Math.cos(PL.yaw) * v * dt, step, hgt, rad, sp);
         PL.crawl += dt * v * 5 / Math.sqrt(S);
         pose = { crawl: PL.crawl, crouch: IN.keys.KeyQ ? 0.6 : 0 };
@@ -3054,7 +3091,7 @@ function updatePlayer(dt) {
   // -------- airborne --------
   else {
     PL.airT = (PL.airT || 0) + dt;
-    PL.vel.y -= 22 * dt;
+    PL.vel.y -= 22 * dt * (PL.floatT > 0 ? 0.18 : 1);
     PL.gliding = !!sp.glide && PL.stage >= 4 && PL.airT > 0.08;
     PL.flapping = false;
     if (PL.gliding) {
@@ -3427,7 +3464,7 @@ function updateInsects(dt) {
     o.t += dt;
     const I = INSECT[o.type];
     const dP = o.pos.distanceTo(P);
-    const off = (W.inBurrow || W.inCaves) !== (o.pos.y < -30) || (W.inSky && o.pos.y < SKY.y0 - 40) || (W.inCaves && !W.inBurrow && o.pos.y < -80 && o.pos.y > caveCeilH(o.pos.x, o.pos.z));
+    const off = !!(W.inBurrow || W.inCaves) !== (o.pos.y < -30) || (W.inSky && o.pos.y < SKY.y0 - 40) || (W.inCaves && !W.inBurrow && o.pos.y < -80 && o.pos.y > caveCeilH(o.pos.x, o.pos.z));
     if (dP > 62 || off || (o.type === 'firefly' && day) || (o.type === 'butterfly' && !day) || (o.type === 'moth' && day && dP > 15)) { removeInsect(o); continue; }
     if (o.caught) continue;
     for (const w of o.wings) w.rotation.z = w.userData.s * Math.sin(o.t * (o.type === 'butterfly' ? 14 : o.type === 'moth' || o.type === 'lunamoth' ? 22 : 60)) * (o.type === 'grasshopper' ? 0 : 0.7);
@@ -3482,7 +3519,7 @@ const CREATURES = [], NPC = [], THREAT = { level: 0, label: '', pos: null, t: 0 
 function raiseThreat(level, label, pos) { if (level >= THREAT.level) { THREAT.level = level; THREAT.label = label; THREAT.pos = pos; THREAT.t = 0.3; } }
 function playerHeight() { return PL.pos.y - Math.max(terrainH(PL.pos.x, PL.pos.z), waterLevelAt(PL.pos.x, PL.pos.z)); }
 function playerHidden() {
-  if (W.inBurrow || W.inCave || PL.settled || PL.buried) return true;
+  if (W.inBurrow || W.inCave || PL.settled || PL.buried || PL.invisT > 0) return true;
   if (SPECIES[GAME.species].swampy && PL.inWater && GAME.region === 'Cypress Swamp' && PL.vel.lengthSq() < 0.6) return true;
   if (SPECIES[GAME.species].tiny && PL.stage >= 4 && !PL.inWater) return true;
   if (playerHeight() > 3.5 && (PL.climbing || PL.onGround)) return true; // safe up a tree, on a branch or a tall rock
@@ -5577,6 +5614,13 @@ function regionFog() {
 }
 // a first-visit note for each new place
 const PLACE_HINT = {
+  'The Worm: Throat': 'The Throat: a giant uvula dangles from the ceiling. The mouth is just behind you.',
+  'The Worm: Spine Hall': 'The Spine Hall: a long tunnel with the Worm\'s backbone running along the ceiling.',
+  'The Worm: Liver': 'The Liver: dark, spongy and full of yellow bile puddles.',
+  'The Worm: Kidneys': 'The Kidneys: glowing yellow filters drip, drip, drip.',
+  'The Worm: Fat Caverns': 'The Fat Caverns: wobbly yellow blobs everywhere, and the floor is so squishy you bounce!',
+  'The Worm: Egg Chamber': 'The Egg Chamber: see-through eggs, each with a baby worm wriggling inside.',
+  'The Worm: Gallstone Grotto': 'The Gallstone Grotto: a cave of glowing amber stones.',
   'The Worm: Stomach': 'The Stomach: a huge chamber with a bubbling lake of green acid. Stay on the edges!',
   'The Worm: Heart': 'The Heart: a giant heart thumping away. You can feel every beat.',
   'The Worm: Brain': 'The Brain: a huge wrinkly brain with nerves crackling blue. What happens if you touch it?',
@@ -5585,7 +5629,7 @@ const PLACE_HINT = {
   'The Worm: Acid River': 'The Acid River: hop across the stepping stones. Fall in and it stings!',
   'The Worm: Swallowed Junk': 'Swallowed Junk: crates, barrels, a cart wheel, an umbrella, a signpost... the Worm will eat anything.',
   'The Worm: Parasite Pit': 'The Parasite Pit: dozens of little worms poking up out of the floor. Ew.',
-  'The Worm: Tail': 'The very tip of the tail. There is a little chest here...',
+  'The Worm: Tail': 'The very end of the Worm: a huge stinking pile of poop buzzing with flies. Something lives in it... and there is a little chest here too.',
   'The Worm: Idol Chamber': 'A small chamber with something glowing on a lump of goo.',
   'The Worm: Worm Frog Nest': 'The Worm Frog lives here, tunnelling around under the squishy floor.',
   'The Worm': 'You are inside the Great Worm! Squishy pink walls, ribs, and puddles of stomach acid. Things it swallowed are lying all over the place. Walk back out through the mouth when you are done.',
@@ -5874,6 +5918,7 @@ function vPower() {
   if (GAME.state !== 'play' || PL.stage < 3) return false;
   const sp = SPECIES[GAME.species];
   if (sp.fireBreath) { fireBreath(); return true; }
+  if (sp.qwerty) { openTyper(); return true; }
   if (sp.telepath) { if (PL.mind) mindRelease(); else { const c = nearestCreature(7 + PL.size); if (c) mindTake(c); else toast('Get closer to a creature, then press V to take over its mind.', 'quiet'); } return true; }
   if (sp.insider) { const c = nearestCreature(2.4 + PL.size * 0.8); if (c) { stickCreature(c); return true; } return toggleInsideOut(); }
   return false;
@@ -6244,7 +6289,7 @@ function buildUnderground() {
   CL = MANTLE; buildMantleLayer(); buildCaveMap(MANTLE);
   buildSkyLayer();
   buildGutLayer();
-  CL = UG; W.level = 'top'; W.levelShown = 'top';
+  CL = UG; W.level = 'top'; W.levelShown = 'top'; W.inCaves = W.inSky = W.inMantle = W.inGut = W.offTop = false;
 }
 function buildUGLayer() {
   SEED = 8080;
@@ -6679,6 +6724,17 @@ function buildSkyGrid() {
     if (!free(x, z, r)) continue;
     add(x, z, r, clamp(A.y + rr(-3, 3), SKY.y0 - 8, SKY.y0 + 14), r > 13 && rnd() < 0.5 ? 'nest' : 'plain');
   }
+  // a secret island in the loneliest corner of the sky, hidden in cloud, reached by a faint trail of cloud steps
+  { let best = null, bd = -1;
+    // whichever corner of the sky is closest to an island, right in the very corner
+    const C = SKY.half - 20;
+    for (const [cx, cz] of [[-C, -C], [C, -C], [-C, C], [C, C]]) { let d = 1e9; for (const o of I) d = Math.min(d, Math.hypot(o.x - cx, o.z - cz) - o.r); if (bd < 0 || d < bd) { bd = d; best = [cx, cz]; } }
+    const S = add(best[0], best[1], 13, SKY.y0 + 6, 'secret'); S.dome = 1.6; SKY.secret = S;
+    let near = null, nd = 1e9; for (const o of I) { if (o === S) continue; const d = Math.hypot(o.x - S.x, o.z - S.z) - o.r; if (d < nd) { nd = d; near = o; } }
+    const dx = S.x - near.x, dz = S.z - near.z, L = Math.hypot(dx, dz), ux = dx / L, uz = dz / L, start = near.r * 0.8, end = L - S.r * 0.8, n = Math.ceil((end - start) / 2.0);
+    SKY.steps = [];
+    for (let i = 1; i < n; i++) { const t = start + (end - start) * i / n, wob = Math.sin(i * 0.3) * 1.6; const st = add(near.x + ux * t - uz * wob, near.z + uz * t + ux * wob, 2.0, lerp(near.y, S.y, i / n) + Math.sin(i * 0.9) * 0.4, 'cloudstep'); st.dome = 0.25; SKY.steps.push(st); }
+  }
   SKY.n = Math.round(SKY.half * 2 / SKY.res) + 1; SKY.h = new Float32Array(SKY.n * SKY.n).fill(SKY.VOID);
   for (const o of I) {
     const R = o.r * 1.2, i0 = Math.max(0, Math.floor((o.x - R + SKY.half) / SKY.res)), i1 = Math.min(SKY.n - 1, Math.ceil((o.x + R + SKY.half) / SKY.res)), j0 = Math.max(0, Math.floor((o.z - R + SKY.half) / SKY.res)), j1 = Math.min(SKY.n - 1, Math.ceil((o.z + R + SKY.half) / SKY.res));
@@ -6706,7 +6762,8 @@ function buildSkyLayer() {
   const pos = [], col = [], idx = [];
   const RINGS = 9, SEGS = 40;
   for (const o of SKY.islands) {
-    const base = pos.length / 3, grass = o.kind === 'rookery' || o.kind === 'nest' ? [0.62, 0.66, 0.36] : [0.42, 0.66, 0.3];
+    if (o.kind === 'cloudstep') continue;
+    const base = pos.length / 3, grass = o.kind === 'rookery' || o.kind === 'nest' ? [0.62, 0.66, 0.36] : o.kind === 'secret' ? [0.5, 0.75, 0.32] : [0.42, 0.66, 0.3];
     for (let half = 0; half < 2; half++) for (let r = 0; r <= RINGS; r++) for (let s = 0; s < SEGS; s++) {
       const a = s / SEGS * TAU, t = r / RINGS, R = skyIslandR(o, a) * t, x = o.x + Math.cos(a) * R, z = o.z + Math.sin(a) * R;
       let y, c;
@@ -6724,7 +6781,7 @@ function buildSkyLayer() {
   }
   const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.setIndex(idx); geo.computeVertexNormals();
   const land = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, map: TEX.detail })); land.castShadow = true; land.receiveShadow = true; g.add(land);
-  const spots = (want, ok) => { const out = []; for (let k = 0; k < want * 40 && out.length < want; k++) { const o = SKY.islands[Math.floor(rnd() * SKY.islands.length)], a = rnd() * TAU, d = Math.sqrt(rnd()) * o.r * 0.85, x = o.x + Math.cos(a) * d, z = o.z + Math.sin(a) * d; if (!ok || ok(x, z, o)) out.push([x, z, o]); } return out; };
+  const spots = (want, ok) => { const out = []; for (let k = 0; k < want * 40 && out.length < want; k++) { const o = SKY.islands[Math.floor(rnd() * SKY.islands.length)], a = rnd() * TAU, d = Math.sqrt(rnd()) * o.r * 0.85, x = o.x + Math.cos(a) * d, z = o.z + Math.sin(a) * d; if (o.kind === 'cloudstep' || o.kind === 'secret') continue; if (!ok || ok(x, z, o)) out.push([x, z, o]); } return out; };
   // tufts of pale sky-grass and little white flowers
   const tuft = new THREE.ConeGeometry(0.05, 0.45, 3); tuft.translate(0, 0.3, 0);
   const tg = spots(9000); const tufts = inst(tuft, new THREE.MeshStandardMaterial({ color: 0x7aa848, roughness: 0.9 }), tg.length, false); g.add(tufts);
@@ -6754,6 +6811,7 @@ function buildSkyLayer() {
     for (let i = 0; i < 3; i++) { const e = new THREE.Mesh(G.sph, eggM); e.scale.set(0.32, 0.42, 0.32); e.position.set(Math.cos(i * 2.1) * 0.5, 0.55, Math.sin(i * 2.1) * 0.5); nest.add(e); }
     SKY.nests.push({ x, z, y, o });
   }
+  buildSecretIsland(g);
   // a sea of cloud far below, and drifting cloud banks all around
   const ct = TEX.cloud.clone(); ct.needsUpdate = true; ct.wrapS = ct.wrapT = THREE.RepeatWrapping; ct.repeat.set(10, 10); SKY.cloudTex = ct;
   const sea = new THREE.Mesh(new THREE.PlaneGeometry(2400, 2400), new THREE.MeshBasicMaterial({ map: ct, color: 0xffffff, transparent: true, opacity: 0.95, depthWrite: false })); sea.rotation.x = -Math.PI / 2; sea.position.y = SKY.y0 - 45; g.add(sea); SKY.sea = sea;
@@ -6769,7 +6827,7 @@ function buildSkyMap() {
   const N = 420, c = mkCanvas(N, N), x = c.getContext('2d'), img = x.createImageData(N, N);
   for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
     const wx = -SKY.half + (i + 0.5) * SKY.half * 2 / N, wz = -SKY.half + (j + 0.5) * SKY.half * 2 / N, h = skyH(wx, wz), k = (j * N + i) * 4;
-    const land = h > SKY.y0 - 100, v = vnoise(wx * 0.05, wz * 0.05) * 10;
+    const io = h > SKY.y0 - 100 ? skyIslandAt(wx, wz) : null, land = h > SKY.y0 - 100 && !(io && (io.kind === 'secret' || io.kind === 'cloudstep')), v = vnoise(wx * 0.05, wz * 0.05) * 10;
     img.data[k] = land ? 120 + v : 214 + v; img.data[k + 1] = land ? 168 + v : 228 + v; img.data[k + 2] = land ? 96 : 244; img.data[k + 3] = 255;
   }
   x.putImageData(img, 0, 0);
@@ -6828,6 +6886,7 @@ function skyTick(dt) {
   for (const sw of SKY.drafts || []) animSwirl(sw, dt);
   if (SKY.cloudTex) { SKY.cloudTex.offset.x += dt * 0.004; SKY.cloudTex.offset.y += dt * 0.002; }
   for (const b of SKY.banks || []) { b.position.x += dt * 1.2; if (b.position.x > 440) b.position.x -= 880; }
+  secretTick(dt);
   if (P.y < SKY.y0 - 32) {
     // fell off: drift down through the clouds to the same spot on the top level
     let x = clamp(P.x, -WORLD_R + 10, Math.min(WORLD_R - 10, SEA_EDGE - 10)), z = P.z; const R = Math.hypot(x, z); if (R > WORLD_R - 10) { x *= (WORLD_R - 10) / R; z *= (WORLD_R - 10) / R; }
@@ -7112,7 +7171,9 @@ function buildLevelRooms() {
 }
 let L_TUBE_TEX = null;
 function levelsTick(dt) {
-  fireBreathTick(dt); idolTick(dt); digMoundTick(dt);
+  fireBreathTick(dt); idolTick(dt); digMoundTick(dt); qwertyTick(dt);
+  // flies follow the Poop Frog around: free snacks
+  if (SPECIES[GAME.species].stinky && PL.stage >= 3 && !W.inBurrow && GAME.state === 'play') { W.flyT = (W.flyT || 0) - dt; if (W.flyT <= 0) { W.flyT = 5; const near = INS.list.filter(i => i.alive && i.type === 'fly' && i.pos.distanceTo(PL.pos) < 8).length; if (near < 3) spawnInsect('fly', PL.pos.clone().add(new V3(mr(-2, 2), 1 + Math.random(), mr(-2, 2)))); } }
   if (SAVE.unlocks.decor.includes('shells') || SAVE.decor.includes('shells')) { SAVE.unlocks.decor = SAVE.unlocks.decor.filter(k => k !== 'shells'); SAVE.decor = SAVE.decor.filter(k => k !== 'shells'); persist(); }
   if (L_TUBE_TEX && W.inBurrow) L_TUBE_TEX.offset.x += dt * 0.02;
   const lv = curLevel(); SAVE.stats.levels = SAVE.stats.levels || [];
@@ -7462,8 +7523,17 @@ GUT.paths = [
   { pts: [[30, -12], [72, 0], [104, 24]] },                                                                             // to the junk pile
   { pts: [[-16, 114], [-58, 124], [-86, 150]] },                                                                        // to the parasite pit
   { pts: [[104, 24], [112, 70], [70, 100], [18, 112]] },                                                                // a loop back round
-  { pts: [[-104, -16], [-110, 40], [-80, 80], [-86, 150]] }                                                             // a long loop on the west side
+  { pts: [[-104, -16], [-110, 40], [-80, 80], [-86, 150]] },                                                            // a long loop on the west side
+  { pts: [[62, -182], [130, -186], [200, -182], [204, -120], [196, -62]], label: 'Spine Hall', spine: true },           // the spine, out to the liver
+  { pts: [[190, -20], [190, 30], [166, 66]] }, { pts: [[190, 30], [214, 66]] },                                           // to the kidneys
+  { pts: [[190, 30], [196, 100], [172, 140]] },                                                                         // to the fat caverns
+  { pts: [[150, 160], [112, 196]] },                                                                                    // fat caverns to the frog nest
+  { pts: [[106, 28], [150, 20], [178, -30]] },                                                                          // junk pile to the liver
+  { pts: [[-120, -10], [-160, 10], [-186, 36]] },                                                                       // to the egg chamber
+  { pts: [[-66, -100], [-120, -122], [-168, -130]] },                                                                   // to the gallstone grotto
+  { pts: [[-192, 40], [-206, -50], [-184, -120]] }                                                                      // egg chamber to gallstones
 ];
+GUT.paths[0].label = 'Throat';
 GUT.rooms = [
   { key: 'stomach', label: 'Stomach', x: 0, z: -20, r: 32, acid: 0.72 },
   { key: 'brain', label: 'Brain', x: 62, z: -182, r: 22 },
@@ -7471,11 +7541,17 @@ GUT.rooms = [
   { key: 'lungR', label: 'Lungs', x: 50, z: -95, r: 21 },
   { key: 'gizzard', label: 'Gizzard', x: 0, z: 118, r: 20 },
   { key: 'heart', label: 'Heart', x: 0, z: 172, r: 22 },
-  { key: 'tail', label: 'Tail', x: 2, z: 248, r: 9 },
+  { key: 'tail', label: 'Tail', x: 2, z: 243, r: 14 },
   { key: 'idol', label: 'Idol Chamber', x: -108, z: -12, r: 13 },
   { key: 'frog', label: 'Worm Frog Nest', x: 92, z: 204, r: 15 },
   { key: 'junk', label: 'Swallowed Junk', x: 106, z: 28, r: 24 },
-  { key: 'parasites', label: 'Parasite Pit', x: -88, z: 154, r: 16 }
+  { key: 'parasites', label: 'Parasite Pit', x: -88, z: 154, r: 16 },
+  { key: 'liver', label: 'Liver', x: 190, z: -40, r: 24 },
+  { key: 'kidneyL', label: 'Kidneys', x: 162, z: 72, r: 13 },
+  { key: 'kidneyR', label: 'Kidneys', x: 218, z: 72, r: 13 },
+  { key: 'fat', label: 'Fat Caverns', x: 166, z: 150, r: 26 },
+  { key: 'eggs', label: 'Egg Chamber', x: -192, z: 42, r: 22 },
+  { key: 'gall', label: 'Gallstone Grotto', x: -180, z: -128, r: 18 }
 ];
 GUT.room = k => GUT.rooms.find(R => R.key === k);
 GUT.idolAt = { x: -110, z: -10 };
@@ -7503,7 +7579,7 @@ GUT.sample = function (x, z) {
   const floor = GUT.y0 + 1.6 + vnoise(x * 0.12, z * 0.12) * 0.25 - acid * 3.2;
   return { o, H, floor, ceil: floor + H, lake: acid, flood: 0 };
 };
-function gutRoomAt(x, z) { for (const R of GUT.rooms) if (Math.hypot(x - R.x, z - R.z) < R.r + 1) return R; if (polyDist(x, z, GUT.paths.find(p => p.river).pts) < 7) return { label: 'Acid River' }; return null; }
+function gutRoomAt(x, z) { for (const R of GUT.rooms) if (Math.hypot(x - R.x, z - R.z) < R.r + 1) return R; if (polyDist(x, z, GUT.paths.find(p => p.river).pts) < 7) return { label: 'Acid River' }; for (const P of GUT.paths) if (P.label && polyDist(x, z, P.pts) < 7) { if (P.label === 'Throat' && z > -150) continue; return { label: P.label }; } return null; }
 function buildGutGrid() { buildLayerGrid(GUT); }
 function buildGutLayer() {
   SEED = 8181; const L = GUT, prevCL = CL; CL = GUT;
@@ -7522,6 +7598,11 @@ function buildGutLayer() {
       if (R && (R.key === 'lungL' || R.key === 'lungR')) { r = lerp(0.9, 0.96, n); gg = lerp(0.55, 0.62, n); b = lerp(0.6, 0.66, n); }
       if (R && R.key === 'gizzard') { r = lerp(0.6, 0.7, n); gg = lerp(0.35, 0.42, n); b = lerp(0.3, 0.36, n); }
       if (R && R.key === 'parasites') { r = lerp(0.62, 0.7, n); gg = lerp(0.26, 0.32, n); b = lerp(0.3, 0.36, n); }
+      if (R && R.key === 'liver') { r = lerp(0.42, 0.5, n); gg = lerp(0.1, 0.14, n); b = lerp(0.12, 0.16, n); }
+      if (R && (R.key === 'kidneyL' || R.key === 'kidneyR')) { r = lerp(0.6, 0.66, n); gg = lerp(0.28, 0.32, n); b = lerp(0.24, 0.28, n); }
+      if (R && R.key === 'fat') { r = lerp(0.95, 1, n); gg = lerp(0.82, 0.9, n); b = lerp(0.5, 0.58, n); }
+      if (R && R.key === 'eggs') { r = lerp(0.8, 0.86, n); gg = lerp(0.5, 0.56, n); b = lerp(0.6, 0.66, n); }
+      if (R && R.key === 'gall') { r = lerp(0.5, 0.56, n); gg = lerp(0.3, 0.34, n); b = lerp(0.2, 0.24, n); }
       if (R && R.key === 'heart') { r = lerp(0.75, 0.85, n); gg = lerp(0.18, 0.24, n); b = lerp(0.22, 0.28, n); }
       r = lerp(r, 0.45, vein); gg = lerp(gg, 0.12, vein); b = lerp(b, 0.3, vein);
       if (!ceiling && y < GUT.water + 0.4) { r = lerp(r, 0.5, 0.5); gg = lerp(gg, 0.7, 0.5); b = lerp(b, 0.2, 0.5); }
@@ -7534,7 +7615,7 @@ function buildGutLayer() {
   L.floorMesh = mk(false); L.ceilMesh = mk(true);
   // acid: the stomach lake and the river, with bubbles
   const acidM = new THREE.MeshStandardMaterial({ color: 0x9aff40, emissive: 0x50c010, emissiveIntensity: 0.9, roughness: 0.1, transparent: true, opacity: 0.85 });
-  const acidPlane = new THREE.Mesh(new THREE.PlaneGeometry(S, S), acidM); acidPlane.rotation.x = -Math.PI / 2; acidPlane.position.y = L.water; g.add(acidPlane);
+  const acidPlane = new THREE.Mesh(new THREE.PlaneGeometry(S, S), acidM); acidPlane.rotation.x = -Math.PI / 2; acidPlane.position.y = L.water; g.add(acidPlane); GUT.acidPlane = acidPlane;
   GUT.bubbles = [];
   const acidSpots = []; for (let k = 0; k < 6000 && acidSpots.length < 60; k++) { const x = rr(-L.half, L.half), z = rr(-L.half, L.half); if (caveRoom(x, z) > 2 && caveFloorH(x, z) < L.water - 0.5) acidSpots.push([x, z]); }
   for (const [x, z] of acidSpots) { const b = new THREE.Mesh(G.sphM, acidM); b.position.set(x, L.water, z); g.add(b); GUT.bubbles.push({ b, ph: rnd() * 3 }); }
@@ -7617,15 +7698,75 @@ function buildGutLayer() {
     for (let i = 0; i < 5; i++) { const a = new THREE.Mesh(G.cyl, i % 2 ? artM : heartM); a.scale.set(0.8, 12, 0.8); a.position.set(-3 + i * 1.5, 8, -0.5 + (i % 2)); a.rotation.z = (i - 2) * 0.22; hg.add(a); }
     GUT.heartLight = new THREE.PointLight(0xff3040, 1.6, 40, 1.4); GUT.heartLight.position.set(R.x, f + 8, R.z - 6); g.add(GUT.heartLight); }
   // --- the very tip of the Tail: a little chest with something shiny inside
-  { const R = GUT.room('tail'), x = R.x, z = R.z + 3, f = caveFloorH(x, z), wood = new THREE.MeshStandardMaterial({ color: 0x6a4424, roughness: 0.8 });
+  { const R = GUT.room('tail'), x = R.x - 8, z = R.z - 2, f = caveFloorH(x, z), wood = new THREE.MeshStandardMaterial({ color: 0x6a4424, roughness: 0.8 });
     const ch = new THREE.Group(); ch.position.set(x, f, z); ch.rotation.y = Math.PI; g.add(ch); const box = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 0.9), wood); box.position.y = 0.4; ch.add(box); const lid = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 1.4, 12, 1, false, 0, Math.PI), wood); lid.rotation.z = Math.PI / 2; lid.position.y = 0.8; ch.add(lid);
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xffe080, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false })); glow.position.set(x, f + 1.2, z); glow.scale.setScalar(3); g.add(glow);
     GUT.chest = { x, z }; }
+  // --- the Poop Pile at the very end of the tail, buzzing with flies, and the Poop Frog living in it
+  { const R = GUT.room('tail'), px = R.x + 3, pz = R.z + 5, f = caveFloorH(px, pz);
+    const pm = new THREE.MeshStandardMaterial({ color: 0x6a4420, roughness: 0.45, metalness: 0.05 }), pm2 = new THREE.MeshStandardMaterial({ color: 0x553418, roughness: 0.5 });
+    const pile = new THREE.Group(); pile.position.set(px, f, pz); g.add(pile); GUT.poop = { x: px, z: pz, y: f, pile };
+    // a big swirly heap: stacked rings getting smaller, with a curly tip
+    for (let i = 0; i < 5; i++) { const r = 3.2 - i * 0.6, ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.75 - i * 0.07, 10, 26), i % 2 ? pm2 : pm); ring.rotation.x = Math.PI / 2; ring.rotation.z = i * 0.7; ring.position.y = 0.6 + i * 1.0; ring.scale.set(1, 1, 1.25); pile.add(ring); }
+    const core = new THREE.Mesh(G.sph, pm); core.scale.set(3, 2.6, 3); core.position.y = 1.4; pile.add(core);
+    const tip = new THREE.Mesh(G.cone, pm); tip.scale.set(0.5, 1.2, 0.5); tip.position.y = 5.8; tip.rotation.z = 0.5; pile.add(tip);
+    // little poops scattered around
+    for (let i = 0; i < 16; i++) { const a = rnd() * TAU, d = rr(4.5, R.r * 0.85), x = px + Math.cos(a) * d, z = pz + Math.sin(a) * d; if (Math.hypot(x - GUT.chest.x, z - GUT.chest.z) < 2) continue; const m = new THREE.Mesh(lumpyGeo(1, 0.3, i * 2.2), i % 2 ? pm : pm2); const s = rr(0.25, 0.6); m.scale.set(s, s * 0.7, s); m.position.set(x, caveFloorH(x, z) + s * 0.4, z); g.add(m); }
+    // stink rising off it
+    GUT.stink = []; for (let i = 0; i < 8; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0x9ac040, transparent: true, opacity: 0, depthWrite: false })); g.add(s); GUT.stink.push({ s, ph: i / 8 }); }
+    // a cloud of flies
+    GUT.flies = []; const fm = new THREE.MeshBasicMaterial({ color: 0x101010 }), wm = new THREE.MeshBasicMaterial({ color: 0xd0e0ff, transparent: true, opacity: 0.6, side: THREE.DoubleSide });
+    for (let i = 0; i < 34; i++) { const fl = new THREE.Group(); const b = new THREE.Mesh(G.sphT, fm); b.scale.set(0.07, 0.06, 0.1); fl.add(b); for (const sx of [-1, 1]) { const w = new THREE.Mesh(G.plane, wm); w.scale.set(0.12, 0.06, 1); w.position.set(sx * 0.08, 0.04, 0); w.rotation.x = -Math.PI / 2; fl.add(w); } g.add(fl); GUT.flies.push({ fl, a: rnd() * TAU, r: rr(1.5, 5), h: rr(0.5, 6), sp: rr(1.5, 3.5) * (rnd() < 0.5 ? 1 : -1), ph: rnd() * 6 }); }
+    // the Poop Frog lives inside the pile: it pokes its head out of the top and sinks back in
+    const F = makeFrog('poop', 'classic'); F.root.scale.setScalar(0.8); F.root.position.set(px, f + 3.6, pz); F.root.visible = false;
+    makeCreature('rare', 'poopfrog', F.root, function (dt) {
+      const k = this; k.t += dt; const peek = smooth(-0.2, 0.4, Math.sin(k.t * 0.5));
+      F.root.position.set(px + Math.sin(k.t * 0.2) * 0.4, f + 3.2 + peek * 2.6, pz + 1.2); F.root.rotation.y = Math.sin(k.t * 0.3) * 0.8 + 0.3; F.root.rotation.x = -0.3;
+      k.hidden = peek < 0.3;
+      k.ct -= dt; if (k.ct <= 0 && peek > 0.6) { k.ct = mr(4, 8); k.croakT = 0.7; if (F.root.position.distanceTo(PL.pos) < 40) SFX.croak('poop', F.root.position.clone()); }
+      k.croakT = Math.max(0, (k.croakT || 0) - dt); frogAnimate(F, dt, { croak: k.croakT });
+    }, { F, level: 'gut', ct: 3, seeR: 8 });
+  }
   // --- the mouth: teeth around the end of the tunnel and an orange glow from the Mantle beyond
   { const M = GUT.mouth, f = caveFloorH(M.x, M.z + 4); const toothM = new THREE.MeshStandardMaterial({ color: 0xf4ecd0, roughness: 0.3 });
     for (let i = 0; i < 18; i++) { const a = i / 17 * Math.PI, t = new THREE.Mesh(G.cone, toothM); t.scale.set(0.35, 1.3, 0.35); t.position.set(M.x + Math.cos(a) * 4.6, f + Math.sin(a) * 7, M.z + 3); t.rotation.z = a + Math.PI / 2; t.rotation.x = 0.3; g.add(t); }
     const gl = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xff8030, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false })); gl.position.set(M.x, f + 3, M.z - 1); gl.scale.set(14, 10, 1); g.add(gl);
     const ml = new THREE.PointLight(0xff8030, 1.4, 26, 1.4); ml.position.set(M.x, f + 4, M.z + 2); g.add(ml); }
+  // --- the Throat: a giant dangling uvula, and drips of drool
+  { const x = 4, z = -212, c = caveCeilH(x, z), uvM = new THREE.MeshStandardMaterial({ color: 0xe07080, roughness: 0.35, emissive: 0x300810 });
+    const uv = new THREE.Group(); uv.position.set(x, c, z); g.add(uv); GUT.uvula = uv; const st = new THREE.Mesh(G.cyl, uvM); st.scale.set(0.6, 4, 0.6); st.position.y = -2; uv.add(st); const bl = new THREE.Mesh(G.sph, uvM); bl.scale.set(1.3, 1.8, 1.3); bl.position.y = -4.6; uv.add(bl); }
+  // --- the Spine Hall: big white vertebrae all along the ceiling
+  { const P = GUT.paths.find(p => p.spine).pts, vm = new THREE.MeshStandardMaterial({ color: 0xf0e4d8, roughness: 0.5 });
+    for (let i = 0; i < P.length - 1; i++) { const [ax, az] = P[i], [bx, bz] = P[i + 1], len = Math.hypot(bx - ax, bz - az); for (let t = 2; t < len; t += 3.2) { const x = ax + (bx - ax) * t / len, z = az + (bz - az) * t / len; if (GUT.rooms.some(R => Math.hypot(x - R.x, z - R.z) < R.r + 1)) continue; const c = caveCeilH(x, z); const v = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1.4, 1.2, 14), vm); v.position.set(x, c - 0.4, z); v.rotation.set(Math.PI / 2, 0, 0); v.rotation.order = 'YXZ'; v.rotation.y = Math.atan2(bx - ax, bz - az); g.add(v); const sp = new THREE.Mesh(G.cone, vm); sp.scale.set(0.35, 1.4, 0.35); sp.position.set(x, c - 1.6, z); sp.rotation.x = Math.PI; g.add(sp); } } }
+  // --- the Liver: dark red and spongy, with puddles of yellow bile
+  { const R = GUT.room('liver'), bileM = new THREE.MeshStandardMaterial({ color: 0xd0c030, emissive: 0x605008, roughness: 0.15 });
+    for (let i = 0; i < 9; i++) { const a = rnd() * TAU, d = rr(3, R.r * 0.8), x = R.x + Math.cos(a) * d, z = R.z + Math.sin(a) * d; const p = new THREE.Mesh(new THREE.CircleGeometry(rr(0.8, 2), 20), bileM); p.rotation.x = -Math.PI / 2; p.position.set(x, caveFloorH(x, z) + 0.04, z); g.add(p); }
+    const spM = new THREE.MeshStandardMaterial({ color: 0x6a1820, roughness: 0.9 }); for (let i = 0; i < 40; i++) { const a = rnd() * TAU, d = rr(R.r * 0.6, R.r * 0.95), x = R.x + Math.cos(a) * d, z = R.z + Math.sin(a) * d, m = new THREE.Mesh(lumpyGeo(1, 0.4, i), spM); const s = rr(0.8, 2); m.scale.set(s, s * 1.4, s); m.position.set(x, caveFloorH(x, z) + s * 0.6, z); g.add(m); } }
+  // --- the Kidneys: glowing yellow filters that drip
+  GUT.drips = [];
+  { const fm = new THREE.MeshStandardMaterial({ color: 0xffe070, emissive: 0xc09010, emissiveIntensity: 0.9, transparent: true, opacity: 0.8 });
+    for (const k of ['kidneyL', 'kidneyR']) { const R = GUT.room(k); for (let i = 0; i < 7; i++) { const a = i / 7 * TAU, x = R.x + Math.cos(a) * R.r * 0.6, z = R.z + Math.sin(a) * R.r * 0.6, c = caveCeilH(x, z), f = caveFloorH(x, z); const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.7, c - f, 10), fm); tube.position.set(x, (c + f) / 2, z); g.add(tube); const d = new THREE.Mesh(G.sphM, fm); d.scale.setScalar(0.15); g.add(d); GUT.drips.push({ d, x: x + 1, z, top: c - 1, f, ph: rnd() * 3 }); }
+      const kl = new THREE.PointLight(0xffd060, 0.9, 24, 1.4); kl.position.set(R.x, caveFloorH(R.x, R.z) + 6, R.z); g.add(kl); } }
+  // --- the Fat Caverns: wobbly yellow blobs, and a bouncy floor
+  GUT.fatBlobs = [];
+  { const R = GUT.room('fat'), fm = new THREE.MeshStandardMaterial({ color: 0xfff0a0, roughness: 0.3, emissive: 0x403010, transparent: true, opacity: 0.95 });
+    for (let i = 0; i < 30; i++) { const a = rnd() * TAU, d = rr(R.r * 0.45, R.r * 0.95), x = R.x + Math.cos(a) * d, z = R.z + Math.sin(a) * d, s = rr(1.4, 3.6), m = new THREE.Mesh(G.sphM, fm); m.position.set(x, caveFloorH(x, z) + s * 0.5, z); m.scale.setScalar(s); g.add(m); GUT.fatBlobs.push({ m, s, ph: rnd() * 6 }); } }
+  // --- the Egg Chamber: big see-through eggs with baby worms wriggling inside
+  GUT.eggs = [];
+  { const R = GUT.room('eggs'), em = new THREE.MeshStandardMaterial({ color: 0xf8f0e0, roughness: 0.15, transparent: true, opacity: 0.45, emissive: 0x302820 }), bm = new THREE.MeshStandardMaterial({ color: 0xe08890, roughness: 0.4 });
+    for (let i = 0; i < 14; i++) { const a = rnd() * TAU, d = rr(3, R.r * 0.85), x = R.x + Math.cos(a) * d, z = R.z + Math.sin(a) * d, s = rr(0.9, 1.5), eg = new THREE.Group(); eg.position.set(x, caveFloorH(x, z) + s, z); g.add(eg);
+      const shell = new THREE.Mesh(G.sph, em); shell.scale.set(s, s * 1.25, s); eg.add(shell); const baby = []; for (let k = 0; k < 6; k++) { const b = new THREE.Mesh(G.sphM, bm); b.scale.setScalar(0.18 * s); eg.add(b); baby.push(b); } GUT.eggs.push({ eg, baby, s, ph: rnd() * 6 }); }
+    const el = new THREE.PointLight(0xffd0e0, 0.9, 30, 1.4); el.position.set(R.x, caveFloorH(R.x, R.z) + 8, R.z); g.add(el); }
+  // --- the Gallstone Grotto: glowing amber stones
+  { const R = GUT.room('gall'), gm = new THREE.MeshStandardMaterial({ color: 0xffb040, emissive: 0xc06010, emissiveIntensity: 1.1, roughness: 0.2, flatShading: true });
+    for (let i = 0; i < 26; i++) { const a = rnd() * TAU, d = rr(2, R.r * 0.9), x = R.x + Math.cos(a) * d, z = R.z + Math.sin(a) * d, s = rr(0.5, 1.6), m = new THREE.Mesh(new THREE.DodecahedronGeometry(1, 0), gm); m.scale.set(s, s * rr(0.7, 1.3), s); m.position.set(x, caveFloorH(x, z) + s * 0.6, z); m.rotation.set(rnd() * 3, rnd() * 3, 0); g.add(m); }
+    const gl = new THREE.PointLight(0xffa040, 1.3, 34, 1.4); gl.position.set(R.x, caveFloorH(R.x, R.z) + 7, R.z); g.add(gl); }
+  // --- white blood cells: they only come out when the Worm knows you are inside it
+  GUT.cells = [];
+  { const cm = new THREE.MeshStandardMaterial({ color: 0xf4f4ff, roughness: 0.3, transparent: true, opacity: 0.8, emissive: 0x303040 }), nm = new THREE.MeshStandardMaterial({ color: 0x8050c0, roughness: 0.4 });
+    for (let i = 0; i < 7; i++) { const c = new THREE.Group(); c.visible = false; g.add(c); const body = new THREE.Mesh(lumpyGeo(2, 0.25, i * 1.7), cm); body.scale.setScalar(1.3); c.add(body); for (let k = 0; k < 3; k++) { const n = new THREE.Mesh(G.sphM, nm); n.scale.setScalar(0.35); n.position.set(Math.cos(k * 2.1) * 0.35, Math.sin(k * 1.7) * 0.2, Math.sin(k * 2.1) * 0.35); c.add(n); }
+      GUT.cells.push({ c, body, cd: 0, ph: rnd() * 6, on: false }); } }
+  GUT.alarmLight = new THREE.PointLight(0xff2020, 0, 40, 1.2); g.add(GUT.alarmLight);
   // --- the Worm Frog's nest
   { const R = GUT.frogCave, F = makeFrog('worm', 'classic'); F.root.scale.setScalar(0.8); F.root.position.set(R.x, caveFloorH(R.x, R.z), R.z); F.root.visible = false;
     makeCreature('rare', 'wormfrog', F.root, function (dt) { wormFrogTick(this, dt); }, { F, level: 'gut', ct: 3, seeR: 6, wf: { state: 'up', t: mr(6, 10) } }); }
@@ -7637,14 +7778,16 @@ function buildGutLayer() {
 function gutTick(dt) {
   const P = PL.pos, sp = SPECIES[GAME.species], t = GAME.t;
   // the Worm's heartbeat: the heart thumps, the light pulses
-  GUT.beat = (GUT.beat || 0) - dt; if (GUT.beat <= 0) { GUT.beat = 1.15; const hp = GUT.heart.position, near = clamp(1 - hp.distanceTo(P) / 260, 0.2, 1); tone('sine', 62, 40, 0.14, 0.5 * near); tone('sine', 58, 36, 0.12, 0.4 * near, null, 0.22); }
-  const pulse = Math.pow(Math.max(0, Math.sin(t * TAU / 1.15)), 6);
+  GUT.beat = (GUT.beat || 0) - dt; if (GUT.beat <= 0) { GUT.beat = GUT.alertT > 0 ? 0.5 : 1.15; const hp = GUT.heart.position, near = clamp(1 - hp.distanceTo(P) / 260, 0.2, 1); tone('sine', 62, 40, 0.14, 0.5 * near); tone('sine', 58, 36, 0.12, 0.4 * near, null, 0.22); }
+  const pulse = Math.pow(Math.max(0, Math.sin(t * TAU / (GUT.alertT > 0 ? 0.5 : 1.15))), 6);
   if (GUT.heart) { const s = 1 + pulse * 0.08; GUT.heart.scale.set(s, s, s); GUT.heartLight.intensity = 1.2 + pulse * 1.4; }
   for (const b of GUT.bubbles) { const k = ((t * 0.6 + b.ph) % 2) / 2; b.b.position.y = GUT.water + k * 0.25; b.b.scale.setScalar(0.1 + k * 0.25); }
   // the brain's nerves crackle
   for (const n of GUT.nerves || []) n.material.opacity = Math.random() < 0.06 ? 1 : n.material.opacity * 0.85 + 0.03;
   if (GUT.brainLight) GUT.brainLight.intensity = 0.6 + Math.random() * (Math.random() < 0.05 ? 2 : 0.3);
-  if (GUT.brain) { const R = GUT.room('brain'); GUT.brain.rotation.z = Math.sin(t * 0.5) * 0.03; if (Math.hypot(P.x - R.x, P.z - R.z) < 6.5 && !W.brainPoke) { W.brainPoke = GAME.t; CAM.shake = 1; tone('sawtooth', 70, 40, 1, 0.4, P, 0, 400); toast('You touched the Worm\'s brain! The whole Worm shudders. It knows you are in here now.'); unlockAch('brainpoke'); } if (W.brainPoke && GAME.t - W.brainPoke > 20) W.brainPoke = 0; }
+  if (GUT.brain) { const R = GUT.room('brain'); GUT.brain.rotation.z = Math.sin(t * 0.5) * 0.03; if (Math.hypot(P.x - R.x, P.z - R.z) < 6.5 && !(GUT.alertT > 0)) { unlockAch('brainpoke'); wormAlert('You poked the Worm\'s brain!'); } }
+  if (GUT.heart && !(GUT.alertT > 0) && GUT.heart.position.distanceTo(P) < 7.5) wormAlert('You touched the Worm\'s heart!');
+  wormAlertTick(dt);
   // the lungs breathe: the bubbles swell, and gusts of air push you about
   const breath = Math.sin(t * TAU / 6);
   for (const a of GUT.alveoli) a.m.scale.setScalar(a.s * (1 + breath * 0.18));
@@ -7655,18 +7798,321 @@ function gutTick(dt) {
     if (Math.hypot(P.x - R.x, P.z - R.z) < R.r + 10 && Math.random() < dt * 1.5) noiseHit(120, 0.6, 0.6, 0.3, new V3(R.x, P.y, R.z)); }
   // the parasites wriggle
   for (const q of GUT.parasites) { if (Math.abs(q.w.position.x - P.x) > 40) continue; q.segs.forEach((s, i) => s.position.set(Math.sin(t * 3 + q.ph + i * 0.8) * 0.05 * i, (i / 5) * q.h * (0.7 + 0.3 * Math.sin(t * 1.5 + q.ph)), Math.cos(t * 2.4 + q.ph + i) * 0.04 * i)); }
+  // the uvula sways; kidney drips fall; baby worms wriggle in their eggs; the fat wobbles
+  if (GUT.uvula) GUT.uvula.rotation.z = Math.sin(t * 0.8) * 0.15;
+  for (const d of GUT.drips) { const k = ((t * 0.5 + d.ph) % 1.5) / 1.5; d.d.position.set(d.x, lerp(d.top, d.f, k * k), d.z); }
+  for (const e of GUT.eggs) { if (Math.abs(e.eg.position.x - P.x) > 50) continue; e.baby.forEach((b, i) => b.position.set(Math.sin(t * 3 + e.ph + i * 0.9) * 0.25 * e.s, (i - 2.5) * 0.17 * e.s, Math.cos(t * 2 + e.ph + i) * 0.15 * e.s)); e.eg.rotation.y = Math.sin(t + e.ph) * 0.2; }
+  for (const b of GUT.fatBlobs) { const k = 1 + Math.sin(t * 2.2 + b.ph) * 0.06; b.m.scale.set(b.s * k, b.s / k, b.s * k); }
+  { const R = GUT.room('fat'), inFat = Math.hypot(P.x - R.x, P.z - R.z) < R.r;
+    if (!PL.onGround) W.fatVel = PL.vel.clone();
+    if (inFat && PL.onGround && W.wasAir && !PL.buried) { const v = W.fatVel || new V3(); PL.vel.set(v.x, 11, v.z); PL.onGround = false; PL.airT = 0.1; tone('sine', 180, 420, 0.25, 0.3, P); if (!SAVE.stats.fatBounce) { SAVE.stats.fatBounce = 1; toast('Boing! The floor here is so squishy that you bounce.', 'quiet'); } }
+    W.wasAir = !PL.onGround; }
+  // the poop pile: buzzing flies and rising stink
+  if (GUT.poop && Math.hypot(P.x - GUT.poop.x, P.z - GUT.poop.z) < 60) {
+    const Pp = GUT.poop;
+    for (const q of GUT.flies) { q.a += q.sp * dt; const x = Pp.x + Math.cos(q.a) * q.r + Math.sin(t * 7 + q.ph) * 0.3, z = Pp.z + Math.sin(q.a) * q.r, y = Pp.y + q.h + Math.sin(t * 5 + q.ph) * 0.4; q.fl.position.set(x, y, z); q.fl.rotation.y = -q.a; q.fl.children[1].rotation.z = Math.sin(t * 90 + q.ph) * 0.8; q.fl.children[2].rotation.z = -Math.sin(t * 90 + q.ph) * 0.8; }
+    for (const st of GUT.stink) { const k = (t * 0.25 + st.ph) % 1; st.s.position.set(Pp.x + Math.sin(st.ph * 20 + t) * 1.5, Pp.y + 3 + k * 7, Pp.z + Math.cos(st.ph * 13) * 1.5); st.s.scale.set(1.5 + k * 3, 2 + k * 3, 1); st.s.material.opacity = Math.sin(k * Math.PI) * 0.35; }
+    const dPp = Math.hypot(P.x - Pp.x, P.z - Pp.z);
+    if (dPp < 25 && Math.random() < dt * 4) tone('sawtooth', 190 + Math.random() * 40, 200, 0.25, 0.03 * (1 - dPp / 25), new V3(Pp.x, Pp.y + 3, Pp.z), 0, 900);
+    if (dPp < 9 && !SAVE.stats.poopSmell) { SAVE.stats.poopSmell = 1; toast('Phew! What is that smell? A huge pile of poop, buzzing with flies... and something is moving in it.'); }
+  }
   // the treasure at the very end of the tail
   if (GUT.chest && Math.hypot(P.x - GUT.chest.x, P.z - GUT.chest.z) < 2.2 && !SAVE.ach.tailend) { unlockAch('tailend'); PL.needs.health = 100; PL.needs.hunger = 100; SFX.chime(); sparkle(P.clone().add(new V3(0, 0.6, 0)), 20, 0xffe080); banner('The end of the Worm!', 'You found the very tip of its tail. Inside the little chest is a single golden worm scale, and a snack. You feel completely better.'); }
   // spat out through the mouth
-  const M = GUT.mouth; if (Math.hypot(P.x - M.x, P.z - M.z) < 4 || P.z < M.z + 1) { travel('mantle', () => { placePlayer(TEMPLE.x, TEMPLE.z + 23.5); PL.yaw = Math.PI; CAM.yaw = Math.PI; toast('Ptooey! The Worm spat you back out.', 'quiet'); }); return; }
+  const M = GUT.mouth; if (Math.hypot(P.x - M.x, P.z - M.z) < 4 || P.z < M.z + 1) { GUT.alertT = 0; GUT.acidRise = 0; for (const c of GUT.cells) { c.on = false; c.c.visible = false; } travel('mantle', () => { placePlayer(TEMPLE.x, TEMPLE.z + 23.5); PL.yaw = Math.PI; CAM.yaw = Math.PI; toast('Ptooey! The Worm spat you back out.', 'quiet'); }); return; }
   // acid stings everyone except the Worm Frog
-  const f = caveFloorH(P.x, P.z);
-  if (!W.inBurrow && f < GUT.water - 0.05 && P.y < GUT.water + 0.2 && !sp.wormy) {
+  const f = caveFloorH(P.x, P.z), acidY = GUT.water + (GUT.acidRise || 0);
+  if (!W.inBurrow && f < acidY - 0.05 && P.y < acidY + 0.2 && !sp.wormy) {
     const e = 1.2, gx = caveFloorH(P.x + e, P.z) - caveFloorH(P.x - e, P.z), gz = caveFloorH(P.x, P.z + e) - caveFloorH(P.x, P.z - e), gl = Math.hypot(gx, gz) || 1;
     const kb = new V3(gx / gl * 6, 7, gz / gl * 6);
     if (!hurt(15, 'Stomach acid', kb)) { PL.vel.copy(kb); PL.onGround = false; }
     if (GAME.t - (PL.acidT || -99) > 8) { PL.acidT = GAME.t; toast('Ow, acid! Hop across on the stepping stones. Only the Worm Frog can walk through it.'); }
   }
+}
+/* ---------- when the Worm knows you are inside it ----------
+   Touch its brain or its heart and it notices you. Its heart races, the
+   walls flash red, the acid rises, it squeezes and heaves to get you out,
+   and white blood cells come hunting for you. Hide (dig in as the Worm
+   Frog) or wait it out, and after a while it forgets about you. */
+function wormAlert(why) {
+  GUT.alertT = 60; GUT.squeezeT = 4; GUT.alertSeen = true;
+  CAM.shake = 1.6; tone('sawtooth', 70, 35, 1.4, 0.5, PL.pos, 0, 400); noiseHit(160, 0.5, 1.4, 0.45, PL.pos);
+  banner('The Worm knows you are inside it!', why + ' Its heart is racing, the acid is rising, and its white blood cells are coming for you. Hide, or get out through the mouth!');
+  // white blood cells appear in the tunnels around you
+  const P = PL.pos; let n = 0;
+  for (const c of GUT.cells) {
+    for (let k = 0; k < 60; k++) { const a = Math.random() * TAU, d = mr(16, 34), x = P.x + Math.cos(a) * d, z = P.z + Math.sin(a) * d; if (lr(GUT, x, z) > 3 && lf(GUT, x, z) > GUT.water + 0.3) { c.c.position.set(x, lf(GUT, x, z) + 1.3, z); c.on = true; c.c.visible = true; c.c.scale.setScalar(0.01); c.cd = 1; n++; break; } }
+  }
+}
+function wormAlertTick(dt) {
+  const P = PL.pos, on = GUT.alertT > 0;
+  if (on) {
+    GUT.alertT -= dt;
+    GUT.acidRise = lerp(GUT.acidRise || 0, 0.9, dt * 0.3);
+    GUT.alarmLight.position.set(P.x, P.y + 4, P.z); GUT.alarmLight.intensity = 1.2 + Math.sin(GAME.t * 6) * 1.0;
+    // it squeezes and heaves, trying to push you back out of its mouth
+    GUT.squeezeT -= dt;
+    if (GUT.squeezeT <= 0) { GUT.squeezeT = mr(6, 9); CAM.shake = 1.4; noiseHit(90, 0.5, 1.2, 0.5, P); tone('sawtooth', 50, 30, 1.2, 0.35, P, 0, 300);
+      if (!PL.buried && PL.stage >= 1) { const to = new V3(GUT.mouth.x - P.x, 0, GUT.mouth.z - P.z).normalize(); PL.vel.set(to.x * 8, 6, to.z * 8); PL.onGround = false; PL.inWater = false; PL.airT = 0.1; }
+      if (!GUT.squeezeSaid) { GUT.squeezeSaid = 1; toast('The Worm is squeezing! It is trying to heave you back out!'); } }
+    if (GUT.alertT <= 0) { GUT.alertT = 0; toast('The Worm calms down. It seems to have forgotten you are in here.'); unlockAch('immune'); }
+  } else { GUT.acidRise = lerp(GUT.acidRise || 0, 0, dt * 0.4); GUT.alarmLight.intensity = 0; }
+  if (GUT.acidPlane) GUT.acidPlane.position.y = GUT.water + (GUT.acidRise || 0);
+  // the white blood cells
+  const hidden = PL.buried || PL.stage < 1;
+  for (const c of GUT.cells) {
+    if (!c.on) continue;
+    const p = c.c.position; c.ph += dt; c.cd = Math.max(0, c.cd - dt);
+    if (!on) { const s = c.c.scale.x - dt * 0.8; c.c.scale.setScalar(Math.max(0.01, s)); if (s <= 0.02) { c.on = false; c.c.visible = false; } continue; }
+    c.c.scale.setScalar(Math.min(1, c.c.scale.x + dt));
+    let to = new V3(P.x - p.x, 0, P.z - p.z), d = to.length();
+    // the tunnels twist, so a cell that falls far behind squeezes through the Worm's flesh and pops out closer
+    c.far = d > 26 && !hidden ? (c.far || 0) + dt : 0;
+    if (c.far > 2.5) { c.far = 0; for (let k = 0; k < 60; k++) { const a = Math.random() * TAU, dd = mr(12, 22), x = P.x + Math.cos(a) * dd, z = P.z + Math.sin(a) * dd; if (lr(GUT, x, z) > 3 && lf(GUT, x, z) > GUT.water + 0.3) { p.set(x, lf(GUT, x, z) + 1.3, z); c.c.scale.setScalar(0.2); dirtPuff(x, lf(GUT, x, z) + 0.5, z, 0xffffff); break; } } to = new V3(P.x - p.x, 0, P.z - p.z); d = to.length(); }
+    if (!hidden && d > 0.1) { to.normalize(); const sp = d > 25 ? 5 : 3.4, nx = p.x + to.x * sp * dt, nz = p.z + to.z * sp * dt; if (lr(GUT, nx, nz) > 2.2) { p.x = nx; p.z = nz; } else { p.x += -to.z * sp * dt; p.z += to.x * sp * dt; } }
+    else { p.x += Math.sin(c.ph * 0.7) * dt; p.z += Math.cos(c.ph * 0.6) * dt; }
+    p.y = lf(GUT, p.x, p.z) + 1.3 + Math.sin(c.ph * 2) * 0.2;
+    c.body.scale.set(1.3 + Math.sin(c.ph * 3) * 0.1, 1.3 + Math.cos(c.ph * 2.6) * 0.1, 1.3 + Math.sin(c.ph * 2.2 + 1) * 0.1); c.c.rotation.y += dt * 0.5;
+    if (!hidden && c.cd <= 0 && Math.hypot(P.x - p.x, P.z - p.z) < 1.9 + PL.size * 0.4 && Math.abs(P.y - p.y) < 2.5) { c.cd = 2; to.y = 0; if (to.lengthSq() < 1e-4) to.set(1, 0, 0); to.normalize(); hurt(12, 'A white blood cell', new V3(to.x * 7, 6, to.z * 7)); }
+    if (d < 30 && Math.random() < dt * 0.4) tone('sine', 300, 180, 0.2, 0.12, p.clone());
+  }
+}
+
+/* ---------- the secret island in Heron's Domain, and the Long-tongued Frog ---------- */
+function buildSecretIsland(g) {
+  const S = SKY.secret; if (!S) return;
+  SEED = 2929;
+  // the cloud steps: faint until you are close to them
+  const puffM = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, emissive: 0xb0b8c8, emissiveIntensity: 0.5, transparent: true, opacity: 0.15, depthWrite: false });
+  SKY.stepMeshes = [];
+  for (const st of SKY.steps) { const grp = new THREE.Group(); grp.position.set(st.x, st.y, st.z); g.add(grp); for (let i = 0; i < 4; i++) { const m = new THREE.Mesh(G.sphM, puffM.clone()); const s = rr(0.8, 1.2); m.scale.set(s * 1.1, s * 0.45, s * 1.1); m.position.set(Math.cos(i * 1.6) * 0.8, -0.1, Math.sin(i * 1.6) * 0.8); grp.add(m); } SKY.stepMeshes.push({ grp, st }); }
+  // a wall of thick cloud around the island so you cannot see it from far away
+  SKY.secretWall = [];
+  for (let i = 0; i < 22; i++) { const a = i / 22 * TAU, s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.cloud, color: 0xffffff, transparent: true, opacity: 0.95, depthWrite: false })); s.position.set(S.x + Math.cos(a) * (S.r + 7), S.y + rr(-4, 6), S.z + Math.sin(a) * (S.r + 7)); s.scale.set(rr(26, 36), rr(16, 24), 1); g.add(s); SKY.secretWall.push(s); }
+  // a lush little paradise: flowers, a tiny pond, a fruit tree, and a swarm of fat juicy flies
+  const fl = inst(G.sphL, new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x404040 }), 260, false); g.add(fl); const cols = [0xff70a0, 0xffe040, 0x80c0ff, 0xffffff, 0xff9040];
+  for (let i = 0; i < 260; i++) { const a = rnd() * TAU, d = Math.sqrt(rnd()) * S.r * 0.88, x = S.x + Math.cos(a) * d, z = S.z + Math.sin(a) * d; setInst(fl, i, x, skyH(x, z) + 0.06, z, 0, 0.075, 0.035, 0.075); fl.setColorAt(i, new THREE.Color(cols[i % 5])); }
+  fl.instanceColor.needsUpdate = true;
+  const pond = new THREE.Mesh(new THREE.CircleGeometry(2.4, 24), new THREE.MeshStandardMaterial({ color: 0x4aa0d0, roughness: 0.05, metalness: 0.3 })); pond.rotation.x = -Math.PI / 2; pond.position.set(S.x - 4, skyH(S.x - 4, S.z + 3) + 0.06, S.z + 3); g.add(pond);
+  const trunk = new THREE.Mesh(G.cyl, new THREE.MeshStandardMaterial({ color: 0x8a6a4a, map: TEX.bark })); trunk.scale.set(0.35, 7, 0.35); trunk.position.set(S.x + 4, skyH(S.x + 4, S.z - 4) + 3.5, S.z - 4); g.add(trunk);
+  const crown = new THREE.Mesh(lumpyGeo(1, 0.25, 7.7), new THREE.MeshStandardMaterial({ color: 0x70c060, flatShading: true })); crown.scale.set(3.5, 2.4, 3.5); crown.position.set(S.x + 4, trunk.position.y + 4, S.z - 4); g.add(crown);
+  for (let i = 0; i < 9; i++) { const f = new THREE.Mesh(G.sphM, new THREE.MeshStandardMaterial({ color: 0xff6030, emissive: 0x401000 })); f.scale.setScalar(0.3); f.position.set(S.x + 4 + rr(-2.6, 2.6), crown.position.y - rr(0.5, 1.8), S.z - 4 + rr(-2.6, 2.6)); g.add(f); }
+  SKY.secretFlies = []; const fm = new THREE.MeshBasicMaterial({ color: 0x203010 });
+  for (let i = 0; i < 16; i++) { const m = new THREE.Mesh(G.sphT, fm); m.scale.set(0.05, 0.045, 0.07); g.add(m); SKY.secretFlies.push({ m, a: rnd() * TAU, r: rr(2, 7), h: rr(1.5, 4), sp: rr(0.8, 1.6) * (rnd() < 0.5 ? 1 : -1), ph: rnd() * 6 }); }
+  const sl = new THREE.PointLight(0xfff0c0, 0.8, 30, 1.4); sl.position.set(S.x, S.y + 8, S.z); g.add(sl);
+  // the QWERTY Frog: sits by the pond, clicking away on the keys on its own back
+  const F = makeFrog('qwerty', 'classic'); F.root.scale.setScalar(0.8); const fx = S.x + 1, fz = S.z + 4; F.root.position.set(fx, skyH(fx, fz), fz); F.root.visible = false;
+  makeCreature('rare', 'qwertyfrog', F.root, function (dt) {
+    const k = this; k.t += dt; k.ct -= dt;
+    if (k.ct <= 0) { k.ct = mr(4, 8); k.croakT = 0.6; if (F.root.position.distanceTo(PL.pos) < 35) SFX.croak('qwerty', F.root.position.clone()); }
+    k.croakT = Math.max(0, (k.croakT || 0) - dt); F.root.rotation.y = Math.sin(k.t * 0.3) * 0.6;
+    frogAnimate(F, dt, { croak: k.croakT });
+  }, { F, level: 'sky', ct: 2, seeR: 9 });
+}
+function secretTick(dt) {
+  const S = SKY.secret; if (!S) return;
+  const P = PL.pos;
+  for (const s of SKY.stepMeshes) { const d = Math.hypot(P.x - s.st.x, P.z - s.st.z), op = clamp(1 - (d - 5) / 12, 0.06, 0.9); for (const m of s.grp.children) m.material.opacity = op; s.grp.position.y = s.st.y + Math.sin(GAME.t * 0.8 + s.st.x) * 0.05; }
+  const dS = Math.hypot(P.x - S.x, P.z - S.z), wallOp = clamp((dS - S.r - 3) / 10, 0, 0.95);
+  for (const w of SKY.secretWall) w.material.opacity = wallOp;
+  if (dS < S.r * 2.5) for (const q of SKY.secretFlies) { q.a += q.sp * dt; q.m.position.set(S.x + Math.cos(q.a) * q.r, S.y + q.h + Math.sin(GAME.t * 4 + q.ph) * 0.4, S.z + Math.sin(q.a) * q.r); }
+  if (dS < S.r && !SAVE.stats.secretIsle) { SAVE.stats.secretIsle = 1; persist(); unlockAch('secretisle'); banner('A secret island!', "Hidden in the clouds at the edge of Heron's Domain, there is a tiny paradise. No herons ever come here."); }
+}
+
+/* ---------- the QWERTY Frog's power: type a magic word and it happens ---------- */
+const TYPER = { el: null, cd: 0 };
+const QWORDS = ['67', 'JUMP', 'FLOAT', 'FAST', 'DANCE', 'BUGS', 'FIRE', 'LIGHT', 'INVISIBLE', 'FREEZE', 'REVEAL', 'GOLD', 'PARTY', 'RAINBOW', 'DAY', 'NIGHT', 'MORNING', 'RAIN', 'STORM', 'FOG', 'SUN', 'HEAL', 'HERON', 'RANDOM', 'HOME', 'SKY', 'TOP', 'UNDERGROUND', 'MANTLE', 'TEMPLE', 'WORM', 'SECRET'];
+function openTyper() {
+  if (GAME.state !== 'play' || PL.stage < 3) return;
+  if (TYPER.cd > 0) { toast('Your keys are still clicking back up. Wait a moment.', 'quiet'); return; }
+  if (!TYPER.el) {
+    const d = document.createElement('div'); d.id = 'typer';
+    d.style.cssText = 'position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);z-index:60;background:#ecece4;border:3px solid #9a9a90;border-radius:14px;padding:14px 16px 10px;box-shadow:0 10px 40px rgba(0,0,0,.45);font-family:var(--display,sans-serif);text-align:center;width:min(420px,88vw)';
+    d.innerHTML = '<div style="color:#333;font-size:15px;margin-bottom:8px">Type a magic word, then press Enter</div><input id="typerIn" autocomplete="off" spellcheck="false" style="width:100%;box-sizing:border-box;font-size:26px;text-align:center;text-transform:uppercase;letter-spacing:3px;padding:8px;border:2px solid #b0b0a8;border-radius:8px;background:#fff;color:#111"><div style="color:#666;font-size:12px;margin-top:8px;line-height:1.5">' + QWORDS.join(' · ') + '</div>';
+    document.body.appendChild(d); TYPER.el = d;
+    const inp = d.querySelector('input');
+    inp.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Enter') { const w = inp.value.trim().toUpperCase(); closeTyper(); typeWord(w); } else if (e.key === 'Escape') closeTyper(); else if (e.key.length === 1) noiseHit(2500 + Math.random() * 800, 2, 0.03, 0.25); });
+    inp.addEventListener('blur', () => setTimeout(() => { if (TYPER.open) closeTyper(); }, 150));
+  }
+  clearKeys(); exitLock(); TYPER.open = true; TYPER.el.style.display = 'block'; const inp = TYPER.el.querySelector('input'); inp.value = ''; setTimeout(() => inp.focus(), 30);
+}
+function closeTyper() { TYPER.open = false; if (TYPER.el) TYPER.el.style.display = 'none'; clearKeys(); }
+function typeWord(w) {
+  if (!w) return; w = String(w).toUpperCase().trim();
+  { const n = w.replace(/[^A-Z0-9]/g, ''); if (['67', 'SIXSEVEN', 'SIX7', '6SEVEN'].includes(n)) { sixSeven(); TYPER.cd = 3; unlockAch('typist'); return; } }
+  const P = PL.pos, ding = () => tone('sine', 2490, 2490, 0.5, 0.25);
+  const done = msg => { ding(); sparkle(P.clone().add(new V3(0, 0.6, 0)), 16, 0x80b0ff); toast(w + '! ' + msg); TYPER.cd = 3; unlockAch('typist'); if (PL.F && PL.F.keys) for (const q of PL.F.keys) q.t = 0.4; };
+  const go = (lv, place, msg, spot) => { if (curLevel() === lv && !W.inBurrow && !spot) { done('You are already there.'); return; } done(msg); if (W.inBurrow) { W.inBurrow = false; W.chamber.visible = false; for (const k in W.interiors) W.interiors[k].visible = false; W.burrowKind = 'wild'; } travel(lv, place); };
+  switch (w) {
+    case 'JUMP': if (!PL.buried) { PL.vel.set(Math.sin(PL.yaw) * 4, 26, Math.cos(PL.yaw) * 4); PL.onGround = false; PL.inWater = false; PL.diving = false; PL.airT = 0.1; } done('Boing! Up, up and away.'); break;
+    case 'FLOAT': PL.floatT = 15; done('You feel as light as a feather for a while.'); break;
+    case 'BUGS': for (let i = 0; i < 8; i++) spawnInsect(['fly', 'moth', 'beetle', 'grasshopper', 'dragonfly'][i % 5], P.clone().add(new V3(mr(-4, 4), 1 + Math.random() * 1.5, mr(-4, 4)))); done('Bugs pop up out of nowhere. Dinner!'); break;
+    case 'DAY': GAME.time = 11; done('The sun jumps up into the sky.'); break;
+    case 'NIGHT': GAME.time = 22.5; done('Night falls all at once.'); break;
+    case 'RAIN': WEATHER.type = 'heavy'; WEATHER.timer = 120; done('Clouds roll in and it pours.'); break;
+    case 'SUN': WEATHER.type = 'sunny'; WEATHER.timer = 140; done('The clouds melt away.'); break;
+    case 'HEAL': if (TYPER.healT > GAME.t) { toast('HEAL is tired. Try again in a little while.', 'quiet'); return; } TYPER.healT = GAME.t + 60; Object.assign(PL.needs, { health: 100, hunger: Math.max(PL.needs.hunger, 80), hydration: 100, energy: 100, temp: 50 }); done('You feel completely better.'); break;
+    case 'HOME': if (!homePos()) { toast('You do not have a home yet.', 'quiet'); return; } done('Zip! Back home.'); fadeTo(() => { if (W.inBurrow) { W.inBurrow = false; for (const k in W.interiors) W.interiors[k].visible = false; W.chamber.visible = false; W.burrowKind = 'wild'; } placeAtHome(); CAM.snap = true; }); break;
+    case 'SKY': go('sky', () => { const U = UPDRAFTS[Math.floor(Math.random() * UPDRAFTS.length)]; placePlayer(U.x + 3, U.z + 3); }, "Whoosh, up to Heron's Domain."); break;
+    case 'TOP': go('top', () => { const s = spawnPointTop(); placePlayer(s[0], s[1]); }, 'Back up to the top of the world.'); break;
+    case 'UNDERGROUND': go('ug', () => { const D = UG_DOORS[Math.floor(Math.random() * 6)]; placePlayer(D.x + 2.5, D.z + 2.5); }, 'Down into the Underground.'); break;
+    case 'MANTLE': go('mantle', () => { const D = MAGMA_VENTS[Math.floor(Math.random() * MAGMA_VENTS.length)]; placePlayer(D.x + 3, D.z + 3); }, 'Down, down, down to the Mantle.'); break;
+    case 'FAST': PL.fastT = 20; done('Your legs are a blur! Super speed for a while.'); break;
+    case 'DANCE': PL.danceT = 4; done('Dance party for one!'); break;
+    case 'FIRE': FIREB.cd = 0; fireBreath(); done('Fwoosh!'); break;
+    case 'LIGHT': PL.lightT = 90; done('You glow like a lantern.'); break;
+    case 'INVISIBLE': PL.invisT = 20; done('You vanish! Nothing can see you for a while.'); break;
+    case 'FREEZE': GAME.freezeT = 10; done('Everything around you freezes in place!'); break;
+    case 'REVEAL': W.revealT = 180; done('Every shiny pebble in the world lights up with a huge glow for 3 minutes. Go find them!'); break;
+    case 'GOLD': GAME.pattern = 'golden'; if (!SAVE.unlocks.patterns.includes('golden')) { SAVE.unlocks.patterns.push('golden'); persist(); } swapFrog(); done('Your skin turns to shining gold.'); break;
+    case 'PARTY': PL.partyT = 6; done('PARTY!'); break;
+    case 'RAINBOW': makeRainbow(); done('A rainbow arcs across the sky.'); break;
+    case 'MORNING': GAME.time = 6.5; done('The sun is just coming up.'); break;
+    case 'STORM': WEATHER.type = 'storm'; WEATHER.timer = 120; done('Thunder rumbles. Here comes a storm!'); break;
+    case 'FOG': WEATHER.type = 'fog'; WEATHER.timer = 120; done('A thick fog rolls in.'); break;
+    case 'HERON': if (curLevel() !== 'top') { toast('There are no herons to call down here.', 'quiet'); return; } HER.timer = 0; done('Uh oh. You called a heron. Why would you do that?'); break;
+    case 'RANDOM': { const lv = curLevel(); done('Zap! Somewhere random.'); travel(lv, () => randomSpot(lv)); } break;
+    case 'TEMPLE': go('mantle', () => { placePlayer(TEMPLE.x, TEMPLE.z + 24); PL.yaw = Math.PI; CAM.yaw = Math.PI; }, 'To the Temple of The Worm.', true); break;
+    case 'WORM': go('gut', () => { placePlayer(GUT.mouth.x, GUT.mouth.z + 12); PL.yaw = 0; CAM.yaw = 0; }, 'Straight into the belly of the Worm!', true); break;
+    case 'SECRET': go('sky', () => { const S = SKY.secret; placePlayer(S.x + 2, S.z - 2); }, 'Back to the secret island.', true); break;
+    default: noiseHit(400, 1, 0.3, 0.3); toast('You type "' + w + '"... the keys clack, but nothing happens. Try one of the words on the list.', 'quiet');
+  }
+}
+function spawnPointTop() { let best = W.pads[0], bd = 1e9; for (const p of W.pads) { const d = Math.hypot(p.x + 6, p.z - 26); if (d < bd) { bd = d; best = p; } } return [best.x + 3, best.z + 3]; }
+function qwertyTick(dt) {
+  TYPER.cd = Math.max(0, TYPER.cd - dt);
+  for (const k of ['floatT', 'fastT', 'danceT', 'lightT', 'invisT', 'partyT']) PL[k] = Math.max(0, (PL[k] || 0) - dt);
+  GAME.freezeT = Math.max(0, (GAME.freezeT || 0) - dt);
+  const P = PL.pos;
+  // dancing: spin and hop to a little tune
+  if (PL.danceT > 0) { PL.yaw += dt * 9; if (PL.onGround && Math.random() < dt * 3) { PL.vel.set(0, 6, 0); PL.onGround = false; PL.airT = 0.1; } if (Math.random() < dt * 5) tone('square', [523, 659, 784, 1047][Math.floor(Math.random() * 4)], 0, 0.12, 0.08); }
+  // party: confetti sparkles in every colour
+  if (PL.partyT > 0 && Math.random() < dt * 10) { sparkle(P.clone().add(new V3(mr(-3, 3), mr(1, 3), mr(-3, 3))), 10, [0xff4080, 0x40c0ff, 0xffe040, 0x80ff60, 0xc060ff][Math.floor(Math.random() * 5)]); if (Math.random() < 0.4) tone('triangle', [523, 587, 659, 784, 880][Math.floor(Math.random() * 5)], 0, 0.15, 0.1); }
+  // a glow that follows you around
+  if (!TYPER.light) { TYPER.light = new THREE.PointLight(0xfff0c0, 0, 30, 1.3); scene.add(TYPER.light); }
+  TYPER.light.intensity = PL.lightT > 0 ? Math.min(1, PL.lightT / 3) * 2 : 0; TYPER.light.position.set(P.x, P.y + 3, P.z);
+  // invisible: the frog vanishes, leaving just a faint shimmer
+  if (PL.F && PL.invisT > 0) { PL.F.root.visible = false; if (Math.random() < dt * 6) sparkle(P.clone().add(new V3(0, 0.4, 0)), 2, 0xc0e0ff); }
+  // the rainbow fades away after a while
+  if (TYPER.rainbow) { TYPER.rainbow.t -= dt; TYPER.rainbow.g.children.forEach(m => m.material.opacity = 0.45 * clamp(TYPER.rainbow.t / 8, 0, 1)); if (TYPER.rainbow.t <= 0) { scene.remove(TYPER.rainbow.g); TYPER.rainbow = null; } }
+  revealTick(dt); sixSevenTick(dt);
+}
+function makeRainbow() {
+  if (TYPER.rainbow) scene.remove(TYPER.rainbow.g);
+  const g = new THREE.Group(), cols = [0xff3030, 0xff9020, 0xffe030, 0x40d040, 0x3090ff, 0x5040d0, 0xa040c0];
+  cols.forEach((c, i) => { const m = new THREE.Mesh(new THREE.TorusGeometry(80 - i * 2.2, 1.1, 6, 80, Math.PI), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.45, depthWrite: false, fog: false })); g.add(m); });
+  const a = CAM.yaw; g.position.set(PL.pos.x + Math.sin(a) * 120, PL.pos.y - 10, PL.pos.z + Math.cos(a) * 120); g.rotation.y = a; scene.add(g); TYPER.rainbow = { g, t: 60 };
+}
+function randomSpot(lv) {
+  for (let k = 0; k < 400; k++) {
+    if (lv === 'top') { const a = Math.random() * TAU, d = Math.sqrt(Math.random()) * WORLD_R * 0.85, x = Math.cos(a) * d, z = Math.sin(a) * d; if (terrainH(x, z) > waterLevelAt(x, z) + 0.3 && slopeAt(x, z) < 0.6) { placePlayer(x, z); return; } }
+    else if (lv === 'sky') { const o = SKY.islands[Math.floor(Math.random() * SKY.islands.length)]; if (o.kind !== 'cloudstep') { placePlayer(o.x, o.z); return; } }
+    else { const L = CL, x = mr(-L.half + 10, L.half - 10), z = mr(-L.half + 10, L.half - 10); if (lr(L, x, z) > 3 && lf(L, x, z) > L.water + 0.3) { placePlayer(x, z); return; } }
+  }
+}
+// REVEAL: every shiny pebble left in the world gets a huge glow for 3 minutes
+function revealTick(dt) {
+  W.revealT = Math.max(0, (W.revealT || 0) - dt);
+  const on = W.revealT > 0;
+  if (!on && !TYPER.glows) return;
+  if (!TYPER.glows) { TYPER.glows = (W.shinies || []).map(s => { const g = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xfff080, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, fog: false })); g.renderOrder = 20; scene.add(g); const b = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 60, 8, 1, true), new THREE.MeshBasicMaterial({ color: 0xfff080, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })); scene.add(b); return { s, g, b }; }); }
+  const fade = on ? Math.min(1, W.revealT / 5) : 0;
+  for (const q of TYPER.glows) {
+    const p = q.s.mesh.getWorldPosition(new V3()), here = !q.s.got && (q.s.burrow ? W.inBurrow && W.burrowKind === 'wild' : !W.inBurrow && curLevel() === 'top');
+    q.g.visible = q.b.visible = on && here;
+    if (!q.g.visible) continue;
+    const pulse = 1 + Math.sin(GAME.t * 3 + p.x) * 0.15;
+    q.g.position.set(p.x, p.y + 1, p.z); q.g.scale.setScalar(9 * pulse); q.g.material.opacity = 0.9 * fade;
+    q.b.position.set(p.x, p.y + 30, p.z); q.b.material.opacity = 0.35 * fade;
+  }
+  if (!on && W.revealT === 0 && TYPER.glows) { for (const q of TYPER.glows) { q.g.visible = q.b.visible = false; } }
+}
+// forget species that no longer exist (the Long-tongued Frog) so old saves still load
+(function () { try { if (SAVE && SAVE.unlocks) SAVE.unlocks.species = SAVE.unlocks.species.filter(k => SPECIES[k]); if (SAVE.guide) delete SAVE.guide.longtonguefrog; for (const o of [SAVE.last, SAVE.run]) if (o && o.species && !SPECIES[o.species]) o.species = 'green'; if (SAVE.homes) delete SAVE.homes.longtongue; if (SAVE.ach && (SAVE.ach.chorus || SAVE.ach.complete) && SAVE.unlocks.patterns && !SAVE.unlocks.patterns.includes('golden')) SAVE.unlocks.patterns.push('golden'); } catch (e) {} })();
+/* ---------- SIX-SEVEN!!!!! ----------
+   The screen flashes rainbow once, a loud glitchy voice shouts SIX-SEVEN,
+   and every bug in the world turns into a jumble of 6s and 7s until you
+   go back to the title and press Hop in again. */
+function sixSeven() {
+  W.sixSeven = true;
+  // the rainbow flash
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;z-index:70;pointer-events:none;background:linear-gradient(90deg,#ff0040,#ff9000,#ffee00,#20e040,#00a0ff,#7040ff,#ff00c0,#ff0040);background-size:300% 100%;mix-blend-mode:screen;opacity:0.95;transition:opacity 0.9s ease-out';
+  document.body.appendChild(ov);
+  const cv = document.getElementById('c'); let n = 0;
+  const flick = setInterval(() => { n++; ov.style.backgroundPosition = (n * 37 % 100) + '% 0'; if (cv) cv.style.filter = 'hue-rotate(' + (n * 67 % 360) + 'deg) saturate(3)'; if (n === 8) ov.style.opacity = '0'; if (n > 16) { clearInterval(flick); ov.remove(); if (cv) cv.style.filter = ''; } }, 70);
+  // the LOUD glitchy voice: a robot voice made from scratch, plus the browser's own voice on top
+  glitchVoice67();
+  try { if (window.speechSynthesis) { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('SIX SEVEN!'); u.pitch = 0.1; u.rate = 1.1; u.volume = 1; speechSynthesis.speak(u); } } catch (e) {}
+  CAM.shake = 1.2;
+  banner('SIX-SEVEN!!!!!', 'Every bug in the world is now a jumble of 6s and 7s. Press Hop in again from the title screen to put them back.');
+}
+const SIX = { mats: null };
+function sixMats() {
+  if (SIX.mats) return SIX.mats; SIX.mats = {};
+  for (const d of ['6', '7']) {
+    const c = mkCanvas(64, 64), x = c.getContext('2d'); x.font = 'bold 60px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round'; x.lineWidth = 6; x.strokeStyle = 'rgba(20,20,30,.85)'; x.strokeText(d, 32, 36); x.fillStyle = '#ffffff'; x.fillText(d, 32, 36);
+    SIX.mats[d] = new THREE.MeshBasicMaterial({ map: canvasTex(c), transparent: true, alphaTest: 0.3, side: THREE.DoubleSide, depthWrite: true });
+  }
+  return SIX.mats;
+}
+// build a bug out of white 6s and 7s: 6s for the head, body and wings, 7s for the legs and antennae
+function makeSixSevenBug(type) {
+  const M = sixMats(), g = new THREE.Group(), I = INSECT[type] || {}, s = 0.55 * (I.size || 1) * (type === 'mosquito' ? 0.7 : 1);
+  const card = (d, w, h, x, y, z, ry, rx, rz) => { const m = new THREE.Mesh(G.plane, M[d]); m.scale.set(w, h, 1); m.position.set(x, y, z); m.rotation.set(rx || 0, ry || 0, rz || 0); g.add(m); return m; };
+  const cross = (d, w, h, x, y, z) => { card(d, w, h, x, y, z, Math.PI / 2); card(d, w, h, x, y, z, 0); };
+  cross('6', 0.2 * s, 0.2 * s, 0, 0.02 * s, 0.17 * s);     // head
+  cross('6', 0.26 * s, 0.24 * s, 0, 0.02 * s, 0.0);        // thorax
+  cross('6', 0.3 * s, 0.28 * s, 0, 0.02 * s, -0.2 * s);    // abdomen
+  // legs and antennae are 7s that always face you, so you can see them from any side
+  if (!SIX.smat) { SIX.smat = new THREE.SpriteMaterial({ map: M['7'].map, transparent: true, alphaTest: 0.3 }); }
+  const legs = [];
+  for (const sd of [-1, 1]) for (let i = 0; i < 3; i++) { const sp = new THREE.Sprite(SIX.smat); sp.scale.set(0.17 * s, 0.17 * s, 1); const base = new V3(sd * 0.15 * s, -0.04 * s, (0.08 - i * 0.09) * s); sp.position.copy(base); g.add(sp); legs.push({ sp, base, sd, i }); }
+  for (const sd of [-1, 1]) { const sp = new THREE.Sprite(SIX.smat); sp.scale.set(0.11 * s, 0.11 * s, 1); sp.position.set(sd * 0.05 * s, 0.14 * s, 0.25 * s); g.add(sp); }
+  const wingsSix = [];
+  if (I.fly) for (const sd of [-1, 1]) { const piv = new THREE.Group(); piv.position.set(sd * 0.04 * s, 0.07 * s, 0.0); g.add(piv); const m = new THREE.Mesh(G.plane, M['6']); m.scale.set(0.32 * s, 0.24 * s, 1); m.rotation.x = -Math.PI / 2; m.position.x = sd * 0.16 * s; piv.add(m); wingsSix.push({ piv, sd }); }
+  return { g, legs, wings: wingsSix };
+}
+function sixSevenTick(dt) {
+  if (!W.sixSeven) return;
+  for (const o of INS.list) {
+    if (!o.alive) continue;
+    if (!o.six) { for (const c of o.root.children) c.visible = false; o.six = makeSixSevenBug(o.type); o.root.add(o.six.g); o.sixPh = Math.random() * 6; }
+    const b = o.six; o.sixPh += dt;
+    for (const L of b.legs) { const k = Math.sin(o.sixPh * 14 + L.i * 2 + (L.sd > 0 ? 1.5 : 0)); L.sp.position.set(L.base.x, L.base.y + Math.max(0, k) * 0.03, L.base.z + k * 0.02); }
+    for (const w of b.wings) w.piv.rotation.z = w.sd * Math.sin(o.sixPh * 40) * 0.7;
+    // a little glitch now and then: the whole bug jumps sideways for a frame
+    b.g.position.x = Math.random() < dt * 4 ? mr(-0.05, 0.05) : 0;
+  }
+}
+
+// a loud, crunchy, stuttering robot voice shouting "S-S-SIX... SEVEN!", built from buzzing and hissing
+function glitchVoice67() {
+  if (!AU.ok) return;
+  const c = AU.ctx, t0 = c.currentTime + 0.05;
+  const out = c.createGain(); out.gain.value = 3.2;
+  const crush = c.createWaveShaper(); const curve = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 512 - 1; curve[i] = Math.round(x * 6) / 6; } crush.curve = curve;
+  const comp = c.createDynamicsCompressor(); comp.threshold.value = -20; comp.ratio.value = 8;
+  out.connect(crush); crush.connect(comp); comp.connect(c.destination);
+  const noiseBuf = AU.noise;
+  // a vowel: a buzzy sawtooth through two formant filters
+  const vowel = (t, dur, f0, f1, F1, F2, vol) => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f1, t + dur);
+    const g = c.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.015); g.gain.setValueAtTime(vol, t + dur - 0.03); g.gain.linearRampToValueAtTime(0, t + dur);
+    for (const [F, q, a] of [[F1, 6, 1], [F2, 8, 0.7]]) { const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = F; bp.Q.value = q; const ga = c.createGain(); ga.gain.value = a * 3; o.connect(bp); bp.connect(ga); ga.connect(g); }
+    g.connect(out); o.start(t); o.stop(t + dur + 0.02); };
+  // a hiss: "s", "k", "v"
+  const hiss = (t, dur, f, vol, type) => { const s = c.createBufferSource(); s.buffer = noiseBuf; const f1 = c.createBiquadFilter(); f1.type = type || 'highpass'; f1.frequency.value = f; const g = c.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.01); g.gain.setValueAtTime(vol, t + dur - 0.02); g.gain.linearRampToValueAtTime(0, t + dur); s.connect(f1); f1.connect(g); g.connect(out); s.start(t, Math.random()); s.stop(t + dur + 0.02); };
+  let t = t0;
+  // "S-S-"
+  for (let i = 0; i < 2; i++) { hiss(t, 0.06, 4500, 0.8); vowel(t + 0.06, 0.05, 150, 150, 400, 2000, 0.8); t += 0.14; }
+  // "SIX"
+  hiss(t, 0.11, 4500, 0.9); vowel(t + 0.11, 0.16, 170, 140, 420, 2100, 1); hiss(t + 0.3, 0.03, 1800, 0.9, 'bandpass'); hiss(t + 0.34, 0.12, 4800, 0.9); t += 0.6;
+  // "SEV-"
+  hiss(t, 0.1, 4500, 0.9); vowel(t + 0.1, 0.17, 190, 160, 580, 1850, 1); hiss(t + 0.27, 0.06, 2500, 0.5, 'bandpass'); vowel(t + 0.27, 0.06, 150, 140, 300, 1200, 0.5);
+  // "-EN!"
+  vowel(t + 0.34, 0.16, 160, 110, 520, 1500, 1); vowel(t + 0.5, 0.14, 110, 90, 260, 1000, 0.7);
+  // glitch stutter at the end: chopped repeats of "SEVEN" pitched up
+  for (let i = 0; i < 4; i++) vowel(t + 0.7 + i * 0.07, 0.05, 260 + i * 80, 260 + i * 80, 560, 1850, 0.6);
 }
 /* ============================================================
    Multiplayer servers (claude.ai live rooms)
@@ -8024,7 +8470,7 @@ function updateWorldVisuals(dt) {
   { const mk = regionFog(); if (mk > 0) { far = Math.min(far, lerp(far, 55, mk)); near = Math.min(near, far * 0.1); scene.fog.color.lerp(_tmpC.setRGB(0.5, 0.58, 0.48).multiplyScalar(0.35 + 0.65 * dayK), mk * 0.7); } }
   W.camUnder = !W.inBurrow && camera.position.y < waterLevelAt(camera.position.x, camera.position.z) - 0.03 && terrainH(camera.position.x, camera.position.z) < waterLevelAt(camera.position.x, camera.position.z);
   if (W.camUnder) { const murky = regionAt(camera.position.x, camera.position.z) === 'Muddy Marsh' ? 0.6 : 1; scene.fog.color.setRGB(0.06, 0.2, 0.19).multiplyScalar(0.3 + 0.7 * dayK); near = 0.4; far = (W.envFog > 1.5 ? 11 : 17) * murky + 6 * dayK; }
-  if (UGN && W.inGut) { scene.fog.color.setRGB(0.24, 0.05, 0.08); near = 3; far = 55; }
+  if (UGN && W.inGut) { const al = GUT.alertT > 0 ? 0.5 + 0.5 * Math.sin(GAME.t * 6) : 0; scene.fog.color.setRGB(0.24 + al * 0.25, 0.05, 0.08 - al * 0.04); near = 3; far = 55 - al * 15; }
   if (UGN && !W.camUnder && !W.inMantle && !W.inGut) { scene.fog.color.setRGB(0.025, 0.03, 0.035); near = 4; far = SPECIES[GAME.species].caveSight ? 70 : 42; }
   if (UGN && W.inMantle && !W.camUnder) { scene.fog.color.setRGB(0.16, 0.05, 0.02); near = 6; far = 80; }
   if (UGN && W.inMantle && W.camUnder) { scene.fog.color.setRGB(0.5, 0.13, 0.03); near = 1; far = 22; }
@@ -8297,6 +8743,7 @@ function showTitle() {
   buildTitle(); exitLock(); mpRefreshUI();
 }
 function beginPlay(cont) {
+  W.sixSeven = false;
   audioInit();
   const L = SAVE.last;
   if (!cont) Object.assign(GAME, { mode: L.mode, species: L.species, pattern: L.pattern, env: L.env });
@@ -8577,6 +9024,7 @@ function tick(dt) {
     if (c.eatenT > 0 && c.kind !== 'frog' && c.kind !== 'treefrog') { c.eatenT -= dt; c.root.visible = false; if (c.eatenT <= 0) respawnPrey(c); continue; }
     if (c.ctrl || c.stuck) continue;
     if (!c.burrow && (c.level || 'top') !== (W.level || 'top')) continue;
+    if (GAME.freezeT > 0 && c.root.position.distanceTo(PL.pos) < 80) continue;
     c.update.call(c, dt);
   }
   updateNeeds(dt); updateGrowth(dt); updateDiscovery(dt); ambientOneShots(dt);
