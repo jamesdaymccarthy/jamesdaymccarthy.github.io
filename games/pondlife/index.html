@@ -254,6 +254,7 @@ select { background: var(--panel-2); color: var(--ink); border: 1px solid var(--
         <span class="kbd">Q</span><p>Sneak (lower and quieter). Underwater: swim down.</p>
         <span class="kbd">X</span><p>Rest to recover energy.</p>
         <span class="kbd">V</span><p>Insider Frog: turn yourself inside out, or turn a creature next to you inside out so it sticks to you. Telepathic Frog: take over the mind of a nearby creature. Fire Frog: breathe fire. QWERTY Frog: type a magic word.</p>
+        <span class="kbd">L</span><p>Read the Lore Book, once you have put it together in the Wormory.</p>
         <span class="kbd">G</span><p>Telepathic Frog: hold to fire the telelaser. It discovers the nearest frog you have not found yet, but makes you lose a random one of your other frogs.</p>
         <span class="kbd">Z</span><p>Insider Frog: shake off everything stuck to you.</p>
         <span class="kbd">B</span><p>Multiplayer: hold to talk (when voice chat is set to push to talk).</p>
@@ -474,12 +475,15 @@ const SPECIES = {
     desc: 'A brown, lumpy frog that lives in a pile of poop at the very end of the Great Worm. It smells so bad that nothing wants to eat it, and a cloud of flies follows it everywhere: free snacks! Its tongue is extra long from catching them.', habitat: 'The poop pile at the end of the Worm', ability: 'Too stinky to eat; flies follow it around' },
   qwerty: { name: 'QWERTY Frog', size: 0.8, jump: 1.0, swim: 1.0, speed: 1.0, tongue: 3.2, climb: false, qwerty: true, hunger: 1, dry: 1, armor: 1,
     color: 0x8a8e94, belly: 0xe0e0dc, spot: 0x5a5e64, eye: 0x101010, throat: 0xd0d0cc, croak: 'qwerty',
-    desc: "A pale grey frog with real keyboard keys on its back, from a secret island in the very corner of Heron's Domain. Press V and type a magic word, and it happens! Try JUMP, FLOAT, BUGS, DAY, NIGHT, RAIN, SUN, HEAL, HOME, SKY, TOP, UNDERGROUND or MANTLE.", habitat: "A secret island in the corner of Heron's Domain", ability: 'V: type a magic word and it comes true' }
+    desc: "A pale grey frog with real keyboard keys on its back, from a secret island in the very corner of Heron's Domain. Press V and type a magic word, and it happens! Try JUMP, FLOAT, BUGS, DAY, NIGHT, RAIN, SUN, HEAL, HOME, SKY, TOP, UNDERGROUND or MANTLE.", habitat: "A secret island in the corner of Heron's Domain", ability: 'V: type a magic word and it comes true' },
+  sixseven: { name: '67 Frog', size: 0.85, jump: 1.1, swim: 1.0, speed: 1.1, tongue: 3.4, climb: false, digits: true, hunger: 1, dry: 0.8, armor: 1,
+    color: 0xffffff, belly: 0xffffff, spot: 0xdddddd, eye: 0x202020, throat: 0xffffff, croak: 'sixseven',
+    desc: 'A frog made entirely of glitchy white 6s and 7s. Nobody knows where it came from. Press V to glitch forward 6.7 steps in the blink of an eye, straight through anything in the way. Its croak is... well. You know.', habitat: 'SIX-SEVEN', ability: 'V: glitch-teleport 6.7 steps forward' }
 };
 const UNLOCK_MAP = { spadefoot: 'spadefoot', glassfrog: 'glass', redeye: 'redeye', flyingfrog: 'flying', hornedfrog: 'cannibal', tinyfrog: 'tiny', goliathfrog: 'goliath', insiderfrog: 'insider', telefrog: 'telepath', hotspringfrog: 'hotspring', swampfrog: 'swamp', desertfrog: 'desert', cavefrog: 'cavefrog', birdfrog: 'bird', firefrog: 'fire', lavafrog: 'lava', goldenfrog: 'golden', wormfrog: 'worm', poopfrog: 'poop', qwertyfrog: 'qwerty' };
 // the Insider Frog's other side: a completely different set of abilities
 const INSIDE_OUT = Object.assign({}, SPECIES.insider, { name: 'Insider Frog (inside out)', tongue: 0, climb: true, swim: 1.75, speed: 0.9, jump: 0.9, dry: 3.2, armor: 1.4, toxic: true, croak: 'insiderOut' });
-const SPECIES_UNLOCK = { spadefoot: 'Find the Spadefoot Toad sleeping in the hidden burrow.', glass: 'Find the Glass Frog at the waterfall at night.', redeye: 'Find the Red-eyed Tree Frog where mushrooms glow.', flying: 'Spot the Flying Frog flying between the treetops near the old oak.', cannibal: 'Find the Horned Frog lurking half-buried in the Muddy Marsh.', tiny: 'Peek closely into the water lily flowers on the Lily Pond.', goliath: 'Something enormous lurks in the cold Mountain Tarn. Watch the water closely, or try calling to it.', hotspring: 'Find the warm orange frog basking at the edge of a hot spring.', telepath: 'At night, two glowing eyes watch from the top of a stone lantern in the Bamboo Grove.', swamp: 'Listen for grunting in the Cypress Swamp and find the frog making it.', desert: 'Something tiny squeaks among the dunes near the sandstone arch.', insider: 'Something in the Pitcher Plant Bog does not look quite right. Search closely among the red moss.', cavefrog: 'Deep in the Underground, by a still black lake far from any way in, something pale is calling.', bird: "High above the world, in Heron's Domain, something blue sings on a tiny island west-northwest of the big heron rookery, at the far left edge of the middle group of islands. Ride a whirlwind up to find it.", fire: 'Deep in the Mantle, something small and blazing sits at the edge of the lava.', lava: 'In the lava lakes of the Mantle, two glowing eyes poke up out of the molten rock.', golden: 'The altar at the top of the Temple of The Worm is empty. What belongs there was swallowed long ago.', worm: 'Something pink and squishy lives deep inside the Great Worm. Jump into its mouth to find it.', poop: 'At the very end of the Great Worm\'s tail there is a stinking pile. Something lives in it.', qwerty: "In the very corner of Heron's Domain, a faint trail of clouds leads to an island no one can see. Something there is clicking." };
+const SPECIES_UNLOCK = { sixseven: 'Type a certain number as the QWERTY Frog...', spadefoot: 'Find the Spadefoot Toad sleeping in the hidden burrow.', glass: 'Find the Glass Frog at the waterfall at night.', redeye: 'Find the Red-eyed Tree Frog where mushrooms glow.', flying: 'Spot the Flying Frog flying between the treetops near the old oak.', cannibal: 'Find the Horned Frog lurking half-buried in the Muddy Marsh.', tiny: 'Peek closely into the water lily flowers on the Lily Pond.', goliath: 'Something enormous lurks in the cold Mountain Tarn. Watch the water closely, or try calling to it.', hotspring: 'Find the warm orange frog basking at the edge of a hot spring.', telepath: 'At night, two glowing eyes watch from the top of a stone lantern in the Bamboo Grove.', swamp: 'Listen for grunting in the Cypress Swamp and find the frog making it.', desert: 'Something tiny squeaks among the dunes near the sandstone arch.', insider: 'Something in the Pitcher Plant Bog does not look quite right. Search closely among the red moss.', cavefrog: 'Deep in the Underground, by a still black lake far from any way in, something pale is calling.', bird: "High above the world, in Heron's Domain, something blue sings on a tiny island west-northwest of the big heron rookery, at the far left edge of the middle group of islands. Ride a whirlwind up to find it.", fire: 'Deep in the Mantle, something small and blazing sits at the edge of the lava.', lava: 'In the lava lakes of the Mantle, two glowing eyes poke up out of the molten rock.', golden: 'The altar at the top of the Temple of The Worm is empty. What belongs there was swallowed long ago.', worm: 'Something pink and squishy lives deep inside the Great Worm. Jump into its mouth to find it.', poop: 'At the very end of the Great Worm\'s tail there is a stinking pile. Something lives in it.', qwerty: "In the very corner of Heron's Domain, a faint trail of clouds leads to an island no one can see. Something there is clicking." };
 
 const PATTERNS = {
   classic: { name: 'Classic', how: 'Starter pattern' },
@@ -580,6 +584,11 @@ const ACH = {
   chorus: { name: 'Pond Chorus', desc: 'Answer 5 other frogs with your own croak.', reward: ['pattern', 'golden'] },
   inside_out: { name: 'Inside Out', desc: 'Turn yourself inside out as the Insider Frog and catch a bug with your guts.' },
   telelaser: { name: 'Pew Pew', desc: 'Fire the telelaser as the Telepathic Frog.' },
+  wormhelper: { name: 'Home for the Worms', desc: 'Help the worm find a spot for the Wormory.' },
+  detective: { name: 'Worm Detective', desc: 'Find all three clues about where the Great Worm came from.' },
+  origin: { name: 'The Last Stone', desc: 'Tell the worms where the Great Worm came from.' },
+  lorekeeper: { name: 'Lorekeeper', desc: 'Read every lore tablet in the Wormory.' },
+  wormory: { name: 'Down the Wormhole', desc: 'Find the Wormory.' },
   typist: { name: 'Typist', desc: 'Type a magic word as the QWERTY Frog.' },
   secretisle: { name: 'Head Above the Clouds', desc: "Find the secret island in Heron's Domain." },
   immune: { name: 'Immune to Immunity', desc: 'Survive until the Great Worm forgets you are inside it.' },
@@ -607,7 +616,7 @@ const ACH = {
   temple: { name: 'Worm Worshipper', desc: 'Find the Temple of The Worm deep in the Mantle.' }
 };
 
-const REGIONS = ['Lily Pond', 'Big Lake', 'Babbling Stream', 'Waterfall', 'Pond Cave', 'Muddy Marsh', 'Wildflower Meadow', 'Fallen Giant', 'Hidden Burrow', 'Cypress Swamp', 'Sand Dunes', 'Old Mill Pond', 'Rainforest', 'Hot Springs', 'Mountain Tarn', 'Pitcher Plant Bog', 'Bamboo Grove', 'The Mountains', 'The Underground', 'Flooded Caves', 'The Mantle', "Heron's Domain", 'Temple of The Worm', 'The Worm', 'The Worm: Stomach', 'The Worm: Heart', 'The Worm: Brain', 'The Worm: Lungs', 'The Worm: Gizzard', 'The Worm: Acid River', 'The Worm: Swallowed Junk', 'The Worm: Parasite Pit', 'The Worm: Tail', 'The Worm: Idol Chamber', 'The Worm: Worm Frog Nest', 'The Worm: Throat', 'The Worm: Spine Hall', 'The Worm: Liver', 'The Worm: Kidneys', 'The Worm: Fat Caverns', 'The Worm: Egg Chamber', 'The Worm: Gallstone Grotto'];
+const REGIONS = ['Lily Pond', 'Big Lake', 'Babbling Stream', 'Waterfall', 'Pond Cave', 'Muddy Marsh', 'Wildflower Meadow', 'Fallen Giant', 'Hidden Burrow', 'Cypress Swamp', 'Sand Dunes', 'Old Mill Pond', 'Rainforest', 'Hot Springs', 'Mountain Tarn', 'Pitcher Plant Bog', 'Bamboo Grove', 'The Mountains', 'The Underground', 'Flooded Caves', 'The Mantle', "Heron's Domain", 'Temple of The Worm', 'The Worm', 'The Worm: Stomach', 'The Worm: Heart', 'The Worm: Brain', 'The Worm: Lungs', 'The Worm: Gizzard', 'The Worm: Acid River', 'The Worm: Swallowed Junk', 'The Worm: Parasite Pit', 'The Worm: Tail', 'The Worm: Idol Chamber', 'The Worm: Worm Frog Nest', 'The Worm: Throat', 'The Worm: Spine Hall', 'The Worm: Liver', 'The Worm: Kidneys', 'The Worm: Fat Caverns', 'The Worm: Egg Chamber', 'The Worm: Gallstone Grotto', 'The Wormory'];
 
 /* ---------------- World layout ---------------- */
 const WATER = 0, UPPER_WATER = 7.6, FALL_X = -127.3;
@@ -773,11 +782,12 @@ function terrainH(x, z) {
   const u = clamp(fx - i, 0, 1), v = clamp(fz - j, 0, 1);
   return lerp(lerp(hgAt(i, j), hgAt(i + 1, j), u), lerp(hgAt(i, j + 1), hgAt(i + 1, j + 1), u), v);
 }
-function waterLevelAt(x, z) { if (W.inBurrow) return -999; if (W.inCaves) return CL === MANTLE ? (SPECIES[GAME.species].lavaSwim ? MANTLE.water : -999) : CL === GUT ? -999 : UG.water; if (W.inSky) return -999; return x < FALL_X ? UPPER_WATER : WATER; }
+function waterLevelAt(x, z) { if (W.inBurrow) return -999; if (W.inCaves) return CL === MANTLE ? (SPECIES[GAME.species].lavaSwim ? MANTLE.water : -999) : CL === GUT || CL === WORMORY ? -999 : UG.water; if (W.inSky) return -999; return x < FALL_X ? UPPER_WATER : WATER; }
 function slopeAt(x, z) { const e = 0.6; return Math.hypot(terrainH(x + e, z) - terrainH(x - e, z), terrainH(x, z + e) - terrainH(x, z - e)) / (2 * e); }
 
 function regionAt(x, z, inBurrow) {
   if (inBurrow && W.burrowKind === 'worm') return 'The Worm';
+  if (W.inWormory && !inBurrow) return 'The Wormory';
   if (W.inGut && !inBurrow) { const R = gutRoomAt(x, z); return R ? 'The Worm: ' + R.label : 'The Worm'; }
   if (inBurrow) return W.burrowKind === 'home' ? 'Your ' + DEN[W.denKind].name.replace(/^./, c => c.toUpperCase()) : 'Hidden Burrow';
   if (W.inSky) return "Heron's Domain";
@@ -1069,6 +1079,7 @@ function makeFrog(spKey, pattern) {
     blink: 0, blinkT: 2 + Math.random() * 3, breathe: Math.random() * 6, croakT: 0, look: null };
   if (sp.insider) insiderParts(F, { skin, bellyM, throatM, webM });
   if (sp.fireproof) F.flames = flameParts(tilt, head);
+  if (sp.digits) sixSevenFrog(F);
   if (sp.qwerty) {
     F.keys = []; const letters = 'QWERTYASDFGH', capG = new THREE.BoxGeometry(0.105, 0.07, 0.105);
     for (let i = 0; i < 12; i++) {
@@ -1196,6 +1207,7 @@ function frogPose(F, o) {
   }
 }
 function frogAnimate(F, dt, st) {
+  if (F.digitParts) for (let k = 0; k < 3; k++) if (Math.random() < dt * 10) { const q = F.digitParts[Math.floor(Math.random() * F.digitParts.length)]; q.o.material = q.mats[Math.floor(Math.random() * q.mats.length)]; q.o.position.set(q.p.x + mr(-0.04, 0.04), q.p.y + mr(-0.03, 0.03), q.p.z); setTimeout(() => q.o.position.copy(q.p), 70); }
   if (F.keys) for (const q of F.keys) { if (Math.random() < dt * 0.6) q.t = 0.2; q.t = Math.max(0, q.t - dt); q.k.position.y += ((q.t > 0 ? -0.02 : 0) - (q.k.userData.dy || 0)); q.k.userData.dy = q.t > 0 ? -0.02 : 0; q.top.emissive.setHex(q.t > 0 ? 0x4080ff : 0x000000); }
   if (F.flyCloud) { for (const q of F.flyCloud) { q.a += q.sp * dt; q.fl.position.set(Math.cos(q.a) * q.r, q.h + Math.sin(GAME.t * 6 + q.a) * 0.1, Math.sin(q.a) * q.r); } for (const s of F.stinkFx) { const k = (GAME.t * 0.4 + s.ph) % 1; s.s.position.set(Math.sin(s.ph * 9) * 0.2, 0.4 + k * 1.2, Math.cos(s.ph * 7) * 0.2); s.s.scale.setScalar(0.4 + k * 0.6); s.s.material.opacity = Math.sin(k * Math.PI) * 0.3; } }
   if (F.wormSegs) { F.wormPh = (F.wormPh || 0) + dt * (st.moving || st.crawl ? 7 : 2); F.wormSegs.forEach((s, i) => { s.position.x = Math.sin(F.wormPh - i * 0.6) * 0.012 * i; s.position.y = 0.24 - i * 0.012 + Math.max(0, Math.sin(F.wormPh * 0.5 - i * 0.5)) * 0.03; }); }
@@ -2342,7 +2354,8 @@ function noiseHit(freq, q, dur, vol, pos, delay, type, buf) {
 const CROAK_GAIN = { green: 2.6, bull: 4.8, tree: 5.0, redeye: 2.6, dart: 6.5, glass: 2.3, flying: 5.0, tiny: 2.0, horned: 5.2, spade: 2.6, insider: 2.0, insiderOut: 5.5, desert: 2.2, swamp: 3.6, hotspring: 3.0, tele: 3.2, cave: 3.0, bird: 3.0, fire: 3.4, lava: 4.4, gold: 2.6, poop: 4.0, qwerty: 2.4 };
 const SFX = {
   croak(kind, pos, big) {
-    if (!AU.ok) return; const c = AU.ctx, t0 = c.currentTime + 0.01, V = big ? 1 : 0.8;
+    if (!AU.ok) return;
+    if (kind === 'sixseven') { glitchVoice67(big ? 0.4 : 0.28, pos || PL.pos); return; } const c = AU.ctx, t0 = c.currentTime + 0.01, V = big ? 1 : 0.8;
     // calls carry much further than other sounds, and each kind is evened out to the same loudness
     let dest = AU.sfx; if (pos) { const pn = mkPanner(); pn.refDistance = 9; pn.rolloffFactor = 0.8; setPos(pn, pos.x, pos.y, pos.z); pn.connect(AU.sfx); dest = pn; }
     const comp = c.createDynamicsCompressor(); comp.threshold.value = -12; comp.knee.value = 6; comp.ratio.value = 10; comp.attack.value = 0.002; comp.release.value = 0.15; comp.connect(dest);
@@ -2913,7 +2926,7 @@ function toggleInsideOut() {
 function insiderTick(dt) {
   PL.flipCD = Math.max(0, (PL.flipCD || 0) - dt);
   { const sb = document.getElementById('tShake'), has = !!(PL.stuckList && PL.stuckList.length); if (sb && sb.hidden === has) sb.hidden = !has; }
-  { const fb = document.getElementById('tFlip'), sp0 = SPECIES[GAME.species], on = !!(sp0.insider || sp0.telepath || sp0.fireBreath || sp0.qwerty); if (fb) { if (fb.hidden === on) fb.hidden = !on; const lbl = sp0.telepath ? 'Mind' : sp0.fireBreath ? 'Fire' : sp0.qwerty ? 'Type' : 'Flip'; if (fb.textContent !== lbl) fb.textContent = lbl; } const lb = document.getElementById('tLaser'); if (lb && lb.hidden === !!sp0.telepath) lb.hidden = !sp0.telepath; }
+  { const fb = document.getElementById('tFlip'), sp0 = SPECIES[GAME.species], on = !!(sp0.insider || sp0.telepath || sp0.fireBreath || sp0.qwerty || sp0.digits); if (fb) { if (fb.hidden === on) fb.hidden = !on; const lbl = sp0.telepath ? 'Mind' : sp0.fireBreath ? 'Fire' : sp0.qwerty ? 'Type' : sp0.digits ? 'Glitch' : 'Flip'; if (fb.textContent !== lbl) fb.textContent = lbl; } const lb = document.getElementById('tLaser'); if (lb && lb.hidden === !!sp0.telepath) lb.hidden = !sp0.telepath; }
   if (!SPECIES[GAME.species].insider) { PL.insideOut = false; PL.flipT = 0; }
   const want = !!(PL.insideOut && PL.stage >= 3);
   if (PL.flipT > 0) PL.flipT = Math.max(0, PL.flipT - dt);
@@ -4144,7 +4157,7 @@ function findInteract() {
   if (PL.settled || PL.digProg > 0 && false) return;
   const T = homeType();
   if (!W.inBurrow && (nearHome() || ((T.kind === 'treehouse' || T.kind === 'skynest') && homePos() && PL.climbing && Math.hypot(PL.pos.x - homePos().x, PL.pos.z - homePos().z) < 3.5 && Math.abs(PL.pos.y - homePos().y) < 1.6))) {
-    const verb = { rockpool: 'Wade into your rock pool', fish: 'Climb inside your big frog', burrow: 'Crawl into your burrow', pad: 'Dive down to your bubble room', wallow: 'Wade into your mud lodge', treehouse: 'Go inside your tree house', leaf: 'Slip behind your dewdrop leaf', brom: 'Climb into your bromeliad', hide: 'Crawl into your canopy pod', skynest: 'Climb into your sky nest', lair: 'Slither into your mud lair', acorn: 'Open the door of your acorn cottage', insideout: 'Open the door of your inside-out house', steam: 'Duck into your steam grotto', stump: 'Climb into your stump hollow', sandden: 'Wriggle into your sand den', crystal: 'Step into your crystal dome', grotto: 'Crawl into your glowworm grotto', cloudnest: 'Climb into your cloud nest', emberden: 'Step into your ember den', lavatube: 'Slide into your lava tube', goldhall: 'Step into your golden hall' }[T.kind];
+    const verb = { rockpool: 'Wade into your rock pool', fish: 'Climb inside your big frog', burrow: 'Crawl into your burrow', pad: 'Dive down to your bubble room', wallow: 'Wade into your mud lodge', treehouse: 'Go inside your tree house', leaf: 'Slip behind your dewdrop leaf', brom: 'Climb into your bromeliad', hide: 'Crawl into your canopy pod', skynest: 'Climb into your sky nest', lair: 'Slither into your mud lair', acorn: 'Open the door of your acorn cottage', insideout: 'Open the door of your inside-out house', steam: 'Duck into your steam grotto', stump: 'Climb into your stump hollow', sandden: 'Wriggle into your sand den', crystal: 'Step into your crystal dome', grotto: 'Crawl into your glowworm grotto', cloudnest: 'Climb into your cloud nest', emberden: 'Step into your ember den', lavatube: 'Slide into your lava tube', goldhall: 'Step into your golden hall', void: 'Glitch into your void', wormery: 'Wriggle into your wormery', dungheap: 'Squelch into your dung heap', computer: 'Climb into your computer' }[T.kind];
     INTERACT.cur = { label: verb, act: () => enterBurrow('home') }; return; }
   if (T.kind === 'fish') {
     const f = W.homeFish; if (!f || W.inBurrow) return;
@@ -4273,7 +4286,7 @@ function buildInteriors() {
     const l = new THREE.PointLight(0xc8e070, 0.9, 14, 1.6); l.position.set(0, BURROW_Y + 3, -1); g.add(l);
     denDoor(g, 0xe8f0c8); g.visible = false;
   }
-  buildRooms(); buildRooms2(); buildFishRoom(); buildRockRoom(); buildInsideOutRoom(); buildNewRooms(); buildCrystalRoom(); buildGrottoRoom(); buildLevelRooms(); buildGoldRoom();
+  buildRooms(); buildRooms2(); buildFishRoom(); buildRockRoom(); buildInsideOutRoom(); buildNewRooms(); buildCrystalRoom(); buildGrottoRoom(); buildLevelRooms(); buildGoldRoom(); buildVoidRoom(); buildNewFrogRooms();
 }
 function denTick(dt) {
   if (!W.inBurrow) return;
@@ -5614,6 +5627,7 @@ function regionFog() {
 }
 // a first-visit note for each new place
 const PLACE_HINT = {
+  'The Wormory': 'The Wormory: a maze of tunnels where the worms keep the records of the world. Glowing stone tablets are carved with its whole story. Walk up to one to read it.',
   'The Worm: Throat': 'The Throat: a giant uvula dangles from the ceiling. The mouth is just behind you.',
   'The Worm: Spine Hall': 'The Spine Hall: a long tunnel with the Worm\'s backbone running along the ceiling.',
   'The Worm: Liver': 'The Liver: dark, spongy and full of yellow bile puddles.',
@@ -5919,6 +5933,7 @@ function vPower() {
   const sp = SPECIES[GAME.species];
   if (sp.fireBreath) { fireBreath(); return true; }
   if (sp.qwerty) { openTyper(); return true; }
+  if (sp.digits) { glitchDash(); return true; }
   if (sp.telepath) { if (PL.mind) mindRelease(); else { const c = nearestCreature(7 + PL.size); if (c) mindTake(c); else toast('Get closer to a creature, then press V to take over its mind.', 'quiet'); } return true; }
   if (sp.insider) { const c = nearestCreature(2.4 + PL.size * 0.8); if (c) { stickCreature(c); return true; } return toggleInsideOut(); }
   return false;
@@ -6248,7 +6263,7 @@ function pickMagmaVents() {
     MAGMA_VENTS.push({ name: 'Magma vent', x, z, kind: 'vent' });
   }
 }
-function buildUGGrid() { buildLayerGrid(UG); pickMagmaVents(); buildLayerGrid(MANTLE); buildSkyGrid(); buildGutGrid(); }
+function buildUGGrid() { buildLayerGrid(UG); pickMagmaVents(); buildLayerGrid(MANTLE); buildSkyGrid(); buildGutGrid(); buildLayerGrid(WORMORY); }
 function lbil(L, arr, x, z) {
   const fx = (x + L.half) / L.res, fz = (z + L.half) / L.res, n = L.n;
   const i = clamp(Math.floor(fx), 0, n - 2), j = clamp(Math.floor(fz), 0, n - 2), u = clamp(fx - i, 0, 1), v = clamp(fz - j, 0, 1);
@@ -6264,7 +6279,7 @@ function caveSolid(x, z, need) { return caveRoom(x, z) < (need || 1.0); }
 
 /* ---------- surface entrances (in the main world) ---------- */
 function buildCaveEntrances() {
-  buildUpdrafts();
+  buildUpdrafts(); buildWormoryMound();
   W.ugDoorMeshes = [];
   const rockM = new THREE.MeshStandardMaterial({ color: 0x6a6458, roughness: 0.9, flatShading: true, map: TEX.detail });
   for (const D of UG_DOORS) {
@@ -6289,6 +6304,7 @@ function buildUnderground() {
   CL = MANTLE; buildMantleLayer(); buildCaveMap(MANTLE);
   buildSkyLayer();
   buildGutLayer();
+  buildWormoryLayer();
   CL = UG; W.level = 'top'; W.levelShown = 'top'; W.inCaves = W.inSky = W.inMantle = W.inGut = W.offTop = false;
 }
 function buildUGLayer() {
@@ -6396,14 +6412,14 @@ function buildCaveMap(L) {
 }
 
 /* ---------- the four levels: 'sky' (Heron's Domain), 'top', 'ug' (the Underground), 'mantle' ---------- */
-const LEVEL_NAMES = { sky: "Heron's Domain", top: 'The Top', ug: 'The Underground', mantle: 'The Mantle', gut: 'The Worm' };
+const LEVEL_NAMES = { sky: "Heron's Domain", top: 'The Top', ug: 'The Underground', mantle: 'The Mantle', gut: 'The Worm', wormory: 'The Wormory' };
 function curLevel() { return W.level || 'top'; }
 function homeLevel(h) { return h ? (h.level || (h.cave ? 'ug' : 'top')) : 'top'; }
 function setLevel(lv) {
   lv = lv || 'top'; const was = W.levelShown || 'top';
   if ((W.level || 'top') === lv && was === lv) return;
-  W.level = lv; W.inCaves = lv === 'ug' || lv === 'mantle' || lv === 'gut'; W.inSky = lv === 'sky'; W.inMantle = lv === 'mantle'; W.inGut = lv === 'gut'; W.offTop = lv !== 'top';
-  CL = lv === 'mantle' ? MANTLE : lv === 'gut' ? GUT : UG;
+  W.level = lv; W.inCaves = lv === 'ug' || lv === 'mantle' || lv === 'gut' || lv === 'wormory'; W.inWormory = lv === 'wormory'; W.inSky = lv === 'sky'; W.inMantle = lv === 'mantle'; W.inGut = lv === 'gut'; W.offTop = lv !== 'top';
+  CL = lv === 'mantle' ? MANTLE : lv === 'gut' ? GUT : lv === 'wormory' ? WORMORY : UG;
   if (!W.mainWorld || !UG.group) return;
   W.levelShown = lv;
   // the surface world and its animals are only drawn on the top level
@@ -6412,7 +6428,7 @@ function setLevel(lv) {
     for (const o of W.mainWorld.concat(CREATURES.filter(c => !c.burrow && !c.level).map(c => c.root))) { if (hide) { o.userData.vu = o.visible; o.visible = false; } else o.visible = o.userData.vu !== false; }
   }
   for (const c of CREATURES) if (c.level) c.root.visible = c.level === lv;
-  UG.group.visible = lv === 'ug'; if (MANTLE.group) MANTLE.group.visible = lv === 'mantle'; if (SKY.group) SKY.group.visible = lv === 'sky'; if (GUT.group) GUT.group.visible = lv === 'gut';
+  UG.group.visible = lv === 'ug'; if (MANTLE.group) MANTLE.group.visible = lv === 'mantle'; if (SKY.group) SKY.group.visible = lv === 'sky'; if (GUT.group) GUT.group.visible = lv === 'gut'; if (WORMORY.group) WORMORY.group.visible = lv === 'wormory';
   if (W.homeMesh) for (const k in W.homeMesh) { const h = SAVE.homes[k]; if (W.homeMesh[k]) W.homeMesh[k].visible = homeLevel(h) === lv; }
   INS.list.forEach(removeInsect); INS.list.length = 0;
   HER.state = 'away'; HER.root.visible = false; HER.timer = 60;
@@ -6429,7 +6445,7 @@ function travel(lv, place, msgKey, msg) {
     if (lv === 'ug') unlockAch('deepdown');
     if (lv === 'mantle') unlockAch('mantle');
     if (lv === 'sky') unlockAch('skyhigh');
-    banner(LEVEL_NAMES[lv], { sky: 'The highest level: floating islands where the herons nest.', top: 'Back on the surface.', ug: 'The second level down: caves under the whole world.', mantle: 'The deepest level: rivers of lava and black glass.', gut: 'Inside the Great Worm. Squishy!' }[lv]);
+    banner(LEVEL_NAMES[lv], { sky: 'The highest level: floating islands where the herons nest.', top: 'Back on the surface.', ug: 'The second level down: caves under the whole world.', mantle: 'The deepest level: rivers of lava and black glass.', gut: 'Inside the Great Worm. Squishy!', wormory: 'Where the worms keep their records.' }[lv]);
     setTimeout(() => { W.ugBusy = false; }, 800);
   });
 }
@@ -6483,7 +6499,7 @@ function caveTick(dt) {
       if (D.kind === 'sink' && d < 1.6 && P.y < D.y + 1.5 && !PL.climbing) { enterCaves(D, false); return; }
       if (D.kind === 'water' && d < 2.4 && PL.inWater && P.y < D.bottom + 2.2) { enterCaves(D, true); return; }
     }
-    topSkyTick(dt);
+    topSkyTick(dt); wormoryTopTick(dt);
     return;
   }
   if (lv === 'sky') { skyTick(dt); return; }
@@ -6497,12 +6513,13 @@ function caveTick(dt) {
     for (const v of UG.ventFX || []) { v.glow.material.opacity = 0.65 + Math.sin(GAME.t * 3 + v.l.position.x) * 0.2; v.l.intensity = 1.4 + Math.sin(GAME.t * 5 + v.l.position.z) * 0.3; }
   }
   if (lv === 'gut') { gutTick(dt); if (W.ugBusy) return; }
+  if (lv === 'wormory') { wormoryTick(dt); if (W.ugBusy) return; }
   if (lv === 'mantle') {
     for (const D of MAGMA_VENTS) if (near(D, 3) < 1.8) { exitMantle(D); return; }
     mantleTick(dt);
   }
   const sight = SPECIES[GAME.species].caveSight;
-  if (W.ugLight) { const L = lv === 'mantle' ? MANTLE.light : lv === 'gut' ? GUT.light : W.ugLight; L.position.set(P.x, P.y + 2.2, P.z); L.distance = sight ? 48 : 26; L.intensity = (sight ? 1.9 : 1.3) * (lv === 'gut' ? 0.6 : 1); }
+  if (W.ugLight) { const L = lv === 'mantle' ? MANTLE.light : lv === 'gut' ? GUT.light : lv === 'wormory' ? WORMORY.light : W.ugLight; L.position.set(P.x, P.y + 2.2, P.z); L.distance = sight ? 48 : 26; L.intensity = (sight ? 1.9 : 1.3) * (lv === 'gut' ? 0.6 : 1); }
   if (lv === 'ug') {
     if (W.ugWorms) W.ugWorms.material.opacity = 0.65 + Math.sin(GAME.t * 0.8) * 0.25;
     for (const s of W.ugShafts || []) s.beam.material.opacity = (isDay() ? 0.18 : 0.06) * (0.85 + Math.sin(GAME.t * 0.5) * 0.15);
@@ -7044,6 +7061,7 @@ function buildLevelLife() {
     }, { F, level: 'mantle', ct: 3, seeR: 11 });
   }
   CL = UG;
+  buildOriginClues(); buildWormNPC();
 }
 function skyHeronTick(k, dt) {
   const Hm = k.Hm, p = k.root.position, P = PL.pos; k.t += dt; k.cd = Math.max(0, k.cd - dt); k.scared = Math.max(0, k.scared - dt);
@@ -7171,13 +7189,13 @@ function buildLevelRooms() {
 }
 let L_TUBE_TEX = null;
 function levelsTick(dt) {
-  fireBreathTick(dt); idolTick(dt); digMoundTick(dt); qwertyTick(dt);
+  fireBreathTick(dt); idolTick(dt); digMoundTick(dt); qwertyTick(dt); voidTick(dt); newHomesTick(dt); cluesTick(dt); wormNPCTick(dt);
   // flies follow the Poop Frog around: free snacks
   if (SPECIES[GAME.species].stinky && PL.stage >= 3 && !W.inBurrow && GAME.state === 'play') { W.flyT = (W.flyT || 0) - dt; if (W.flyT <= 0) { W.flyT = 5; const near = INS.list.filter(i => i.alive && i.type === 'fly' && i.pos.distanceTo(PL.pos) < 8).length; if (near < 3) spawnInsect('fly', PL.pos.clone().add(new V3(mr(-2, 2), 1 + Math.random(), mr(-2, 2)))); } }
   if (SAVE.unlocks.decor.includes('shells') || SAVE.decor.includes('shells')) { SAVE.unlocks.decor = SAVE.unlocks.decor.filter(k => k !== 'shells'); SAVE.decor = SAVE.decor.filter(k => k !== 'shells'); persist(); }
   if (L_TUBE_TEX && W.inBurrow) L_TUBE_TEX.offset.x += dt * 0.02;
   const lv = curLevel(); SAVE.stats.levels = SAVE.stats.levels || [];
-  if (GAME.state === 'play' && !W.inBurrow && lv !== 'gut' && !SAVE.stats.levels.includes(lv)) { SAVE.stats.levels.push(lv); persist(); if (SAVE.stats.levels.length >= 4) unlockAch('allfour'); }
+  if (GAME.state === 'play' && !W.inBurrow && lv !== 'gut' && lv !== 'wormory' && !SAVE.stats.levels.includes(lv)) { SAVE.stats.levels.push(lv); persist(); if (SAVE.stats.levels.length >= 4) unlockAch('allfour'); }
 }
 
 /* ---------- the Temple of The Worm (in the middle of the Mantle) ----------
@@ -8035,6 +8053,7 @@ function revealTick(dt) {
    go back to the title and press Hop in again. */
 function sixSeven() {
   W.sixSeven = true;
+  if (!SAVE.unlocks.species.includes('sixseven')) { SAVE.unlocks.species.push('sixseven'); persist(); setTimeout(() => banner('New species unlocked', 'The 67 Frog! A frog made entirely of 6s and 7s. Pick it on the frog screen.'), 2600); }
   // the rainbow flash
   const ov = document.createElement('div');
   ov.style.cssText = 'position:fixed;inset:0;z-index:70;pointer-events:none;background:linear-gradient(90deg,#ff0040,#ff9000,#ffee00,#20e040,#00a0ff,#7040ff,#ff00c0,#ff0040);background-size:300% 100%;mix-blend-mode:screen;opacity:0.95;transition:opacity 0.9s ease-out';
@@ -8087,13 +8106,13 @@ function sixSevenTick(dt) {
 }
 
 // a loud, crunchy, stuttering robot voice shouting "S-S-SIX... SEVEN!", built from buzzing and hissing
-function glitchVoice67() {
+function glitchVoice67(vol, pos) {
   if (!AU.ok) return;
   const c = AU.ctx, t0 = c.currentTime + 0.05;
-  const out = c.createGain(); out.gain.value = 3.2;
+  const out = c.createGain(); out.gain.value = 3.2 * (vol === undefined ? 1 : vol);
   const crush = c.createWaveShaper(); const curve = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 512 - 1; curve[i] = Math.round(x * 6) / 6; } crush.curve = curve;
   const comp = c.createDynamicsCompressor(); comp.threshold.value = -20; comp.ratio.value = 8;
-  out.connect(crush); crush.connect(comp); comp.connect(c.destination);
+  out.connect(crush); crush.connect(comp); if (pos) comp.connect(outAt(pos)); else comp.connect(c.destination);
   const noiseBuf = AU.noise;
   // a vowel: a buzzy sawtooth through two formant filters
   const vowel = (t, dur, f0, f1, F1, F2, vol) => { const o = c.createOscillator(); o.type = 'sawtooth'; o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f1, t + dur);
@@ -8114,6 +8133,686 @@ function glitchVoice67() {
   // glitch stutter at the end: chopped repeats of "SEVEN" pitched up
   for (let i = 0; i < 4; i++) vowel(t + 0.7 + i * 0.07, 0.05, 260 + i * 80, 260 + i * 80, 560, 1850, 0.6);
 }
+/* ---------- the 67 Frog: a frog made of white 6s and 7s ---------- */
+function sixSevenFrog(F) {
+  // the frog's body is built entirely out of white 6s and 7s: every part of the frog is hidden and
+  // replaced by a crust of digits sitting on its surface, so it keeps a frog's shape and moves like one
+  if (!SIX.digitMats) {
+    SIX.digitMats = { light: [], dark: [] };
+    for (const [key, fill, line] of [['light', '#ffffff', 'rgba(30,30,40,.9)'], ['dark', '#16161c', 'rgba(255,255,255,.35)']]) for (const d of ['6', '7']) {
+      const c = mkCanvas(64, 64), x = c.getContext('2d'); x.font = 'bold 60px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round'; x.lineWidth = 7; x.strokeStyle = line; x.strokeText(d, 32, 36); x.fillStyle = fill; x.fillText(d, 32, 36);
+      const tex = canvasTex(c); for (let r = 0; r < 4; r++) SIX.digitMats[key].push(new THREE.SpriteMaterial({ map: tex, transparent: true, alphaTest: 0.35, rotation: (r - 1.5) * 0.35 }));
+    }
+  }
+  const meshes = []; F.root.traverse(o => { if (o.isMesh) meshes.push(o); });
+  const dark = new Set(); for (const p of F.pupils) p.traverse(o => { if (o.isMesh) dark.add(o); });
+  F.digitParts = []; const v = new V3();
+  for (const m of meshes) {
+    m.visible = false;
+    const geo = m.geometry; if (!geo.boundingSphere) geo.computeBoundingSphere();
+    const bs = geo.boundingSphere, sx = m.scale.x * bs.radius, sy = m.scale.y * bs.radius, sz = m.scale.z * bs.radius, avg = (Math.abs(sx) + Math.abs(sy) + Math.abs(sz)) / 3;
+    if (avg < 0.004) continue;
+    const n = clamp(Math.round(4 * Math.PI * avg * avg * 30), 1, 70), mats = dark.has(m) ? SIX.digitMats.dark : SIX.digitMats.light, size = clamp(avg * 0.95, 0.06, 0.14);
+    for (let i = 0; i < n; i++) {
+      const k = (i + 0.5) / n, phi = Math.acos(1 - 2 * k), th = i * 2.39996;
+      v.set(Math.sin(phi) * Math.cos(th), Math.cos(phi), Math.sin(phi) * Math.sin(th));
+      v.set(v.x * sx + bs.center.x * m.scale.x, v.y * sy + bs.center.y * m.scale.y, v.z * sz + bs.center.z * m.scale.z).applyQuaternion(m.quaternion).add(m.position);
+      const sp = new THREE.Sprite(mats[Math.floor(Math.random() * mats.length)]); sp.scale.set(size, size, 1); sp.position.copy(v); m.parent.add(sp);
+      F.digitParts.push({ o: sp, p: sp.position.clone(), mats });
+    }
+  }
+}
+// seeing the world in 6s and 7s: everything is redrawn as a grid of coloured 6s and 7s
+const SV = { rt: null };
+function sixVisionRender() {
+  const size = renderer.getDrawingBufferSize(new THREE.Vector2());
+  if (!SV.rt || SV.w !== size.x || SV.h !== size.y) {
+    if (SV.rt) SV.rt.dispose();
+    SV.rt = new THREE.WebGLRenderTarget(size.x, size.y); SV.w = size.x; SV.h = size.y;
+    if (!SV.mat) {
+      const c = mkCanvas(128, 64), x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, 128, 64); x.fillStyle = '#fff'; x.font = 'bold 58px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('6', 32, 35); x.fillText('7', 96, 35);
+      const gt = new THREE.CanvasTexture(c); gt.minFilter = THREE.LinearFilter;
+      SV.mat = new THREE.ShaderMaterial({ uniforms: { tDiffuse: { value: null }, tGlyph: { value: gt }, res: { value: new THREE.Vector2() }, cell: { value: 12 }, time: { value: 0 } },
+        vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+        fragmentShader: `uniform sampler2D tDiffuse, tGlyph; uniform vec2 res; uniform float cell, time; varying vec2 vUv;
+          float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+          void main(){
+            vec2 px = vUv * res, c = floor(px / cell), center = (c + 0.5) * cell / res;
+            vec3 col = texture2D(tDiffuse, center).rgb;
+            float flip = floor(time * 0.8 + hash(c) * 9.0);
+            float g = step(0.5, hash(c + flip * 0.137));
+            vec2 lp = fract(px / cell); lp = (lp - 0.5) * 1.12 + 0.5;
+            float m = (lp.x < 0.0 || lp.x > 1.0 || lp.y < 0.0 || lp.y > 1.0) ? 0.0 : texture2D(tGlyph, vec2((lp.x + g) * 0.5, lp.y)).r;
+            vec3 outc = col * 0.16 + col * m * 1.9;
+            gl_FragColor = vec4(outc, 1.0);
+          }`, depthTest: false, depthWrite: false });
+      SV.scene = new THREE.Scene(); SV.cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      const q = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), SV.mat); q.frustumCulled = false; SV.scene.add(q);
+    }
+  }
+  renderer.setRenderTarget(SV.rt); renderer.render(scene, camera); renderer.setRenderTarget(null);
+  SV.mat.uniforms.tDiffuse.value = SV.rt.texture; SV.mat.uniforms.res.value.set(SV.w, SV.h); SV.mat.uniforms.cell.value = Math.round(11 * (renderer.getPixelRatio() || 1)); SV.mat.uniforms.time.value = GAME.t;
+  renderer.render(SV.scene, SV.cam);
+}
+// V: glitch forward 6.7 steps, straight through whatever is in the way
+const GLITCHD = { cd: 0 };
+function glitchDash() {
+  if (GLITCHD.cd > GAME.t) return; GLITCHD.cd = GAME.t + 1.0;
+  const P = PL.pos, fx = Math.sin(PL.yaw), fz = Math.cos(PL.yaw), from = P.clone();
+  let d = 6.7, x, z;
+  for (; d > 0.5; d -= 0.5) { x = P.x + fx * d; z = P.z + fz * d; if (W.inBurrow) { if (Math.hypot(x, z) < BURROW_R - 1.3) break; continue; } if (W.inCaves && caveRoom(x, z) < 1.3) continue; if (!W.offTop && Math.hypot(x, z) > WORLD_R - 2) continue; break; }
+  if (d <= 0.5) return;
+  const air = !PL.onGround, y = P.y, vel = PL.vel.clone();
+  if (air || PL.inWater) { P.x = x; P.z = z; } else placePlayer(x, z);
+  if (air) { PL.vel.copy(vel); PL.onGround = false; }
+  for (let i = 0; i < 6; i++) { const t = i / 5; sparkle(new V3(lerp(from.x, P.x, t), lerp(from.y, P.y, t) + 0.4, lerp(from.z, P.z, t)), 3, 0xffffff); }
+  for (let i = 0; i < 5; i++) { tone('square', 200 + Math.random() * 1200, 100 + Math.random() * 600, 0.04, 0.2, P, i * 0.03, 4000); noiseHit(2000 + Math.random() * 3000, 1, 0.03, 0.25, P, i * 0.03); }
+  const cv = document.getElementById('c'); if (cv) { cv.style.filter = 'hue-rotate(' + Math.floor(Math.random() * 360) + 'deg) contrast(1.4)'; setTimeout(() => { cv.style.filter = ''; }, 90); }
+  CAM.snap = false;
+}
+/* ---------- the 67 Frog's home: an empty dark void with green 6s and 7s raining down ---------- */
+HOME_TYPES.sixseven = { kind: 'void', name: 'void', fx: 0x30ff60, verb: 'Hold to glitch open a void here', intro: '67 frogs live in a void. Stand on flat, soft ground away from water and hold E.', ok: softGround };
+HOT_HOMES.push('void');
+DEN.void = { name: 'void', fog: [0, 0, 0] };
+FLAT_DENS.add('void'); ROOM_CEIL.void = 9;
+HOME_BUILD.void = function (g, h, sp, add) {
+  g.position.y = terrainH(h.x, h.z);
+  // a floating black cube with glowing green edges and a dark doorway
+  const cube = add(new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.2, 2.2), new THREE.MeshBasicMaterial({ color: 0x000000 })), 0, 1.4, -0.2);
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(2.24, 2.24, 2.24)), new THREE.LineBasicMaterial({ color: 0x30ff60 })); edges.position.set(0, 1.4, -0.2); g.add(edges);
+  const door = add(new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.2), new THREE.MeshBasicMaterial({ color: 0x0a2a10 })), 0, 0.9, 0.92);
+  const M = sixMats(); for (let i = 0; i < 6; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: M[i % 2 ? '7' : '6'].map, color: 0x30ff60, transparent: true, alphaTest: 0.3 })); s.scale.setScalar(0.35); s.position.set((i - 2.5) * 0.35, 2.75 + (i % 2) * 0.15, 0.4); g.add(s); }
+};
+const VOID = { rain: [], bed: null };
+function buildVoidRoom() {
+  const g = new THREE.Group(); scene.add(g); W.interiors.void = g;
+  // nothing but black, everywhere
+  const black = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.DoubleSide });
+  const fl = rmMesh(g, new THREE.CircleGeometry(7, 40), black, 0, RY, 0); fl.rotation.x = -Math.PI / 2; fl.castShadow = false;
+  const dome = rmMesh(g, new THREE.SphereGeometry(7.2, 24, 12, 0, TAU, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide }), 0, RY, 0, 1, 1.25, 1); dome.castShadow = false;
+  // green 6s and 7s raining down in columns, like code
+  const tex = {};
+  for (const d of ['6', '7']) { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.font = 'bold 54px monospace'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#fff'; x.fillText(d, 32, 36); tex[d] = canvasTex(c); }
+  VOID.cols = [];
+  for (let i = 0; i < 70; i++) {
+    const a = Math.random() * TAU, r = 1.5 + Math.sqrt(Math.random()) * 5.3, x = Math.cos(a) * r, z = Math.sin(a) * r; if (z > 5 && Math.abs(x) < 1.6) continue;
+    const col = { x, z, speed: mr(1.5, 4), y: Math.random() * 10, chars: [] };
+    for (let k = 0; k < 12; k++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex[Math.random() < 0.5 ? '6' : '7'], color: k === 0 ? 0xd0ffd8 : 0x20ff50, transparent: true, opacity: 1 - k / 12, depthWrite: false, fog: false })); s.scale.setScalar(0.32); g.add(s); col.chars.push(s); }
+    VOID.cols.push(col);
+  }
+  VOID.tex = tex;
+  // a flashing white bed floating in the dark
+  const BX = 2.4, BZ = -1.4;
+  const bedM = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const bed = new THREE.Group(); bed.position.set(BX, RY, BZ); g.add(bed);
+  const base = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.45, 2.4), bedM); base.position.y = 0.3; bed.add(base);
+  const pillow = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.2, 0.5), bedM); pillow.position.set(0, 0.62, -0.85); bed.add(pillow);
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xffffff, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false })); glow.position.y = 0.6; glow.scale.setScalar(4.5); bed.add(glow);
+  VOID.bed = { m: bedM, glow };
+  W.bedPos.void = { x: BX, z: BZ, y: RY + 0.55 };
+  rmGlowDoor(g, 0x30ff60, 1.6, 2.4);
+  g.visible = false;
+}
+function voidTick(dt) {
+  if (!W.inBurrow || W.denKind !== 'void') return;
+  const top = RY + 8.5;
+  for (const c of VOID.cols) {
+    c.y += c.speed * dt; if (c.y > 12) { c.y = 0; c.speed = mr(1.5, 4); }
+    c.chars.forEach((s, k) => { const y = top - c.y + k * 0.38; s.position.set(c.x, y, c.z); s.visible = y > RY && y < top; if (Math.random() < dt * 2) s.material.map = VOID.tex[Math.random() < 0.5 ? '6' : '7']; });
+  }
+  // the bed flashes white
+  const on = Math.floor(GAME.t * 3) % 2 === 0;
+  VOID.bed.m.color.setHex(on ? 0xffffff : 0x303030); VOID.bed.glow.material.opacity = on ? 0.7 : 0.05;
+}
+/* ---------- unique homes for the Worm Frog, the Poop Frog and the QWERTY Frog ---------- */
+HOME_TYPES.worm = { kind: 'wormery', name: 'wormery', fx: 0x6a4a30, verb: 'Hold to dig a wormery here', intro: 'Worm frogs live in wormeries: mounds of soil riddled with tunnels. Stand on soft ground and hold E.', ok: softGround };
+HOME_TYPES.poop = { kind: 'dungheap', name: 'dung heap', fx: 0x6a4424, verb: 'Hold to pile up a dung heap here', intro: 'Poop frogs live in dung heaps. Lovely. Stand on soft ground and hold E.', ok: softGround };
+HOME_TYPES.qwerty = { kind: 'computer', name: 'computer', fx: 0x80c0ff, verb: 'Hold to boot up a computer here', intro: 'QWERTY frogs live inside giant old computers. Stand on flat, soft ground and hold E.', ok: softGround };
+HOT_HOMES.push('wormery', 'dungheap', 'computer');
+DEN.wormery = { name: 'wormery', fog: [0.14, 0.09, 0.05] };
+DEN.dungheap = { name: 'dung heap', fog: [0.2, 0.15, 0.06] };
+DEN.computer = { name: 'computer', fog: [0.02, 0.08, 0.05] };
+for (const k of ['wormery', 'dungheap', 'computer']) FLAT_DENS.add(k);
+ROOM_CEIL.wormery = 5; ROOM_CEIL.dungheap = 5.5; ROOM_CEIL.computer = 6;
+const HOMEFX = { worms: [], flies: [], stink: [], fan: null, screen: null, leds: [] };
+// --- exteriors
+HOME_BUILD.wormery = function (g, h, sp, add) {
+  g.position.y = terrainH(h.x, h.z);
+  const soil = new THREE.MeshStandardMaterial({ color: 0x5a3a20, roughness: 1, flatShading: true });
+  const m = add(new THREE.Mesh(lumpyGeo(1, 0.35, h.x), soil), 0, 0.1, -0.3); m.scale.set(1.8, 0.9, 1.6);
+  const hole = new THREE.MeshBasicMaterial({ color: 0x120a04 });
+  for (let i = 0; i < 6; i++) { const a = i / 6 * TAU + 0.4, r = add(new THREE.Mesh(new THREE.CircleGeometry(0.16, 12), hole), Math.cos(a) * 1.3, 0.55 + (i % 2) * 0.2, -0.3 + Math.sin(a) * 1.15); r.rotation.y = Math.atan2(Math.cos(a), Math.sin(a)); r.rotation.x = -0.3; }
+  const door = add(new THREE.Mesh(new THREE.CircleGeometry(0.45, 18), hole), 0, 0.45, 1.25); door.scale.y = 1.15;
+  for (let i = 0; i < 8; i++) { const c = add(new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.05, 6, 10), soil), rr(-1.8, 1.8), 0.05, rr(0.6, 1.8)); c.rotation.x = Math.PI / 2; }
+};
+HOME_BUILD.dungheap = function (g, h, sp, add) {
+  g.position.y = terrainH(h.x, h.z);
+  const pm = new THREE.MeshStandardMaterial({ color: 0x6a4420, roughness: 0.45 }), pm2 = new THREE.MeshStandardMaterial({ color: 0x553418, roughness: 0.5 });
+  for (let i = 0; i < 4; i++) { const ring = add(new THREE.Mesh(new THREE.TorusGeometry(1.3 - i * 0.28, 0.42 - i * 0.05, 10, 22), i % 2 ? pm2 : pm), 0, 0.35 + i * 0.55, -0.2); ring.rotation.x = Math.PI / 2; ring.rotation.z = i * 0.7; }
+  const core = add(new THREE.Mesh(G.sph, pm), 0, 0.8, -0.2); core.scale.set(1.25, 1.1, 1.25);
+  const tip = add(new THREE.Mesh(G.cone, pm), 0, 2.6, -0.2); tip.scale.set(0.25, 0.6, 0.25); tip.rotation.z = 0.5;
+  const door = add(new THREE.Mesh(new THREE.CircleGeometry(0.42, 18), new THREE.MeshBasicMaterial({ color: 0x1a0e04 })), 0, 0.45, 1.1); door.scale.y = 1.2;
+  const fm = new THREE.MeshBasicMaterial({ color: 0x101010 }); g.userData.flies = [];
+  for (let i = 0; i < 9; i++) { const f = new THREE.Mesh(G.sphT, fm); f.scale.set(0.05, 0.04, 0.07); g.add(f); g.userData.flies.push({ f, a: Math.random() * TAU, r: rr(0.8, 2), h: rr(0.8, 3), sp: rr(1.5, 3) * (Math.random() < 0.5 ? 1 : -1) }); }
+  HOMEFX.extFlies = g.userData.flies;
+};
+HOME_BUILD.computer = function (g, h, sp, add) {
+  g.position.y = terrainH(h.x, h.z);
+  const beige = new THREE.MeshStandardMaterial({ color: 0xd8d0b8, roughness: 0.6 }), dark = new THREE.MeshStandardMaterial({ color: 0x3a3a38, roughness: 0.5 });
+  // a chunky old monitor, with a glowing screen for a door
+  add(new THREE.Mesh(new THREE.BoxGeometry(2.6, 2.1, 2), beige), 0, 1.25, -0.6);
+  add(new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.2, 1.2), beige), 0, 1.15, -1.9);
+  add(new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.2, 1.2), beige), 0, 0.1, -0.6);
+  const sc = mkCanvas(128, 96), sx = sc.getContext('2d'); sx.fillStyle = '#062010'; sx.fillRect(0, 0, 128, 96); sx.fillStyle = '#40ff80'; sx.font = '12px monospace'; ['C:\\> FROG.EXE', 'LOADING...', 'QWERTY OK', 'HOME SWEET', 'HOME_'].forEach((t, i) => sx.fillText(t, 8, 18 + i * 16));
+  const screen = add(new THREE.Mesh(new THREE.PlaneGeometry(2.1, 1.55), new THREE.MeshBasicMaterial({ map: canvasTex(sc) })), 0, 1.3, 0.41);
+  // a giant keyboard lying in front like a doormat
+  add(new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.18, 1.1), beige), 0, 0.09, 1.3);
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 9; c++) { const k = add(new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.1, 0.24), dark), -1.2 + c * 0.3 + r * 0.06, 0.22, 0.98 + r * 0.3); k.castShadow = false; }
+  const led = add(new THREE.Mesh(G.sphT, new THREE.MeshBasicMaterial({ color: 0x40ff60 })), 1.05, 0.38, 0.41); led.scale.setScalar(0.06);
+};
+// --- interiors
+function buildNewFrogRooms() {
+  SEED = 4141;
+  // the wormery: an earthy room full of tunnel holes with worms poking out, roots overhead, and a mossy nook for a bed
+  simpleRoom('wormery', { floor: '#4a3020', fleck: () => 'rgba(' + (90 + Math.random() * 40) + ',' + (60 + Math.random() * 30) + ',30,.55)', wall: 0x5a3a22, door: 0xd0a060, light: 0xffd0a0, bed: [2.6, -1.4, 0.4],
+    deco(g) {
+      const hole = new THREE.MeshBasicMaterial({ color: 0x0e0804 }), wormM = new THREE.MeshStandardMaterial({ color: 0xd88a8a, roughness: 0.4 });
+      for (let i = 0; i < 22; i++) { const a = rnd() * TAU; if (Math.abs(angDiff(a, 0)) < 0.45) continue; const e = rr(0.08, 0.7), r = 6.6; const x = Math.sin(a) * Math.cos(e) * r, y = RY + Math.sin(e) * r * 0.8, z = Math.cos(a) * Math.cos(e) * r; const hm = rmMesh(g, new THREE.CircleGeometry(rr(0.22, 0.4), 14), hole, x, y, z); hm.lookAt(0, y, 0); hm.castShadow = false;
+        if (i % 2 === 0) { const w = new THREE.Group(); w.position.set(x * 0.97, y, z * 0.97); w.lookAt(0, y, 0); g.add(w); const segs = []; for (let k = 0; k < 6; k++) { const s = new THREE.Mesh(G.sphM, wormM); s.scale.setScalar(0.09 - k * 0.006); w.add(s); segs.push(s); } HOMEFX.worms.push({ segs, ph: rnd() * 6 }); } }
+      const rootM = new THREE.MeshStandardMaterial({ color: 0x8a6a40, roughness: 1 });
+      for (let i = 0; i < 18; i++) { const a = rnd() * TAU, d = rr(0.5, 5), L = rr(0.6, 2.2); const rt = rmMesh(g, G.cyl, rootM, Math.sin(a) * d, RY + 5.2 - L / 2, Math.cos(a) * d, 0.04, L, 0.04); rt.rotation.z = rr(-0.3, 0.3); rt.castShadow = false; }
+      rmMesh(g, lumpyGeo(1, 0.3, 4.1), new THREE.MeshStandardMaterial({ color: 0x5a8a3a, roughness: 1, flatShading: true }), 2.6, RY + 0.2, -1.4, 1.3, 0.3, 1.1);
+      for (let i = 0; i < 6; i++) { const p = rmMesh(g, lumpyGeo(0, 0.3, i), new THREE.MeshStandardMaterial({ color: 0x3a2414 }), rr(-4, 0), RY + 0.15, rr(-4, 3), rr(0.2, 0.45)); p.scale.y *= 0.5; }
+    } });
+  // the dung heap: brown, buzzing with flies, stink rising, and a swirly poop-shaped bed
+  simpleRoom('dungheap', { floor: '#5a3a1c', fleck: () => 'rgba(' + (70 + Math.random() * 40) + ',' + (40 + Math.random() * 30) + ',15,.6)', wall: 0x6a4420, door: 0xc0a040, light: 0xffe0a0, bed: [2.4, -1.4, 0.75],
+    deco(g) {
+      const pm = new THREE.MeshStandardMaterial({ color: 0x6a4420, roughness: 0.45 }), pm2 = new THREE.MeshStandardMaterial({ color: 0x553418, roughness: 0.5 });
+      for (let i = 0; i < 3; i++) { const ring = rmMesh(g, new THREE.TorusGeometry(1.1 - i * 0.3, 0.32, 10, 22), i % 2 ? pm2 : pm, 2.4, RY + 0.25 + i * 0.25, -1.4); ring.rotation.x = Math.PI / 2; }
+      for (let i = 0; i < 14; i++) { const a = rnd() * TAU, d = rr(3.5, 6); if (Math.abs(angDiff(a, 0)) < 0.5) continue; const m = rmMesh(g, lumpyGeo(1, 0.3, i * 1.3), i % 2 ? pm : pm2, Math.sin(a) * d, RY + 0.2, Math.cos(a) * d); const s = rr(0.3, 0.7); m.scale.set(s, s * 0.7, s); }
+      const fm = new THREE.MeshBasicMaterial({ color: 0x101010 }); for (let i = 0; i < 24; i++) { const f = new THREE.Mesh(G.sphT, fm); f.scale.set(0.05, 0.04, 0.07); g.add(f); HOMEFX.flies.push({ f, a: rnd() * TAU, r: rr(1, 5.5), h: rr(0.6, 4), sp: rr(1, 2.5) * (rnd() < 0.5 ? 1 : -1) }); }
+      for (let i = 0; i < 6; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0x9ac040, transparent: true, opacity: 0, depthWrite: false })); g.add(s); HOMEFX.stink.push({ s, ph: i / 6 }); }
+      const jar = rmMesh(g, new THREE.CylinderGeometry(0.3, 0.3, 0.6, 14), new THREE.MeshStandardMaterial({ color: 0xc0e0f0, transparent: true, opacity: 0.4 }), -3, RY + 0.3, -2.5); jar.castShadow = false;
+    } });
+  // inside the computer: a green circuit board, chips, capacitors, glowing traces, a spinning fan, and a giant spacebar for a bed
+  simpleRoom('computer', { floor: '#0c3a1c', fleck: () => 'rgba(' + (40 + Math.random() * 40) + ',200,' + (80 + Math.random() * 60) + ',.35)', wall: 0x0a2a14, wallGlow: 0x021208, door: 0x60ffa0, light: 0xc0ffd8, bed: [2.4, -1.4, 0.5],
+    deco(g) {
+      const chip = new THREE.MeshStandardMaterial({ color: 0x16161a, roughness: 0.4 }), pin = new THREE.MeshStandardMaterial({ color: 0xc8c8c0, metalness: 0.8, roughness: 0.3 });
+      for (let i = 0; i < 9; i++) { const a = rnd() * TAU, d = rr(2.5, 5.5); if (Math.abs(angDiff(a, 0)) < 0.5) continue; const x = Math.sin(a) * d, z = Math.cos(a) * d, w = rr(0.8, 1.6); const c = rmMesh(g, new THREE.BoxGeometry(w, 0.25, w * 0.7), chip, x, RY + 0.13, z); c.rotation.y = a; for (let k = 0; k < 6; k++) { const p = rmMesh(g, new THREE.BoxGeometry(0.06, 0.08, 0.16), pin, 0, 0, 0); p.position.set(x + Math.cos(a) * (k - 2.5) * w * 0.15, RY + 0.04, z - Math.sin(a) * (k - 2.5) * w * 0.15); } }
+      const capM = new THREE.MeshStandardMaterial({ color: 0x2040a0, roughness: 0.3, metalness: 0.4 });
+      for (let i = 0; i < 8; i++) { const a = rnd() * TAU, d = rr(3, 6); if (Math.abs(angDiff(a, 0)) < 0.5) continue; rmMesh(g, new THREE.CylinderGeometry(0.25, 0.25, 0.9, 14), capM, Math.sin(a) * d, RY + 0.45, Math.cos(a) * d); }
+      const trace = new THREE.MeshBasicMaterial({ color: 0x40ff90, transparent: true, opacity: 0.6 });
+      for (let i = 0; i < 16; i++) { const t = rmMesh(g, new THREE.PlaneGeometry(rr(1.5, 5), 0.07), trace, rr(-4, 4), RY + 0.02, rr(-4, 4)); t.rotation.x = -Math.PI / 2; t.rotation.z = Math.floor(rnd() * 4) * Math.PI / 4; t.castShadow = false; }
+      // the big fan on the back wall
+      const fan = new THREE.Group(); fan.position.set(-3.2, RY + 2.4, -4.4); fan.lookAt(0, RY + 2.4, 0); g.add(fan); HOMEFX.fan = fan;
+      const fm = new THREE.MeshStandardMaterial({ color: 0x303034, side: THREE.DoubleSide }); fan.add(new THREE.Mesh(new THREE.TorusGeometry(1.1, 0.08, 6, 24), fm)); const blades = new THREE.Group(); fan.add(blades); HOMEFX.fanBlades = blades;
+      for (let i = 0; i < 5; i++) { const b = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.95), fm); b.position.set(Math.cos(i / 5 * TAU) * 0.5, Math.sin(i / 5 * TAU) * 0.5, 0); b.rotation.z = i / 5 * TAU - Math.PI / 2; b.rotation.y = 0.4; blades.add(b); }
+      // blinking LEDs
+      for (let i = 0; i < 10; i++) { const a = rnd() * TAU, d = rr(2, 6); const l = rmMesh(g, G.sphT, new THREE.MeshBasicMaterial({ color: [0x40ff60, 0xff4040, 0x40a0ff][i % 3] }), Math.sin(a) * d, RY + 0.3, Math.cos(a) * d, 0.07); l.castShadow = false; HOMEFX.leds.push({ l, ph: rnd() * 6 }); }
+      // the spacebar bed
+      const sb = rmMesh(g, new THREE.BoxGeometry(2.8, 0.45, 1.1), new THREE.MeshStandardMaterial({ color: 0xe8e4d8, roughness: 0.5 }), 2.4, RY + 0.25, -1.4);
+      sb.rotation.y = 0.2;
+    } });
+}
+function newHomesTick(dt) {
+  const t = GAME.t;
+  if (W.inBurrow && W.denKind === 'wormery') for (const w of HOMEFX.worms) w.segs.forEach((s, k) => s.position.set(Math.sin(t * 3 + w.ph + k) * 0.03 * k, Math.cos(t * 2 + w.ph + k * 0.7) * 0.02 * k, (0.12 + Math.max(0, Math.sin(t * 0.6 + w.ph)) * 0.4) * (k / 5)));
+  if (W.inBurrow && W.denKind === 'dungheap') {
+    for (const q of HOMEFX.flies) { q.a += q.sp * dt; q.f.position.set(Math.cos(q.a) * q.r, RY + q.h + Math.sin(t * 5 + q.a) * 0.2, Math.sin(q.a) * q.r); }
+    for (const st of HOMEFX.stink) { const k = (t * 0.3 + st.ph) % 1; st.s.position.set(2.4 + Math.sin(st.ph * 9) * 0.5, RY + 0.8 + k * 3, -1.4); st.s.scale.setScalar(0.8 + k * 1.6); st.s.material.opacity = Math.sin(k * Math.PI) * 0.3; }
+  }
+  if (W.inBurrow && W.denKind === 'computer') { if (HOMEFX.fanBlades) HOMEFX.fanBlades.rotation.z += dt * 9; for (const L of HOMEFX.leds) L.l.visible = Math.sin(t * 3 + L.ph * 4) > -0.3; }
+  if (HOMEFX.extFlies && !W.inBurrow) for (const q of HOMEFX.extFlies) { q.a += q.sp * dt; q.f.position.set(Math.cos(q.a) * q.r, q.h + Math.sin(t * 5 + q.a) * 0.2, -0.2 + Math.sin(q.a) * q.r); }
+}
+
+/* ============================================================
+   THE WORMORY: a mound of soil hidden in the woods. Inside is a whole
+   maze of tunnels where the worms keep the records of the world, carved
+   on glowing stone tablets: the lore of Pondlife.
+   ============================================================ */
+const WORMORY = { key: 'wormory', y0: -400, water: -999, half: 110, res: 1.5, n: 0, open: null, floor: null, ceil: null, hub: { x: 0, z: 0 }, segs: [], mound: null, light: null,
+  entry: { x: 0, z: -102 } };
+WORMORY.doors = [WORMORY.entry];
+WORMORY.paths = [
+  [[0, -96], [6, -70], [-4, -48], [0, -24], [0, 0]],
+  [[0, 0], [-30, 8], [-56, -6], [-74, -30]], [[0, 0], [32, 6], [58, -10], [76, -34]],
+  [[0, 0], [-6, 30], [8, 56], [0, 82]], [[-56, -6], [-62, 34], [-40, 60]], [[58, -10], [64, 30], [44, 62]],
+  [[-40, 60], [-14, 70], [8, 56]], [[44, 62], [20, 70]], [[-4, -48], [-36, -60]], [[-4, -48], [30, -62]],
+  [[-62, 34], [-80, 26], [-92, 20]], [[64, 30], [82, 22], [94, 16]], [[-40, 60], [-58, 80], [-70, 92]], [[44, 62], [60, 82], [72, 94]],
+  [[-38, -62], [-62, -74], [-80, -82]], [[32, -64], [58, -76], [80, -84]], [[0, 86], [16, 96], [30, 100]], [[-4, -30], [-14, -32], [-24, -30]]
+];
+WORMORY.rooms = [
+  { x: 0, z: -96, r: 9 }, { x: 0, z: 0, r: 18 }, { x: -76, z: -34, r: 13 }, { x: 78, z: -36, r: 13 }, { x: 0, z: 86, r: 16 },
+  { x: -40, z: 62, r: 11 }, { x: 46, z: 64, r: 11 }, { x: -38, z: -62, r: 10 }, { x: 32, z: -64, r: 10 },
+  { x: -92, z: 20, r: 9 }, { x: 94, z: 16, r: 9 }, { x: -70, z: 92, r: 9 }, { x: 72, z: 94, r: 9 }, { x: -80, z: -82, r: 9 }, { x: 80, z: -84, r: 9 }, { x: 30, z: 100, r: 8 }, { x: -24, z: -30, r: 7 }
+];
+WORMORY.sample = function (x, z) {
+  let H = 0, o = 0;
+  for (const P of WORMORY.paths) { const d = polyDist(x, z, P), w = 4.2 + 1.1 * vnoise(x * 0.06 + 9, z * 0.06); if (d < w + 2) { o = Math.max(o, smooth(w + 1.5, w - 0.5, d)); if (d < w) H = Math.max(H, Math.sqrt(w * w - d * d) * 1.4 + 1.4); } }
+  for (const R of WORMORY.rooms) { const d = Math.hypot(x - R.x, z - R.z); if (d > R.r + 2) continue; o = Math.max(o, smooth(R.r + 1.5, R.r - 0.5, d)); if (d < R.r) H = Math.max(H, Math.sqrt(R.r * R.r - d * d) * 0.7 + 2.5); }
+  const floor = WORMORY.y0 + 1.6 + vnoise(x * 0.15, z * 0.15) * 0.25;
+  return { o, H, floor, ceil: floor + H, lake: 0, flood: 0 };
+};
+// the lore of the world, one tablet per chamber
+const LORE = [
+  { at: 1, title: 'I. The Worm Came First', text: 'Before the pond, before the trees, before the sky had anything in it, there was only the Great Worm. It ate its way through the dark for longer than anyone can count, and everything it ate became soil. The soil it left behind became the world. Its tunnels became the Underground. Where it passed close to the fire at the bottom of everything, the rock melted, and that is the Mantle.' },
+  { at: 2, title: 'II. The Wormkeepers', text: 'We are the small worms, the children of the Great Worm. We are too small to make worlds, so we do the next best thing: we remember them. Every tunnel in this Wormory is a page. Every stone is a word. If you are reading this, you are a guest. Wipe your feet.' },
+  { at: 3, title: 'III. The First Frog', text: 'One day it rained, which had never happened before. A single raindrop rolled into a worm tunnel and kept rolling until it reached the bottom, where it found a speck of soil that had never been eaten. The drop and the speck sat together in the dark and became the first frogspawn. That is why every frog begins as an egg in water, and why every frog loves the rain.' },
+  { at: 4, title: 'IV. The Herons', text: 'Herons eat worms. Herons eat frogs. Herons eat anything that wriggles. When the Great Worm grew tired of being pecked, it pushed the soil up into the sky and left the herons up there, on floating islands, where they could not reach it. That is Heron\'s Domain. They are still angry about it. Do not tell them we wrote this.' },
+  { at: 5, title: 'V. The Temple', text: 'The frogs were grateful to the Great Worm for the world, so they built it a temple of black stone in the Mantle and carved a little golden worm to sit on the altar. But frogs forget things. When they stopped visiting, the Worm got sad, and then hungry, and then it swallowed the idol. If someone ever puts it back, the old fire will pour over it, and something precious will be underneath.' },
+  { at: 6, title: 'VI. The Typist', text: 'Far away, in the very corner of the sky, there is a frog with keys on its back. The oldest wormkeepers say it was the one who typed the world in the first place, letter by letter, and that it still can. We are not sure we believe them. We are also not sure we do not.' },
+  { at: 7, title: 'VII. Six-Seven', text: 'Underneath everything, the world is made of numbers. Usually you cannot see them. But if somebody types the wrong ones, the seams show, and the bugs come apart into sixes and sevens. Nobody knows why it is those two numbers. Some things are just like that.' },
+  { at: 8, title: 'VIII. The One Who Goes Everywhere', text: 'It is written that one day a frog will come who has been everywhere: up to the islands of the herons, down through the caves and the fire, and even inside the Worm itself. That frog will read these stones, and then the Wormory will have nothing left to teach. If that is you: hello. Thank you for visiting. The worms are very proud of you.' },
+  { at: 9, title: 'IX. The Pale Ones', text: 'Some frogs went down into the Underground and never came back up. Over many, many years in the dark they lost their colour and their need for sunshine, and now the sun burns them. They are the Cave Frogs. They sing by the black lakes where the Worm once stopped to drink. They are not lost. They just like it down there.' },
+  { at: 10, title: 'X. Children of the Fire', text: 'When the Worm passed close to the fire at the bottom of everything, some of the sparks it kicked up landed in a puddle and hissed into frogs. The ones that stayed hot became Fire Frogs. The ones that cooled down on the outside but kept the fire inside became Lava Frogs. They are cousins. They still argue about which of them is hotter.' },
+  { at: 11, title: 'XI. The Stolen Feathers', text: 'A long time ago, one brave frog climbed a whirlwind all the way up to the herons\' islands and stole a single feather while they slept. It glued the feather on and jumped. It did not fall. Its children were born with feathers of their own, and now the Bird Frogs live right under the herons\' beaks, which annoys the herons more than anything.' },
+  { at: 12, title: 'XII. The Other End', text: 'Everything that goes into the Great Worm has to come out the other end eventually. At the very tip of its tail there is a heap, and in the heap there lives a frog who likes it there very much. Please do not ask the Poop Frog about this. It will tell you, and it will take a long time.' },
+  { at: 13, title: 'XIII. The Frog Turned Inside Out', text: 'In the bog there was once a frog so curious about what it looked like on the inside that it simply turned itself inside out to see. It liked what it saw. It has been flipping back and forth ever since, and so have all its children. We have asked them to stop doing it during meals.' },
+  { at: 14, title: 'XIV. The Dreamer', text: 'The Great Worm sleeps for a thousand years at a time, and while it sleeps, it dreams. One of its dreams leaked out of its head and became a violet frog with glowing eyes, who can slip into other creatures\' minds as easily as a dream does. The Telepathic Frog is, in a way, a small piece of the Worm\'s thinking, walking around on its own.' },
+  { at: 15, title: 'XV. The Gold Beneath', text: 'Every so often the world makes something perfect by accident. When the old fire pours over the Worm Idol and cools, the stone cracks away and there is a frog of living gold underneath. Nobody knows if it was always inside the idol, waiting, or if the fire made it. The Golden Frog will not say. It just sits there, shining, looking pleased with itself.' },
+  { at: 16, title: 'XVI. What the Worms Do Not Know', text: 'We have written down everything we know. But there is one thing we do not know, and it keeps the oldest wormkeepers awake: where did the Great Worm come from? Some say it hatched from an egg so big that its shell became the sky. Some say there is a bigger worm still, somewhere, eating its way through a bigger dark. If you ever find out, please come back and tell us. We will make a new stone. The very oldest worms mumble about three places where the answer might be hiding: an egg that never hatched, deep inside the Worm itself; old bones pressed into the black glass of the Mantle; and the oldest nest in the sky.' },
+  { at: 0, title: 'Welcome to the Wormory', text: 'This is where the worms keep the story of the world. There are many stones in these tunnels. Gather them all, bring them to the stand in the great hall, and you will know where everything came from. Please do not eat the archivists.' }
+];
+function buildWormoryMound() {
+  // pick a quiet spot in the woods, on dry flat land
+  let p = null;
+  for (let i = 0; i < 900 && !p; i++) { const a = i * 2.39996, d = 20 + Math.sqrt(i) * 6, x = -40 + Math.cos(a) * d, z = 290 + Math.sin(a) * d, h = rawHeight(x, z); if (x > FALL_X + 25 && h < 6 && h > WATER + 0.6 && h > waterLevelAt(x, z) + 0.6 && slopeAt(x, z) < 0.35 && !inNewPlace(x, z) && Math.hypot(x, z) < WORLD_R - 40) p = [x, z]; }
+  if (!p) p = [-120, 200];
+  const g = new THREE.Group(); g.position.set(p[0], 0, p[1]); scene.add(g);
+  const add = (m, x, y, z) => { m.position.set(x, y, z); m.castShadow = true; m.receiveShadow = true; g.add(m); return m; };
+  HOME_BUILD.wormery(g, { x: p[0], z: p[1] }, null, add); g.scale.setScalar(2.6);
+  WORMORY.mound = { x: p[0], z: p[1], y: terrainH(p[0], p[1]) }; WORMORY.moundG = g;
+  // a plain lump of dirt, shown until the worms move in
+  const lump = new THREE.Mesh(lumpyGeo(1, 0.25, 3.3), new THREE.MeshStandardMaterial({ color: 0x5a3e24, roughness: 1, flatShading: true })); lump.scale.set(4.2, 1.6, 3.8); lump.position.set(p[0], terrainH(p[0], p[1]) + 0.1, p[1]); lump.castShadow = true; scene.add(lump); WORMORY.lumpG = lump;
+  // a wooden lid over the way in, for when it is locked
+  const lid = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.15, 16), new THREE.MeshStandardMaterial({ color: 0x8a6a40, roughness: 0.9, map: TEX.bark })); lid.rotation.x = Math.PI / 2; lid.position.set(p[0], WORMORY.mound.y + 1.15, p[1] + 3.2); scene.add(lid); WORMORY.lid = lid;
+  const lock = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.07, 6, 14), new THREE.MeshStandardMaterial({ color: 0xd8b040, metalness: 0.8, roughness: 0.3 })); lock.position.set(p[0], WORMORY.mound.y + 1.15, p[1] + 3.33); scene.add(lock); WORMORY.lockM = lock;
+  // the sign
+  const sg = new THREE.Group(), sx0 = p[0] + 6, sz0 = p[1] + 2; sg.position.set(sx0, terrainH(sx0, sz0), sz0); sg.rotation.y = Math.atan2(-6, -2) + Math.PI; scene.add(sg); WORMORY.sign = sg; WORMORY.signPos = { x: sx0, z: sz0 };
+  const wood = new THREE.MeshStandardMaterial({ color: 0x8a6a40, roughness: 0.9 }); const post = new THREE.Mesh(G.cyl, wood); post.scale.set(0.1, 1.6, 0.1); post.position.y = 0.8; sg.add(post);
+  WORMORY.signCanvas = mkCanvas(256, 128); WORMORY.signTex = canvasTex(WORMORY.signCanvas);
+  const board = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.9, 0.08), [wood, wood, wood, wood, new THREE.MeshStandardMaterial({ map: WORMORY.signTex }), wood]); board.position.y = 1.65; sg.add(board);
+}
+function wormoryTopTick(dt) {
+  const M = WORMORY.mound; if (!M || W.ugBusy || PL.stage < 1) return;
+  const d = Math.hypot(PL.pos.x - M.x, PL.pos.z - M.z);
+  if (!SAVE.stats.wormoryBuilt) return;
+  if (SAVE.stats.wormoryLocked) { if (d < 3.4 && GAME.t - (W.lockToast || -99) > 6) { W.lockToast = GAME.t; toast('The Wormory is locked. The worm at the Lily Pond can open it again.', 'quiet'); } return; }
+  if (d < 3.4 && PL.pos.y < M.y + 3) travel('wormory', () => { placePlayer(WORMORY.entry.x, WORMORY.entry.z + 8); PL.yaw = 0; CAM.yaw = 0; unlockAch('wormory'); }, 'wormoryVisit', 'You wriggled down into the Wormory! The worms keep the story of the whole world down here, carved on glowing stones. Walk up to a stone to read it.');
+}
+function buildWormoryLayer() {
+  SEED = 6464; const L = WORMORY, prevCL = CL; CL = WORMORY;
+  const g = new THREE.Group(); g.visible = false; scene.add(g); L.group = g;
+  const S = L.half * 2, N = 200;
+  for (const ceiling of [false, true]) {
+    const geo = new THREE.PlaneGeometry(S, S, N, N); geo.rotateX(ceiling ? Math.PI / 2 : -Math.PI / 2);
+    const p = geo.attributes.position, col = [];
+    for (let i = 0; i < p.count; i++) {
+      const x = p.getX(i), z = p.getZ(i), f = caveFloorH(x, z), c = caveCeilH(x, z), H = c - f, s = smooth(0, 1.5, H), shut = f + 2 * (1 - s);
+      p.setY(i, ceiling ? Math.max(c, shut) : (H < 1.5 ? shut : f));
+      const n = vnoise(x * 0.3, z * 0.3) * 0.5 + 0.5, layer = Math.sin(p.getY(i) * 3) * 0.04;
+      let r = lerp(0.36, 0.46, n) + layer, gg = lerp(0.24, 0.31, n) + layer, b = lerp(0.14, 0.18, n);
+      if (ceiling) { r *= 0.8; gg *= 0.8; b *= 0.8; }
+      col.push(r, gg, b);
+    }
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
+    g.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, map: TEX.detail })));
+  }
+  const spots = (want, ok) => { const out = []; for (let k = 0; k < want * 40 && out.length < want; k++) { const x = rr(-L.half + 4, L.half - 4), z = rr(-L.half + 4, L.half - 4); if (ok(x, z)) out.push([x, z]); } return out; };
+  // roots hanging from the ceiling, glowworm lights, and worms poking out of the walls
+  const rootM = new THREE.MeshStandardMaterial({ color: 0x8a6a40, roughness: 1 });
+  const rs = spots(260, (x, z) => caveRoom(x, z) > 3); const roots = inst(G.cyl, rootM, rs.length, false); g.add(roots);
+  rs.forEach(([x, z], i) => { const c = caveCeilH(x, z), Lh = rr(0.5, 2); setInst(roots, i, x, c - Lh / 2, z, 0, 0.035, Lh, 0.035, rr(-0.3, 0.3), rr(-0.3, 0.3)); });
+  const gp = []; for (const [x, z] of spots(1500, (x, z) => caveRoom(x, z) > 2.5)) gp.push(x, caveCeilH(x, z) - 0.05, z);
+  const gg = new THREE.BufferGeometry(); gg.setAttribute('position', new THREE.Float32BufferAttribute(gp, 3)); g.add(new THREE.Points(gg, new THREE.PointsMaterial({ color: 0xffe0a0, size: 0.14, transparent: true, opacity: 0.85, depthWrite: false })));
+  L.worms = []; const wormM = new THREE.MeshStandardMaterial({ color: 0xd88a8a, roughness: 0.4 });
+  for (const [x, z] of spots(70, (x, z) => { const r = caveRoom(x, z); return r > 1.4 && r < 2.6; })) { const w = new THREE.Group(); w.position.set(x, caveFloorH(x, z) + rr(0.3, 1.5), z); g.add(w); const segs = []; for (let k = 0; k < 7; k++) { const s = new THREE.Mesh(G.sphM, wormM); s.scale.setScalar(0.1 - k * 0.008); w.add(s); segs.push(s); } L.worms.push({ segs, ph: rnd() * 6 }); }
+  // little worm archivists: wriggling about the big hall
+  L.archivists = [];
+  for (let i = 0; i < 10; i++) { const w = new THREE.Group(); g.add(w); const segs = []; for (let k = 0; k < 9; k++) { const s = new THREE.Mesh(G.sphM, wormM); s.scale.setScalar(0.16 - k * 0.01); w.add(s); segs.push(s); } L.archivists.push({ w, segs, a: rnd() * TAU, r: rr(4, 14), sp: rr(0.15, 0.3) * (rnd() < 0.5 ? 1 : -1), ph: rnd() * 6 }); }
+  // shelves of clay tablets around the great hall
+  const clay = new THREE.MeshStandardMaterial({ color: 0xa87850, roughness: 0.9 }), shelfM = new THREE.MeshStandardMaterial({ color: 0x5a3a20, roughness: 0.9 });
+  for (let i = 0; i < 8; i++) { const a = i / 8 * TAU + 0.2, x = Math.cos(a) * 15, z = Math.sin(a) * 15, f = caveFloorH(x, z); const sh = new THREE.Group(); sh.position.set(x, f, z); sh.rotation.y = -a - Math.PI / 2; g.add(sh); for (let lv = 0; lv < 3; lv++) { const b = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.08, 0.5), shelfM); b.position.y = 0.4 + lv * 0.7; sh.add(b); for (let k = 0; k < 6; k++) { const t = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.45, 0.08), clay); t.position.set(-1 + k * 0.4, 0.66 + lv * 0.7, 0); t.rotation.z = rr(-0.15, 0.15); sh.add(t); } } }
+  // a giant fossil of an ancient worm curled around the great hall floor
+  const bone = new THREE.MeshStandardMaterial({ color: 0xe8dcc4, roughness: 0.7 });
+  for (let i = 0; i < 40; i++) { const t = i / 40, a = t * TAU * 1.6, r = 9 - t * 6, x = Math.cos(a) * r, z = Math.sin(a) * r, s = new THREE.Mesh(new THREE.TorusGeometry(0.45 - t * 0.2, 0.08, 6, 14), bone); s.position.set(x, caveFloorH(x, z) + 0.12, z); s.rotation.set(Math.PI / 2, 0, a); g.add(s); }
+  // the lore tablets
+  const runeTex = (() => { const c = mkCanvas(128, 192), x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, 128, 192); x.strokeStyle = '#ffd070'; x.lineWidth = 3; x.lineCap = 'round'; for (let r = 0; r < 7; r++) { x.beginPath(); for (let t = 0; t <= 1; t += 0.05) { const px = 14 + t * 100, py = 22 + r * 24 + Math.sin(t * 14 + r) * 4; t ? x.lineTo(px, py) : x.moveTo(px, py); } x.stroke(); } return canvasTex(c); })();
+  const stoneM = new THREE.MeshStandardMaterial({ color: 0x5a5048, roughness: 0.8, emissiveMap: runeTex, emissive: 0xffffff, emissiveIntensity: 0.9 });
+  L.tablets = [];
+  for (const lo of LORE) {
+    const R = WORMORY.rooms[lo.at], x = R.x + (lo.at === 0 ? 5.5 : 0), z = R.z + (lo.at === 0 ? 1 : lo.at === 1 ? -6 : 0), f = caveFloorH(x, z);
+    const t = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.2, 0.35), [stoneM, stoneM, stoneM, stoneM, stoneM, stoneM]); t.position.set(x, f + 1.1, z); t.rotation.y = Math.atan2(-x, -z) || 0; g.add(t);
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xffc060, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false })); glow.position.set(x, f + 1.4, z); glow.scale.setScalar(4); g.add(glow);
+    const lt = new THREE.PointLight(0xffb060, 0.9, 14, 1.5); lt.position.set(x, f + 2.5, z); g.add(lt);
+    L.tablets.push({ lo, x, z, glow, t, lt });
+  }
+  // the reading stand in the middle of the great hall: nine empty slots in a ring, waiting for the tablets
+  { const f = caveFloorH(0, 6); const P = new THREE.Group(); P.position.set(0, f, 6); g.add(P); L.stand = P;
+    const stoneD = new THREE.MeshStandardMaterial({ color: 0x4a4038, roughness: 0.8 });
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 3.5, 0.5, 24), stoneD); base.position.y = 0.25; P.add(base);
+    const col = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 1.4, 14), stoneD); col.position.y = 1.2; P.add(col);
+    const top = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 0.7, 0.2, 14), stoneD); top.position.y = 2.0; P.add(top);
+    L.slots = [];
+    LORE_ORDER.forEach((lo, i) => { const a = i / LORE_ORDER.length * TAU, sl = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.7, 0.12), stoneM); sl.position.set(Math.cos(a) * 2.7, 0.9, Math.sin(a) * 2.7); sl.rotation.y = -a + Math.PI / 2; P.add(sl); const ghost = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.7, 0.12), new THREE.MeshBasicMaterial({ color: 0xffd070, transparent: true, opacity: 0.12, depthWrite: false })); ghost.position.copy(sl.position); ghost.rotation.copy(sl.rotation); P.add(ghost); L.slots.push({ lo, sl, ghost }); });
+    // the finished Lore Book, hidden until all nine are placed
+    const book = new THREE.Group(); book.position.y = 2.35; P.add(book); L.book = book;
+    const cover = new THREE.MeshStandardMaterial({ color: 0x6a3a1c, roughness: 0.6, emissive: 0x2a1004 }), paper = new THREE.MeshStandardMaterial({ color: 0xf0e2c0, roughness: 0.9 });
+    const pages = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.22, 0.8), paper); book.add(pages);
+    for (const y of [-0.13, 0.13]) { const c = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.04, 0.88), cover); c.position.y = y; book.add(c); }
+    const spine = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.3, 0.88), cover); spine.position.x = -0.6; book.add(spine);
+    const em = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.04, 6, 16), new THREE.MeshStandardMaterial({ color: 0xffc060, emissive: 0xff9020, emissiveIntensity: 0.8, metalness: 0.6 })); em.rotation.x = Math.PI / 2; em.position.y = 0.16; book.add(em);
+    const bg = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xffd070, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false })); bg.scale.setScalar(3.5); book.add(bg);
+    const sl2 = new THREE.PointLight(0xffd090, 1.2, 16, 1.5); sl2.position.set(0, 3.5, 0); P.add(sl2);
+  }
+  { const E = L.entry, f = caveFloorH(E.x, E.z); const beam = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 2.4, 12, 16, 1, true), new THREE.MeshBasicMaterial({ color: 0xfff0c8, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false })); beam.position.set(E.x, f + 6, E.z); g.add(beam); }
+  // the new stone the worms carve once you tell them where the Worm came from (hidden until then)
+  { const x = -9, z = 6, f = caveFloorH(x, z); const st = new THREE.Mesh(new THREE.BoxGeometry(1.7, 2.6, 0.4), new THREE.MeshStandardMaterial({ color: 0x6a5a48, roughness: 0.7, emissiveMap: runeTex, emissive: 0xfff0c0, emissiveIntensity: 1.2 })); st.position.set(x, f + 1.3, z); st.rotation.y = Math.PI / 2 - 0.3; st.visible = false; g.add(st); L.originStone = st; L.originY = f + 1.3; }
+  L.light = new THREE.PointLight(0xffd8a0, 1.2, 24, 1.4); g.add(L.light);
+  g.add(new THREE.HemisphereLight(0xc09060, 0x402010, 0.75));
+  buildCaveMap(WORMORY);
+  // mark the tablets and the stand on the Wormory map
+  { const c = L.map.img, x = c.getContext('2d'), N = c.width, P = (wx, wz) => [(wx + L.half) / (L.half * 2) * N, (wz + L.half) / (L.half * 2) * N];
+    for (const tb of L.tablets) { const [a, b] = P(tb.x, tb.z); x.fillStyle = '#ffd070'; x.strokeStyle = '#3a2410'; x.lineWidth = 2; x.fillRect(a - 4, b - 6, 8, 12); x.strokeRect(a - 4, b - 6, 8, 12); }
+    const [sa, sb] = P(0, 6); x.fillStyle = '#ffffff'; x.beginPath(); x.arc(sa, sb, 6, 0, TAU); x.fill(); const [ea, eb] = P(L.entry.x, L.entry.z); x.fillStyle = '#fff0b0'; x.beginPath(); x.arc(ea, eb, 5, 0, TAU); x.fill(); }
+  CL = prevCL;
+}
+function wormoryTick(dt) {
+  const L = WORMORY, P = PL.pos, t = GAME.t;
+  for (const w of L.worms) if (Math.abs(w.segs[0].parent.position.x - P.x) < 30) w.segs.forEach((s, k) => s.position.set(Math.sin(t * 3 + w.ph + k) * 0.04 * k, Math.cos(t * 2 + w.ph + k) * 0.03 * k, (0.15 + Math.max(0, Math.sin(t * 0.7 + w.ph)) * 0.5) * (k / 6)));
+  for (const a of L.archivists) { a.a += a.sp * dt; const x = Math.cos(a.a) * a.r, z = Math.sin(a.a) * a.r; a.segs.forEach((s, k) => { const b = a.a - k * 0.02 * Math.sign(a.sp) / Math.max(a.r, 1) * 8, wob = Math.sin(t * 6 + a.ph - k * 0.8) * 0.12; const sx = Math.cos(b) * (a.r + wob), sz = Math.sin(b) * (a.r + wob); s.position.set(sx, caveFloorH(sx, sz) + 0.12, sz); }); }
+  const got = SAVE.stats.lore || [], placed = SAVE.stats.lorePlaced || [];
+  for (const tb of L.tablets) { const have = got.includes(tb.lo.title); tb.t.visible = tb.glow.visible = !have; tb.lt.intensity = have ? 0 : 0.9; if (!have) { tb.glow.material.opacity = 0.55 + Math.sin(t * 2 + tb.x) * 0.2; tb.t.position.y = caveFloorH(tb.x, tb.z) + 1.1 + Math.sin(t * 1.5 + tb.x) * 0.08; } }
+  for (const s of L.slots) { const on = placed.includes(s.lo.title); if (!(LOREUI.forming > 0)) s.sl.visible = on && !SAVE.stats.loreBook; s.ghost.visible = !on; }
+  L.book.visible = !!SAVE.stats.loreBook || LOREUI.forming > 0; if (L.book.visible) { L.book.rotation.y += dt * 0.5; L.book.position.y = 2.35 + Math.sin(t * 1.4) * 0.08; }
+  // the tablets fly in and fuse into the book
+  if (LOREUI.forming > 0) { LOREUI.forming -= dt; const k = 1 - LOREUI.forming / 2.5; for (const s of L.slots) { s.sl.visible = true; s.sl.position.multiplyScalar(1 - dt * 1.4); s.sl.position.y = 0.9 + k * 1.4; s.sl.rotation.y += dt * 6; } L.book.scale.setScalar(Math.max(0.01, k)); if (Math.random() < dt * 20) sparkle(L.stand.position.clone().add(new V3(mr(-1, 1), 2.4, mr(-1, 1))), 4, 0xffd070);
+    if (LOREUI.forming <= 0) { SAVE.stats.loreBook = 1; persist(); L.book.scale.setScalar(1); L.slots.forEach((s, i) => { const a = i / L.slots.length * TAU; s.sl.position.set(Math.cos(a) * 2.7, 0.9, Math.sin(a) * 2.7); s.sl.rotation.set(0, -a + Math.PI / 2, 0); }); if (SAVE.stats.lorePlaced.length >= LORE.length) unlockAch('lorekeeper'); SFX.chime(); banner('The Lore Book!', 'Your tablets came together into one book, in order. Press L any time to read it. Bring more tablets to the stand to add pages.'); } }
+  // put the tablets you are carrying into the stand
+  if (!(LOREUI.forming > 0) && Math.hypot(P.x - L.stand.position.x, P.z - L.stand.position.z) < 4.2) {
+    const add = got.filter(k => !placed.includes(k));
+    if (add.length && SAVE.stats.loreBook) { SAVE.stats.lorePlaced = placed.concat(add); persist(); sparkle(L.stand.position.clone().add(new V3(0, 2.4, 0)), 20, 0xffd070); SFX.chime(); toast('The Lore Book grows ' + add.length + ' new page' + (add.length > 1 ? 's' : '') + '! ' + SAVE.stats.lorePlaced.length + ' of ' + LORE.length + ' pages. Press L to read it.'); if (SAVE.stats.lorePlaced.length >= LORE.length) unlockAch('lorekeeper'); }
+    else if (add.length) { SAVE.stats.lorePlaced = placed.concat(add); persist(); tone('sine', 220, 220, 0.4, 0.2); noiseHit(300, 0.8, 0.3, 0.3); toast('You set ' + add.length + ' tablet' + (add.length > 1 ? 's' : '') + ' into the stand. ' + SAVE.stats.lorePlaced.length + ' of ' + LORE.length + ' in place.' + (SAVE.stats.lorePlaced.length < 9 ? ' Bring 9 to make the Lore Book.' : '')); }
+    if (!SAVE.stats.loreBook && (SAVE.stats.lorePlaced || []).length >= 9) { LOREUI.forming = 2.5; CAM.shake = 0.8; tone('sine', 262, 523, 2.5, 0.3); tone('sine', 330, 659, 2.5, 0.25, null, 0.3); tone('sine', 392, 784, 2.5, 0.2, null, 0.6); }
+  }
+  if (SAVE.stats.loreBook && Math.hypot(P.x - L.stand.position.x, P.z - L.stand.position.z) < 2.6 && !LOREUI.open && !LOREUI.nearBook) { LOREUI.nearBook = true; openLoreBook(0); }
+  if (Math.hypot(P.x - L.stand.position.x, P.z - L.stand.position.z) > 4) LOREUI.nearBook = false;
+  // pick up a tablet by touching it
+  if (!LOREUI.open && !(LOREUI.forming > 0)) for (const tb of L.tablets) { if (got.includes(tb.lo.title)) continue; const d = Math.hypot(P.x - tb.x, P.z - tb.z); if (d < 2.4) { if (LOREUI.last !== tb) { LOREUI.last = tb; showLore(tb.lo); } } else if (LOREUI.last === tb && d > 4) LOREUI.last = null; }
+  // the way out
+  if (Math.hypot(P.x - L.entry.x, P.z - L.entry.z) < 3) { const M = L.mound; travel('top', () => { placePlayer(M.x + 5, M.z + 5); }); }
+}
+const LOREUI = { el: null, open: false, last: null, page: 0, forming: 0 };
+const ORIGIN = { title: 'XVII. Where the Worm Came From', text: 'This stone was made from what a frog told us. Before this world there was another one, and in its sky there was a pond made of clouds, and in that pond a frog laid her eggs. One egg drifted away from the others and floated up and up, and when it hatched, its shell broke into pieces that still float in the sky today. Those pieces are the islands of Heron\'s Domain. The tadpole inside fell into the dark below. It was so hungry that it never stopped eating, and it never grew its legs. It just grew, and grew, and grew. The Great Worm is not a worm at all. It is a tadpole. And that means every frog in the world is, in a way, its little brother or sister. One day, when it has finally finished growing, maybe it will grow legs and hop. We hope we are there to see it. Thank you, frog.' };
+const LORE_ORDER = [LORE.find(l => l.at === 0)].concat(LORE.filter(l => l.at !== 0), [ORIGIN]);
+function showLore(lo) {
+  if (!LOREUI.el) {
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:60;width:min(520px,90vw);max-height:80vh;overflow:auto;background:linear-gradient(#5a4430,#3e2c1c);border:4px solid #a07a48;border-radius:14px;padding:20px 22px;color:#f4e2c0;box-shadow:0 12px 50px rgba(0,0,0,.6);font-family:var(--display,serif)';
+    d.innerHTML = '<div id="loreT" style="font-size:24px;color:#ffd070;margin-bottom:10px"></div><p id="loreP" style="font-size:17px;line-height:1.6;margin:0 0 14px"></p><div id="loreNav" style="display:none;justify-content:space-between;align-items:center;margin-bottom:10px"><button id="loreL" class="btn">◀ Back</button><span id="loreP2" style="font-size:14px"></span><button id="loreR" class="btn">Next ▶</button></div><div style="display:flex;justify-content:space-between;align-items:center"><span id="loreN" style="font-size:13px;opacity:.75"></span><button id="loreX" class="btn primary">Close</button></div>';
+    document.body.appendChild(d); LOREUI.el = d;
+    d.querySelector('#loreX').onclick = closeLore;
+    d.querySelector('#loreL').onclick = () => openLoreBook(LOREUI.page - 1); d.querySelector('#loreR').onclick = () => openLoreBook(LOREUI.page + 1);
+    addEventListener('keydown', e => { if (!LOREUI.open) return; if (LOREUI.book && (e.code === 'ArrowRight' || e.code === 'KeyD')) { e.stopPropagation(); openLoreBook(LOREUI.page + 1); } else if (LOREUI.book && (e.code === 'ArrowLeft' || e.code === 'KeyA')) { e.stopPropagation(); openLoreBook(LOREUI.page - 1); } else if (e.code === 'Escape' || e.code === 'KeyE' || e.code === 'Enter' || e.code === 'KeyL') { e.stopPropagation(); closeLore(); } }, true);
+  }
+  SAVE.stats.lore = SAVE.stats.lore || [];
+  const isNew = !SAVE.stats.lore.includes(lo.title); if (isNew) { SAVE.stats.lore.push(lo.title); persist(); sparkle(PL.pos.clone().add(new V3(0, 0.8, 0)), 14, 0xffd070); }
+  LOREUI.el.querySelector('#loreT').textContent = lo.title; LOREUI.el.querySelector('#loreP').textContent = lo.text;
+  LOREUI.el.querySelector('#loreN').textContent = isNew ? 'You picked up the tablet! ' + SAVE.stats.lore.length + ' / ' + LORE.length + ' found. Bring them to the stand in the great hall.' : '';
+  LOREUI.el.querySelector('#loreNav').style.display = 'none';
+  LOREUI.el.style.display = 'block'; LOREUI.open = true; GAME.paused = true; exitLock(); clearKeys();
+  tone('sine', 330, 330, 0.8, 0.15); tone('sine', 495, 495, 0.8, 0.12, null, 0.15);
+}
+function openLoreBook(page) {
+  if (!SAVE.stats.loreBook) return;
+  if (!LOREUI.el) showLore(LORE_ORDER[0]);
+  const pages = LORE_ORDER.filter(l => (SAVE.stats.lorePlaced || []).includes(l.title)); if (!pages.length) return;
+  LOREUI.book = true; LOREUI.page = clamp(page, 0, pages.length - 1); const lo = pages[LOREUI.page];
+  LOREUI.el.querySelector('#loreT').textContent = '📖 ' + lo.title; LOREUI.el.querySelector('#loreP').textContent = lo.text;
+  LOREUI.el.querySelector('#loreN').textContent = 'The Lore Book';
+  const nav = LOREUI.el.querySelector('#loreNav'); nav.style.display = 'flex'; LOREUI.el.querySelector('#loreP2').textContent = 'Page ' + (LOREUI.page + 1) + ' of ' + pages.length + (pages.length < LORE.length ? '  (' + (LORE.length - pages.length) + ' still missing)' : !SAVE.stats.originTold ? '  (one mystery still unsolved)' : '');
+  LOREUI.el.querySelector('#loreL').disabled = LOREUI.page === 0; LOREUI.el.querySelector('#loreR').disabled = LOREUI.page === pages.length - 1;
+  LOREUI.el.style.display = 'block'; LOREUI.open = true; GAME.paused = true; exitLock(); clearKeys(); noiseHit(3000, 0.5, 0.15, 0.15);
+}
+addEventListener('keydown', e => { if (e.code !== 'KeyL' || e.repeat || LOREUI.open || GAME.state !== 'play' || (e.target && e.target.tagName === 'INPUT')) return; if (SAVE.stats.loreBook) openLoreBook(LOREUI.page || 0); });
+function closeLore() { LOREUI.book = false; if (!LOREUI.el) return; LOREUI.el.style.display = 'none'; LOREUI.open = false; GAME.paused = false; clearKeys(); }
+
+/* ---------- the mystery of where the Great Worm came from ----------
+   Three clues in three faraway places. Find them all, then tell the worms
+   at the stand in the Wormory, and they carve a brand new stone. */
+const CLUES = [
+  { key: 'egg', level: 'gut', title: 'Clue: The Egg That Never Hatched', text: 'Among the worm eggs there is one egg far older and far bigger than all the rest. It is cracked open and empty. Pressed into the dried jelly inside is the shape of whatever hatched from it: a round head and a long, flat tail for swimming. That is not the shape of a worm. It looks much more like a frog egg.' },
+  { key: 'fossil', level: 'mantle', title: 'Clue: The Bones in the Black Glass', text: 'Pressed into the black volcanic glass is the fossil of a young Great Worm, from long ago when it was small. It has a round head, a long finned tail, and, just behind its head, two tiny bumps. They look like legs that were about to grow, and never did. Worms do not grow legs.' },
+  { key: 'shell', level: 'sky', title: 'Clue: The Shell in the Oldest Nest', text: 'In the oldest heron nest there is a curved piece of shell, far too big for any heron egg. The herons say their great-great-great-grandmothers found it floating in the sky, after something enormous hatched and fell out of it, wriggling, into the dark below. The shell is the same pale stone as the floating islands themselves.' }
+];
+function buildOriginClues() {
+  const glow = (g, x, y, z, col) => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: col, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false })); s.position.set(x, y, z); s.scale.setScalar(5); g.add(s); return s; };
+  // 1. the old egg, in the Egg Chamber inside the Worm
+  { const R = GUT.room('eggs'), x = R.x - 12, z = R.z - 4, f = lf(GUT, x, z), g = (CLUES[0].grp = new THREE.Group()); GUT.group.add(g);
+    const shellM = new THREE.MeshStandardMaterial({ color: 0xe8e0c8, roughness: 0.4, transparent: true, opacity: 0.7, side: THREE.DoubleSide });
+    const egg = new THREE.Mesh(new THREE.SphereGeometry(2.2, 24, 16, 0, TAU, 0.9, Math.PI - 0.9), shellM); egg.scale.y = 1.25; egg.position.set(x, f + 2.2, z); g.add(egg);
+    const tad = new THREE.Group(); tad.position.set(x, f + 0.4, z); g.add(tad); const dm = new THREE.MeshStandardMaterial({ color: 0x5a4a30, roughness: 0.8 });
+    const hd = new THREE.Mesh(G.sph, dm); hd.scale.set(0.6, 0.35, 0.6); tad.add(hd); const tl = new THREE.Mesh(G.sph, dm); tl.scale.set(0.2, 0.12, 1.3); tl.position.z = -1.2; tad.add(tl);
+    CLUES[0].pos = { x, z }; CLUES[0].glow = glow(g, x, f + 1.5, z, 0xffe0a0); }
+  // 2. the fossil of the young Worm, on dry rock somewhere in the Mantle you can walk to
+  { CL = MANTLE; let best = null;
+    for (let k = 0; k < 20000 && !best; k++) { const x = rr(-MANTLE.half + 40, MANTLE.half - 40), z = rr(-MANTLE.half + 40, MANTLE.half - 40); if (!MANTLE.canWalk(x, z) || caveRoom(x, z) < 8) continue; if (Math.hypot(x - TEMPLE.x, z - TEMPLE.z) < TEMPLE.r + 40 || MAGMA_VENTS.some(D => Math.hypot(D.x - x, D.z - z) < 70)) continue; let ok = true; for (let a = 0; a < TAU; a += 0.8) if (!MANTLE.canWalk(x + Math.cos(a) * 3, z + Math.sin(a) * 3)) ok = false; if (ok) best = [x, z]; }
+    if (!best) best = [MAGMA_VENTS[0].x + 12, MAGMA_VENTS[0].z];
+    const [x, z] = best, f = caveFloorH(x, z), g = (CLUES[1].grp = new THREE.Group()), bone = new THREE.MeshStandardMaterial({ color: 0xd8ccb4, roughness: 0.7, emissive: 0x201008 });
+    const slab = new THREE.Mesh(new THREE.CylinderGeometry(3.4, 3.6, 0.3, 20), new THREE.MeshStandardMaterial({ color: 0x14100e, roughness: 0.15, metalness: 0.5 })); slab.position.set(x, f + 0.15, z); g.add(slab);
+    const fos = new THREE.Group(); fos.position.set(x, f + 0.34, z); g.add(fos);
+    const head = new THREE.Mesh(G.sph, bone); head.scale.set(0.9, 0.2, 0.8); head.position.z = 1.6; fos.add(head);
+    for (let i = 0; i < 14; i++) { const t = i / 13, r = new THREE.Mesh(new THREE.TorusGeometry(0.45 - t * 0.25, 0.06, 6, 12), bone); r.rotation.x = Math.PI / 2; r.position.set(Math.sin(t * 3) * 0.4, 0, 0.9 - t * 3.2); fos.add(r); }
+    const fin = new THREE.Mesh(G.sph, bone); fin.scale.set(0.5, 0.06, 0.9); fin.position.set(Math.sin(3) * 0.4, 0, -2.8); fos.add(fin);
+    for (const s of [-1, 1]) { const b = new THREE.Mesh(G.sphM, bone); b.scale.set(0.22, 0.14, 0.22); b.position.set(s * 0.65, 0, 0.9); fos.add(b); }
+    CLUES[1].pos = { x, z }; CLUES[1].glow = glow(g, x, f + 1.4, z, 0xffc080); MANTLE.group.add(g); CL = UG; }
+  // 3. the shell in the oldest nest, the big rookery in the middle of Heron's Domain
+  { const N = SKY.nests[0], x = N.x, z = N.z, g = (CLUES[2].grp = new THREE.Group()); SKY.group.add(g);
+    const sh = new THREE.Mesh(new THREE.SphereGeometry(1.4, 20, 12, 0, Math.PI * 0.9, 0, Math.PI * 0.5), new THREE.MeshStandardMaterial({ color: 0xc8ccc0, roughness: 0.5, side: THREE.DoubleSide })); sh.position.set(x, N.y + 0.6, z); sh.rotation.set(0.5, 0.3, 0.2); g.add(sh);
+    CLUES[2].pos = { x, z }; CLUES[2].glow = glow(g, x, N.y + 1.4, z, 0xfff0d0); }
+}
+function cluesTick(dt) {
+  const got = SAVE.stats.clues || (SAVE.stats.clues = []), lv = curLevel();
+  for (const c of CLUES) {
+    if (!c.glow) continue; const have = got.includes(c.key), on = !!SAVE.stats.loreBook; if (c.grp) c.grp.visible = on; c.glow.material.opacity = have ? 0.12 : 0.55 + Math.sin(GAME.t * 2) * 0.2;
+    if (!on || SAVE.stats.originTold || have || W.inBurrow || lv !== c.level || LOREUI.open || !c.pos) continue;
+    if (Math.hypot(PL.pos.x - c.pos.x, PL.pos.z - c.pos.z) < 3.4) {
+      got.push(c.key); persist(); SFX.chime(); sparkle(PL.pos.clone().add(new V3(0, 0.8, 0)), 18, 0xffe0a0);
+      showLore({ title: c.title, text: c.text });
+      LOREUI.el.querySelector('#loreN').textContent = got.length < 3 ? 'Clue ' + got.length + ' of 3 about where the Great Worm came from.' : 'That is all three clues! Go back to the Wormory and tell the worms what you found.';
+      if (got.length >= 3) unlockAch('detective');
+    }
+  }
+  // telling the worms
+  if (lv === 'wormory' && !W.inBurrow && got.length >= 3 && !SAVE.stats.originTold && !(ORIGINQ.t > 0) && WORMORY.stand && Math.hypot(PL.pos.x - WORMORY.stand.position.x, PL.pos.z - WORMORY.stand.position.z) < 4.5) {
+    ORIGINQ.t = 7; CAM.shake = 0.6; banner('You tell the worms everything', 'The old egg, the bones with little legs, the giant shell in the sky... The worms gather round in total silence. Then they all start wriggling at once.');
+    for (let i = 0; i < 6; i++) tone('sine', 300 + i * 60, 300 + i * 60, 0.3, 0.12, null, i * 0.25);
+  }
+  if (ORIGINQ.t > 0) {
+    ORIGINQ.t -= dt; const k = 1 - ORIGINQ.t / 7;
+    // the archivists crowd round you, and the new stone rises out of the floor
+    if (WORMORY.archivists) for (const a of WORMORY.archivists) a.r = lerp(a.r, 5, dt * 0.8);
+    if (WORMORY.originStone) { WORMORY.originStone.visible = true; WORMORY.originStone.position.y = WORMORY.originY - 2.4 + 2.4 * smooth(0.35, 0.9, k); if (Math.random() < dt * 15 && k > 0.35 && k < 0.9) dirtPuff(WORMORY.originStone.position.x + mr(-0.8, 0.8), WORMORY.originY - 1, WORMORY.originStone.position.z + mr(-0.4, 0.4), 0x5a3a20); }
+    if (k > 0.35 && k < 0.9) CAM.shake = Math.max(CAM.shake, 0.3);
+    if (ORIGINQ.t <= 0) {
+      SAVE.stats.originTold = 1; SAVE.stats.lorePlaced = (SAVE.stats.lorePlaced || []).concat([ORIGIN.title]); persist(); unlockAch('origin'); SFX.chime();
+      showLore(ORIGIN); LOREUI.el.querySelector('#loreN').textContent = 'The worms carved a new stone, just for you. It has been added to the end of the Lore Book.';
+      if (WORMORY.archivists) for (const a of WORMORY.archivists) a.r = rr(4, 14);
+    }
+  }
+  if (WORMORY.originStone && !(ORIGINQ.t > 0)) WORMORY.originStone.visible = !!SAVE.stats.originTold;
+}
+const ORIGINQ = { t: 0 };
+
+/* ---------- the Worm at the Lily Pond, who needs a home for the Wormory ---------- */
+const WNPC = { g: null, segs: [], state: 'idle', t: 0, pos: null, home: null, near: false };
+const WSPOTS = [
+  { key: 'dirt', name: 'that lump of dirt in the woods' },
+  { key: 'dunes', name: 'the Sand Dunes', no: "it's a desert! Way too dry. Worms would turn into crispy noodles." },
+  { key: 'mill', name: 'the Old Mill Pond', no: "it's a mill pond! Way too wet. Worms would drown." },
+  { key: 'mount', name: 'the Mountains', no: "it's a mountain! All rock and snow. You can't dig in that." },
+  { key: 'hots', name: 'the Hot Springs', no: "it's a hot spring! Worms would get boiled!" },
+  { key: 'bog', name: 'the Pitcher Plant Bog', no: "it's a bog full of pitcher plants! They would eat us!" },
+  { key: 'bamboo', name: 'the Bamboo Grove', no: "it's a bamboo grove! The roots are so tangled we couldn't tunnel at all." }
+];
+function allFrogs() { return Object.keys(SPECIES).every(k => SAVE.unlocks.species.includes(k)); }
+function wormSpotPos(k) { const M = WORMORY.mound; return k === 'dirt' ? { x: M.x, z: M.z } : k === 'dunes' ? DUNES : k === 'mill' ? MILL : k === 'mount' ? { x: MOUNT.x + 60, z: MOUNT.z } : k === 'hots' ? HOTS : k === 'bog' ? BOG : BAMBOO; }
+function buildWormNPC() {
+  const g = new THREE.Group(); scene.add(g); WNPC.g = g;
+  const m = new THREE.MeshStandardMaterial({ color: 0xe08a90, roughness: 0.4 }), band = new THREE.MeshStandardMaterial({ color: 0xc06070, roughness: 0.4 });
+  for (let i = 0; i < 12; i++) { const s = new THREE.Mesh(G.sph, i === 3 ? band : m); const r = (i === 0 ? 0.42 : 0.38) * (1 - i * 0.04); s.scale.set(r, r, r * 1.2); s.castShadow = true; g.add(s); WNPC.segs.push(s); }
+  const eyeW = new THREE.MeshStandardMaterial({ color: 0xffffff }), eyeB = new THREE.MeshBasicMaterial({ color: 0x101010 });
+  for (const sx of [-1, 1]) { const e = new THREE.Mesh(G.sphM, eyeW); e.scale.setScalar(0.09); e.position.set(sx * 0.11, 0.14, 0.18); WNPC.segs[0].add(e); e.scale.multiplyScalar(1 / 0.42 * 1.6); const p = new THREE.Mesh(G.sphT, eyeB); p.scale.setScalar(0.5); p.position.set(0, 0.1, 0.8); e.add(p); }
+  const smile = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.06, 6, 12, Math.PI), eyeB); smile.rotation.set(0, 0, Math.PI); smile.position.set(0, -0.15, 0.9); WNPC.segs[0].add(smile);
+  // his spot by the Lily Pond: nearest dry land to the middle of the pond
+  const clear = (x, z) => { for (let a = 0; a < TAU; a += 0.5) for (const r of [0, 1, 2, 3]) { const px = x + Math.cos(a) * r, pz = z + Math.sin(a) * r; if (Math.abs(groundAt(px, pz, 99, 300) - terrainH(px, pz)) > 0.05) return false; for (const c of nearby(px, pz)) if (c.k === 'coll' && Math.hypot(px - c.x, pz - c.z) < c.r + 0.6) return false; } return true; };
+  let best = null; for (let i = 0; i < 1500 && !best; i++) { const a = i * 2.39996, d = 8 + Math.sqrt(i) * 1.2, x = -4 + Math.cos(a) * d, z = 22 + Math.sin(a) * d; if (rawHeight(x, z) > WATER + 0.3 && slopeAt(x, z) < 0.5 && clear(x, z)) best = { x, z }; }
+  WNPC.pond = best || { x: 10, z: 10 };
+  WNPC.trail = []; WNPC.pos = new V3(WNPC.pond.x, 0, WNPC.pond.z); WNPC.heading = 0;
+  // the worms who come to move in
+  WNPC.crowd = [];
+  for (let i = 0; i < 22; i++) { const w = new THREE.Group(); w.visible = false; scene.add(w); const segs = []; for (let k = 0; k < 6; k++) { const s = new THREE.Mesh(G.sphM, m); s.scale.setScalar(0.11 - k * 0.01); w.add(s); segs.push(s); } WNPC.crowd.push({ w, segs, a: Math.random() * TAU, ph: Math.random() * 6 }); }
+  WNPC.dust = []; for (let i = 0; i < 18; i++) { const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.cloud, color: 0xb09070, transparent: true, opacity: 0, depthWrite: false })); scene.add(sp); WNPC.dust.push(sp); }
+}
+// the worm's body follows its head along a trail
+function wormPose(dt, moving) {
+  const p = WNPC.pos; p.y = terrainH(p.x, p.z);
+  const tr = WNPC.trail; if (!tr.length || tr[0].distanceTo(p) > 0.08) { tr.unshift(p.clone()); if (tr.length > 80) tr.length = 80; }
+  let idx = 0, acc = 0;
+  WNPC.segs.forEach((s, i) => { const want = i * 0.32; while (idx < tr.length - 1 && acc + tr[idx].distanceTo(tr[idx + 1]) < want) { acc += tr[idx].distanceTo(tr[idx + 1]); idx++; } const a = tr[Math.min(idx, tr.length - 1)] || p; const wig = Math.sin(GAME.t * (moving ? 10 : 3) - i * 0.7) * (moving ? 0.06 : 0.03) * Math.min(1, i / 2); s.position.set(a.x + Math.cos(WNPC.heading) * wig, a.y + 0.36 + (i === 0 && !moving ? 0.2 + Math.sin(GAME.t * 2) * 0.05 : 0) - i * 0.005, a.z - Math.sin(WNPC.heading) * wig); });
+  WNPC.segs[0].rotation.y = WNPC.heading;
+  // a bouncing "!" above his head when he has something to say
+  if (!WNPC.mark) { const c = mkCanvas(64, 64), x = c.getContext('2d'); x.font = 'bold 56px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineWidth = 8; x.strokeStyle = '#5a1020'; x.strokeText('!', 32, 34); x.fillStyle = '#ffd040'; x.fillText('!', 32, 34); WNPC.mark = new THREE.Sprite(new THREE.SpriteMaterial({ map: canvasTex(c), transparent: true, depthTest: false })); WNPC.mark.renderOrder = 30; WNPC.mark.scale.setScalar(1.5); WNPC.g.add(WNPC.mark); }
+  WNPC.mark.visible = WNPC.state === 'idle' && !SAVE.stats.wormoryBuilt; WNPC.mark.position.set(WNPC.segs[0].position.x, WNPC.segs[0].position.y + 1.2 + Math.abs(Math.sin(GAME.t * 3)) * 0.3, WNPC.segs[0].position.z);
+}
+function wormWalkTo(tx, tz, sp, dt) {
+  const p = WNPC.pos, dx = tx - p.x, dz = tz - p.z, d = Math.hypot(dx, dz); if (d < 0.3) return true;
+  WNPC.heading += angDiff(WNPC.heading, Math.atan2(dx, dz)) * Math.min(1, dt * 5);
+  const st = Math.min(d, sp * dt); p.x += Math.sin(WNPC.heading) * st; p.z += Math.cos(WNPC.heading) * st; return false;
+}
+// the dialogue box
+const WDLG = { el: null, open: false };
+function wormSay(text, buttons) {
+  if (!WDLG.el) {
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:62;width:min(620px,92vw);background:#fff8ec;border:4px solid #d07888;border-radius:16px;padding:14px 18px;color:#3a2420;box-shadow:0 10px 40px rgba(0,0,0,.5);font-family:var(--display,sans-serif)';
+    d.innerHTML = '<div style="font-weight:bold;color:#c05068;font-size:19px;margin-bottom:6px">Worm</div><p id="wdT" style="font-size:18px;line-height:1.5;margin:0 0 10px"></p><div id="wdB" style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"></div>';
+    document.body.appendChild(d); WDLG.el = d;
+    addEventListener('keydown', e => { if (!WDLG.open) return; if (e.code === 'Enter' || e.code === 'KeyE' || e.code === 'Space') { e.stopPropagation(); e.preventDefault(); const b = WDLG.el.querySelector('#wdB button'); if (b) b.click(); } }, true);
+  }
+  WDLG.el.querySelector('#wdT').textContent = ''; const B = WDLG.el.querySelector('#wdB'); B.innerHTML = '';
+  (buttons || [{ label: 'OK', fn: closeWormSay }]).forEach((b, i) => { const el = document.createElement('button'); el.className = 'btn' + (i === 0 ? ' primary' : ''); el.textContent = b.label; el.onclick = () => b.fn(); B.appendChild(el); });
+  WDLG.el.style.display = 'block'; WDLG.open = true; GAME.paused = true; exitLock(); clearKeys();
+  // type the words out, with little squeaks
+  let i = 0; clearInterval(WDLG.iv); WDLG.iv = setInterval(() => { WDLG.el.querySelector('#wdT').textContent = text.slice(0, ++i); if (i % 3 === 0) tone('sine', 700 + Math.random() * 300, 600, 0.04, 0.05); if (i >= text.length) clearInterval(WDLG.iv); }, 22);
+}
+function closeWormSay() { if (!WDLG.el) return; clearInterval(WDLG.iv); WDLG.el.style.display = 'none'; WDLG.open = false; if (!WMAP.open) GAME.paused = false; clearKeys(); }
+// the map with glowing spots to choose from
+const WMAP = { el: null, open: false };
+function wormMap() {
+  closeWormSay();
+  if (!WMAP.el) {
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;inset:0;z-index:63;background:rgba(10,14,10,.8);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-family:var(--display,sans-serif);color:#fff';
+    d.innerHTML = '<div style="font-size:20px">Where should the worms build the Wormory? Tap a glowing spot.</div><canvas id="wmC" width="560" height="560" style="width:min(560px,86vw,70vh);height:auto;border-radius:12px;cursor:pointer;touch-action:none"></canvas>';
+    document.body.appendChild(d); WMAP.el = d;
+    const cv = d.querySelector('#wmC');
+    cv.addEventListener('click', e => { const r = cv.getBoundingClientRect(), mx = (e.clientX - r.left) / r.width * 560, my = (e.clientY - r.top) / r.height * 560; let best = null, bd = 30; for (const s of WSPOTS) { const p = wormSpotPos(s.key), sx = (p.x + MAP_H) / (MAP_H * 2) * 560, sy = (p.z + MAP_H) / (MAP_H * 2) * 560, dd = Math.hypot(mx - sx, my - sy); if (dd < bd) { bd = dd; best = s; } } if (best) pickWormSpot(best); });
+  }
+  WMAP.open = true; WMAP.el.style.display = 'flex'; GAME.paused = true; exitLock();
+  const draw = () => {
+    if (!WMAP.open) return; const cv = WMAP.el.querySelector('#wmC'), x = cv.getContext('2d'); x.drawImage(mapImg, 0, 0, 560, 560);
+    const pulse = 0.6 + Math.sin(performance.now() / 250) * 0.4;
+    for (const s of WSPOTS) { const p = wormSpotPos(s.key), sx = (p.x + MAP_H) / (MAP_H * 2) * 560, sy = (p.z + MAP_H) / (MAP_H * 2) * 560; const gr = x.createRadialGradient(sx, sy, 2, sx, sy, 22); gr.addColorStop(0, 'rgba(255,240,160,' + pulse + ')'); gr.addColorStop(1, 'rgba(255,200,80,0)'); x.fillStyle = gr; x.beginPath(); x.arc(sx, sy, 22, 0, TAU); x.fill(); x.fillStyle = '#fff'; x.beginPath(); x.arc(sx, sy, 5, 0, TAU); x.fill(); }
+    const px = (PL.pos.x + MAP_H) / (MAP_H * 2) * 560, py = (PL.pos.z + MAP_H) / (MAP_H * 2) * 560; x.fillStyle = '#7fd0ff'; x.beginPath(); x.arc(px, py, 6, 0, TAU); x.fill();
+    requestAnimationFrame(draw);
+  };
+  draw();
+}
+function pickWormSpot(s) {
+  WMAP.open = false; WMAP.el.style.display = 'none';
+  WNPC.pick = s;
+  wormSay("I'll go check it out.", [{ label: 'OK', fn: () => { closeWormSay(); WNPC.state = 'leaving'; WNPC.t = 0; WNPC.from = WNPC.pos.clone(); } }]);
+}
+function wormNPCTick(dt) {
+  if (!WNPC.g) return;
+  const show = curLevel() === 'top' && !W.inBurrow;
+  WNPC.g.visible = show && WNPC.state !== 'away';
+  const M = WORMORY.mound, built = !!SAVE.stats.wormoryBuilt, locked = !!SAVE.stats.wormoryLocked;
+  // keep the mound looking right
+  if (curLevel() === 'top' && !W.inBurrow && M) { WORMORY.moundG.visible = built; WORMORY.lumpG.visible = !built; WORMORY.lid.visible = WORMORY.lockM.visible = built && locked; WORMORY.sign.visible = built && !!SAVE.stats.wormoryVisit; }
+  if (WORMORY.sign && WORMORY.sign.visible) { const txt = locked ? 'UNLOCK THE WORMORY?' : 'LOCK THE WORMORY?'; if (WORMORY.signTxt !== txt) { WORMORY.signTxt = txt; const x = WORMORY.signCanvas.getContext('2d'); x.fillStyle = '#c8a070'; x.fillRect(0, 0, 256, 128); x.strokeStyle = '#5a3a20'; x.lineWidth = 8; x.strokeRect(4, 4, 248, 120); x.fillStyle = '#2a1808'; x.font = 'bold 24px sans-serif'; x.textAlign = 'center'; x.fillText(locked ? 'UNLOCK THE' : 'LOCK THE', 128, 54); x.fillText('WORMORY?', 128, 90); WORMORY.signTex.needsUpdate = true; } }
+  if (!show) return;
+  const P = PL.pos, p = WNPC.pos, dP = Math.hypot(P.x - p.x, P.z - p.z);
+  let moving = false;
+  const homeSpot = built && !locked ? { x: M.x + 4.5, z: M.z + 6 } : WNPC.pond;
+  switch (WNPC.state) {
+    case 'idle':
+      if (Math.hypot(homeSpot.x - p.x, homeSpot.z - p.z) > 40 && dP > 40) { p.set(homeSpot.x, 0, homeSpot.z); WNPC.trail.length = 0; }
+      if (!wormWalkTo(homeSpot.x, homeSpot.z, 5, dt)) moving = true;
+      else if (dP < 8) WNPC.heading += angDiff(WNPC.heading, Math.atan2(P.x - p.x, P.z - p.z)) * Math.min(1, dt * 3);
+      if (dP < 2.4 && !WNPC.near && !WDLG.open && !WMAP.open && GAME.state === 'play') { WNPC.near = true; wormTalk(); }
+      if (dP > 5) WNPC.near = false;
+      break;
+    case 'leaving': { WNPC.t += dt; const sp = wormSpotPos(WNPC.pick.key), a = Math.atan2(sp.x - p.x, sp.z - p.z); wormWalkTo(p.x + Math.sin(a) * 10, p.z + Math.cos(a) * 10, 5, dt); moving = true; if (WNPC.t > 2.5) { dirtPuff(p.x, p.y, p.z, 0x6a4a30); WNPC.state = 'away'; WNPC.t = 0; } break; }
+    case 'away': WNPC.t += dt; if (WNPC.t > 6) { const a = Math.random() * TAU; p.set(P.x + Math.cos(a) * 14, 0, P.z + Math.sin(a) * 14); WNPC.trail.length = 0; dirtPuff(p.x, terrainH(p.x, p.z), p.z, 0x6a4a30); WNPC.state = 'back'; WNPC.t = 0; } break;
+    case 'back': WNPC.t += dt; if (!wormWalkTo(P.x, P.z, 6, dt) && dP > 2.2 && WNPC.t < 6) moving = true; else { WNPC.state = 'idle'; WNPC.near = true; wormReport(); } break;
+    case 'lead': {
+      // lead the way to the dirt, waiting if you fall behind
+      const far = dP > 14; if (far) { WNPC.heading += angDiff(WNPC.heading, Math.atan2(P.x - p.x, P.z - p.z)) * Math.min(1, dt * 3); if (GAME.t - (WNPC.waitT || -99) > 8) { WNPC.waitT = GAME.t; toast('The worm is waiting for you. Follow it!', 'quiet'); } }
+      else if (!wormWalkTo(M.x + 3, M.z + 3, 7, dt)) moving = true;
+      if (Math.hypot(p.x - M.x - 3, p.z - M.z - 3) < 0.5 && dP < 16) { WNPC.state = 'gather'; WNPC.t = 0; }
+      break;
+    }
+    case 'gather': wormGather(dt); break;
+  }
+  wormPose(dt, moving);
+}
+function wormTalk() {
+  const built = !!SAVE.stats.wormoryBuilt, locked = !!SAVE.stats.wormoryLocked;
+  if (!built && !allFrogs()) {
+    const miss = Object.keys(SPECIES).filter(k => !SAVE.unlocks.species.includes(k)), n = Object.keys(SPECIES).length;
+    wormSay("Oh, hi big fella! I'm a worm! I need a favour, but I can only ask a frog who has met every kind of frog in the world. You've found " + (n - miss.length) + " of " + n + " so far. Still missing: " + miss.map(k => SPECIES_UNLOCK[k] && !SAVE.unlocks.species.includes(k) ? '???' : SPECIES[k].name).filter((v, i, a) => v !== '???' || a.indexOf('???') === i).join(', ').replace('???', miss.filter(k => SPECIES_UNLOCK[k]).length + ' secret frogs') + ". Come back when you've found them all!", [{ label: 'OK!', fn: closeWormSay }]);
+    return;
+  }
+  if (!built) wormSay("Oh, hi big fella! As you may already know, I'm a worm! My kind need a place for the wormory! Do you know a spot?", [{ label: 'Show me the map', fn: wormMap }, { label: 'Not right now', fn: closeWormSay }]);
+  else if (locked) wormSay("Hi again! The Wormory is all locked up nice and safe. Want me to open it for you?", [{ label: 'Yes, open it!', fn: () => { SAVE.stats.wormoryLocked = 0; persist(); closeWormSay(); toast('The worm wriggles off to the Wormory to unlock it.'); } }, { label: 'Not now', fn: closeWormSay }]);
+  else wormSay("Welcome back, big fella! The Wormory is open. Make yourself at home, and please wipe your feet.", [{ label: 'Thanks!', fn: closeWormSay }]);
+}
+function wormReport() {
+  const s = WNPC.pick;
+  if (s.key !== 'dirt') wormSay("I checked out " + s.name + ". It would not be good for worms: " + s.no + " Do you know another spot?", [{ label: 'Show me the map', fn: wormMap }, { label: 'Not right now', fn: closeWormSay }]);
+  else wormSay("It's perfect! Thank you!", [{ label: 'Next', fn: () => wormSay("Because you helped me, I will show you to it!", [{ label: "Let's go!", fn: () => { closeWormSay(); WNPC.state = 'lead'; toast('Follow the worm!'); } }]) }]);
+}
+// the worm whistles, all the other worms come, a big cloud of dust, and the lump becomes the Wormory
+function wormGather(dt) {
+  const M = WORMORY.mound, t = (WNPC.t += dt);
+  if (t < 0.1) { for (let i = 0; i < 3; i++) tone('sine', 1400 + i * 200, 2200 + i * 200, 0.25, 0.25, WNPC.pos, i * 0.3); tone('sine', 2400, 1600, 0.5, 0.25, WNPC.pos, 1); toast('The worm whistles...'); }
+  for (const c of WNPC.crowd) {
+    if (t < 1.2) { c.w.visible = false; continue; }
+    const k = clamp((t - 1.2 - c.ph * 0.3) / 3, 0, 1), r = lerp(18, 2.4, k), x = M.x + Math.cos(c.a) * r, z = M.z + Math.sin(c.a) * r;
+    c.w.visible = t < 6.5; c.w.position.set(x, terrainH(x, z) + 0.1 + k * 1.4, z);
+    c.segs.forEach((s, j) => s.position.set(Math.cos(c.a) * j * 0.12 + Math.sin(GAME.t * 9 + j) * 0.03, 0, Math.sin(c.a) * j * 0.12));
+  }
+  if (t > 4.5 && t < 8.5) {
+    const k = t < 6 ? (t - 4.5) / 1.5 : t > 7 ? 1 - (t - 7) / 1.5 : 1;
+    WNPC.dust.forEach((d, i) => { const a = i / WNPC.dust.length * TAU + t * 0.4; d.position.set(M.x + Math.cos(a) * 3, M.y + 1.5 + (i % 3), M.z + Math.sin(a) * 3); d.scale.set(7, 5, 1); d.material.opacity = 0.9 * k; });
+    CAM.shake = Math.max(CAM.shake, 0.3); if (Math.random() < dt * 20) dirtPuff(M.x + mr(-3, 3), M.y + 0.5, M.z + mr(-3, 3), 0x6a4a30);
+    if (t > 6 && !SAVE.stats.wormoryBuilt) { SAVE.stats.wormoryBuilt = 1; persist(); }
+  } else for (const d of WNPC.dust) d.material.opacity = 0;
+  if (t > 8.5) { WNPC.state = 'idle'; WNPC.near = true; for (const c of WNPC.crowd) c.w.visible = false; SFX.chime(); banner('The Wormory!', 'The worms have moved in and turned the lump of dirt into the Wormory. Walk into it to go inside.'); unlockAch('wormhelper'); }
+}
+// the sign by the Wormory: press E to lock or unlock it
+function wormorySignInteract() {
+  if (!WORMORY.sign || !WORMORY.sign.visible || W.inBurrow || curLevel() !== 'top' || INTERACT.cur) return;
+  const S = WORMORY.signPos; if (Math.hypot(PL.pos.x - S.x, PL.pos.z - S.z) > 2.6) return;
+  const locked = !!SAVE.stats.wormoryLocked;
+  INTERACT.cur = { label: locked ? 'Unlock the Wormory' : 'Lock the Wormory', act: () => {
+    SAVE.stats.wormoryLocked = locked ? 0 : 1; persist(); noiseHit(800, 1, 0.15, 0.3, PL.pos); tone('square', locked ? 600 : 300, locked ? 900 : 200, 0.12, 0.15, PL.pos);
+    toast(locked ? 'You unlock the Wormory.' : 'Click! You lock the Wormory. The worm heads back to the Lily Pond to look after the key.');
+  } };
+}
+{ const _fi = findInteract; findInteract = function () { _fi(); wormorySignInteract(); }; }
 /* ============================================================
    Multiplayer servers (claude.ai live rooms)
    lobby presence: { hosting: "1234" } advertises a running server
@@ -8470,8 +9169,9 @@ function updateWorldVisuals(dt) {
   { const mk = regionFog(); if (mk > 0) { far = Math.min(far, lerp(far, 55, mk)); near = Math.min(near, far * 0.1); scene.fog.color.lerp(_tmpC.setRGB(0.5, 0.58, 0.48).multiplyScalar(0.35 + 0.65 * dayK), mk * 0.7); } }
   W.camUnder = !W.inBurrow && camera.position.y < waterLevelAt(camera.position.x, camera.position.z) - 0.03 && terrainH(camera.position.x, camera.position.z) < waterLevelAt(camera.position.x, camera.position.z);
   if (W.camUnder) { const murky = regionAt(camera.position.x, camera.position.z) === 'Muddy Marsh' ? 0.6 : 1; scene.fog.color.setRGB(0.06, 0.2, 0.19).multiplyScalar(0.3 + 0.7 * dayK); near = 0.4; far = (W.envFog > 1.5 ? 11 : 17) * murky + 6 * dayK; }
+  if (UGN && W.inWormory) { scene.fog.color.setRGB(0.1, 0.06, 0.03); near = 3; far = 50; }
   if (UGN && W.inGut) { const al = GUT.alertT > 0 ? 0.5 + 0.5 * Math.sin(GAME.t * 6) : 0; scene.fog.color.setRGB(0.24 + al * 0.25, 0.05, 0.08 - al * 0.04); near = 3; far = 55 - al * 15; }
-  if (UGN && !W.camUnder && !W.inMantle && !W.inGut) { scene.fog.color.setRGB(0.025, 0.03, 0.035); near = 4; far = SPECIES[GAME.species].caveSight ? 70 : 42; }
+  if (UGN && !W.camUnder && !W.inMantle && !W.inGut && !W.inWormory) { scene.fog.color.setRGB(0.025, 0.03, 0.035); near = 4; far = SPECIES[GAME.species].caveSight ? 70 : 42; }
   if (UGN && W.inMantle && !W.camUnder) { scene.fog.color.setRGB(0.16, 0.05, 0.02); near = 6; far = 80; }
   if (UGN && W.inMantle && W.camUnder) { scene.fog.color.setRGB(0.5, 0.13, 0.03); near = 1; far = 22; }
   if (W.inSky && !W.inBurrow) { far = Math.max(far, 420); near = Math.max(near, 60); }
@@ -8806,6 +9506,7 @@ function renderMenu() {
     c.drawImage(mapImg, 0, 0, 768, 768);
     const P = (x, z) => [toW(x) * 768, toW(z) * 768];
     const labels = { 'Lily Pond': [0, 0], 'Big Lake': [LAKE.x, LAKE.z], 'Babbling Stream': [-80, 25], 'Waterfall': [-125, 55], 'Pond Cave': [CAVE.x, CAVE.z - 18], 'Muddy Marsh': [MARSH.x, MARSH.z], 'Wildflower Meadow': [MEADOW.x + 12, MEADOW.z - 8], 'Fallen Giant': [40, 56], 'Hidden Burrow': [BURROW_ENT.x, BURROW_ENT.z - 6], 'Cypress Swamp': [SWAMP.x, SWAMP.z], 'Sand Dunes': [DUNES.x, DUNES.z + 14], 'Old Mill Pond': [MILL.x, MILL.z - 26], 'Rainforest': [RAIN.x, RAIN.z], 'Hot Springs': [HOTS.x, HOTS.z + 30], 'Mountain Tarn': [TARN.x, TARN.z - 28], 'Pitcher Plant Bog': [BOG.x, BOG.z - 30], 'Bamboo Grove': [BAMBOO.x, BAMBOO.z], 'The Mountains': [MOUNT.x, MOUNT.z + 50] };
+    if (WORMORY.mound) labels['The Wormory'] = [WORMORY.mound.x, WORMORY.mound.z - 8];
     if (W.inMantle) { for (const k in labels) delete labels[k]; labels['Temple of The Worm'] = [TEMPLE.x, TEMPLE.z - 30]; }
     c.font = '700 20px Atkinson Hyperlegible, sans-serif'; c.textAlign = 'center';
     for (const r in labels) { if (!SAVE.stats.regions.includes(r)) continue; const [x, y] = P(labels[r][0], labels[r][1]); c.lineWidth = 4; c.strokeStyle = 'rgba(10,22,15,.8)'; c.strokeText(r, x, y); c.fillStyle = '#edf0d6'; c.fillText(r, x, y); }
@@ -9043,7 +9744,7 @@ function loop() {
     if (GAME.state === 'play' && !GAME.paused) tick(dt);
     else if (GAME.state === 'title') titleTick(dt);
     updateWorldVisuals(dt); updateCamera(dt); updateParticles(dt); dirtTick(dt); audioUpdate(dt); updateHUD(dt);
-    renderer.render(scene, camera);
+    if (GAME.state === 'play' && GAME.species === 'sixseven' && !GAME.paused) sixVisionRender(); else renderer.render(scene, camera);
   } catch (err) { if (!loop.err) { loop.err = true; console.error(err && err.stack || err); toast('Something went wrong: ' + err.message); } }
 }
 
