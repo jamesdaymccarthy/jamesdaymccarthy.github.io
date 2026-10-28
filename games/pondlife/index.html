@@ -1871,8 +1871,12 @@ function buildVegetation() {
   const rockSpots = [];
   const tryRock = (x, z, r, sy, tag) => { const h = terrainH(x, z); if (x < FALL_X - 1 && h < UPPER_WATER - 0.6) return; rockSpots.push({ x, z, r, sy, h, tag }); };
   for (let i = 0; i < 46; i++) { const a = rnd() * TAU; const B = rnd() < 0.6 ? POND : LAKE; const d = B.r * rr(0.92, 1.12); tryRock(B.x + Math.cos(a) * d, B.z + Math.sin(a) * d, rr(1.1, 3.4), rr(0.55, 0.85), 'shore'); }
-  for (let i = 0; i < 26; i++) { const t = rnd(), sI = Math.floor(rnd() * (STREAM.length - 1)), A = STREAM[sI], B = STREAM[sI + 1]; tryRock(lerp(A[0], B[0], t) + rr(-3.5, 3.5), lerp(A[1], B[1], t) + rr(-3.5, 3.5), rr(0.8, 2.4), rr(0.5, 0.8), 'stream'); }
-  for (let i = 0; i < 18; i++) { const a = rnd() * TAU, d = rr(5, 12); tryRock(PLUNGE.x + Math.cos(a) * d, PLUNGE.z + Math.sin(a) * d, rr(1.5, 4.5), rr(0.6, 1.0), 'falls'); }
+  for (let i = 0; i < 26; i++) { const t = rnd(), sI = Math.floor(rnd() * (STREAM.length - 1)), A = STREAM[sI], B = STREAM[sI + 1], ox = rr(-3.5, 3.5), oz = rr(-3.5, 3.5), r = rr(0.8, 2.4), sy = rr(0.5, 0.8);
+    // keep boulders out of the stream itself: push them sideways onto the bank
+    const cx = lerp(A[0], B[0], t), cz = lerp(A[1], B[1], t), dx = B[0] - A[0], dz = B[1] - A[1], dl = Math.hypot(dx, dz) || 1, nx = -dz / dl, nz = dx / dl, side = (ox * nx + oz * nz) >= 0 ? 1 : -1, off = 7 + r + Math.abs(ox * nx + oz * nz) * 0.6;
+    const x = cx + nx * side * off, z = cz + nz * side * off; if (polyDist(x, z, STREAM) > 5.5 + r && terrainH(x, z) > WATER + 0.2) tryRock(x, z, r, sy, 'stream'); }
+  for (let i = 0; i < 18; i++) { const a = rnd() * TAU, d = rr(5, 12), r = rr(1.5, 4.5), sy = rr(0.6, 1.0), rad = PLUNGE.r + 2.5 + r + (d - 5) * 0.5, x = PLUNGE.x + Math.cos(a) * rad, z = PLUNGE.z + Math.sin(a) * rad;
+    if (x < FALL_X + 1.5 + r || polyDist(x, z, STREAM) < 5 + r || terrainH(x, z) < WATER + 0.2) continue; tryRock(x, z, r, sy, 'falls'); }
   for (let i = 0; i < 10; i++) { const a = rnd() * TAU, d = rr(3, 11); tryRock(CAVE.x + Math.cos(a) * d, CAVE.z + Math.sin(a) * d, rr(0.8, 2.2), rr(0.5, 0.9), 'cave'); }
   for (let i = 0; i < 170; i++) { const x = rr(-(WORLD_R - 20), WORLD_R - 20), z = rr(-(WORLD_R - 20), WORLD_R - 20); if (landOK(x, z, 0.5, 20, 0.7) && !inNewPlace(x, z, 2)) tryRock(x, z, rr(1, 4), rr(0.5, 0.9), 'wood'); }
   for (let i = 0; i < 40; i++) { const a = rnd() * TAU, d = rr(TARN.r * 0.95, TARN.r * 1.5); tryRock(TARN.x + Math.cos(a) * d, TARN.z + Math.sin(a) * d, rr(1.2, 3.6), rr(0.5, 0.9), 'tarn'); }
@@ -3622,9 +3626,13 @@ function buildWildlife() {
   // ---- rare frogs ----
   const spade = makeFrog('spadefoot', 'classic'); spade.root.scale.setScalar(0.9); W.chamber.add(spade.root); spade.root.position.set(W.nest.x, W.nest.y - 0.02, W.nest.z); spade.root.rotation.y = 2.4; frogPose(spade, { fold: 0, crouch: 1 }); spade.tilt.position.y = -0.1;
   CREATURES.push({ kind: 'rare', guide: 'spadefoot', root: spade.root, F: spade, pos: spade.root.position, burrow: true, update(dt) { if (!W.inBurrow) return; for (const e of this.F.eyes) e.scale.y = 0.15; frogAnimate(this.F, dt, {}); for (const e of this.F.eyes) e.scale.y = 0.15; this.F.throat.scale.y = 0.1 + Math.sin(GAME.t) * 0.02; this.F.tilt.scale.y = 1 + Math.sin(GAME.t * 0.9) * 0.03; if (Math.random() < dt * 0.25) SFX.bubble(this.root.position); }, focus() { return new V3(W.nest.x, W.nest.y + 0.3, W.nest.z); } });
-  const glass = makeFrog('glass', 'classic'); glass.root.scale.setScalar(0.6);
-  const gr = W.rocks.filter(r => r.tag === 'falls').sort((a, b) => Math.hypot(a.x - FALL_X, a.z - 43) - Math.hypot(b.x - FALL_X, b.z - 43))[0];
-  makeCreature('rare', 'glassfrog', glass.root, function (dt) { const night = !isDay(); this.root.visible = night; if (!night) return; frogAnimate(this.F, dt, { croak: (GAME.t % 6) < 0.5 ? GAME.t % 6 : 0 }); if (Math.random() < dt * 0.15) SFX.croak('glass', this.root.position); }, { F: glass });
+  const glass = makeFrog('glass', 'classic'); glass.root.scale.setScalar(0.85);
+  { const aura = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xb0ffd0, transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending })); aura.scale.setScalar(2.4); aura.position.y = 0.4; glass.root.add(aura);
+    const heart = new THREE.Mesh(G.sphM, new THREE.MeshBasicMaterial({ color: 0xff3050 })); heart.scale.setScalar(0.07); heart.position.set(0, 0.28, 0.05); glass.tilt.add(heart); glass.heart = heart;
+    const hg = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xff4060, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending })); hg.scale.setScalar(0.35); heart.add(hg); hg.scale.setScalar(5);
+    const gl = new THREE.PointLight(0xa0ffc0, 0.9, 7, 1.5); gl.position.y = 0.8; glass.root.add(gl); }
+  const gr = W.rocks.filter(r => r.tag === 'falls').sort((a, b) => Math.hypot(a.x - FALL_X, a.z - 43) - Math.hypot(b.x - FALL_X, b.z - 43))[0] || { x: PLUNGE.x + 4, z: PLUNGE.z + PLUNGE.r + 3, top: terrainH(PLUNGE.x + 4, PLUNGE.z + PLUNGE.r + 3) };
+  makeCreature('rare', 'glassfrog', glass.root, function (dt) { const night = !isDay(); this.root.visible = night; if (!night) return; frogAnimate(this.F, dt, { croak: (GAME.t % 6) < 0.5 ? GAME.t % 6 : 0 }); if (this.F.heart) { const b = (GAME.t * 1.6) % 1; this.F.heart.scale.setScalar(0.07 * (1 + (b < 0.15 ? 0.45 : b < 0.3 ? 0.2 : 0))); } if (Math.random() < dt * 0.15) SFX.croak('glass', this.root.position); }, { F: glass, seeR: 13 });
   glass.root.position.set(gr.x, gr.top, gr.z); glass.root.rotation.y = 1;
   const red = makeFrog('redeye', 'classic'); red.root.scale.setScalar(0.75);
   const bigM = W.caveMush[0]; red.root.position.set(bigM.x, bigM.top - 0.15, bigM.z);
@@ -10040,6 +10048,7 @@ function newWorldTick(dt) {
   wizardTick(dt);
   corrupt67Tick(dt);
   machineTick(dt); choresTick(dt);
+  fallSwimTick(dt);
   if (W.skyHole) W.skyHole.visible = !!SAVE.stats.skyHole && curLevel() === 'top';
   if (GAME.species === 'star' && PL.F && !PL.onGround && GAME.state === 'play' && Math.random() < 0.5) sparkle(PL.pos.clone().add(new V3(mr(-0.3, 0.3), 0.2, mr(-0.3, 0.3))), 1, Math.random() < 0.5 ? 0xfff0a0 : 0xffffff);
   if (GAME.state !== 'play' || W.ugBusy || W.inBurrow) return;
@@ -11319,6 +11328,25 @@ function choresTick(dt) {
 
 function choreIslandShiny() { return (W.shinies || []).find(sh => !sh.burrow && Math.hypot(sh.mesh.position.x - ISLAND.x, sh.mesh.position.z - ISLAND.z) < 3); }
 { const _ts = takeShiny; takeShiny = function (sh) { _ts.apply(this, arguments); if (sh === choreIslandShiny() && choreSt('pebble') === 1) { setChore('pebble', 2); SFX.chime(); toast(CHORES[4].got, 'guide'); } }; }
+
+/* ---------- swimming UP the waterfall, like a salmon ---------- */
+function fallSwimTick(dt) {
+  const P = PL.pos;
+  if (PL.fallSwim) {
+    const S = PL.fallSwim; S.t += dt / 1.6; const k = Math.min(1, S.t), e = k * k * (3 - 2 * k);
+    P.set(lerp(S.x0, FALL_X - 2.2, e), lerp(S.y0, UPPER_WATER - 0.15, e) + Math.sin(k * Math.PI) * 0.6, lerp(S.z0, 43 + (S.z0 - 43) * 0.5, e));
+    PL.vel.set(0, 0, 0); PL.inWater = true; PL.onGround = false; PL.diving = false; PL.yaw = -Math.PI / 2;
+    if (Math.random() < dt * 14) sparkle(P.clone().add(new V3(mr(-0.4, 0.4), mr(-0.2, 0.3), mr(-0.4, 0.4))), 2, 0xe8f8ff);
+    if (Math.random() < dt * 5) SFX.splash(P.clone(), 0.4);
+    if (k >= 1) { PL.fallSwim = null; P.y = UPPER_WATER - 0.15; ripple(P.x, UPPER_WATER, P.z, 1.2, 1.4); SFX.splash(P.clone(), 0.8); }
+    return;
+  }
+  if (GAME.state !== 'play' || W.inCaves || W.inSky || W.inBurrow || PL.stage < 1 || PL.riding || PL.mind) return;
+  if (!PL.inWater || P.x > FALL_X + 3.4 || P.x < FALL_X - 0.5 || Math.abs(P.z - 43) > 3.2 || P.y > WATER + 1.5) return;
+  const iv = inputVector(); if (iv.mag < 0.2 || iv.x > -0.35) return; // swimming toward the falls
+  PL.fallSwim = { t: 0, x0: P.x, y0: P.y, z0: P.z }; SFX.splash(P.clone(), 1);
+  if (!SAVE.stats.fallSwim) { SAVE.stats.fallSwim = 1; persist(); toast('You swim right up the waterfall, like a salmon! (Swim into the falling water any time to climb it.)', 'guide'); }
+}
 /* ============================================================
    Multiplayer servers (claude.ai live rooms)
    lobby presence: { hosting: "1234" } advertises a running server
