@@ -482,7 +482,34 @@ const SPECIES = {
     desc: 'A wise old green frog with a tall purple hat covered in stars, a long grey beard and a real magic wand. Press V to zap the nearest predator into a cloud of sparkles (the wand needs 60 seconds to recharge). Hold G to float up into the air.', habitat: "The Wizard's Tower, deep in the woods", ability: 'V: disintegrate the nearest predator (60 s recharge). Hold G: float' },
   machine: { name: 'Machine Frog', size: 0.9, jump: 1.0, swim: 0.6, speed: 1.05, tongue: 3.4, climb: false, machine: true, heatproof: true, glowEyes: true, hunger: 0.8, dry: 0.3, armor: 0.6,
     color: 0x8a929a, belly: 0xb8c0c8, spot: 0x4a5058, eye: 0xff3020, throat: 0xd0a040, croak: 'machine',
-    desc: 'A frog made of steel plates, rivets, gears and pistons, built by the worms as a thank-you. Press G to unfold its robot wings and fly. Press V to fire laser eyes. Press T to blast fire out of its rocket bottom for a super jump.', habitat: 'A statue in the Great Hall of the Wormory', ability: 'G: robot wings. V: laser eyes. T: rocket super jump' },
+    desc: 'A frog made of steel plates, rivets, gears and pistons, built by the worms as a thank-you. G: unfold robot wings and fly. V: laser eyes. T: rocket bottom super jump. M: fire 4 homing missiles. Hold N: bug magnet. Y: force field. K: headlights.', habitat: 'A statue in the Great Hall of the Wormory', ability: 'G wings, V laser eyes, T rocket jump, M missiles, N bug magnet, Y force field, K headlights' },
+  cactus: { name: 'Cactus Frog', size: 0.85, jump: 0.95, swim: 0.5, speed: 0.95, tongue: 3.2, climb: false, cactus: true, hunger: 0.7, dry: 0.3, armor: 0.9,
+    color: 0x4a8a3a, belly: 0xc8d890, spot: 0x2a6a2a, eye: 0x201810, throat: 0xd0e0a0, croak: 'cactus',
+    desc: 'A green frog covered in sharp spikes, with a little pink flower on its head. Anything that bites it gets a mouthful of spikes and spits it right back out. Press V for a burst of spikes. It hardly ever dries out.', habitat: 'The Sand Dunes (it was wearing a hat)', ability: 'Biters spit it out (only a little damage). V: spike burst' },
+  storm: { name: 'Storm Frog', size: 0.85, jump: 1.1, swim: 1.0, speed: 1.1, tongue: 3.3, climb: false, storm: true, glowEyes: true, hunger: 1, dry: 1, armor: 1,
+    color: 0x4a4e5a, belly: 0x8a90a0, spot: 0x2a2c34, eye: 0xffe030, throat: 0xffe880, croak: 'storm',
+    desc: 'A dark grey frog with bright yellow lightning stripes that crackles with sparks. Press V to call down a bolt of lightning on the nearest predator.', habitat: 'The top of the highest mountain, in a thunderstorm', ability: 'V: lightning strike (12 s recharge)' },
+  ice: { name: 'Ice Frog', size: 0.8, jump: 1.0, swim: 1.1, speed: 1.0, tongue: 3.2, climb: false, ice: true, glowEyes: true, hunger: 0.9, dry: 0.5, armor: 1,
+    color: 0xa8e0ff, belly: 0xe0f6ff, spot: 0x70b0e0, eye: 0x40a0ff, throat: 0xd0f0ff, croak: 'ice',
+    desc: 'A see-through frog made of blue ice crystals. Press V to breathe a cloud of frost that freezes bugs in mid-air (easy snacks!) and freezes predators solid in blocks of ice.', habitat: 'A frozen cave deep in the Underground', ability: 'V: freeze breath' },
+  glitch: { name: 'Glitch Frog', size: 0.85, jump: 1.05, swim: 1.0, speed: 1.05, tongue: 3.3, climb: false, glitch: true, glowEyes: true, hunger: 1, dry: 1, armor: 1,
+    color: 0xd040d0, belly: 0x40e0e0, spot: 0x30ff60, eye: 0xffffff, throat: 0x40e0e0, croak: 'glitch',
+    desc: 'A flickery frog with bits missing, from the crack at the edge of the world. While you walk around it sometimes glitches straight through walls. Press V to glitch to a random spot nearby.', habitat: 'Past the edge of the world', ability: 'Glitches through walls. V: random glitch-jump' },
+  dragon: { name: 'Dragon Frog', size: 0.9, jump: 1.1, swim: 0.8, speed: 1.1, tongue: 3.4, climb: false, dragon: true, fireBreath: true, heatproof: true, glowEyes: true, hunger: 1.2, dry: 0.6, armor: 0.8,
+    color: 0xc02818, belly: 0xf0b050, spot: 0x801010, eye: 0xffc020, throat: 0xffd070, croak: 'dragon',
+    desc: 'A red frog with horns, a spiky back, a long tail and bat wings, hatched from an egg in the Mantle. Press V to breathe fire. Hold G to flap its wings and fly. Heat cannot hurt it.', habitat: 'An egg in the Mantle', ability: 'V: fire breath. Hold G: fly' },
+  alien: { name: 'Alien Frog', size: 0.8, jump: 1.15, swim: 1.0, speed: 1.05, tongue: 3.4, climb: false, alien: true, hunger: 0.9, dry: 0.8, armor: 1,
+    color: 0x9ad0a0, belly: 0xd8f0d8, spot: 0x60a070, eye: 0x050505, throat: 0xc0f0c0, croak: 'alien',
+    desc: 'The pilot of the crashed UFO: a pale green frog with three big black eyes and two glowing antennae. Press V to fire a tractor beam that lifts animals up into the air and sucks up bugs.', habitat: 'The crashed UFO', ability: 'V: tractor beam' },
+  dataf: { name: 'Data Frog', size: 0.85, jump: 1.05, swim: 1.0, speed: 1.05, tongue: 3.3, climb: false, dataf: true, hunger: 0.8, dry: 0.8, armor: 1,
+    color: 0x103020, belly: 0x184028, spot: 0x40ff90, eye: 0x40ff90, throat: 0x40ff90, croak: 'data',
+    desc: 'A frog made of glowing green wireframe, with 0s and 1s floating around it. Press V near any animal to scan it: it instantly goes in your field guide as studied, and you get to see its SECRET FILE.', habitat: 'The back of the Data Whale, in ∅', ability: 'V: scan an animal' },
+  sock: { name: 'Sock Frog', size: 0.8, jump: 1.0, swim: 0.7, speed: 1.0, tongue: 3.2, climb: false, sock: true, hunger: 1, dry: 1.2, armor: 1,
+    color: 0xffffff, belly: 0xf0f0f0, spot: 0xe02030, eye: 0x202020, throat: 0xff6080, croak: 'sock',
+    desc: 'A stripy sock puppet with button eyes. Nobody knows who is inside it. Press V and it says something. Usually something silly.', habitat: 'A pile of 10 lost socks', ability: 'V: say something' },
+  rock: { name: 'Rock Frog', size: 0.95, jump: 0.01, swim: 0.4, speed: 0.6, tongue: 3.4, climb: false, rock: true, hunger: 0.5, dry: 0.2, armor: 0,
+    color: 0x8a8478, belly: 0x8a8478, spot: 0x6a6458, eye: 0x101010, throat: 0x8a8478, croak: 'rock',
+    desc: 'A rock with eyes. It has been sitting by the Babbling Stream for 150 years. It cannot jump at all and it is very slow, but NOTHING can hurt it. Ever. Press V to roll.', habitat: 'By the Babbling Stream (the whole time)', ability: 'Cannot be hurt. Cannot jump. V: roll' },
   star: { name: 'Star Frog', size: 0.75, jump: 1.32, swim: 1.0, speed: 1.08, tongue: 3.2, climb: false, starry: true, glowEyes: true, hunger: 0.9, dry: 0.9, armor: 1,
     color: 0x2a2c6a, belly: 0x6a6cb8, spot: 0xfff0a0, eye: 0xfff080, throat: 0xffe080, croak: 'star',
     desc: 'A dark blue frog covered in tiny shining stars, found sitting in the Old Frog Ruins of the Other World. It jumps higher than any frog from home and leaves sparkles wherever it hops.', habitat: 'The Old Frog Ruins, in the Other World', ability: 'Jumps extra high; sparkles as it hops' },
@@ -499,10 +526,10 @@ const SPECIES = {
     color: 0xffffff, belly: 0xffffff, spot: 0xdddddd, eye: 0x202020, throat: 0xffffff, croak: 'sixseven',
     desc: 'A frog made entirely of glitchy white 6s and 7s. Nobody knows where it came from. Press V to glitch forward 6.7 steps in the blink of an eye, straight through anything in the way. Its croak is... well. You know.', habitat: 'Inside any frog that eats too many 67 bugs', ability: 'V: glitch-teleport 6.7 steps forward' }
 };
-const UNLOCK_MAP = { wizardfrog: 'wizard', spadefoot: 'spadefoot', glassfrog: 'glass', redeye: 'redeye', flyingfrog: 'flying', hornedfrog: 'cannibal', tinyfrog: 'tiny', goliathfrog: 'goliath', insiderfrog: 'insider', telefrog: 'telepath', hotspringfrog: 'hotspring', swampfrog: 'swamp', desertfrog: 'desert', cavefrog: 'cavefrog', birdfrog: 'bird', firefrog: 'fire', lavafrog: 'lava', goldenfrog: 'golden', wormfrog: 'worm', poopfrog: 'poop', qwertyfrog: 'qwerty' };
+const UNLOCK_MAP = { cactusfrog: 'cactus', icefrog: 'ice', wizardfrog: 'wizard', spadefoot: 'spadefoot', glassfrog: 'glass', redeye: 'redeye', flyingfrog: 'flying', hornedfrog: 'cannibal', tinyfrog: 'tiny', goliathfrog: 'goliath', insiderfrog: 'insider', telefrog: 'telepath', hotspringfrog: 'hotspring', swampfrog: 'swamp', desertfrog: 'desert', cavefrog: 'cavefrog', birdfrog: 'bird', firefrog: 'fire', lavafrog: 'lava', goldenfrog: 'golden', wormfrog: 'worm', poopfrog: 'poop', qwertyfrog: 'qwerty' };
 // the Insider Frog's other side: a completely different set of abilities
 const INSIDE_OUT = Object.assign({}, SPECIES.insider, { name: 'Insider Frog (inside out)', tongue: 0, climb: true, swim: 1.75, speed: 0.9, jump: 0.9, dry: 3.2, armor: 1.4, toxic: true, croak: 'insiderOut' });
-const SPECIES_UNLOCK = { machine: 'The worms in the Wormory have lots of little everyday problems. Help them out, and maybe one day they will thank you in a really big way.', sixseven: 'Some bugs are not really bugs. If you ever see one made of numbers... what happens if you eat it? And what if you eat a lot of them?', nullf: 'Some of the strange structures inside the crashed UFO have glowing rings around their bases. Count them.', gnorw: 'Once the worms tell you their big secret about other worlds, something new will appear at the bottom of the Big Lake. Where does it go?', star: 'Somewhere in the Other World, among old stone ruins, something small is twinkling.', robo: 'Fill the Frog Journal and the Lore Book, then help the worms with their secret experiment.', sixseven: 'Type a certain number as the QWERTY Frog...', spadefoot: 'Find the Spadefoot Toad sleeping in the hidden burrow.', glass: 'Find the Glass Frog at the waterfall at night.', redeye: 'Find the Red-eyed Tree Frog where mushrooms glow.', flying: 'Spot the Flying Frog flying between the treetops near the old oak.', cannibal: 'Find the Horned Frog lurking half-buried in the Muddy Marsh.', tiny: 'Peek closely into the water lily flowers on the Lily Pond.', goliath: 'Something enormous lurks in the cold Mountain Tarn. Watch the water closely, or try calling to it.', hotspring: 'Find the warm orange frog basking at the edge of a hot spring.', telepath: 'At night, two glowing eyes watch from the top of a stone lantern in the Bamboo Grove.', swamp: 'Listen for grunting in the Cypress Swamp and find the frog making it.', desert: 'Something tiny squeaks among the dunes near the sandstone arch.', insider: 'Something in the Pitcher Plant Bog does not look quite right. Search closely among the red moss.', cavefrog: 'Deep in the Underground, by a still black lake far from any way in, something pale is calling.', bird: "High above the world, in Heron's Domain, something blue sings on a tiny island west-northwest of the big heron rookery, at the far left edge of the middle group of islands. Climb to the top of the mountain and hop onto the floating islands to find it.", fire: 'Deep in the Mantle, something small and blazing sits at the edge of the lava.', lava: 'In the lava lakes of the Mantle, two glowing eyes poke up out of the molten rock.', golden: 'The altar at the top of the Temple of The Worm is empty. What belongs there was swallowed long ago.', worm: 'Something pink and squishy lives deep inside the Great Worm. Jump into its mouth to find it.', poop: 'At the very end of the Great Worm\'s tail there is a stinking pile. Something lives in it.', qwerty: "In the very corner of Heron's Domain, a faint trail of clouds leads to an island no one can see. Something there is clicking." };
+const SPECIES_UNLOCK = { cactus: 'One of the cacti in the Sand Dunes is wearing a hat. Cacti do not wear hats.', storm: 'Stand on the very top of the highest mountain... in a thunderstorm.', ice: 'Somewhere very deep and very cold, in the Underground, everything is frozen.', glitch: 'What happens if you fall off the very edge of the world? (Way out past the last floating island.)', dragon: 'There is a big cold egg somewhere in the Mantle. It needs keeping warm for 3 days.', alien: 'The crashed UFO cannot fly. It is missing something. (Solve its puzzles first.)', dataf: 'The Data Whale in ∅ swims down low by its stop every few minutes. Climb on and hold on tight.', sock: 'Socks keep turning up in strange places around the world. Find all 10.', rock: 'The Old Turtle by the Babbling Stream has lost something. Help him, and he will tell you a secret.', machine: 'The worms in the Wormory have lots of little everyday problems. Help them out, and maybe one day they will thank you in a really big way.', sixseven: 'Some bugs are not really bugs. If you ever see one made of numbers... what happens if you eat it? And what if you eat a lot of them?', nullf: 'Some of the strange structures inside the crashed UFO have glowing rings around their bases. Count them.', gnorw: 'Once the worms tell you their big secret about other worlds, something new will appear at the bottom of the Big Lake. Where does it go?', star: 'Somewhere in the Other World, among old stone ruins, something small is twinkling.', robo: 'Fill the Frog Journal and the Lore Book, then help the worms with their secret experiment.', sixseven: 'Type a certain number as the QWERTY Frog...', spadefoot: 'Find the Spadefoot Toad sleeping in the hidden burrow.', glass: 'Find the Glass Frog at the waterfall at night.', redeye: 'Find the Red-eyed Tree Frog where mushrooms glow.', flying: 'Spot the Flying Frog flying between the treetops near the old oak.', cannibal: 'Find the Horned Frog lurking half-buried in the Muddy Marsh.', tiny: 'Peek closely into the water lily flowers on the Lily Pond.', goliath: 'Something enormous lurks in the cold Mountain Tarn. Watch the water closely, or try calling to it.', hotspring: 'Find the warm orange frog basking at the edge of a hot spring.', telepath: 'At night, two glowing eyes watch from the top of a stone lantern in the Bamboo Grove.', swamp: 'Listen for grunting in the Cypress Swamp and find the frog making it.', desert: 'Something tiny squeaks among the dunes near the sandstone arch.', insider: 'Something in the Pitcher Plant Bog does not look quite right. Search closely among the red moss.', cavefrog: 'Deep in the Underground, by a still black lake far from any way in, something pale is calling.', bird: "High above the world, in Heron's Domain, something blue sings on a tiny island west-northwest of the big heron rookery, at the far left edge of the middle group of islands. Climb to the top of the mountain and hop onto the floating islands to find it.", fire: 'Deep in the Mantle, something small and blazing sits at the edge of the lava.', lava: 'In the lava lakes of the Mantle, two glowing eyes poke up out of the molten rock.', golden: 'The altar at the top of the Temple of The Worm is empty. What belongs there was swallowed long ago.', worm: 'Something pink and squishy lives deep inside the Great Worm. Jump into its mouth to find it.', poop: 'At the very end of the Great Worm\'s tail there is a stinking pile. Something lives in it.', qwerty: "In the very corner of Heron's Domain, a faint trail of clouds leads to an island no one can see. Something there is clicking." };
 
 const PATTERNS = {
   classic: { name: 'Classic', how: 'Starter pattern' },
@@ -562,6 +589,8 @@ const GUIDE = {
   cavefish: { name: 'Blind Cave Fish', cat: 'Fish', desc: 'A see-through pinkish fish with no eyes at all. It finds its way through flooded caves by feeling the water move.', hint: 'Swims in the underground lakes.' },
   bat: { name: 'Cave Bat', cat: 'Mammal', desc: 'Bats hang from cave ceilings by day and flit about squeaking, finding their way by echoes.', hint: 'Look up in the big Underground chambers.' },
   wizardfrog: { name: 'Wizard Frog', cat: 'Rare amphibian', desc: 'A wise old frog in a starry purple hat with a long grey beard and a magic wand. It can turn predators into sparkles and float through the air.', hint: 'Look for a stone tower with a purple roof, somewhere out in the woods.' },
+  cactusfrog: { name: 'Cactus Frog', cat: 'Rare amphibian', desc: 'A spiky green frog that sits perfectly still in the desert and pretends to be a cactus. It is very good at it, except for the hat.', hint: 'One of the cacti in the Sand Dunes is wearing a hat.' },
+  icefrog: { name: 'Ice Frog', cat: 'Rare amphibian', desc: 'A see-through frog made of ice crystals, from a frozen cave deep underground. Its breath is so cold it freezes bugs in mid-air.', hint: 'Somewhere very deep and very cold, in the Underground.' },
   telefrog: { name: 'Telepathic Frog', cat: 'Rare amphibian', desc: 'A violet frog with glowing eyes that can slip into the mind of another animal and steer it around.', hint: 'Only comes out at night, somewhere high in the bamboo.' },
   hotspringfrog: { name: 'Hot Springs Frog', cat: 'Rare amphibian', desc: 'An orange frog that lives in water warm enough to steam. It does not mind heat or cold at all.', hint: 'The rims of the hot pools.' },
   swampfrog: { name: 'Swamp Frog', cat: 'Rare amphibian', desc: 'A big olive frog whose call sounds like a grunting pig. It hides under duckweed with only its eyes showing.', hint: 'Deep in the Cypress Swamp.' },
@@ -1130,6 +1159,7 @@ function makeFrog(spKey, pattern) {
   if (sp.nullf) nullParts(F);
   if (sp.wizard) wizardParts(F);
   if (sp.machine) machineParts(F);
+  if (sp.newParts) sp.newParts(F);
   if (sp.qwerty) {
     F.keys = []; const letters = 'QWERTYASDFGH', capG = new THREE.BoxGeometry(0.105, 0.07, 0.105);
     for (let i = 0; i < 12; i++) {
@@ -2409,6 +2439,15 @@ const CROAK_GAIN = { green: 2.6, bull: 4.8, tree: 5.0, redeye: 2.6, dart: 6.5, g
 const SFX = {
   croak(kind, pos, big) {
     if (!AU.ok) return;
+    if (kind === 'cactus') { tone('triangle', 400, 300, 0.2, big ? 0.06 : 0.04, pos || null); tone('triangle', 500, 380, 0.2, 0.03, pos || null, 0.2); return; }
+    if (kind === 'storm') { tone('sawtooth', 120, 70, 0.4, big ? 0.07 : 0.05, pos || null); noiseHit(2500, 1, 0.15, big ? 0.06 : 0.04, pos || null, 0.1); return; }
+    if (kind === 'ice') { tone('sine', 1800, 2400, 0.15, big ? 0.05 : 0.035, pos || null); tone('sine', 2400, 3000, 0.15, 0.03, pos || null, 0.12); return; }
+    if (kind === 'glitch') { for (let i = 0; i < 4; i++) tone('square', 200 + Math.random() * 1500, 200 + Math.random() * 1500, 0.05, big ? 0.05 : 0.035, pos || null, i * 0.06); return; }
+    if (kind === 'dragon') { tone('sawtooth', 160, 90, 0.5, big ? 0.08 : 0.055, pos || null); noiseHit(600, 0.6, 0.4, big ? 0.08 : 0.05, pos || null); return; }
+    if (kind === 'alien') { tone('sine', 600, 1400, 0.25, big ? 0.06 : 0.04, pos || null); tone('sine', 1400, 500, 0.25, 0.04, pos || null, 0.25); return; }
+    if (kind === 'data') { for (let i = 0; i < 5; i++) tone('square', i % 2 ? 1200 : 800, i % 2 ? 1200 : 800, 0.05, big ? 0.04 : 0.03, pos || null, i * 0.07); return; }
+    if (kind === 'sock') { tone('triangle', 300, 500, 0.15, big ? 0.06 : 0.04, pos || null); tone('triangle', 500, 250, 0.2, 0.04, pos || null, 0.15); return; }
+    if (kind === 'rock') { tone('sine', 70, 55, 0.6, big ? 0.09 : 0.06, pos || null); return; }
     if (kind === 'machine') { tone('square', 220, 180, 0.12, big ? 0.06 : 0.04, pos || null); tone('square', 330, 440, 0.12, big ? 0.05 : 0.035, pos || null, 0.13); noiseHit(1800, 2, 0.08, big ? 0.08 : 0.05, pos || null); return; }
     if (kind === 'wizard') { tone('sine', 520, 780, 0.3, big ? 0.07 : 0.05, pos || null); tone('triangle', 1040, 1560, 0.45, big ? 0.04 : 0.025, pos || null, 0.12); tone('sine', 1560, 2080, 0.4, 0.02, pos || null, 0.25); return; }
     if (kind === 'sixseven') { glitchVoice67(big ? 0.4 : 0.28, pos || PL.pos); return; } if (kind === 'null') { tone('triangle', 880, 110, 0.9, big ? 0.07 : 0.05, pos || null); tone('sine', 1760, 55, 1.2, 0.03, pos || null, 0.2); return; } if (kind === 'gnorw') { tone('sawtooth', 160, 90, 0.35, big ? 0.08 : 0.05, pos || null); tone('sine', 700, 1400, 0.25, 0.05, pos || null, 0.25); tone('square', 220, 110, 0.3, 0.04, pos || null, 0.45); return; } if (kind === 'star') { [1320, 1760, 1980, 2640].forEach((f, i) => tone('sine', f, f, 0.25, big ? 0.07 : 0.05, pos || null, i * 0.08)); return; } if (kind === 'robo') { [880, 660, 990, 520].forEach((f, i) => tone('square', f, f * 0.9, 0.09, big ? 0.09 : 0.06, pos || null, i * 0.1)); return; } const c = AU.ctx, t0 = c.currentTime + 0.01, V = big ? 1 : 0.8;
@@ -2982,7 +3021,7 @@ function toggleInsideOut() {
 function insiderTick(dt) {
   PL.flipCD = Math.max(0, (PL.flipCD || 0) - dt);
   { const sb = document.getElementById('tShake'), has = !!(PL.stuckList && PL.stuckList.length); if (sb && sb.hidden === has) sb.hidden = !has; }
-  { const fb = document.getElementById('tFlip'), sp0 = SPECIES[GAME.species], on = !!(sp0.insider || sp0.telepath || sp0.fireBreath || sp0.qwerty || sp0.digits || sp0.wizard || sp0.machine); if (fb) { if (fb.hidden === on) fb.hidden = !on; const lbl = sp0.machine ? 'Laser' : sp0.wizard ? (WZ.cd > 0 ? 'Zap ' + Math.ceil(WZ.cd) : 'Zap') : sp0.telepath ? 'Mind' : sp0.fireBreath ? 'Fire' : sp0.qwerty ? 'Type' : sp0.digits ? 'Glitch' : 'Flip'; if (fb.textContent !== lbl) fb.textContent = lbl; } const lb = document.getElementById('tLaser'), lOn = !!(sp0.telepath || sp0.wizard || sp0.machine); if (lb) { if (lb.hidden === lOn) lb.hidden = !lOn; const ll = sp0.machine ? 'Wings' : sp0.wizard ? 'Float' : 'Laser'; if (lb.textContent !== ll) lb.textContent = ll; } }
+  { const fb = document.getElementById('tFlip'), sp0 = SPECIES[GAME.species], on = !!(sp0.insider || sp0.telepath || sp0.fireBreath || sp0.qwerty || sp0.digits || sp0.wizard || sp0.machine || sp0.vLabel); if (fb) { if (fb.hidden === on) fb.hidden = !on; const lbl = sp0.vLabel ? sp0.vLabel : sp0.machine ? 'Laser' : sp0.wizard ? (WZ.cd > 0 ? 'Zap ' + Math.ceil(WZ.cd) : 'Zap') : sp0.telepath ? 'Mind' : sp0.fireBreath ? 'Fire' : sp0.qwerty ? 'Type' : sp0.digits ? 'Glitch' : 'Flip'; if (fb.textContent !== lbl) fb.textContent = lbl; } const lb = document.getElementById('tLaser'), lOn = !!(sp0.telepath || sp0.wizard || sp0.machine || sp0.dragon); if (lb) { if (lb.hidden === lOn) lb.hidden = !lOn; const ll = sp0.dragon ? 'Fly' : sp0.machine ? 'Wings' : sp0.wizard ? 'Float' : 'Laser'; if (lb.textContent !== ll) lb.textContent = ll; } }
   if (!SPECIES[GAME.species].insider) { PL.insideOut = false; PL.flipT = 0; }
   const want = !!(PL.insideOut && PL.stage >= 3);
   if (PL.flipT > 0) PL.flipT = Math.max(0, PL.flipT - dt);
@@ -3086,6 +3125,7 @@ function updatePlayer(dt) {
   }
   // -------- swimming / diving --------
   else if (PL.inWater) {
+    if (sp.dragon && IN.keys.KeyG && PL.stage >= 3 && !PL.diving && !PL.mind) { PL.inWater = false; PL.onGround = false; PL.pos.y = waterLevelAt(PL.pos.x, PL.pos.z) + 0.35; PL.vel.y = 6; PL.airT = 0.2; }
     if (sp.wizard && IN.keys.KeyG && PL.stage >= 3 && !PL.diving && !PL.mind) { const wl = waterLevelAt(PL.pos.x, PL.pos.z); if (PL.pos.y > wl - 0.6) { PL.inWater = false; PL.onGround = false; PL.pos.y = wl + 0.35; PL.vel.y = 2.6; PL.airT = 0.2; wizardFloatStart(); } }
     const swimSpd = 2.6 * Math.sqrt(S) * sp.swim * ((IN.keys.ShiftLeft || IN.keys.ShiftRight || IN.sprint) ? 1.6 : 1) * spd;
     let tvx = iv.x * swimSpd, tvz = iv.z * swimSpd, tvy = 0;
@@ -3127,6 +3167,7 @@ function updatePlayer(dt) {
   // -------- on the ground --------
   else if (PL.onGround) {
     PL.hopT -= dt;
+    if (sp.dragon && IN.keys.KeyG && PL.stage >= 3 && !PL.mind) { PL.onGround = false; PL.plat = null; PL.vel.y = Math.max(PL.vel.y, 6); PL.pos.y += 0.05; PL.airT = 0.2; }
     if (sp.wizard && IN.keys.KeyG && PL.stage >= 3 && !PL.buried && !PL.mind) { PL.onGround = false; PL.plat = null; PL.vel.y = Math.max(PL.vel.y, 2.4); PL.pos.y += 0.05; PL.airT = 0.2; wizardFloatStart(); }
     const sprint = IN.keys.ShiftLeft || IN.keys.ShiftRight || IN.sprint;
     if (PL.charging) {
@@ -3164,7 +3205,7 @@ function updatePlayer(dt) {
     PL.airT = (PL.airT || 0) + dt;
     PL.vel.y -= 22 * dt * (PL.floatT > 0 ? 0.18 : 1);
     if (sp.wizard && PL.stage >= 3 && !PL.mind) wizardFloat(dt, moving, iv);
-    PL.gliding = (!!sp.glide && PL.stage >= 4 || (sp.machine && PL.machWings && PL.stage >= 3)) && PL.airT > 0.08;
+    PL.gliding = (!!sp.glide && PL.stage >= 4 || (sp.machine && PL.machWings && PL.stage >= 3) || (sp.dragon && PL.stage >= 3)) && PL.airT > 0.08;
     PL.flapping = false;
     if (PL.gliding) {
       // real flight: Space flaps upward, Q dives, WASD steers, nothing held = gentle glide down
@@ -5998,6 +6039,7 @@ function vPower() {
   if (sp.fireBreath) { fireBreath(); return true; }
   if (sp.qwerty) { openTyper(); return true; }
   if (sp.digits) { glitchDash(); return true; }
+  if (sp.vPow) { sp.vPow(); return true; }
   if (sp.wizard) { wizardZap(); return true; }
   if (sp.machine) { machineLaser(); return true; }
   if (sp.telepath) { if (PL.mind) mindRelease(); else { const c = nearestCreature(7 + PL.size); if (c) mindTake(c); else toast('Get closer to a creature, then press V to take over its mind.', 'quiet'); } return true; }
@@ -8497,6 +8539,15 @@ const LORE = [
   { frog: 'swamp', title: 'The Swamp Frog', text: 'The Swamp Frog hides under the duckweed with only its eyes showing and grunts exactly like a pig. Nobody knows where it learned that. There are no pigs in this world. There have never been pigs in this world. This is a mystery the worms have decided they do not want to solve.' },
   { frog: 'desert', title: 'The Desert Rain Frog', text: 'Every frog loves the rain. The Desert Rain Frog loves it most of all, because it lives in the dunes, where it almost never rains. It has waited for rain for so long that it forgot how to swim, and learned to dig instead. If you bother it, it squeaks. Loudly. It is very small and very cross.' },
   { frog: 'wizard', title: 'The Wizard Frog', text: 'One frog spent so long staring at the stars that it started to understand them. It grew a long grey beard while it was thinking, and the stars it learned the most from jumped down and stuck to its hat. It found a twig that fell from a tree struck by lightning, and the twig still had a little of the lightning inside: that is its wand. Now it lives alone in a stone tower in the woods. It is very kind to bugs (before it eats them) and very unkind to herons. Herons that bother the Wizard Frog go POOF into sparkles. Do not worry, they come back later, a bit embarrassed.' },
+  { frog: 'cactus', title: 'The Cactus Frog', text: 'In the dunes, a frog got so thirsty that it decided to become a cactus, since cacti never seem to mind. It grew spikes and learned to stand perfectly still for days. It would be the best disguise in the world, except that it found a hat and refuses to take it off.' },
+  { frog: 'storm', title: 'The Storm Frog', text: 'Lightning likes high places. One night it struck the very top of the highest mountain, and the bolt was so big that a little of it stayed behind and grew legs. The Storm Frog still crackles when it is excited. It is always excited.' },
+  { frog: 'ice', title: 'The Ice Frog', text: 'Deep in the Underground there is a cave so cold that the water froze into crystals. One crystal got lonely, and wished very hard for a friend. It did not get a friend. It turned into a frog instead. It is still a bit lonely. Say hello to it.' },
+  { frog: 'glitch', title: 'The Glitch Frog', text: 'When the Typist typed the world, it missed a few keys at the very edges. Past the last floating island there is a little crack where nothing was typed at all. The Glitch Frog lives in the crack. Bits of it are missing. It does not seem to mind.' },
+  { frog: 'dragon', title: 'The Dragon Frog', text: 'Deep in the Mantle, in a nest of black stones, there is an egg that never hatches unless someone keeps it warm for three whole days. Nobody knows who laid it. What comes out has horns, wings and fire breath, and still eats bugs like a proper frog.' },
+  { frog: 'alien', title: 'The Alien Frog', text: 'The UFO that crashed in the Underground had a pilot. It waited a thousand years for someone to find the three power cells that flew out in the crash. It has three eyes, so it could read three books at once, if it had any books. Please lend it a book.' },
+  { frog: 'dataf', title: 'The Data Frog', text: 'The Data Whale swims through the nothing carrying everything that has ever been known. If you ride on its back long enough, some of that knowledge rubs off, and hops away as a frog. The Data Frog knows a secret about every animal. It will only tell you if you ask nicely (press V).' },
+  { frog: 'sock', title: 'The Sock Frog', text: 'Every time someone loses one sock, it ends up somewhere in this world: by a pond, in a meadow, up a mountain. When ten lost socks end up in the same pile, they wiggle together and become a frog. We have never found out who is inside it.' },
+  { frog: 'rock', title: 'The Rock Frog', text: 'For one hundred and fifty years, a boulder sat on the bank of the Babbling Stream. The water went by. The turtles went by. The herons went by. It never moved. It was a frog the whole time. It just really, really liked sitting still.' },
   { frog: 'machine', title: 'The Machine Frog', text: 'This tablet is new. We carved it ourselves, because the Machine Frog is the first frog that the worms ever made. A frog was so kind to us, finding our lost things and singing to our babies, that we built a statue of it out of every bit of metal we could dig up: gears, springs, old pipes, a kettle. When we finished, the statue blinked its red eyes, unfolded its wings and said: BEEP. Now it flies, it shoots lasers out of its eyes, and when it wants to jump really high it sets its own bottom on fire. We did not plan that part.' },
   { frog: 'worm', title: 'The Worm Frog', text: 'Once, a frog was swallowed by the Great Worm. Instead of being sad about it, it looked around and said: lots of food in here. It ate whatever the Worm ate, and slowly got longer, and pinker, and squishier. Now it is half frog and half worm. The worms count it as one of us. We are very proud of it.' },
   { at: 0, title: 'Welcome to the Wormory', text: 'This is where the worms keep the story of the world. There are many stones in these tunnels. Gather them all, bring them to the stand in the great hall, and you will know where everything came from. Far to the east there is the Hall of Frogs, with a stone for every kind of frog in the world. Please do not eat the archivists.' }
@@ -8909,7 +8960,7 @@ const WSPOTS = [
   { key: 'bamboo', name: 'the Bamboo Grove', no: "it's a bamboo grove! The roots are so tangled we couldn't tunnel at all." }
 ];
 // the frogs from past the edge of the world don't count: you can only meet them after the worms' secret
-const LATE_FROGS = ['robo', 'gnorw', 'star', 'nullf', 'machine'], homeFrogs = () => Object.keys(SPECIES).filter(k => !LATE_FROGS.includes(k));
+const LATE_FROGS = ['robo', 'gnorw', 'star', 'nullf', 'machine', 'cactus', 'storm', 'ice', 'glitch', 'dragon', 'alien', 'dataf', 'sock', 'rock'], homeFrogs = () => Object.keys(SPECIES).filter(k => !LATE_FROGS.includes(k));
 function allFrogs() { return homeFrogs().every(k => SAVE.unlocks.species.includes(k)); }
 function wormSpotPos(k) { const M = WORMORY.mound; return k === 'dirt' ? { x: M.x, z: M.z } : k === 'dunes' ? DUNES : k === 'mill' ? MILL : k === 'mount' ? { x: MOUNT.x + 60, z: MOUNT.z } : k === 'hots' ? HOTS : k === 'bog' ? BOG : BAMBOO; }
 function buildWormNPC() {
@@ -9417,6 +9468,7 @@ function buildNewWorldStuff() {
   CL = UG; buildPondIntakes();
   buildWizardTower();
   buildChoreItems();
+  buildNewFrogs();
   CL = keep;
 }
 function layerGroup(L) { const g = new THREE.Group(); g.visible = false; scene.add(g); L.group = g; L.obs = L.obs || []; return g; }
@@ -9590,7 +9642,7 @@ function buildUfoOutside() {
   let ha = 0, hb = -1; for (let k = 0; k < 24; k++) { const a = k / 24 * TAU, o = lr(UG, ux + Math.cos(a) * 10.5, uz + Math.sin(a) * 10.5) + lr(UG, ux + Math.cos(a) * 13, uz + Math.sin(a) * 13); if (o > hb) { hb = o; ha = a; } }
   const U = UG.ufo = { x: ux, z: uz, f: uf, hatch: { x: ux + Math.cos(ha) * 9.6, z: uz + Math.sin(ha) * 9.6 } };
   const P = new THREE.Group(); P.position.set(ux, uf, uz); P.rotation.y = Math.PI - ha; g.add(P);
-  const S = new THREE.Group(); S.position.y = 1.4; S.rotation.z = 0.2; P.add(S);   // tilted: the hatch side (local -x) is lower
+  const S = new THREE.Group(); S.position.y = 1.4; S.rotation.z = 0.2; P.add(S); U.S = S;   // tilted: the hatch side (local -x) is lower
   const hull = new THREE.MeshStandardMaterial({ color: 0xb8c4cc, roughness: 0.3, metalness: 0.6, envMap: W.skyCube, envMapIntensity: 0.5, emissive: 0x18302a, emissiveIntensity: 1 }), darkM = new THREE.MeshStandardMaterial({ color: 0x40464c, roughness: 0.5, metalness: 0.7 });
   const body = new THREE.Mesh(new THREE.SphereGeometry(1, 40, 18), hull); body.scale.set(8.5, 1.7, 8.5); S.add(body);
   const rim = new THREE.Mesh(new THREE.TorusGeometry(8.4, 0.38, 8, 64), darkM); rim.rotation.x = Math.PI / 2; S.add(rim);
@@ -9668,7 +9720,11 @@ function buildUfoInside() {
     U.rings = { rings, pads, on: -1, turns: [[0], [0, 1], [1, 2]] }; }
   // --- puzzle 3: light up every tile (each step flips a tile and the tiles next to it) ---
   { const cx = 0, cz = -8.6, tiles = []; for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) { const m = new THREE.MeshStandardMaterial({ color: 0x182018, emissive: 0x30ff80, emissiveIntensity: 0, roughness: 0.4 }); const t = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.12, 1.4), m); t.position.set(cx + (i - 1) * 1.55, y0 + 0.06, cz + (j - 1) * 1.55); g.add(t); tiles.push({ x: cx + (i - 1) * 1.55, z: cz + (j - 1) * 1.55, m, lit: true, i, j }); }
-    U.grid = { tiles, on: -1 }; for (const k of [1, 5, 6]) gridPress(U.grid, k, true); }
+    U.grid = { tiles, on: -1 }; for (const k of [1, 5, 6]) gridPress(U.grid, k, true);
+    // two helper pads: a yellow ? that shows which tiles to step on, and a red one that puts the puzzle back how it started
+    const pad = (x, col, txt) => { const m = new THREE.MeshStandardMaterial({ color: 0x182018, emissive: col, emissiveIntensity: 0.6, roughness: 0.4 }); const p = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.75, 0.12, 24), m); p.position.set(x, y0 + 0.06, cz); g.add(p);
+      const lab = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.65), new THREE.MeshBasicMaterial({ map: textTex([[txt, 'bold 44px sans-serif', 48]], 200, 100, { bg: 'rgba(0,0,0,0)', col: '#' + new THREE.Color(col).getHexString() }), transparent: true, depthWrite: false })); lab.rotation.x = -Math.PI / 2; lab.position.set(x, y0 + 0.14, cz + 1.25); g.add(lab); return { x, z: cz, m }; };
+    U.grid.hintPad = pad(cx - 3.4, 0xffd040, 'HINT'); U.grid.resetPad = pad(cx + 3.4, 0xff4040, 'RESET'); U.grid.hint = []; U.grid.hintT = 0; }
   // the beacons for each puzzle, and the big light in the middle of the ceiling
   U.beacons = [[-13.6, 1], [13.8, 1], [0, -12.4]].map(([x, z]) => { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 6, 10, 1, true), new THREE.MeshBasicMaterial({ color: 0x40ff80, transparent: true, opacity: 0.08, blending: THREE.AdditiveBlending, depthWrite: false })); b.position.set(x, y0 + 3, z); g.add(b); return b; });
   U.bigLamp = new THREE.Mesh(G.sph, new THREE.MeshBasicMaterial({ color: 0x103018 })); U.bigLamp.scale.setScalar(1.2); U.bigLamp.position.set(0, y0 + 8.6, 0); g.add(U.bigLamp);
@@ -9685,6 +9741,12 @@ function buildUfoInside() {
   L.light = new THREE.PointLight(0xa0ffc0, 0.5, 20, 1.5); g.add(L.light);
   g.add(new THREE.HemisphereLight(0x80c0a0, 0x102018, 0.6));
   buildCaveMap(L);
+}
+// the fewest tiles to step on (once each) to light them all up
+function gridSolve(G4) {
+  let best = null; for (let mask = 0; mask < 512; mask++) { const lit = G4.tiles.map(t => t.lit); for (let k = 0; k < 9; k++) if (mask & (1 << k)) { const t0 = G4.tiles[k]; G4.tiles.forEach((t, q) => { if ((t.i === t0.i && Math.abs(t.j - t0.j) <= 1) || (t.j === t0.j && Math.abs(t.i - t0.i) === 1)) lit[q] = !lit[q]; }); }
+    if (lit.every(Boolean)) { const ks = [...Array(9).keys()].filter(k => mask & (1 << k)); if (!best || ks.length < best.length) best = ks; } }
+  return best || [];
 }
 function gridPress(G4, k, quiet) {
   const t0 = G4.tiles[k]; for (const t of G4.tiles) if ((t.i === t0.i && Math.abs(t.j - t0.j) <= 1) || (t.j === t0.j && Math.abs(t.i - t0.i) === 1)) t.lit = !t.lit;
@@ -9958,8 +10020,16 @@ function ufoInsideTick(dt) {
     for (const p of Rn.pads) p.m.emissiveIntensity = U.solved[1] ? 1.4 : Rn.on === p.k ? 1.4 : 0.6; }
   // puzzle 3
   { const Gr = U.grid; let on = -1; Gr.tiles.forEach((tl, k) => { if (Math.abs(P.x - tl.x) < 0.72 && Math.abs(P.z - tl.z) < 0.72 && P.y < y0 + 1) on = k; });
-    if (on !== Gr.on) { Gr.on = on; if (on >= 0 && !U.solved[2]) { gridPress(Gr, on); if (Gr.tiles.every(tl => tl.lit)) puzzleSolved(2); } }
-    for (const tl of Gr.tiles) tl.m.emissiveIntensity = (U.solved[2] || solvedAll) ? 1.2 + Math.sin(t * 4) * 0.3 : tl.lit ? 1.1 : 0.05; }
+    if (on !== Gr.on) { Gr.on = on; if (on >= 0 && !U.solved[2]) { gridPress(Gr, on); if (Gr.hintT > 0) Gr.hint = gridSolve(Gr); if (Gr.tiles.every(tl => tl.lit)) puzzleSolved(2); } }
+    // the helper pads
+    const onPad = p => Math.hypot(P.x - p.x, P.z - p.z) < 0.8 && P.y < y0 + 1;
+    const hp = onPad(Gr.hintPad), rp = onPad(Gr.resetPad);
+    if (hp && !Gr.onHint && !U.solved[2]) { Gr.hint = gridSolve(Gr); Gr.hintT = 20; tone('sine', 700, 1000, 0.25, 0.06); toast('The tiles you need to step on are flashing yellow. Step on each one once (hop over the others, or walk around the edge). Any order works!', 'guide'); }
+    if (rp && !Gr.onReset && !U.solved[2]) { for (const tl of Gr.tiles) tl.lit = true; for (const k of [1, 5, 6]) gridPress(Gr, k, true); Gr.hint = []; Gr.hintT = 0; tone('square', 400, 200, 0.2, 0.06); toast('The tiles went back to how they started.', 'quiet'); }
+    Gr.onHint = hp; Gr.onReset = rp; Gr.hintT = Math.max(0, Gr.hintT - dt);
+    Gr.hintPad.m.emissiveIntensity = U.solved[2] ? 0.1 : 0.5 + Math.sin(t * 3) * 0.2; Gr.resetPad.m.emissiveIntensity = U.solved[2] ? 0.1 : 0.5;
+    Gr.tiles.forEach((tl, k) => { const hint = Gr.hintT > 0 && Gr.hint.includes(k) && Math.sin(t * 8) > 0;
+      tl.m.emissive.setHex(hint ? 0xffd040 : 0x30ff80); tl.m.emissiveIntensity = (U.solved[2] || solvedAll) ? 1.2 + Math.sin(t * 4) * 0.3 : hint ? 1.3 : tl.lit ? 1.1 : 0.05; }); }
   // beacons and the big light
   const n = U.solved.filter(Boolean).length;
   U.beacons.forEach((b, i) => { b.material.opacity = U.solved[i] ? 0.45 + Math.sin(t * 3 + i) * 0.1 : 0.06; });
@@ -10047,7 +10117,7 @@ function newWorldTick(dt) {
   if (curLevel() === 'nil') nilBugsTick(dt);
   wizardTick(dt);
   corrupt67Tick(dt);
-  machineTick(dt); choresTick(dt);
+  machineTick(dt); choresTick(dt); newFrogsAllTick(dt);
   fallSwimTick(dt);
   if (W.skyHole) W.skyHole.visible = !!SAVE.stats.skyHole && curLevel() === 'top';
   if (GAME.species === 'star' && PL.F && !PL.onGround && GAME.state === 'play' && Math.random() < 0.5) sparkle(PL.pos.clone().add(new V3(mr(-0.3, 0.3), 0.2, mr(-0.3, 0.3))), 1, Math.random() < 0.5 ? 0xfff0a0 : 0xffffff);
@@ -10762,7 +10832,7 @@ function nilExtrasTick(dt) {
     if (dP < 1.2) { const a = rnd() * TAU; n.x += Math.cos(a) * 25; n.z += Math.sin(a) * 25; tone('square', 1600, 400, 0.12, 0.05); sparkle(P.clone().add(new V3(0, 1, 0)), 8, 0x40ff90); }
     else if (dP < 8 && Math.random() < dt * 0.3) tone('square', 900 + Math.random() * 900, 0, 0.06, 0.02); }
   // the Data Whale
-  { const Wh = L.whale; Wh.a += dt * 0.02; Wh.g.position.set(Math.cos(Wh.a) * 160, y0 + 38 + Math.sin(t * 0.3) * 4, Math.sin(Wh.a) * 160); Wh.g.rotation.y = -Wh.a; Wh.tail.rotation.x = Math.sin(t * 1.2) * 0.25; if (AU.ok && Math.random() < dt * 0.04) tone('sine', 70, 50, 3.5, 0.06); }
+  { const Wh = L.whale; Wh.a += dt * 0.035; const low = whaleLow(Wh.a); Wh.low = low > 0.6; Wh.g.position.set(Math.cos(Wh.a) * 160, y0 + lerp(38 + Math.sin(t * 0.3) * 4, 6.5, low), Math.sin(Wh.a) * 160); Wh.g.rotation.y = -Wh.a; Wh.tail.rotation.x = Math.sin(t * 1.2) * 0.25; if (AU.ok && Math.random() < dt * 0.04) tone('sine', 70, 50, 3.5, 0.06); }
   // light pillars
   for (const B of L.beams) { B.t -= dt; if (B.t <= 0) { B.t = rr(4, 10); const a = rnd() * TAU, d = rr(10, 120); B.b.position.set(P.x + Math.cos(a) * d, y0 + 70, P.z + Math.sin(a) * d); B.life = 1.5; } B.life = Math.max(0, (B.life || 0) - dt); B.b.material.opacity = B.life > 0 ? Math.min(1, B.life) * 0.6 : 0; }
 }
@@ -10975,45 +11045,87 @@ function buildWizardTower() {
   for (let r = 0; r < 16; r++) for (let q = 0; q < 8; q++) { const v = 110 + Math.floor(Math.random() * 50); sx.fillStyle = `rgb(${v},${v - 4},${v - 10})`; sx.fillRect(q * 32 + (r % 2) * 16 + 1, r * 16 + 1, 30, 14); }
   const stT = canvasTex(sc); stT.wrapS = stT.wrapT = THREE.RepeatWrapping; stT.repeat.set(4, 4);
   const stone = new THREE.MeshStandardMaterial({ color: 0xffffff, map: stT, roughness: 0.9 });
-  const body = new THREE.Mesh(new THREE.CylinderGeometry(3.1, 3.8, 14, 22), stone); body.position.y = 6.6; body.castShadow = true; g.add(body);
-  const base = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 4.5, 1.2, 22), stone); base.position.y = 0; g.add(base);
+  const wp = (lx, lz) => { const c = Math.cos(face), s2 = Math.sin(face); return { x: x + lx * c + lz * s2, z: z - lx * s2 + lz * c }; };
+  // the floor inside sits just above the highest bit of ground, so the ground never pokes through
+  let fl = 0; for (let k = 0; k < 24; k++) { const a2 = k * 2.39996, r2 = Math.sqrt((k + 0.5) / 24) * 3.1, p = wp(Math.sin(a2) * r2, Math.cos(a2) * r2); fl = Math.max(fl, terrainH(p.x, p.z) - h); }
+  fl += 0.08;
+  // hollow stone walls with a doorway facing the Lily Pond (local +z)
+  const GAP = 0.36, R0 = 3.45, R1 = 2.95, TH = 14;
+  const outer = new THREE.Mesh(new THREE.CylinderGeometry(R0 - 0.25, R0 + 0.3, TH, 28, 1, true, GAP, TAU - GAP * 2), stone); outer.position.y = TH / 2; outer.castShadow = true; g.add(outer);
+  const inner = new THREE.Mesh(new THREE.CylinderGeometry(R1, R1, TH, 28, 1, true, GAP, TAU - GAP * 2), new THREE.MeshStandardMaterial({ color: 0xc8b8a0, map: stT, roughness: 0.9, side: THREE.BackSide })); inner.position.y = TH / 2; g.add(inner);
+  const lintelO = new THREE.Mesh(new THREE.CylinderGeometry(R0 - 0.25, R0 - 0.08, TH - fl - 3.1, 8, 1, true, -GAP, GAP * 2), stone); lintelO.position.y = fl + 3.1 + (TH - fl - 3.1) / 2; g.add(lintelO);
+  const lintelI = new THREE.Mesh(new THREE.CylinderGeometry(R1, R1, TH - fl - 3.1, 8, 1, true, -GAP, GAP * 2), inner.material); lintelI.position.y = lintelO.position.y; g.add(lintelI);
+  const under = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.12, 0.7), stone); under.position.set(0, fl + 3.1, 3.2); g.add(under);
+  for (const sd of [-1, 1]) { const j = new THREE.Mesh(new THREE.BoxGeometry(0.5, TH, 0.7), stone); const a2 = sd * GAP; j.position.set(Math.sin(a2) * 3.2, TH / 2, Math.cos(a2) * 3.2); j.rotation.y = a2; g.add(j); }
+  const fill = new THREE.Mesh(new THREE.CylinderGeometry(R0 + 0.3, R0 + 0.45, Math.max(0.3, fl + 0.05), 28, 1, false), stone); fill.position.y = (fl + 0.05) / 2 - 0.1; g.add(fill);
+  const floorM = new THREE.MeshStandardMaterial({ color: 0x9a7a5a, map: TEX.bark, roughness: 0.85 });
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(R1 + 0.02, 28), floorM); floor.rotation.x = -Math.PI / 2; floor.position.y = fl; g.add(floor);
+  const ceil = new THREE.Mesh(new THREE.CircleGeometry(R1, 28), new THREE.MeshStandardMaterial({ color: 0x5a3a24, map: TEX.bark, side: THREE.DoubleSide })); ceil.rotation.x = Math.PI / 2; ceil.position.y = 6.5; g.add(ceil);
   const ledge = new THREE.Mesh(new THREE.CylinderGeometry(3.7, 3.3, 0.6, 22), stone); ledge.position.y = 13.7; g.add(ledge);
-  for (let k = 0; k < 10; k++) { const a = k / 10 * TAU, m = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), stone); m.position.set(Math.cos(a) * 3.5, 14.3, Math.sin(a) * 3.5); g.add(m); }
+  for (let k = 0; k < 10; k++) { const a2 = k / 10 * TAU, m = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), stone); m.position.set(Math.cos(a2) * 3.5, 14.3, Math.sin(a2) * 3.5); g.add(m); }
   // the roof: tall, purple, starry, with a bent tip
   WZ.hatT = WZ.hatT || wizHatTex(); const roofM = new THREE.MeshStandardMaterial({ color: 0xffffff, map: WZ.hatT, emissiveMap: WZ.hatT, emissive: 0x403070, roughness: 0.7 });
   const roof = new THREE.Mesh(new THREE.ConeGeometry(4.4, 7, 24), roofM); roof.position.y = 18; g.add(roof);
   const tip = new THREE.Group(); tip.position.y = 21.3; tip.rotation.z = 0.5; g.add(tip); const t2 = new THREE.Mesh(new THREE.ConeGeometry(1.0, 3, 16), roofM); t2.position.y = 1.3; tip.add(t2);
-  const topStar = glowSprite(tip, 0, 3, 0, 0xffe060, 4, 1);
-  // a door, and glowing windows
-  const doorM = new THREE.MeshStandardMaterial({ color: 0x3a2412, map: TEX.bark, roughness: 0.8 });
-  const doorLow = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.2, 0.3), doorM); doorLow.position.set(0, 1.1, 3.72); g.add(doorLow); const dTop = new THREE.Mesh(new THREE.CircleGeometry(1.1, 16, 0, Math.PI), doorM); dTop.position.set(0, 2.2, 3.88); g.add(dTop);
-  const knob = new THREE.Mesh(G.sphM, new THREE.MeshStandardMaterial({ color: 0xffd040, metalness: 0.8, roughness: 0.3 })); knob.scale.setScalar(0.12); knob.position.set(0.7, 1.4, 3.9); g.add(knob);
+  glowSprite(tip, 0, 3, 0, 0xffe060, 4, 1);
+  // the wooden door, swung wide open
+  const doorM = new THREE.MeshStandardMaterial({ color: 0x5a3a1c, map: TEX.bark, roughness: 0.8 });
+  { const hinge = new THREE.Group(); hinge.position.set(-1.25, fl, 3.55); hinge.rotation.y = -1.9; g.add(hinge); const d = new THREE.Mesh(new THREE.BoxGeometry(2.3, 2.9, 0.15), doorM); d.position.set(1.15, 1.45, 0); hinge.add(d);
+    const knob = new THREE.Mesh(G.sphM, new THREE.MeshStandardMaterial({ color: 0xffd040, metalness: 0.8, roughness: 0.3 })); knob.scale.setScalar(0.12); knob.position.set(2, 1.4, 0.12); hinge.add(knob); }
+  // stone steps up to the door
+  { const outH = terrainH(wp(0, 5.2).x, wp(0, 5.2).z) - h; const n = Math.max(1, Math.ceil((fl - outH) / 0.28));
+    for (let k = 0; k < n; k++) { const yy = fl - (k + 1) * (fl - outH) / (n + 0.0001) + (fl - outH) / n, lz = 3.5 + k * 0.7, st = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.3, 0.7), stone); st.position.set(0, yy - 0.15, lz); g.add(st); const p = wp(0, lz); addDisc(p.x, p.z, h + yy, 0.95, 'step'); const p2 = wp(0.7, lz), p3 = wp(-0.7, lz); addDisc(p2.x, p2.z, h + yy, 0.6, 'step'); addDisc(p3.x, p3.z, h + yy, 0.6, 'step'); } }
   const winM = new THREE.MeshBasicMaterial({ color: 0xffd080 });
-  for (const [a, y] of [[0.9, 6], [-1.2, 8.5], [2.6, 10.5], [0.2, 11.5], [-2.4, 5]]) { const w = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.3), winM); w.position.set(Math.sin(a) * 3.38, y, Math.cos(a) * 3.38); w.rotation.y = a; g.add(w); glowSprite(g, Math.sin(a) * 3.6, y, Math.cos(a) * 3.6, 0xffc060, 2.2, 0.45); }
-  // stars that circle the roof
-  WIZ.orbit = []; for (let k = 0; k < 9; k++) { const s = glowSprite(g, 0, 0, 0, k % 2 ? 0xffe060 : 0xc090ff, 1.1, 0.95); WIZ.orbit.push({ s, a: k / 9 * TAU, r: 5 + (k % 3), y: 15 + (k % 4) * 1.4, sp: 0.4 + (k % 3) * 0.15 }); }
-  // a crystal ball on a stand, and a little stump for the wizard to sit on
-  const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, 1.1, 10), stone); ped.position.set(-2.2, 0.55, 5.2); g.add(ped);
-  const ball = new THREE.Mesh(G.sphM, new THREE.MeshStandardMaterial({ color: 0xc8a0ff, emissive: 0x6030b0, emissiveIntensity: 0.9, transparent: true, opacity: 0.85, roughness: 0.05 })); ball.scale.setScalar(0.45); ball.position.set(-2.2, 1.45, 5.2); g.add(ball); glowSprite(g, -2.2, 1.45, 5.2, 0xb080ff, 2.2, 0.6); WIZ.ball = ball;
-  const stump = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.65, 0.6, 12), new THREE.MeshStandardMaterial({ color: 0x6a4a2a, map: TEX.bark })); stump.position.set(1.8, 0.3, 5.3); g.add(stump);
-  const lt = new THREE.PointLight(0xc090ff, 1.2, 18, 1.5); lt.position.set(0, 3, 6); g.add(lt);
-  const wp = (lx, lz) => { const c = Math.cos(face), s2 = Math.sin(face); return { x: x + lx * c + lz * s2, z: z - lx * s2 + lz * c }; };
-  addColl(x, z, 3.9, h + 21, 'rock'); { const p = wp(-2.2, 5.2); addColl(p.x, p.z, 0.45, h + 1.9, 'rock'); }
-  // the Wizard Frog itself, sitting on the stump
-  const F = makeFrog('wizard', 'classic'); F.root.scale.setScalar(0.9); const sp = wp(1.8, 5.3); F.root.position.set(sp.x, h + 0.6, sp.z); F.root.rotation.y = face;
-  WIZ.F = F;
+  for (const [a2, y] of [[0.9, 6], [-1.2, 8.5], [2.6, 10.5], [0.2, 11.5], [-2.4, 5]]) { const w = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.3), winM); w.position.set(Math.sin(a2) * 3.42, y, Math.cos(a2) * 3.42); w.rotation.y = a2; g.add(w); glowSprite(g, Math.sin(a2) * 3.6, y, Math.cos(a2) * 3.6, 0xffc060, 2.2, 0.45); }
+  WIZ.orbit = []; for (let k = 0; k < 9; k++) { const s3 = glowSprite(g, 0, 0, 0, k % 2 ? 0xffe060 : 0xc090ff, 1.1, 0.95); WIZ.orbit.push({ s: s3, a: k / 9 * TAU, r: 5 + (k % 3), y: 15 + (k % 4) * 1.4, sp: 0.4 + (k % 3) * 0.15 }); }
+  // ---- inside: a cosy wizard's room ----
+  const rug = new THREE.Mesh(new THREE.CircleGeometry(1.7, 24), new THREE.MeshStandardMaterial({ color: 0x6a2a9a, roughness: 1 })); rug.rotation.x = -Math.PI / 2; rug.position.y = fl + 0.02; g.add(rug);
+  const rug2 = new THREE.Mesh(new THREE.RingGeometry(1.3, 1.5, 24), new THREE.MeshStandardMaterial({ color: 0xffd040, roughness: 1 })); rug2.rotation.x = -Math.PI / 2; rug2.position.y = fl + 0.03; g.add(rug2);
+  // a bookshelf against the back wall
+  { const sh = new THREE.Group(); sh.position.set(0, fl, -2.45); g.add(sh); const wood = new THREE.MeshStandardMaterial({ color: 0x6a4424, map: TEX.bark });
+    const back = new THREE.Mesh(new THREE.BoxGeometry(2.4, 2.8, 0.1), wood); back.position.set(0, 1.4, -0.2); sh.add(back);
+    for (let r2 = 0; r2 < 4; r2++) { const pl = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.08, 0.45), wood); pl.position.set(0, 0.05 + r2 * 0.75, 0); sh.add(pl);
+      if (r2 < 3) { let bx = -1.1; while (bx < 1.05) { const w2 = 0.1 + Math.random() * 0.1, h2 = 0.45 + Math.random() * 0.2, bk = new THREE.Mesh(new THREE.BoxGeometry(w2, h2, 0.32), new THREE.MeshStandardMaterial({ color: [0x8a2020, 0x20408a, 0x2a7a3a, 0x8a6a20, 0x5a2a7a][Math.floor(Math.random() * 5)], roughness: 0.7 })); bk.position.set(bx + w2 / 2, 0.1 + r2 * 0.75 + h2 / 2, 0); bk.rotation.z = Math.random() < 0.15 ? 0.2 : 0; sh.add(bk); bx += w2 + 0.015; } } }
+    for (const sd of [-1, 1]) { const side = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.8, 0.45), wood); side.position.set(sd * 1.2, 1.4, 0); sh.add(side); }
+    const jar = new THREE.Mesh(G.sphM, new THREE.MeshStandardMaterial({ color: 0x80ffc0, emissive: 0x30a060, transparent: true, opacity: 0.8 })); jar.scale.set(0.15, 0.2, 0.15); jar.position.set(0.7, 2.5, 0); sh.add(jar); }
+  // a bubbling cauldron
+  { const c = new THREE.Group(); c.position.set(-1.5, fl, -0.9); g.add(c); const pot = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 10, 0, TAU, Math.PI * 0.25, Math.PI * 0.75), new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.6, roughness: 0.4, side: THREE.DoubleSide })); pot.position.y = 0.55; c.add(pot);
+    const soup = new THREE.Mesh(new THREE.CircleGeometry(0.42, 16), new THREE.MeshBasicMaterial({ color: 0x60ff80 })); soup.rotation.x = -Math.PI / 2; soup.position.y = 0.95; c.add(soup); glowSprite(c, 0, 1.1, 0, 0x60ff80, 1.6, 0.6);
+    for (let k = 0; k < 3; k++) { const leg = new THREE.Mesh(G.cyl, pot.material); leg.scale.set(0.05, 0.3, 0.05); leg.position.set(Math.cos(k * 2.1) * 0.35, 0.12, Math.sin(k * 2.1) * 0.35); c.add(leg); }
+    WIZ.cauldron = c; WIZ.bubbles = []; for (let k = 0; k < 6; k++) { const b2 = new THREE.Mesh(G.sphM, new THREE.MeshBasicMaterial({ color: 0xa0ffb0, transparent: true, opacity: 0.8 })); b2.scale.setScalar(0.07); c.add(b2); WIZ.bubbles.push({ b: b2, t: Math.random(), x: (Math.random() - 0.5) * 0.5, z: (Math.random() - 0.5) * 0.5 }); } }
+  // the crystal ball on a little stand, and candles
+  const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.32, 0.9, 10), stone); ped.position.set(1.7, fl + 0.45, 0.8); g.add(ped);
+  const ball = new THREE.Mesh(G.sphM, new THREE.MeshStandardMaterial({ color: 0xc8a0ff, emissive: 0x6030b0, emissiveIntensity: 0.9, transparent: true, opacity: 0.85, roughness: 0.05 })); ball.scale.setScalar(0.35); ball.position.set(1.7, fl + 1.2, 0.8); g.add(ball); glowSprite(g, 1.7, fl + 1.2, 0.8, 0xb080ff, 1.8, 0.6); WIZ.ball = ball;
+  for (const [cx2, cz2] of [[-0.8, -2.0], [0.9, -2.0], [-2.2, 0.6]]) { const cd = new THREE.Mesh(G.cyl, new THREE.MeshStandardMaterial({ color: 0xf0e8d0 })); cd.scale.set(0.06, 0.3, 0.06); cd.position.set(cx2, fl + 0.15, cz2); g.add(cd); glowSprite(g, cx2, fl + 0.38, cz2, 0xffb040, 0.5, 0.9); }
+  // a star chart on the wall
+  { const c = mkCanvas(128, 128), x2 = c.getContext('2d'); x2.fillStyle = '#1a1440'; x2.fillRect(0, 0, 128, 128); x2.fillStyle = '#fff4b0'; for (let k = 0; k < 30; k++) { x2.beginPath(); x2.arc(Math.random() * 128, Math.random() * 128, 1 + Math.random() * 2, 0, TAU); x2.fill(); } x2.strokeStyle = '#ffe080'; x2.beginPath(); x2.moveTo(20, 30); x2.lineTo(50, 60); x2.lineTo(90, 40); x2.lineTo(110, 90); x2.stroke();
+    const pc = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.2), new THREE.MeshBasicMaterial({ map: canvasTex(c) })); pc.position.set(Math.sin(-1.9) * 2.9, fl + 2.2, Math.cos(-1.9) * 2.9); pc.rotation.y = -1.9 + Math.PI; g.add(pc); }
+  // the wizard's stool
+  const stool = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.55, 0.55, 12), new THREE.MeshStandardMaterial({ color: 0x6a4a2a, map: TEX.bark })); stool.position.set(0.9, fl + 0.275, -1.35); g.add(stool);
+  const lt = new THREE.PointLight(0xffc890, 1.3, 9, 1.4); lt.position.set(0, fl + 3.2, 0); g.add(lt);
+  const lt2 = new THREE.PointLight(0xc090ff, 0.8, 14, 1.5); lt2.position.set(0, fl + 2, 5); g.add(lt2);
+  // solid bits: the wall all the way round except the doorway, and the furniture inside
+  for (let k = 0; k < 64; k++) { const a2 = k / 64 * TAU; if (a2 < GAP + 0.02 || a2 > TAU - GAP - 0.02) continue; const p = wp(Math.sin(a2) * 3.25, Math.cos(a2) * 3.25); addColl(p.x, p.z, 0.42, h + TH + 7, 'rock'); }
+  addDisc(x, z, h + fl, R1 + 0.1, 'floor');
+  for (const [lx, lz, r2, top] of [[0, -2.45, 0.6, 3], [-0.6, -2.45, 0.5, 3], [0.6, -2.45, 0.5, 3], [-1.5, -0.9, 0.62, 1], [1.7, 0.8, 0.35, 1.5], [0.9, -1.35, 0.55, 1.2]]) { const p = wp(lx, lz); addColl(p.x, p.z, r2, h + fl + top, 'rock'); }
+  // the Wizard Frog itself, sitting on its stool inside
+  const F = makeFrog('wizard', 'classic'); F.root.scale.setScalar(0.9); const sp = wp(0.9, -1.35); F.root.position.set(sp.x, h + fl + 0.55, sp.z); F.root.rotation.y = face;
+  WIZ.F = F; WIZ.fl = fl;
   makeCreature('rare', 'wizardfrog', F.root, function (dt) {
     const k = this; k.t += dt; k.ct -= dt;
     if (k.ct <= 0) { k.ct = mr(5, 9); k.croakT = 0.6; if (F.root.position.distanceTo(PL.pos) < 35) SFX.croak('wizard', F.root.position.clone()); if (F.wandTip) { const p = F.wandTip.getWorldPosition(new V3()); sparkle(p, 10, 0xffe060); sparkle(p, 6, 0xc090ff); } }
-    k.croakT = Math.max(0, (k.croakT || 0) - dt); F.root.rotation.y = face + Math.sin(k.t * 0.4) * 0.5;
+    k.croakT = Math.max(0, (k.croakT || 0) - dt); const dP = Math.hypot(PL.pos.x - F.root.position.x, PL.pos.z - F.root.position.z);
+    k.hidden = Math.hypot(PL.pos.x - x, PL.pos.z - z) > 3.1; // only counts once you are inside the tower
+    F.root.rotation.y = dP < 6 ? Math.atan2(PL.pos.x - F.root.position.x, PL.pos.z - F.root.position.z) : face + Math.sin(k.t * 0.4) * 0.5;
     frogAnimate(F, dt, { croak: k.croakT });
-  }, { F, ct: 2, seeR: 10 });
+  }, { F, ct: 2, seeR: 4.5 });
 }
 function wizTowerTick(dt) {
   const t = GAME.t; if (Math.hypot(PL.pos.x - WIZ.x, PL.pos.z - WIZ.z) > 160 || (W.level || 'top') !== 'top') return;
   for (const o of WIZ.orbit) { o.a += o.sp * dt; o.s.position.set(Math.cos(o.a) * o.r, o.y + Math.sin(t * 2 + o.a) * 0.4, Math.sin(o.a) * o.r); }
   WIZ.ball.material.emissiveIntensity = 0.7 + Math.sin(t * 2.2) * 0.3;
-  if (!SAVE.stats.wizTower && Math.hypot(PL.pos.x - WIZ.x, PL.pos.z - WIZ.z) < 18) { SAVE.stats.wizTower = 1; persist(); banner("The Wizard's Tower", 'A tall stone tower with a starry purple roof, hidden in the woods. Someone is sitting by the door, with a very long beard...'); }
+  if (WIZ.bubbles) for (const b of WIZ.bubbles) { b.t += dt * 0.8; if (b.t > 1) { b.t = 0; b.x = (Math.random() - 0.5) * 0.5; b.z = (Math.random() - 0.5) * 0.5; } b.b.position.set(b.x, 0.95 + b.t * 0.5, b.z); b.b.material.opacity = 0.8 * (1 - b.t); }
+  if (!SAVE.stats.wizTower && Math.hypot(PL.pos.x - WIZ.x, PL.pos.z - WIZ.z) < 18) { SAVE.stats.wizTower = 1; persist(); banner("The Wizard's Tower", 'A tall stone tower with a starry purple roof, hidden in the woods. The door is open... and something inside is bubbling. Go in and look!'); }
 }
 
 /* ============================================================
@@ -11130,7 +11242,50 @@ function machineParts(F) {
     const jt = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.09, 12), brass); jt.rotation.z = Math.PI / 2; pv.add(jt);
     F.mWings.push({ pv, sx, blades }); }
   F.mOpen = 0; machinePoseWings(F, 0);
+  machineExtras(F, steel, dark, brass, red);
 }
+function machineExtras(F, steel, dark, brass, red) {
+  const T = F.tilt, H = F.head;
+  // headlights on the front of the face (K turns them on)
+  F.lamps = [];
+  for (const sx of [-1, 1]) { const c = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.06, 12), dark); c.rotation.x = Math.PI / 2; c.position.set(sx * 0.12, 0.1, 0.43); H.add(c);
+    const lens = new THREE.Mesh(new THREE.CircleGeometry(0.045, 12), new THREE.MeshBasicMaterial({ color: 0x506070 })); lens.position.set(sx * 0.12, 0.1, 0.465); H.add(lens);
+    const gl = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xfff4d0, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 })); gl.scale.setScalar(0.4); gl.position.set(sx * 0.12, 0.1, 0.48); H.add(gl); F.lamps.push({ lens, gl }); }
+  // a little radar dish on top of the head that spins
+  { const post = new THREE.Mesh(G.cyl, steel); post.scale.set(0.015, 0.1, 0.015); post.position.set(-0.12, 0.33, -0.08); H.add(post);
+    const dish = new THREE.Group(); dish.position.set(-0.12, 0.39, -0.08); H.add(dish); const d = new THREE.Mesh(new THREE.SphereGeometry(0.09, 14, 6, 0, TAU, 0, Math.PI / 2.6), new THREE.MeshStandardMaterial({ color: 0xd0d8e0, metalness: 0.7, roughness: 0.3, side: THREE.DoubleSide })); d.rotation.x = -Math.PI / 2 - 0.5; dish.add(d);
+    const tip = new THREE.Mesh(G.sphM, brass); tip.scale.setScalar(0.018); tip.position.set(0, 0.03, 0.05); dish.add(tip); F.radar = dish; }
+  // bolts on the head
+  for (const [x, y, z] of [[-0.2, 0.18, 0.05], [0.2, 0.18, 0.05], [-0.25, 0.1, 0.25], [0.25, 0.1, 0.25]]) { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.02, 6), brass); b.position.set(x, y, z); b.rotation.x = 0.4; H.add(b); }
+  // a speaker grille on the throat
+  { const gr = new THREE.Mesh(new THREE.CircleGeometry(0.08, 16), dark); gr.position.set(0, -0.1, 0.33); gr.rotation.x = 0.4; H.add(gr); for (let i = -2; i <= 2; i++) { const ln = new THREE.Mesh(new THREE.BoxGeometry(0.11 - Math.abs(i) * 0.02, 0.008, 0.005), steel); ln.position.set(0, -0.1 + i * 0.025 * Math.cos(0.4), 0.335 + i * 0.01); ln.rotation.x = 0.4; H.add(ln); } }
+  // a screen on its left side with a beeping heartbeat line
+  { const c = mkCanvas(128, 64); const tex = new THREE.CanvasTexture(c); const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.13), new THREE.MeshBasicMaterial({ map: tex })); scr.position.set(-0.415, 0.33, 0.1); scr.rotation.y = -Math.PI / 2 - 0.15; T.add(scr);
+    const fr = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.16, 0.29), dark); fr.position.set(-0.405, 0.33, 0.1); fr.rotation.y = -0.15; T.add(fr); F.screen = { c, x: c.getContext('2d'), tex, t: 0, pts: [] }; }
+  // a row of blinking lights down the back
+  F.leds = []; for (let i = 0; i < 5; i++) { const l = new THREE.Mesh(G.sphM, new THREE.MeshBasicMaterial({ color: 0x30ff60 })); l.scale.setScalar(0.022); l.position.set(-0.08 + i * 0.04, 0.62, -0.16); T.add(l); F.leds.push(l); }
+  // a missile pod on the right shoulder (M fires it)
+  { const pod = new THREE.Group(); pod.position.set(0.33, 0.52, 0.12); pod.rotation.x = -0.25; T.add(pod); const box = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.13, 0.22), dark); pod.add(box);
+    F.pod = pod; F.podTubes = []; for (let i = 0; i < 4; i++) { const tb = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.05, 8), steel); tb.rotation.x = Math.PI / 2; tb.position.set((i % 2 - 0.5) * 0.07, (Math.floor(i / 2) - 0.5) * 0.06, 0.12); pod.add(tb); const tip = new THREE.Mesh(new THREE.ConeGeometry(0.02, 0.04, 8), new THREE.MeshStandardMaterial({ color: 0xd02020 })); tip.rotation.x = Math.PI / 2; tip.position.set(tb.position.x, tb.position.y, 0.15); pod.add(tip); F.podTubes.push(tip); } }
+  // two little chimneys on the back that puff steam
+  F.chimneys = []; for (const sx of [-1, 1]) { const ch = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.04, 0.16, 10), dark); ch.position.set(sx * 0.13, 0.62, -0.42); ch.rotation.x = -0.3; T.add(ch); const rim = new THREE.Mesh(new THREE.TorusGeometry(0.038, 0.01, 6, 12), brass); rim.rotation.x = Math.PI / 2 - 0.3; rim.position.set(sx * 0.13, 0.7, -0.44); T.add(rim); F.chimneys.push(rim); }
+  // yellow and black warning stripes around the bottom
+  { const c = mkCanvas(128, 16), x = c.getContext('2d'); for (let i = 0; i < 16; i++) { x.fillStyle = i % 2 ? '#202020' : '#ffc820'; x.beginPath(); x.moveTo(i * 8, 16); x.lineTo(i * 8 + 8, 16); x.lineTo(i * 8 + 16, 0); x.lineTo(i * 8 + 8, 0); x.fill(); } const tx = canvasTex(c); tx.wrapS = THREE.RepeatWrapping; tx.repeat.set(3, 1);
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.37, 0.06, 28, 1, true), new THREE.MeshStandardMaterial({ map: tx, metalness: 0.4, roughness: 0.5, side: THREE.DoubleSide })); band.scale.set(1, 1, 0.75); band.position.set(0, 0.24, -0.42); T.add(band); }
+  // the force field (Y turns it on)
+  { const sh = new THREE.Mesh(new THREE.SphereGeometry(0.85, 24, 16), new THREE.MeshBasicMaterial({ color: 0x60c0ff, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })); sh.position.y = 0.35; sh.visible = false; F.root.add(sh); F.shield = sh;
+    const wire = new THREE.Mesh(new THREE.IcosahedronGeometry(0.87, 2), new THREE.MeshBasicMaterial({ color: 0xa0e0ff, wireframe: true, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false })); sh.add(wire); }
+}
+function drawScreen(F, dt, mood) {
+  const S = F.screen; if (!S) return; S.t += dt; if (S.t < 0.08) return; S.t = 0;
+  const x = S.x; x.fillStyle = '#041008'; x.fillRect(0, 0, 128, 64);
+  x.strokeStyle = 'rgba(40,255,120,0.18)'; x.lineWidth = 1; for (let i = 0; i < 128; i += 16) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i, 64); x.stroke(); } for (let j = 0; j < 64; j += 16) { x.beginPath(); x.moveTo(0, j); x.lineTo(128, j); x.stroke(); }
+  const ph = GAME.t * 3, beat = ph % 1; S.pts.push(beat < 0.08 ? 10 : beat < 0.14 ? 54 : beat < 0.2 ? 26 : 34 + Math.random() * 3); if (S.pts.length > 32) S.pts.shift();
+  x.strokeStyle = mood === 'shield' ? '#60c0ff' : mood === 'hot' ? '#ff6030' : '#40ff80'; x.lineWidth = 3; x.beginPath(); S.pts.forEach((v, i) => i ? x.lineTo(i * 4, v) : x.moveTo(0, v)); x.stroke();
+  x.fillStyle = x.strokeStyle; x.font = 'bold 12px monospace'; x.fillText(mood === 'shield' ? 'SHIELD' : mood === 'hot' ? 'FIRE!' : 'OK  ' + Math.floor(PL.needs ? PL.needs.hunger : 99) + '%', 4, 12);
+  S.tex.needsUpdate = true;
+}
+
 function machinePoseWings(F, k) {
   for (const w of F.mWings) { w.pv.rotation.set(0, 0, 0); w.blades.forEach((b, i) => { // folded: lying flat along the back, pointing backwards; open: spread out sideways like a fan
     const fold = w.sx * (Math.PI / 2 - 0.12 * i), open = w.sx * (0.15 - i * 0.28) * -1; b.rotation.y = lerp(fold, -open, k); b.rotation.z = w.sx * lerp(0.05, 0.25 + Math.sin(GAME.t * 18) * 0.06 * k * (PL.flapping ? 1 : 0.3), k); b.position.y = i * 0.012; }); }
@@ -11176,6 +11331,7 @@ function machineTick(dt) {
     F.machLight.visible = Math.sin(GAME.t * 6) > -0.3;
     F.nozzleGlow.material.color.setHex(MCH.rocketT > 0 ? 0xffe080 : MCH.rocketCD > 0 ? 0xff5010 : 0x802010);
   }
+  machineMore(dt, on, F);
   // rocket fire
   if (MCH.rocketT > 0) { MCH.rocketT -= dt; if (on) { const p = F.nozzle.getWorldPosition(new V3()), back = new V3(-Math.sin(PL.yaw) * 0.6, -1, -Math.cos(PL.yaw) * 0.6).normalize(); machFire(p, back, 6); if (PL.vel.y < 14 && MCH.rocketT > 0.35) PL.vel.y += dt * 30; } }
   if (MCH.fire) for (const d of MCH.fire) { if (!d.s.visible) continue; d.t += dt; if (d.t > d.life) { d.s.visible = false; continue; } d.s.position.addScaledVector(d.v, dt); d.v.multiplyScalar(Math.exp(-dt * 3)); d.s.material.opacity = 1 - d.t / d.life; d.s.scale.multiplyScalar(1 + dt * 1.5); }
@@ -11346,6 +11502,595 @@ function fallSwimTick(dt) {
   const iv = inputVector(); if (iv.mag < 0.2 || iv.x > -0.35) return; // swimming toward the falls
   PL.fallSwim = { t: 0, x0: P.x, y0: P.y, z0: P.z }; SFX.splash(P.clone(), 1);
   if (!SAVE.stats.fallSwim) { SAVE.stats.fallSwim = 1; persist(); toast('You swim right up the waterfall, like a salmon! (Swim into the falling water any time to climb it.)', 'guide'); }
+}
+
+/* ---------- more Machine Frog powers: N magnet, M missiles, Y shield, K headlights ---------- */
+Object.assign(MCH, { missileCD: 0, shieldCD: 0, shieldT: 0, lights: false, missiles: [], puffs: [] });
+{ const _hurt = hurt; hurt = function (amount, from, kb) { if (MCH.shieldT > 0 && GAME.species === 'machine') { if (PL.F && PL.F.shield) { PL.F.shield.material.opacity = 0.7; } tone('sine', 900, 1400, 0.2, 0.06); sparkle(PL.pos.clone().add(new V3(0, 0.5, 0)), 14, 0x80d0ff); if (from) toast('BZZT! Your force field blocked ' + from + '!', 'quiet'); return; } return _hurt.apply(this, arguments); }; }
+addEventListener('keydown', e => {
+  if (e.repeat || GAME.state !== 'play' || GAME.paused || !SPECIES[GAME.species] || !SPECIES[GAME.species].machine || PL.stage < 3 || WDLG.open || (typeof LOREUI !== 'undefined' && LOREUI.open)) return;
+  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT')) return;
+  if (e.code === 'KeyM') machineMissiles(); else if (e.code === 'KeyY') machineShield(); else if (e.code === 'KeyK') machineLights();
+});
+function machineLights() { MCH.lights = !MCH.lights; tone('square', MCH.lights ? 900 : 500, MCH.lights ? 1300 : 300, 0.08, 0.05); toast(MCH.lights ? 'Headlights on.' : 'Headlights off.', 'quiet'); }
+function machineShield() {
+  if (MCH.shieldCD > 0) { toast('Force field recharging... ' + Math.ceil(MCH.shieldCD) + ' seconds.', 'quiet'); return; }
+  MCH.shieldT = 8; MCH.shieldCD = 25; tone('sine', 200, 900, 0.6, 0.08, PL.pos.clone()); tone('triangle', 400, 1800, 0.6, 0.04, PL.pos.clone(), 0.1);
+  toast(SAVE.stats.machShield ? 'Force field up!' : 'VWOOM! A force field! For 8 seconds nothing can hurt you.', SAVE.stats.machShield ? 'quiet' : 'guide'); SAVE.stats.machShield = 1; persist();
+}
+function machineMissiles() {
+  if (MCH.missileCD > 0) { toast('Reloading missiles... ' + Math.ceil(MCH.missileCD) + ' seconds.', 'quiet'); return; }
+  const F = PL.F; if (!F || !F.pod) return; MCH.missileCD = 10;
+  const targets = []; for (const c of CREATURES) { if (!WIZ_PREY.includes(c.kind) || !creatureOK(c) || (c.level || 'top') !== (W.level || 'top')) continue; const q = c.kind === 'snake' ? creaturePos(c) : (c.focus ? c.focus() : c.root.position); if (q.distanceTo(PL.pos) < 50) targets.push({ c, d: q.distanceTo(PL.pos) }); }
+  targets.sort((a, b) => a.d - b.d);
+  for (let i = 0; i < 4; i++) {
+    const tip = F.podTubes[i], p = tip.getWorldPosition(new V3()), m = new THREE.Group(); scene.add(m);
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.22, 8), new THREE.MeshStandardMaterial({ color: 0xe0e0e0, metalness: 0.5 })); body.rotation.x = Math.PI / 2; m.add(body);
+    const nose = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.07, 8), new THREE.MeshStandardMaterial({ color: 0xd02020 })); nose.rotation.x = Math.PI / 2; nose.position.z = 0.14; m.add(nose);
+    const fl = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xffa040, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); fl.scale.setScalar(0.3); fl.position.z = -0.14; m.add(fl);
+    m.position.copy(p); const T = targets.length ? targets[i % targets.length].c : null;
+    const v = new V3(Math.sin(PL.yaw) * 4 + mr(-2, 2), 7 + mr(0, 3), Math.cos(PL.yaw) * 4 + mr(-2, 2));
+    MCH.missiles.push({ m, v, T, t: 0, delay: i * 0.12, aim: PL.pos.clone().add(new V3(Math.sin(PL.yaw) * 25, 2, Math.cos(PL.yaw) * 25)) }); m.visible = false;
+  }
+  tone('sawtooth', 300, 900, 0.5, 0.06, PL.pos.clone()); noiseHit(1500, 1, 0.4, 0.15, PL.pos.clone());
+  toast(targets.length ? 'MISSILES AWAY! Locked on to ' + Math.min(4, targets.length) + ' predator' + (targets.length > 1 ? 's' : '') + '!' : 'MISSILES AWAY! (No predators nearby, so they just make fireworks.)', 'quiet');
+}
+function missileBoom(p, col) { for (let i = 0; i < 3; i++) sparkle(p.clone(), 12, [0xffe060, 0xff6020, col || 0xffffff][i]); machFire(p, new V3(0, 1, 0), 10); noiseHit(250, 0.6, 0.5, 0.3, p.clone()); }
+function machineMore(dt, on, F) {
+  MCH.missileCD = Math.max(0, MCH.missileCD - dt); MCH.shieldCD = Math.max(0, MCH.shieldCD - dt); MCH.shieldT = Math.max(0, MCH.shieldT - dt);
+  if (!on) { MCH.shieldT = 0; MCH.lights = false; if (MCH.spot) MCH.spot.visible = false; }
+  // missiles fly even if you switch frogs
+  for (let i = MCH.missiles.length - 1; i >= 0; i--) { const M = MCH.missiles[i]; M.t += dt; if (M.t < M.delay) continue; M.m.visible = true;
+    const tgt = M.T && creatureOK(M.T) ? (M.T.kind === 'snake' ? creaturePos(M.T) : (M.T.focus ? M.T.focus() : M.T.root.position)).clone() : M.aim;
+    if (M.t > M.delay + 0.35) { const want = tgt.clone().sub(M.m.position).normalize().multiplyScalar(22); M.v.lerp(want, Math.min(1, dt * 4)); } else M.v.y -= dt * 4;
+    M.m.position.addScaledVector(M.v, dt); M.m.lookAt(M.m.position.clone().add(M.v));
+    if (Math.random() < 0.7) { MCH.puffs.length < 200 && machPuff(M.m.position.clone(), 0xc0c0c0, 0.25); }
+    const hit = M.m.position.distanceTo(tgt) < 1.2, gone = M.t > 4 || M.m.position.y < terrainH(M.m.position.x, M.m.position.z) - 0.2 && !W.inCaves;
+    if (hit || gone) { missileBoom(M.m.position, 0xff4020); if (hit && M.T && creatureOK(M.T)) { M.T.wizDis = 1.1; M.T.wizS = M.T.root.scale.clone(); if (M.T.kind === 'heron') HER.state = 'away'; toast('KABOOM! The ' + creatureName(M.T) + ' was blasted into sparks!', 'quiet'); } scene.remove(M.m); MCH.missiles.splice(i, 1); }
+  }
+  // steam puffs
+  for (let i = MCH.puffs.length - 1; i >= 0; i--) { const p = MCH.puffs[i]; p.t += dt; if (p.t > p.life) { scene.remove(p.s); MCH.puffs.splice(i, 1); continue; } p.s.position.y += dt * 0.6; p.s.scale.setScalar(p.sz * (1 + p.t * 2)); p.s.material.opacity = 0.5 * (1 - p.t / p.life); }
+  if (!on) return;
+  const t = GAME.t, moving = Math.hypot(PL.vel.x, PL.vel.z) > 0.5 || !!PL.crawlMoving;
+  // magnet: hold N to pull bugs in
+  if (IN.keys.KeyN && PL.stage >= 3) {
+    const mouth = mouthPos(new V3()); let n = 0;
+    for (const ins of INS.list) { if (!ins.alive || ins.caught || ins.npc) continue; const d = ins.pos.distanceTo(mouth); if (d > 14) continue; n++;
+      const step = Math.min(d, dt * (4 + (14 - d) * 0.8)); ins.pos.addScaledVector(mouth.clone().sub(ins.pos).normalize(), step); if (ins.anchor) ins.anchor.copy(ins.pos); if (ins.root) ins.root.position.copy(ins.pos);
+      if (Math.random() < dt * 8) sparkle(ins.pos.clone(), 1, 0x60a0ff);
+      if (d < 0.9) { eatInsect(ins); } }
+    if (Math.random() < dt * 10) sparkle(mouth.clone().add(new V3(mr(-0.5, 0.5), mr(-0.2, 0.5), mr(-0.5, 0.5))), 1, 0x80c0ff);
+    if (!MCH.magHum || t - MCH.magHum > 0.5) { MCH.magHum = t; tone('sine', 110, 120, 0.5, 0.03, PL.pos.clone()); }
+    if (!SAVE.stats.machMagnet) { SAVE.stats.machMagnet = 1; persist(); toast('Bug magnet! Hold N and every bug nearby gets pulled straight into your mouth.', 'guide'); }
+  }
+  // headlights
+  if (!MCH.spot) { MCH.spot = new THREE.SpotLight(0xfff4d0, 4, 40, 0.5, 0.5, 1.2); MCH.spotT = new THREE.Object3D(); scene.add(MCH.spot); scene.add(MCH.spotT); MCH.spot.target = MCH.spotT; }
+  MCH.spot.visible = MCH.lights; if (MCH.lights) { const hp = F.head.getWorldPosition(new V3()), dir = new V3(Math.sin(PL.yaw), -0.15, Math.cos(PL.yaw)); MCH.spot.position.copy(hp).addScaledVector(dir, 0.3); MCH.spotT.position.copy(hp).addScaledVector(dir, 10); }
+  for (const L of F.lamps) { L.lens.material.color.setHex(MCH.lights ? 0xfff8e0 : 0x506070); L.gl.material.opacity = MCH.lights ? 0.9 : 0; }
+  // force field
+  F.shield.visible = MCH.shieldT > 0; if (F.shield.visible) { F.shield.rotation.y += dt; F.shield.material.opacity = lerp(F.shield.material.opacity, MCH.shieldT < 2 && Math.sin(t * 20) > 0 ? 0.05 : 0.22, Math.min(1, dt * 6)); F.shield.scale.setScalar(1 + Math.sin(t * 6) * 0.03); }
+  // radar, LEDs, screen
+  F.radar.rotation.y += dt * 3;
+  F.leds.forEach((l, i) => { const on2 = Math.sin(t * 4 + i * 1.3) > 0; l.material.color.setHex(MCH.shieldT > 0 ? 0x60c0ff : on2 ? (i % 2 ? 0x30ff60 : 0xff3020) : 0x103010); });
+  if (F === PL.F) drawScreen(F, dt, MCH.shieldT > 0 ? 'shield' : MCH.rocketT > 0 || MCH.laserT > 0 ? 'hot' : 'ok');
+  F.podTubes.forEach(tp => tp.visible = MCH.missileCD <= 0);
+  // steam from the chimneys, and more when it works hard
+  if (Math.random() < dt * (moving ? 6 : 2.5)) { const ch = F.chimneys[Math.random() < 0.5 ? 0 : 1]; machPuff(ch.getWorldPosition(new V3()), 0xe8e8e8, 0.18); }
+  // little sparks from the joints, servo whirrs while walking, a clank on landing
+  if (Math.random() < dt * 0.4) { const L = F.legs[Math.random() < 0.5 ? 0 : 1]; sparkle(L.hip.getWorldPosition(new V3()), 4, 0xffd060); tone('square', 2400, 1800, 0.04, 0.015); }
+  if (PL.onGround && moving && t - (MCH.whirT || 0) > 0.45) { MCH.whirT = t; tone('square', 140 + Math.random() * 40, 210, 0.12, 0.018, PL.pos.clone()); }
+  if (PL.onGround && !MCH.wasGround && (MCH.airFor || 0) > 0.3) { noiseHit(2600, 2, 0.1, 0.12, PL.pos.clone()); tone('square', 180, 90, 0.12, 0.05, PL.pos.clone()); sparkle(PL.pos.clone(), 6, 0xffe080); }
+  MCH.airFor = PL.onGround ? 0 : (MCH.airFor || 0) + dt; MCH.wasGround = PL.onGround;
+  if (t - (MCH.beepT || 0) > 9 && Math.random() < dt * 0.3) { MCH.beepT = t; tone('square', 880, 880, 0.06, 0.02); tone('square', 660, 660, 0.06, 0.02, null, 0.09); tone('square', 990, 990, 0.08, 0.02, null, 0.18); }
+}
+function machPuff(p, col, sz) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: col, transparent: true, opacity: 0.5, depthWrite: false })); s.position.copy(p); s.scale.setScalar(sz); scene.add(s); MCH.puffs.push({ s, t: 0, life: mr(0.8, 1.4), sz }); }
+/* ============================================================
+   Nine new frogs: Cactus, Storm, Ice, Glitch, Dragon, Alien,
+   Data, Sock and Rock. Their looks, powers and how you get them.
+   ============================================================ */
+const NF = { speech: null };
+function unlockFrog(k, title, text) {
+  const first = !SAVE.unlocks.species.includes(k); if (first) { SAVE.unlocks.species.push(k); persist(); }
+  SFX.chime(); banner(title, text + (first ? ' The ' + SPECIES[k].name + ' is unlocked! Pick it on the frog screen.' : ''));
+}
+// a dry spot near a place in the top world
+function dryNearTop(P, r0, seed) {
+  for (let i = 0; i < 500; i++) { const a = (seed || 1.3) + i * 0.61, d = r0 + (i % 6) * 1.5, x = P.x + Math.cos(a) * d, z = P.z + Math.sin(a) * d, h = terrainH(x, z);
+    if (Math.hypot(x, z) > WORLD_R - 15) continue;
+    if (h > WATER + 0.25 && waterLevelAt(x, z) < h - 0.05 && !COLL.some(o => Math.hypot(o.x - x, o.z - z) < (o.r || 1) + 1.2)) return { x, z, y: h }; }
+  return { x: P.x, z: P.z, y: terrainH(P.x, P.z) };
+}
+const mat = (col, o) => new THREE.MeshStandardMaterial(Object.assign({ color: col, roughness: 0.6 }, o || {}));
+function addTo(parent, geo, m, x, y, z, sx, sy, sz) { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.scale.set(sx, sy === undefined ? sx : sy, sz === undefined ? sx : sz); parent.add(o); return o; }
+
+/* ---------- what they look like ---------- */
+SPECIES.cactus.newParts = F => {
+  const sp = mat(0xf0f0d0, { roughness: 0.4 });
+  const spikes = []; for (let i = 0; i < 70; i++) { const u = (i + 0.5) / 70, phi = Math.acos(1 - u * 1.4), th = i * 2.39996; spikes.push([Math.sin(phi) * Math.cos(th), Math.cos(phi), Math.sin(phi) * Math.sin(th)]); }
+  for (const [x, y, z] of spikes) { const s = new THREE.Mesh(new THREE.ConeGeometry(0.025, 0.2, 5), sp); s.position.set(x * 0.42, 0.3 + y * 0.27, -0.04 + z * 0.52); s.lookAt(s.position.clone().add(new V3(x, y, z))); s.rotateX(Math.PI / 2); F.tilt.add(s); }
+  for (const sx of [-1, 1]) for (let k = 0; k < 3; k++) { const s = new THREE.Mesh(new THREE.ConeGeometry(0.015, 0.09, 5), sp); s.position.set(sx * (0.12 + k * 0.06), 0.23, 0.12 - k * 0.06); s.rotation.z = -sx * 0.6; F.head.add(s); }
+  // a little pink flower on its head
+  const fl = new THREE.Group(); fl.position.set(0.05, 0.3, 0.02); F.head.add(fl); for (let k = 0; k < 6; k++) { const p = addTo(fl, G.sphM, mat(0xff70b0), Math.cos(k * 1.05) * 0.05, 0, Math.sin(k * 1.05) * 0.05, 0.045, 0.02, 0.045); } addTo(fl, G.sphM, mat(0xffe040), 0, 0.01, 0, 0.03);
+};
+SPECIES.storm.newParts = F => {
+  const ym = new THREE.MeshBasicMaterial({ color: 0xffe030 });
+  const bolt = () => { const s = new THREE.Shape(); s.moveTo(0, 0.12); s.lineTo(0.04, 0.02); s.lineTo(0.0, 0.02); s.lineTo(0.05, -0.12); s.lineTo(-0.03, 0.0); s.lineTo(0.01, 0.0); s.lineTo(-0.02, 0.12); return new THREE.ShapeGeometry(s); };
+  for (const [x, z, ry] of [[0.42, -0.05, Math.PI / 2], [-0.42, -0.05, -Math.PI / 2], [0.3, -0.35, 2.2], [-0.3, -0.35, -2.2]]) { const b = new THREE.Mesh(bolt(), ym); b.position.set(x, 0.33, z); b.rotation.y = ry; b.scale.setScalar(1.4); F.tilt.add(b); }
+  const top = new THREE.Mesh(bolt(), ym); top.position.set(0, 0.59, 0); top.rotation.x = -Math.PI / 2; top.scale.setScalar(1.8); F.tilt.add(top);
+  F.stormSparks = true;
+};
+SPECIES.ice.newParts = F => {
+  if (F.skin) { F.skin.transparent = true; F.skin.opacity = 0.75; F.skin.roughness = 0.05; F.skin.metalness = 0.3; F.skin.emissive = new THREE.Color(0x2060a0); F.skin.emissiveIntensity = 0.35; }
+  const cm = mat(0xd0f4ff, { roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.85, emissive: 0x4090c0, emissiveIntensity: 0.4 });
+  for (let i = 0; i < 7; i++) { const c = new THREE.Mesh(new THREE.ConeGeometry(0.05 + (i % 3) * 0.015, 0.22 + (i % 2) * 0.1, 5), cm); c.position.set(Math.sin(i * 1.7) * 0.18, 0.56 + (i % 2) * 0.03, 0.2 - i * 0.08); c.rotation.set(-0.3 + Math.sin(i) * 0.2, 0, Math.sin(i * 2.3) * 0.3); F.tilt.add(c); }
+};
+SPECIES.glitch.newParts = F => {
+  const meshes = []; F.root.traverse(o => { if (o.isMesh) meshes.push(o); });
+  F.glitchMeshes = meshes; F.glitchMissing = meshes.filter((m, i) => i % 7 === 3); for (const m of F.glitchMissing) m.visible = false;
+  const pm = [0xff30ff, 0x30ffff, 0x30ff60, 0xffffff].map(c => new THREE.MeshBasicMaterial({ color: c }));
+  F.pixels = []; for (let i = 0; i < 18; i++) { const p = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 0.07), pm[i % 4]); p.position.set((Math.random() - 0.5) * 0.9, 0.2 + Math.random() * 0.5, (Math.random() - 0.5) * 1.1); F.tilt.add(p); F.pixels.push({ p, base: p.position.clone() }); }
+};
+SPECIES.dragon.newParts = F => {
+  const horn = mat(0xf0e0c0, { roughness: 0.4 }), dark = mat(0x6a1008), mem = mat(0xff6030, { side: THREE.DoubleSide, roughness: 0.7, transparent: true, opacity: 0.92 });
+  for (const sx of [-1, 1]) { const h = new THREE.Mesh(new THREE.ConeGeometry(0.045, 0.24, 8), horn); h.position.set(sx * 0.13, 0.3, -0.02); h.rotation.set(-0.7, 0, -sx * 0.3); F.head.add(h); }
+  for (let i = 0; i < 6; i++) { const s = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.12 - i * 0.008, 4), dark); s.position.set(0, 0.6 - i * 0.025, 0.2 - i * 0.14); s.rotation.x = -0.4; F.tilt.add(s); }
+  // a dragon tail
+  const tg = new THREE.Group(); tg.position.set(0, 0.3, -0.58); F.tilt.add(tg); let p = tg; F.dTail = [];
+  for (let i = 0; i < 5; i++) { const s = new THREE.Group(); s.position.z = i ? -0.15 : 0; p.add(s); addTo(s, G.sphM, F.skin, 0, 0, -0.08, 0.09 - i * 0.014, 0.08 - i * 0.012, 0.12); F.dTail.push(s); p = s; }
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.14, 4), dark); tip.rotation.x = -Math.PI / 2; tip.position.z = -0.18; p.add(tip);
+  // bat-like wings
+  F.dWings = [];
+  for (const sx of [-1, 1]) { const pv = new THREE.Group(); pv.position.set(sx * 0.25, 0.55, 0.05); F.tilt.add(pv);
+    const sh = new THREE.Shape(); sh.moveTo(0, 0); sh.lineTo(0.75, 0.25); sh.lineTo(0.9, -0.05); sh.quadraticCurveTo(0.7, -0.05, 0.62, -0.25); sh.quadraticCurveTo(0.45, -0.12, 0.38, -0.32); sh.quadraticCurveTo(0.2, -0.15, 0, -0.2); sh.lineTo(0, 0);
+    const g2 = new THREE.ShapeGeometry(sh); g2.rotateX(-Math.PI / 2); const w = new THREE.Mesh(g2, mem); w.scale.set(sx, 1, 1); pv.add(w);
+    const bone = addTo(pv, G.cyl, dark, sx * 0.4, 0, -0.12, 0.018, 0.85, 0.018); bone.rotation.z = Math.PI / 2; bone.rotation.y = sx * 0.3;
+    pv.rotation.set(0, sx * 1.25, sx * 0.12); F.dWings.push({ pv, sx }); }
+};
+SPECIES.alien.newParts = F => {
+  const eye = mat(0x050505, { roughness: 0.05, metalness: 0.4 });
+  const e3 = new THREE.Mesh(G.sphM, eye); e3.scale.set(0.09, 0.09, 0.07); e3.position.set(0, 0.25, 0.26); F.head.add(e3);
+  const shine = new THREE.Mesh(G.sphM, new THREE.MeshBasicMaterial({ color: 0xffffff })); shine.scale.setScalar(0.02); shine.position.set(0.03, 0.28, 0.32); F.head.add(shine);
+  for (const e of F.eyes) e.scale.set(1.25, 1.25, 1.25);
+  F.antTips = [];
+  for (const sx of [-1, 1]) { const st = addTo(F.head, G.cyl, F.skin, sx * 0.08, 0.38, -0.02, 0.012, 0.24, 0.012); st.rotation.z = -sx * 0.35; const tip = addTo(F.head, G.sphM, new THREE.MeshBasicMaterial({ color: 0x80ff60 }), sx * 0.13, 0.5, -0.02, 0.04); F.antTips.push(tip); }
+};
+SPECIES.dataf.newParts = F => {
+  const wm = new THREE.MeshBasicMaterial({ color: 0x40ff90, wireframe: true, transparent: true, opacity: 0.85 }), inner = new THREE.MeshBasicMaterial({ color: 0x021008, transparent: true, opacity: 0.75 });
+  const list = []; F.root.traverse(o => { if (o.isMesh) list.push(o); });
+  for (const o of list) { const keep = o.material && o.material.color && (o.material.color.getHex() === 0x050505); if (keep) continue; o.material = inner; const w = new THREE.Mesh(o.geometry, wm); o.add(w); }
+  if (!NF.binTex) NF.binTex = ['0', '1'].map(d => textTex([[d, 'bold 54px monospace', 36]], 64, 64, { bg: 'rgba(0,0,0,0)', col: '#60ffa0' }));
+  F.bits = []; for (let i = 0; i < 12; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: NF.binTex[i % 2], transparent: true, depthWrite: false })); s.scale.setScalar(0.14); F.root.add(s); F.bits.push({ s, a: i / 12 * TAU, y: 0.2 + (i % 4) * 0.15, r: 0.55 + (i % 3) * 0.1 }); }
+};
+SPECIES.sock.newParts = F => {
+  if (!NF.sockTex) { const c = mkCanvas(64, 64), x = c.getContext('2d'); for (let i = 0; i < 8; i++) { x.fillStyle = ['#e02030', '#ffffff', '#2050d0', '#ffffff'][i % 4]; x.fillRect(0, i * 8, 64, 8); } x.fillStyle = 'rgba(0,0,0,0.08)'; for (let i = 0; i < 64; i += 4) for (let j = 0; j < 64; j += 4) if ((i + j) % 8 === 0) x.fillRect(i, j, 2, 2); NF.sockTex = canvasTex(c); NF.sockTex.wrapS = NF.sockTex.wrapT = THREE.RepeatWrapping; NF.sockTex.repeat.set(2, 3); }
+  if (F.skin) { F.skin.map = NF.sockTex; F.skin.color = new THREE.Color(0xffffff); F.skin.roughness = 1; F.skin.needsUpdate = true; }
+  // big button eyes
+  for (const e of F.eyes) { e.traverse(o => { if (o.isMesh) o.visible = false; }); const b = addTo(e, new THREE.CylinderGeometry(0.075, 0.075, 0.03, 16), mat(0x202020, { roughness: 0.3 }), 0, 0.03, 0.04, 1); b.rotation.x = Math.PI / 2 - 0.3; for (let k = 0; k < 4; k++) addTo(b, G.sphM, mat(0x808080), (k % 2 - 0.5) * 0.04, 0.02, (Math.floor(k / 2) - 0.5) * 0.04, 0.012); }
+  // the cuff, where the hand goes in
+  const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.4, 20, 1, true), mat(0xf0f0f0, { roughness: 1, side: THREE.DoubleSide })); cuff.rotation.x = Math.PI / 2 + 0.3; cuff.position.set(0, 0.3, -0.62); F.tilt.add(cuff);
+  for (let k = 0; k < 10; k++) { const r = addTo(cuff, new THREE.BoxGeometry(0.02, 0.4, 0.02), mat(0xd0d0d0), Math.cos(k / 10 * TAU) * 0.3, 0, Math.sin(k / 10 * TAU) * 0.3, 1); }
+  const tg = mat(0xff4060, { roughness: 1 }); const tongue = addTo(F.head, G.sphM, tg, 0, -0.06, 0.4, 0.12, 0.02, 0.08);
+};
+SPECIES.rock.newParts = F => {
+  F.root.traverse(o => { if (o.isMesh) o.visible = false; });
+  if (!NF.rockGeo) { NF.rockGeo = lumpyGeo(2, 0.3, 4.4); }
+  const r = new THREE.Mesh(NF.rockGeo, mat(0x8a8478, { flatShading: true, map: TEX.detail, roughness: 0.95 })); r.scale.set(0.5, 0.36, 0.55); r.position.set(0, 0.3, 0); r.castShadow = true; F.tilt.add(r);
+  const moss = new THREE.Mesh(NF.rockGeo, mat(0x5a7a34, { flatShading: true, roughness: 1 })); moss.scale.set(0.35, 0.1, 0.38); moss.position.set(-0.05, 0.6, -0.05); F.tilt.add(moss);
+  F.rockEyes = [];
+  for (const sx of [-1, 1]) { const w = addTo(F.tilt, G.sphM, mat(0xffffff, { roughness: 0.2 }), sx * 0.13, 0.58, 0.3, 0.09); const p = addTo(w, G.sphM, mat(0x101010, { roughness: 0.1 }), 0, 0.1, 0.6, 0.55); F.rockEyes.push(w); }
+};
+
+/* ---------- the shared hooks ---------- */
+// creatures that are zapped, frozen or floating in a tractor beam stop doing their own thing
+function creatureHold(c, dt) {
+  if (c.wizDis > 0 || c.wizGone > 0) { wizardGoneTick(c, dt); return true; }
+  if (c.iceT > 0) {
+    c.iceT -= dt; const p = c.kind === 'snake' ? creaturePos(c) : (c.focus ? c.focus() : c.root.position);
+    if (!c.iceBox) { c.iceBox = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0xc0ecff, transparent: true, opacity: 0.55, roughness: 0.05, metalness: 0.2, emissive: 0x3070a0, emissiveIntensity: 0.4 })); const big = c.kind === 'heron' || c.kind === 'skyheron' ? 3.2 : c.kind === 'snake' ? 2.2 : 1.8; c.iceBox.scale.set(big, big * (c.kind === 'heron' || c.kind === 'skyheron' ? 1.4 : 0.8), big); scene.add(c.iceBox); }
+    c.iceBox.position.copy(p); c.iceBox.position.y = (c.kind === 'snake' ? p.y : c.root.position.y) + c.iceBox.scale.y * 0.4;
+    if (c.iceT <= 0) { scene.remove(c.iceBox); c.iceBox = null; sparkle(p.clone(), 14, 0xd0f0ff); tone('triangle', 2000, 1200, 0.3, 0.04, p.clone()); }
+    return true;
+  }
+  if (c.liftT > 0) {
+    c.liftT -= dt; const k = Math.min(1, (4 - c.liftT) * 2); c.root.position.y = c.liftY0 + (c.liftT > 0.4 ? 3.5 * k + Math.sin(GAME.t * 3) * 0.3 : 3.5 * (c.liftT / 0.4));
+    c.root.rotation.z = Math.sin(GAME.t * 2) * 0.3;
+    if (c.liftT <= 0) { c.root.position.y = c.liftY0; c.root.rotation.z = 0; }
+    return true;
+  }
+  return false;
+}
+// the Cactus Frog's spikes and the Rock Frog's rock body
+const BITERS = /heron|snake|pike|beetle|bullfrog|catfish/i;
+function scarePredators(r) {
+  for (const c of CREATURES) { if (!WIZ_PREY.includes(c.kind) || !creatureOK(c)) continue; const q = c.kind === 'snake' ? creaturePos(c) : (c.focus ? c.focus() : c.root.position); if (q.distanceTo(PL.pos) > r) continue;
+    if (c.kind === 'heron') { HER.state = 'leave'; HER.t = 0; } else if (c.kind === 'skyheron') { c.scared = 6; c.state = 'flee'; } else { c.state = c.kind === 'pike' ? 'patrol' : 'wander'; c.cool = 14; c.heading = (c.heading || 0) + Math.PI; } }
+}
+{ const _hurt2 = hurt; hurt = function (amount, from, kb) {
+  const sp = SPECIES[GAME.species];
+  if (sp && sp.rock && PL.stage >= 3) { if (from && GAME.t - (NF.rockT || -99) > 3) { NF.rockT = GAME.t; toast(from + ' tried to hurt you, but you are a ROCK. Nothing happened.', 'quiet'); tone('square', 120, 100, 0.1, 0.05); } return; }
+  if (sp && sp.cactus && PL.stage >= 3 && from && BITERS.test(from)) { scarePredators(12); sparkle(PL.pos.clone().add(new V3(0, 0.5, 0)), 16, 0xf0f0d0); toast('OUCH! ' + from + ' got a mouthful of spikes and spat you right back out!', 'quiet'); tone('square', 900, 300, 0.2, 0.06); return _hurt2.call(this, Math.ceil(amount * 0.2), from, kb); }
+  return _hurt2.apply(this, arguments);
+}; }
+{ const _launch = launch; launch = function () { const sp = curSp(); if (sp && sp.rock && PL.stage >= 3) { if (GAME.t - (NF.noJumpT || -99) > 4) { NF.noJumpT = GAME.t; toast('You are a rock. Rocks cannot jump. You wobble a little bit, though.', 'quiet'); } if (PL.F) PL.F.tilt.rotation.z = 0.15; return; } return _launch.apply(this, arguments); }; }
+
+/* ---------- powers (V, and G for some) ---------- */
+Object.assign(NF, { cd: 0, frozenBugs: [], bolts: [] });
+function nfCool(sec, what) { if (NF.cd > 0) { toast(what + ' is recharging... ' + Math.ceil(NF.cd) + ' seconds.', 'quiet'); return false; } NF.cd = sec; return true; }
+function nearestPredator(r, front) {
+  let best = null, bd = r; const fx = Math.sin(PL.yaw), fz = Math.cos(PL.yaw);
+  for (const c of CREATURES) { if (!WIZ_PREY.includes(c.kind) || !creatureOK(c)) continue; if ((c.level || 'top') !== (W.level || 'top')) continue; const q = c.kind === 'snake' ? creaturePos(c) : (c.focus ? c.focus() : c.root.position), d = q.distanceTo(PL.pos);
+    if (front && ((q.x - PL.pos.x) * fx + (q.z - PL.pos.z) * fz) / Math.max(d, 0.01) < front) continue; if (d < bd) { bd = d; best = c; } }
+  return best;
+}
+const cPos = c => c.kind === 'snake' ? creaturePos(c) : c.kind === 'insect' ? c.ins.pos : (c.focus ? c.focus() : c.root.position);
+// Cactus: a burst of spikes
+SPECIES.cactus.vLabel = 'Spikes'; SPECIES.cactus.vPow = () => {
+  if (!nfCool(5, 'Your spikes')) return; scarePredators(10);
+  for (let i = 0; i < 24; i++) { const a = i / 24 * TAU; sparkle(PL.pos.clone().add(new V3(Math.cos(a) * 1.2, 0.4, Math.sin(a) * 1.2)), 2, 0xf0f0d0); }
+  let n = 0; for (const ins of INS.list) if (ins.alive && !ins.caught && ins.pos.distanceTo(PL.pos) < 3.5 && n < 3) { eatInsect(ins); n++; }
+  tone('square', 1400, 600, 0.15, 0.06); noiseHit(3000, 2, 0.1, 0.1, PL.pos.clone()); toast('SPROING! Spikes everywhere! Predators back right off.' + (n ? ' (You also caught ' + n + ' bug' + (n > 1 ? 's' : '') + '.)' : ''), 'quiet');
+};
+// Storm: call down a lightning bolt
+function lightningBolt(from, to) {
+  const pts = []; const n = 14; for (let i = 0; i <= n; i++) { const p = from.clone().lerp(to, i / n); if (i > 0 && i < n) p.add(new V3(mr(-1, 1), 0, mr(-1, 1)).multiplyScalar(1.2)); pts.push(p); }
+  const geo = new THREE.BufferGeometry().setFromPoints(pts), l = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xffffa0, transparent: true })); scene.add(l);
+  const l2 = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0x80c0ff, transparent: true, opacity: 0.6 })); l2.position.x = 0.15; scene.add(l2);
+  NF.bolts.push({ l, l2, t: 0.45 }); WEATHER.flash = Math.max(WEATHER.flash || 0, 0.8); SFX.thunder(0.05); CAM.shake = Math.max(CAM.shake || 0, 0.3);
+  for (let i = 0; i < 3; i++) sparkle(to.clone(), 12, [0xffffa0, 0xffffff, 0x80c0ff][i]);
+}
+SPECIES.storm.vLabel = 'Bolt'; SPECIES.storm.vPow = () => {
+  if (!nfCool(12, 'The storm')) return;
+  const c = nearestPredator(45); const to = c ? cPos(c).clone() : PL.pos.clone().add(new V3(Math.sin(PL.yaw) * 8, 0, Math.cos(PL.yaw) * 8));
+  lightningBolt(to.clone().add(new V3(mr(-3, 3), 40, mr(-3, 3))), to);
+  if (c) { c.wizDis = 1.1; c.wizS = c.root.scale.clone(); if (c.kind === 'heron') HER.state = 'away'; toast('KRAKA-BOOM! Lightning struck the ' + creatureName(c) + '! It fled in a puff of smoke.', 'quiet'); }
+  else toast('KRAKA-BOOM! (No predators around, but that was very loud.)', 'quiet');
+  scarePredators(25);
+};
+// Ice: freeze breath
+SPECIES.ice.vLabel = 'Freeze'; SPECIES.ice.vPow = () => {
+  if (!nfCool(3.5, 'Your freeze breath')) return;
+  const m = mouthPos(new V3()), fx = Math.sin(PL.yaw), fz = Math.cos(PL.yaw); NF.breathT = 0.6;
+  tone('sawtooth', 3000, 1500, 0.5, 0.03, PL.pos.clone()); noiseHit(5000, 1, 0.5, 0.12, PL.pos.clone());
+  const inCone = (q, r) => { const dx = q.x - m.x, dz = q.z - m.z, d = Math.hypot(dx, dz); return d < r && Math.abs(q.y - m.y) < 3 && (dx * fx + dz * fz) / Math.max(d, 0.01) > 0.75; };
+  let bugs = 0, preds = 0;
+  for (const ins of INS.list) if (ins.alive && !ins.caught && !ins.npc && inCone(ins.pos, 9)) { ins.frozenAt = ins.pos.clone(); ins.frozenT = 8; NF.frozenBugs.push(ins); bugs++; }
+  for (const c of CREATURES) { if (!WIZ_PREY.includes(c.kind) || !creatureOK(c)) continue; if (inCone(cPos(c), 9)) { c.iceT = 8; preds++; } }
+  toast(preds ? 'FWOOOSH! You froze ' + preds + ' predator' + (preds > 1 ? 's' : '') + ' solid!' : bugs ? 'FWOOOSH! ' + bugs + ' bug' + (bugs > 1 ? 's are' : ' is') + ' frozen in mid-air. Snack time!' : 'FWOOOSH! A cloud of frost.', 'quiet');
+};
+// Glitch: jump somewhere random
+SPECIES.glitch.vLabel = 'Glitch'; SPECIES.glitch.vPow = () => { if (!nfCool(2, 'The glitch')) return; const a = Math.random() * TAU, d = mr(8, 15); glitchHop(Math.cos(a) * d, Math.sin(a) * d); };
+function glitchHop(dx, dz) {
+  const P = PL.pos; let nx = P.x + dx, nz = P.z + dz; if (!W.offTop) { const R = Math.hypot(nx, nz); if (R > WORLD_R - 5) { nx *= (WORLD_R - 5) / R; nz *= (WORLD_R - 5) / R; } }
+  sparkle(P.clone().add(new V3(0, 0.4, 0)), 10, 0xff30ff); P.x = nx; P.z = nz; const g = groundAt(nx, nz, P.y + 30, 60), wl = waterLevelAt(nx, nz);
+  if (wl > g + 0.3) { P.y = wl - 0.1; PL.inWater = true; PL.onGround = false; } else { P.y = g; PL.onGround = true; PL.inWater = false; } PL.vel.set(0, 0, 0); PL.climbing = null; PL.plat = null;
+  sparkle(P.clone().add(new V3(0, 0.4, 0)), 10, 0x30ffff); tone('square', 200 + Math.random() * 1800, 100 + Math.random() * 2000, 0.08, 0.05); NF.glitchFlash = 0.25;
+}
+// Alien: tractor beam
+SPECIES.alien.vLabel = 'Beam'; SPECIES.alien.vPow = () => {
+  if (!nfCool(5, 'The tractor beam')) return;
+  let best = null, bd = 16; const fx = Math.sin(PL.yaw), fz = Math.cos(PL.yaw);
+  for (const c of CREATURES) { if (!creatureOK(c) || c.burrow || c.kind === 'worm' || c.kind === 'rare' || (c.level || 'top') !== (W.level || 'top')) continue; const q = cPos(c), d = q.distanceTo(PL.pos); if (d < bd && ((q.x - PL.pos.x) * fx + (q.z - PL.pos.z) * fz) / Math.max(d, 0.01) > 0.3) { bd = d; best = c; } }
+  NF.beamT = 1.2; NF.beamTo = best ? cPos(best).clone() : PL.pos.clone().add(new V3(fx * 8, 2, fz * 8));
+  tone('sine', 300, 900, 1, 0.05, PL.pos.clone()); tone('triangle', 600, 1800, 1, 0.03, PL.pos.clone());
+  if (best) { best.liftT = 4; best.liftY0 = best.root.position.y; toast('VWEEEEP! The ' + creatureName(best) + ' floats up into the air in your tractor beam!', 'quiet'); }
+  let n = 0; for (const ins of INS.list) if (ins.alive && !ins.caught && ins.pos.distanceTo(PL.pos) < 6 && n < 4) { eatInsect(ins); n++; }
+  if (!best) toast(n ? 'VWEEEEP! The beam sucked up ' + n + ' bug' + (n > 1 ? 's' : '') + '!' : 'VWEEEEP! Nothing to beam up.', 'quiet');
+};
+// Data: scan a creature
+const DATA_SECRETS = ['Favourite colour: green (obviously).', 'Secretly afraid of: butterflies.', 'Best friend: a very specific pebble.', 'Hums when nobody is listening.', 'Has never once been on time.', 'Dreams about: flying.', 'Owes a worm 3 crumbs.', 'Can count to 4 (on a good day).', 'Thinks frogs are cool. (Correct.)', 'Hidden talent: excellent at hide and seek.', 'Once saw the Great Worm and pretended it did not.', 'Is 12% more ticklish than average.'];
+SPECIES.dataf.vLabel = 'Scan'; SPECIES.dataf.vPow = () => {
+  const c = nearestCreature(12); if (!c) { toast('SCANNING... no animals in range. Get closer to something!', 'quiet'); tone('square', 400, 300, 0.1, 0.04); return; }
+  if (!nfCool(2, 'The scanner')) return;
+  NF.scanT = 1; NF.scanAt = cPos(c).clone(); tone('square', 800, 1600, 0.6, 0.03); tone('square', 1600, 800, 0.6, 0.02, null, 0.3);
+  const key = c.guide || (c.kind === 'insect' ? c.ins.type : null), g = key && (GUIDE[key] || INSECT[key]);
+  setTimeout(() => {
+    if (key && GUIDE[key]) markStudied(key);
+    const nm = (g && g.name) || creatureName(c), secret = DATA_SECRETS[Math.floor(Math.random() * DATA_SECRETS.length)];
+    wormSay((g && g.desc ? g.desc + ' ' : '') + (GUIDE[key] && GUIDE[key].hint ? 'Where to find: ' + GUIDE[key].hint + ' ' : '') + 'SECRET FILE: ' + secret, [{ label: 'Cool!', fn: closeWormSay }], 'DATA SCAN: ' + nm.toUpperCase());
+  }, 900);
+};
+// Sock: say something
+const SOCK_SAYS = ['Hello! I am a sock. Where is my other half?', 'Does anyone else smell feet?', 'I have been through the WASH. Twice.', 'Ribbit. Is that how it goes?', 'Nobody knows who is inside me. Not even me.', 'I am 100% cotton and 0% frog.', 'Have you seen a lonely sock? Stripes, about my size?', 'I once lived in a drawer. It was very dark.', 'Bugs taste like lint.', 'I am a frog now. This is my life.', 'Knock knock! (I have no hands.)', 'If you lose me, check under the bed.', 'Wiggle wiggle wiggle!', 'I was a gift. From a grandma.', 'Sometimes I think about shoes. Then I stop.'];
+SPECIES.sock.vLabel = 'Talk'; SPECIES.sock.vPow = () => {
+  const s = SOCK_SAYS[Math.floor(Math.random() * SOCK_SAYS.length)]; sayBubble(s);
+  for (let i = 0; i < 5; i++) tone('square', 300 + Math.random() * 500, 300 + Math.random() * 500, 0.07, 0.035, PL.pos.clone(), i * 0.08);
+};
+function sayBubble(text) {
+  if (NF.speech) { NF.speech.parent && NF.speech.parent.remove(NF.speech); NF.speech = null; }
+  const words = text.split(' '), lines = []; let ln = ''; for (const w of words) { if ((ln + ' ' + w).trim().length > 22) { lines.push(ln.trim()); ln = w; } else ln += ' ' + w; } if (ln.trim()) lines.push(ln.trim());
+  const c = mkCanvas(320, 40 + lines.length * 34), x = c.getContext('2d'); x.fillStyle = '#ffffff'; x.strokeStyle = '#202020'; x.lineWidth = 4; const h = c.height - 14;
+  x.beginPath(); x.roundRect ? x.roundRect(4, 4, 312, h - 4, 18) : x.rect(4, 4, 312, h - 4); x.fill(); x.stroke(); x.beginPath(); x.moveTo(140, h); x.lineTo(160, c.height - 2); x.lineTo(175, h); x.fillStyle = '#ffffff'; x.fill(); x.stroke();
+  x.fillStyle = '#202020'; x.font = 'bold 24px sans-serif'; x.textAlign = 'center'; lines.forEach((l, i) => x.fillText(l, 160, 36 + i * 32));
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: canvasTex(c), transparent: true, depthTest: false })); s.scale.set(2.4, 2.4 * c.height / 320, 1); s.renderOrder = 9; scene.add(s); NF.speech = s; NF.speechT = 3.5;
+}
+// Rock: V does... rock things
+SPECIES.rock.vLabel = 'Roll'; SPECIES.rock.vPow = () => { if (!nfCool(1.5, 'Rolling')) return; const fx = Math.sin(PL.yaw), fz = Math.cos(PL.yaw); NF.rollT = 0.8; tone('triangle', 90, 60, 0.6, 0.08, PL.pos.clone()); noiseHit(200, 0.6, 0.6, 0.15, PL.pos.clone()); };
+
+/* ---------- every frame ---------- */
+function newFrogsTick(dt) {
+  NF.cd = Math.max(0, NF.cd - dt); const t = GAME.t, sp = SPECIES[GAME.species], F = PL.F, on = sp && F && GAME.state === 'play' && PL.stage >= 3;
+  // bolts fading
+  for (let i = NF.bolts.length - 1; i >= 0; i--) { const b = NF.bolts[i]; b.t -= dt; b.l.material.opacity = b.l2.material.opacity = Math.max(0, b.t / 0.45) * (Math.random() < 0.3 ? 0.3 : 1); if (b.t <= 0) { scene.remove(b.l); scene.remove(b.l2); NF.bolts.splice(i, 1); } }
+  // frozen bugs hang in the air inside little ice cubes
+  for (let i = NF.frozenBugs.length - 1; i >= 0; i--) { const ins = NF.frozenBugs[i]; ins.frozenT -= dt;
+    if (!ins.alive || ins.caught || ins.frozenT <= 0) { if (ins.iceCube) { ins.root && ins.root.remove(ins.iceCube); ins.iceCube = null; } ins.frozenAt = null; NF.frozenBugs.splice(i, 1); continue; }
+    ins.pos.copy(ins.frozenAt); if (ins.anchor) ins.anchor.copy(ins.frozenAt); if (ins.root) { ins.root.position.copy(ins.frozenAt); if (!ins.iceCube) { ins.iceCube = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.45, 0.45), new THREE.MeshStandardMaterial({ color: 0xc8f0ff, transparent: true, opacity: 0.5, roughness: 0.05, emissive: 0x3070a0, emissiveIntensity: 0.4 })); ins.root.add(ins.iceCube); } } }
+  // the speech bubble follows your head
+  if (NF.speech) { NF.speechT -= dt; NF.speech.position.copy(PL.pos).add(new V3(0, 1.4 * PL.size + 0.6, 0)); NF.speech.material.opacity = Math.min(1, NF.speechT * 2); if (NF.speechT <= 0) { scene.remove(NF.speech); NF.speech = null; } }
+  if (!on) { if (NF.beam) NF.beam.visible = false; return; }
+  // storm crackles
+  if (sp.storm && Math.random() < dt * 4) sparkle(PL.pos.clone().add(new V3(mr(-0.4, 0.4), mr(0.2, 0.8), mr(-0.4, 0.4))), 1, Math.random() < 0.5 ? 0xffffa0 : 0x80c0ff);
+  // ice breath and frost
+  if (sp.ice) { if (NF.breathT > 0) { NF.breathT -= dt; const m = mouthPos(new V3()); for (let i = 0; i < 4; i++) sparkle(m.clone().add(new V3(Math.sin(PL.yaw) * mr(0.5, 7), mr(-0.3, 0.8), Math.cos(PL.yaw) * mr(0.5, 7))), 1, Math.random() < 0.5 ? 0xffffff : 0xa0e0ff); } else if (Math.random() < dt * 2) sparkle(PL.pos.clone().add(new V3(mr(-0.3, 0.3), 0.6, mr(-0.3, 0.3))), 1, 0xe0f8ff); }
+  // glitch: flicker, pixels, and sometimes phasing straight through whatever is in front of you
+  if (sp.glitch && F.glitchMeshes) {
+    if (Math.random() < dt * 6) { const m = F.glitchMeshes[Math.floor(Math.random() * F.glitchMeshes.length)]; if (!F.glitchMissing.includes(m)) { m.visible = false; setTimeout(() => { m.visible = true; }, 80 + Math.random() * 150); } }
+    F.tilt.position.x = Math.random() < dt * 5 ? mr(-0.06, 0.06) : 0;
+    for (const q of F.pixels) { q.p.position.copy(q.base); if (Math.random() < dt * 3) q.p.position.x += mr(-0.2, 0.2); q.p.visible = Math.random() > 0.1; }
+    const moving = Math.hypot(PL.vel.x, PL.vel.z) > 0.3 || inputVector().mag > 0.2;
+    NF.phaseT = (NF.phaseT || mr(3, 7)) - (moving && PL.onGround ? dt : 0);
+    if (NF.phaseT <= 0) { NF.phaseT = mr(3, 7); const d = mr(2.5, 4); glitchHop(Math.sin(PL.yaw) * d, Math.cos(PL.yaw) * d); if (!SAVE.stats.glitchPhase) { SAVE.stats.glitchPhase = 1; persist(); toast('Bzzt! You glitched forward right through the world. That will keep happening when you walk around.', 'guide'); } }
+    const cv = document.getElementById('c'); if (cv) { if (NF.glitchFlash > 0) { NF.glitchFlash -= dt; cv.style.filter = 'hue-rotate(' + Math.floor(Math.random() * 360) + 'deg)'; NF.gf = true; } else if (NF.gf) { cv.style.filter = ''; NF.gf = false; } }
+  }
+  // dragon wings flap while flying, tail swishes
+  if (sp.dragon && F.dWings) { const fly = PL.gliding, fl = PL.flapping; F.dWings.forEach(w => { w.pv.rotation.z = w.sx * (fly ? (fl ? Math.sin(t * 16) * 0.7 : 0.15) : 0.12); w.pv.rotation.y = w.sx * (fly ? 0 : 1.25); }); F.dTail.forEach((s, i) => s.rotation.y = Math.sin(t * 3 - i * 0.6) * 0.25);
+    if (fly && fl && t - (NF.flapT || 0) > 0.3) { NF.flapT = t; noiseHit(400, 0.7, 0.18, 0.06, PL.pos.clone()); } }
+  // alien antennae blink; the tractor beam
+  if (sp.alien) { F.antTips.forEach((a, i) => a.material.color.setHex(Math.sin(t * 5 + i * 3) > 0 ? 0x80ff60 : 0x205010));
+    if (!NF.beam) { const geo = new THREE.CylinderGeometry(0.15, 1.4, 1, 16, 1, true); geo.translate(0, 0.5, 0); geo.rotateX(Math.PI / 2); NF.beam = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x80ff80, transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })); NF.beam.frustumCulled = false; scene.add(NF.beam); }
+    NF.beam.visible = NF.beamT > 0; if (NF.beamT > 0) { NF.beamT -= dt; const a = F.antTips[0].getWorldPosition(new V3()).lerp(F.antTips[1].getWorldPosition(new V3()), 0.5); NF.beam.position.copy(a); NF.beam.lookAt(NF.beamTo); NF.beam.scale.set(1, 1, a.distanceTo(NF.beamTo)); NF.beam.material.opacity = 0.35 * Math.min(1, NF.beamT * 2); } }
+  // data bits orbit; a scan line
+  if (sp.dataf && F.bits) { F.bits.forEach(b => { b.a += dt * 1.2; b.s.position.set(Math.cos(b.a) * b.r, b.y + Math.sin(t * 2 + b.a) * 0.05, Math.sin(b.a) * b.r); }); if (NF.scanT > 0) { NF.scanT -= dt; for (let i = 0; i < 3; i++) sparkle(NF.scanAt.clone().add(new V3(mr(-0.6, 0.6), (1 - NF.scanT) * 1.5 - 0.3, mr(-0.6, 0.6))), 1, 0x40ff90); } }
+  // the rock frog rolls (and wobbles back upright)
+  if (sp.rock) { if (NF.rollT > 0) { NF.rollT -= dt; F.tilt.rotation.x += dt * 9; if (NF.rollT <= 0) F.tilt.rotation.x = 0; if (PL.onGround) { const P = PL.pos, nx = P.x + Math.sin(PL.yaw) * 7 * dt, nz = P.z + Math.cos(PL.yaw) * 7 * dt, wr = resolveWalls(nx, nz, P.y, 0.4 * PL.size); P.x = wr.x; P.z = wr.z; P.y = groundAt(P.x, P.z, P.y + 0.6, 1.2); } } F.tilt.rotation.z *= Math.exp(-dt * 6); }
+}
+
+/* ============================================================
+   Where to find them
+   ============================================================ */
+// ---- the Cactus Frog: the one "cactus" in the Sand Dunes wearing a hat ----
+function buildCactusFrog() {
+  const p = dryNearTop(DUNES, 45, 0.7), F = makeFrog('cactus', 'classic'); F.root.scale.setScalar(1.1); F.root.position.set(p.x, p.y, p.z);
+  const hat = new THREE.Group(); hat.position.set(0, 0.32, 0.02); F.head.add(hat); const hm = mat(0xd8a040, { roughness: 0.9 });
+  addTo(hat, new THREE.CylinderGeometry(0.42, 0.42, 0.03, 24), hm, 0, 0, 0, 1); const cr = addTo(hat, new THREE.ConeGeometry(0.17, 0.26, 16), hm, 0, 0.13, 0, 1); addTo(hat, new THREE.TorusGeometry(0.17, 0.025, 6, 20), mat(0xc02020), 0, 0.03, 0, 1).rotation.x = Math.PI / 2;
+  makeCreature('rare', 'cactusfrog', F.root, function (dt) { const k = this; k.t += dt; k.ct -= dt; if (k.ct <= 0) { k.ct = mr(8, 14); k.croakT = 0.5; if (F.root.position.distanceTo(PL.pos) < 30) SFX.croak('cactus', F.root.position.clone()); } k.croakT = Math.max(0, (k.croakT || 0) - dt); frogAnimate(F, dt, { croak: k.croakT }); F.root.rotation.y = Math.sin(k.t * 0.2) * 0.4; }, { F, ct: 3, seeR: 4 });
+  NF.cactusAt = p;
+}
+// ---- the Storm Frog: stand on the top of the highest mountain in a thunderstorm ----
+function stormTick(dt) {
+  if (curLevel() !== 'top' || SAVE.unlocks.species.includes('storm') && !NF.stormShow) return;
+  const [px, pz] = MOUNT_PEAKS[0], top = terrainH(px, pz), P = PL.pos, on = Math.hypot(P.x - px, P.z - pz) < 26 && P.y > top - 16;
+  if (!on) { NF.peakT = 0; return; }
+  const stormy = WEATHER.type === 'storm' || WEATHER.cur.storm > 0.55;
+  if (!stormy) { if (!NF.peakHint && GAME.state === 'play') { NF.peakHint = 1; toast('The air up here tingles and your skin prickles... Maybe something special happens up here in a thunderstorm.', 'guide'); } return; }
+  NF.peakT = (NF.peakT || 0) + dt;
+  if (NF.peakT > 3 && !NF.stormDone) { NF.stormDone = 1;
+    const at = P.clone().add(new V3(Math.sin(PL.yaw) * 3, 0, Math.cos(PL.yaw) * 3)); at.y = groundAt(at.x, at.z, P.y + 5, 10);
+    lightningBolt(at.clone().add(new V3(0, 60, 0)), at);
+    const F = makeFrog('storm', 'classic'); F.root.scale.setScalar(0.9); F.root.position.copy(at); F.root.rotation.y = Math.atan2(P.x - at.x, P.z - at.z); scene.add(F.root); NF.stormShow = { F, t: 0 };
+    setTimeout(() => unlockFrog('storm', 'A frog made of lightning!', 'KRAKA-BOOM! Lightning hit the mountain top right next to you... and when the smoke cleared, a dark grey frog with yellow lightning stripes was sitting there, crackling. It came down with the bolt!'), 900);
+  }
+}
+function stormShowTick(dt) { const S = NF.stormShow; if (!S) return; S.t += dt; frogAnimate(S.F, dt, {}); if (Math.random() < dt * 8) sparkle(S.F.root.position.clone().add(new V3(mr(-0.4, 0.4), mr(0.2, 0.8), mr(-0.4, 0.4))), 1, 0xffffa0);
+  if (S.t > 25 || curLevel() !== 'top') { scene.remove(S.F.root); NF.stormShow = null; } }
+// ---- the Ice Frog: a frozen cave deep in the Underground ----
+function buildIceCave() {
+  const R = ugReach(), U = UG.ufo || { x: 0, z: 0 }; let best = null, bs = -1;
+  for (let k = 0; k < 20000; k++) { const x = rr(-UG.half + 30, UG.half - 30), z = rr(-UG.half + 30, UG.half - 30), o = lr(UG, x, z); if (o < 4.5 || lf(UG, x, z) < UG.water + 0.4 || !R(x, z)) continue;
+    if (UG_DOORS.concat(MAGMA_VENTS).some(D => Math.hypot(D.x - x, D.z - z) < 40) || Math.hypot(x - U.x, z - U.z) < 60 || (W.caveFrogSpot && Math.hypot(x - W.caveFrogSpot[0], z - W.caveFrogSpot[1]) < 40)) continue;
+    const sc = Math.hypot(x - UG.hub.x, z - UG.hub.z) + o * 4; if (sc > bs) { bs = sc; best = [x, z]; } }
+  if (!best) return; const [x, z] = best, f = lf(UG, x, z), g = UG.group; NF.iceCave = { x, z, f };
+  const ice = mat(0xc8f0ff, { roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.8, emissive: 0x3080c0, emissiveIntensity: 0.5 }), snow = mat(0xf4fbff, { roughness: 1 });
+  const fl = new THREE.Mesh(new THREE.CircleGeometry(7, 32), snow); fl.rotation.x = -Math.PI / 2; fl.position.set(x, lf(UG, x, z) + 0.05, z); g.add(fl);
+  for (let k = 0; k < 26; k++) { const a = k * 2.39996, d = 2.5 + (k % 5) * 0.9, cx = x + Math.cos(a) * d, cz = z + Math.sin(a) * d; if (lr(UG, cx, cz) < 0.8) continue; const c = new THREE.Mesh(new THREE.ConeGeometry(0.2 + (k % 3) * 0.12, 1 + (k % 4) * 0.6, 6), ice); c.position.set(cx, lf(UG, cx, cz) + 0.4, cz); c.rotation.set(Math.sin(k) * 0.4, 0, Math.cos(k * 1.3) * 0.4); g.add(c); }
+  const ceil = typeof caveCeilH === 'function' ? caveCeilH : null;
+  for (let k = 0; k < 30; k++) { const a = k * 1.7, d = rr(0.5, 6), cx = x + Math.cos(a) * d, cz = z + Math.sin(a) * d, cy = ceil ? caveCeilH(cx, cz) : f + 6; if (!(cy > f + 2)) continue; const ic = new THREE.Mesh(new THREE.ConeGeometry(0.1 + (k % 3) * 0.05, 0.8 + (k % 4) * 0.4, 5), ice); ic.rotation.x = Math.PI; ic.position.set(cx, Math.min(cy, f + 9) - 0.4, cz); g.add(ic); }
+  const lt = new THREE.PointLight(0x80d0ff, 1.6, 22, 1.5); lt.position.set(x, f + 3, z); g.add(lt); glowSprite(g, x, f + 1, z, 0xa0e0ff, 9, 0.35);
+  NF.iceFlakes = []; for (let k = 0; k < 40; k++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xffffff, transparent: true, opacity: 0.8, depthWrite: false })); s.scale.setScalar(0.12); g.add(s); NF.iceFlakes.push({ s, x: x + rr(-6, 6), z: z + rr(-6, 6), y: rr(0, 6), sp: rr(0.3, 0.8) }); }
+  const F = makeFrog('ice', 'classic'); F.root.scale.setScalar(0.8); F.root.position.set(x, f + 0.05, z); F.root.visible = false;
+  makeCreature('rare', 'icefrog', F.root, function (dt) { const k = this; k.t += dt; k.ct -= dt; if (k.ct <= 0) { k.ct = mr(7, 12); k.croakT = 0.5; if (F.root.position.distanceTo(PL.pos) < 30) SFX.croak('ice', F.root.position.clone()); } k.croakT = Math.max(0, (k.croakT || 0) - dt); frogAnimate(F, dt, { croak: k.croakT }); F.root.rotation.y += dt * 0.08; }, { F, level: 'ug', ct: 3, seeR: 7 });
+}
+function iceCaveTick(dt) { if (curLevel() !== 'ug' || !NF.iceFlakes) return; const C = NF.iceCave; if (Math.hypot(PL.pos.x - C.x, PL.pos.z - C.z) > 60) return; for (const q of NF.iceFlakes) { q.y -= dt * q.sp; if (q.y < 0) q.y = 6; q.s.position.set(q.x + Math.sin(GAME.t + q.y) * 0.3, C.f + q.y, q.z); }
+  if (!SAVE.stats.iceCave && Math.hypot(PL.pos.x - C.x, PL.pos.z - C.z) < 12) { SAVE.stats.iceCave = 1; persist(); banner('The Frozen Cave', 'Brrr! Deep in the Underground, a cave where everything is frozen: icicles, ice crystals, snow on the floor... and something small and see-through sitting in the middle.'); } }
+// ---- the Glitch Frog: fall off the very edge of the world ----
+function glitchEdgeTick(dt) {
+  if (curLevel() !== 'sky' || NF.edgeDone) return; const P = PL.pos;
+  if (P.y < SKY.y0 - 18 && Math.max(Math.abs(P.x), Math.abs(P.z)) > SKY.half - 45) { NF.edgeDone = 1; NF.glitchFlash = 2.5;
+    for (let i = 0; i < 6; i++) setTimeout(() => tone('square', 100 + Math.random() * 2000, 100 + Math.random() * 2000, 0.1, 0.06), i * 120);
+    setTimeout(() => unlockFrog('glitch', 'You fell off the edge of the world!', 'Past the last cloud there is nothing at all... and for a second everything went ZZZRRT. You fell through a crack in the world, and something fell back out with you: a flickery frog with bits missing!'), 600); }
+}
+// ---- the Dragon Frog: an egg in the Mantle that needs keeping warm for 3 days ----
+function buildDragonEgg() {
+  const L = MANTLE; let best = null;
+  for (let k = 0; k < 20000 && !best; k++) { const x = rr(-L.half + 25, L.half - 25), z = rr(-L.half + 25, L.half - 25); if (caveRoom(x, z) < 6) continue; const f = caveFloorH(x, z);
+    if (f < L.water + 0.4 || f > L.water + 2.5) continue; if (MAGMA_VENTS.some(D => Math.hypot(D.x - x, D.z - z) < 30) || Math.hypot(x - TEMPLE.x, z - TEMPLE.z) < TEMPLE.r + 25) continue;
+    let flat = true; for (let a = 0; a < TAU; a += 0.8) if (Math.abs(caveFloorH(x + Math.cos(a) * 2.5, z + Math.sin(a) * 2.5) - f) > 0.8) flat = false; if (flat) best = [x, z, f]; }
+  if (!best) return; const [x, z, f] = best, g = MANTLE.group || UG.group; NF.egg = { x, z, f };
+  const stone = mat(0x1a1410, { roughness: 0.9, flatShading: true });
+  for (let k = 0; k < 10; k++) { const a = k / 10 * TAU, r = new THREE.Mesh(lumpyGeo(1, 0.3, k * 1.3), stone); r.scale.set(0.5, 0.35, 0.5); r.position.set(x + Math.cos(a) * 1.4, f + 0.15, z + Math.sin(a) * 1.4); g.add(r); }
+  const ash = new THREE.Mesh(new THREE.CircleGeometry(1.3, 20), mat(0x2a2420, { roughness: 1 })); ash.rotation.x = -Math.PI / 2; ash.position.set(x, f + 0.04, z); g.add(ash);
+  NF.embers = []; for (let k = 0; k < 8; k++) { const e = addTo(g, G.sphM, new THREE.MeshBasicMaterial({ color: 0x401008 }), x + Math.cos(k) * 0.8, f + 0.08, z + Math.sin(k) * 0.8, 0.1); NF.embers.push(e); }
+  const eggM = mat(0x8090a0, { roughness: 0.35, emissive: 0xff4010, emissiveIntensity: 0 });
+  const egg = new THREE.Mesh(new THREE.SphereGeometry(0.42, 20, 14), eggM); egg.scale.set(1, 1.3, 1); egg.position.set(x, f + 0.55, z); g.add(egg); NF.eggMesh = egg;
+  for (let k = 0; k < 7; k++) { const sp = addTo(egg, G.sphM, mat(0x40306a), Math.cos(k * 2.1) * 0.37, Math.sin(k * 1.3) * 0.25, Math.sin(k * 2.1) * 0.37, 0.07); }
+  NF.eggLight = new THREE.PointLight(0xff6020, 0, 10, 1.5); NF.eggLight.position.set(x, f + 1.2, z); g.add(NF.eggLight);
+  MANTLE.obs = MANTLE.obs || [];
+}
+const eggDays = () => (SAVE.stats.eggDays || []).length;
+function eggTick(dt) {
+  if (!NF.egg || curLevel() !== 'mantle') return; const E = NF.egg, n = eggDays(), hatched = SAVE.unlocks.species.includes('dragon') && SAVE.stats.eggHatched;
+  const warmToday = (SAVE.stats.eggDays || []).includes('d' + (SAVE.stats.dayCount || 0));
+  NF.eggMesh.visible = !hatched; NF.eggMesh.material.emissiveIntensity = warmToday ? 0.35 + Math.sin(GAME.t * 2) * 0.1 : n * 0.08; NF.eggMesh.material.color.setHex(n >= 2 ? 0xd06040 : n >= 1 ? 0xa07070 : 0x8090a0);
+  NF.eggMesh.rotation.z = n >= 2 ? Math.sin(GAME.t * 7) * 0.06 : 0; NF.eggLight.intensity = warmToday ? 1.4 : 0.2 * n;
+  for (const e of NF.embers) e.material.color.setHex(warmToday ? (Math.random() < 0.5 ? 0xff6010 : 0xffa020) : 0x401008);
+  if (warmToday && Math.random() < dt * 5) sparkle(NF.eggMesh.position.clone().add(new V3(mr(-0.8, 0.8), mr(-0.4, 0.4), mr(-0.8, 0.8))), 1, 0xff8020);
+  if (NF.dragonBaby) { frogAnimate(NF.dragonBaby, dt, {}); NF.dragonBaby.root.rotation.y += dt * 0.2; }
+  if (!SAVE.stats.eggSeen && Math.hypot(PL.pos.x - E.x, PL.pos.z - E.z) < 10) { SAVE.stats.eggSeen = 1; persist(); toast('A big spotted egg in a nest of black stones. It feels cold. Maybe it needs warming up? (Walk up to it and press E.)', 'guide'); }
+}
+function warmEgg() {
+  SAVE.stats.eggDays = SAVE.stats.eggDays || []; const key = 'd' + (SAVE.stats.dayCount || 0);
+  if (SAVE.stats.eggDays.includes(key)) { toast('The egg is already nice and warm today. Come back tomorrow!', 'quiet'); return; }
+  SAVE.stats.eggDays.push(key); persist(); const n = eggDays(); tone('sine', 300, 600, 0.6, 0.06); for (let i = 0; i < 3; i++) sparkle(NF.eggMesh.position.clone(), 12, 0xff8020);
+  if (n >= 3) { SAVE.stats.eggHatched = 1; persist(); const E = NF.egg;
+    const F = makeFrog('dragon', 'classic'); F.root.scale.setScalar(0.85); F.root.position.set(E.x, E.f + 0.1, E.z); (MANTLE.group || scene).add(F.root); NF.dragonBaby = F; CAM.shake = 0.4;
+    noiseHit(2000, 1, 0.3, 0.3, PL.pos.clone()); for (let i = 0; i < 5; i++) sparkle(NF.eggMesh.position.clone(), 14, [0xffe0c0, 0xff8020, 0xffffff][i % 3]);
+    unlockFrog('dragon', 'The egg hatched!', 'CRACK... CRACK... CRAAACK! After three days of keeping it toasty, the egg burst open and out climbed a little red frog with horns, a spiky tail and bat wings. A DRAGON FROG!');
+  } else toast(['You fan the embers and wrap the egg in warm ash. It glows a little! (1 of 3 days. Come back tomorrow.)', 'The egg is warm again, and you can feel something wiggle inside! (2 of 3 days. One more day!)'][n - 1], 'guide');
+}
+// ---- the Alien Frog: find the UFO's 3 lost power cells so it can fly again ----
+const CELLS = [{ lv: 'top', name: 'the Hot Springs' }, { lv: 'sky', name: "Heron's Domain" }, { lv: 'ug', name: 'the Underground' }];
+function makeCell() { const g = new THREE.Group(); addTo(g, new THREE.CylinderGeometry(0.22, 0.22, 0.6, 12), mat(0x30ff80, { emissive: 0x30ff80, emissiveIntensity: 1.2, transparent: true, opacity: 0.85 }), 0, 0.5, 0, 1); for (const y of [0.2, 0.8]) addTo(g, new THREE.CylinderGeometry(0.27, 0.27, 0.1, 12), mat(0x707a80, { metalness: 0.8, roughness: 0.3 }), 0, y, 0, 1); glowSprite(g, 0, 0.5, 0, 0x50ff90, 2.6, 0.7); return g; }
+function buildCells() {
+  // 1: in the Hot Springs
+  { const p = dryNearTop(HOTS, 30, 2.1), c = makeCell(); c.position.set(p.x, p.y, p.z); scene.add(c); if (W.mainWorld) W.mainWorld.push(c); CELLS[0].x = p.x; CELLS[0].z = p.z; CELLS[0].y = p.y; CELLS[0].m = c; }
+  // 2: on a far island in Heron's Domain
+  { let best = null, bd = -1; for (const I of SKY.islands) { if (I.kind !== 'plain' && I.kind !== 'nest') continue; const d = Math.hypot(I.x, I.z); if (d > bd && d < SKY.half - 60) { bd = d; best = I; } }
+    if (best) { const y = skyH(best.x, best.z), c = makeCell(); c.position.set(best.x, y, best.z); (SKY.group || scene).add(c); Object.assign(CELLS[1], { x: best.x, z: best.z, y, m: c }); } }
+  // 3: somewhere deep in the Underground
+  { const R = ugReach(); let best = null, bs = -1; for (let k = 0; k < 15000; k++) { const x = rr(-UG.half + 20, UG.half - 20), z = rr(-UG.half + 20, UG.half - 20); if (lr(UG, x, z) < 2.5 || lf(UG, x, z) < UG.water + 0.3 || !R(x, z)) continue; const sc = Math.hypot(x - UG.ufo.x, z - UG.ufo.z); if (NF.iceCave && Math.hypot(x - NF.iceCave.x, z - NF.iceCave.z) < 30) continue; if (sc > bs) { bs = sc; best = [x, z]; } }
+    if (best) { const y = lf(UG, best[0], best[1]), c = makeCell(); c.position.set(best[0], y, best[1]); UG.group.add(c); Object.assign(CELLS[2], { x: best[0], z: best[1], y, m: c }); } }
+}
+const cellsGot = () => (SAVE.stats.cells || []).length;
+function cellsTick(dt) {
+  const active = !!SAVE.stats.ufoSolved && !SAVE.stats.ufoFlies, lv = curLevel();
+  CELLS.forEach((C, i) => { if (!C.m) return; const got = (SAVE.stats.cells || []).includes(i); C.m.visible = active && !got; if (!C.m.visible) return; C.m.rotation.y += dt * 1.5; C.m.position.y = C.y + Math.sin(GAME.t * 2 + i) * 0.15;
+    if (lv === C.lv && Math.hypot(PL.pos.x - C.x, PL.pos.z - C.z) < 1.8 && Math.abs(PL.pos.y - C.y) < 3) { SAVE.stats.cells = (SAVE.stats.cells || []).concat([i]); persist(); SFX.chime(); sparkle(C.m.position.clone(), 20, 0x50ff90); const n = cellsGot(); toast(n < 3 ? 'You found a UFO power cell! (' + n + ' of 3)' : 'You found all 3 power cells! Take them to the crashed UFO in the Underground.', 'guide'); } });
+  const U = UG.ufo; if (!U || lv !== 'ug') return;
+  if (U.S && SAVE.stats.ufoFlies) { U.S.rotation.z = lerp(U.S.rotation.z, 0, Math.min(1, dt)); U.S.position.y = lerp(U.S.position.y, 3.2 + Math.sin(GAME.t * 1.3) * 0.25, Math.min(1, dt)); for (const L of U.lights) L.dead = false; }
+  if (active && !NF.cellHint && Math.hypot(PL.pos.x - U.x, PL.pos.z - U.z) < 20) { NF.cellHint = 1; if (cellsGot() < 3) toast('The UFO hums... then sputters out. It is missing 3 glowing power cells! They must have flown out when it crashed. (Look for green ⚡ marks on your map.)', 'guide'); }
+}
+function ufoFly() {
+  SAVE.stats.ufoFlies = 1; persist(); const U = UG.ufo; CAM.shake = 0.6; tone('sine', 60, 240, 4, 0.12); tone('triangle', 200, 900, 4, 0.06); noiseHit(300, 0.5, 2, 0.3, PL.pos.clone());
+  const F = makeFrog('alien', 'classic'); F.root.scale.setScalar(0.8); F.root.position.set(U.hatch.x, U.f + 0.1, U.hatch.z); UG.group.add(F.root); NF.alienNPC = F;
+  setTimeout(() => unlockFrog('alien', 'The UFO flies again!', 'You clicked the 3 power cells into place. Every light on the UFO blinked on, it groaned, shook... and lifted right up off the ground, floating level for the first time in a thousand years! A little door opened and out hopped its pilot: a pale green frog with THREE eyes and antennae. It waves at you. It seems very grateful.'), 1800);
+}
+// ---- the Data Frog: ride the Data Whale in ∅ ----
+NF.whaleA0 = (() => { let best = 0, bs = -1; for (let a = 0; a < TAU; a += 0.05) { const x = Math.cos(a) * 160, z = Math.sin(a) * 160, d = Math.min(...NIL_SPOTS.map(s => Math.hypot(s[0] - x, s[1] - z) - s[2])); if (d > bs) { bs = d; best = a; } } return best; })();
+NIL_PLACES.whale = { x: Math.cos(NF.whaleA0) * 160, z: Math.sin(NF.whaleA0) * 160, name: 'Data Whale Stop' }; NIL_SPOTS.push([NIL_PLACES.whale.x, NIL_PLACES.whale.z, 26]);
+function buildWhaleStop() {
+  const L = NIL, g = L.group, P = NIL_PLACES.whale, y0 = L.y0;
+  const pad = new THREE.Mesh(new THREE.CylinderGeometry(5, 5.5, 0.4, 32), new THREE.MeshStandardMaterial({ color: 0x0a1410, emissive: 0x30ff80, emissiveIntensity: 0.25 })); pad.position.set(P.x, y0 + 0.2, P.z); g.add(pad);
+  for (let k = 0; k < 3; k++) { const r = new THREE.Mesh(new THREE.TorusGeometry(3 + k * 1, 0.06, 6, 48), new THREE.MeshBasicMaterial({ color: 0x40ff90 })); r.rotation.x = Math.PI / 2; r.position.set(P.x, y0 + 0.45, P.z); g.add(r); }
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(5, 2), new THREE.MeshBasicMaterial({ map: textTex([['DATA WHALE STOP', 'bold 44px monospace', 50], ['it swims by every few minutes', '24px monospace', 92]], 512, 128, { bg: 'rgba(0,10,4,0.85)', col: '#60ffa0' }), transparent: true, side: THREE.DoubleSide })); sign.position.set(P.x, y0 + 4, P.z - 5.5); g.add(sign);
+  const post = new THREE.Mesh(G.cyl, new THREE.MeshBasicMaterial({ color: 0x103020 })); post.scale.set(0.12, 3, 0.12); post.position.set(P.x, y0 + 1.5, P.z - 5.6); g.add(post);
+}
+// how high the whale is: way up high, except when it swoops down low over the Whale Stop
+function whaleLow(a) { const d = Math.atan2(Math.sin(a - NF.whaleA0), Math.cos(a - NF.whaleA0)); return Math.pow(Math.max(0, Math.cos(d)), 40); }
+function whaleTick(dt) {
+  const L = NIL; if (!L.whale || curLevel() !== 'nil') return; const Wh = L.whale, t = GAME.t;
+  // nilExtrasTick already moved it: pull it down near the stop, and speed it up a little so you don't wait forever
+  if (NF.riding) { const back = new V3(0, 7.2, 4).applyAxisAngle(new V3(0, 1, 0), Wh.g.rotation.y).add(Wh.g.position); PL.pos.copy(back); PL.vel.set(0, 0, 0); PL.onGround = true; PL.inWater = false; PL.plat = null; PL.yaw = -Wh.a + Math.PI;
+    NF.rideT += dt; if (Math.random() < dt * 6) sparkle(back.clone().add(new V3(mr(-3, 3), -0.5, mr(-3, 3))), 1, 0x40ff90);
+    if (NF.rideT > 15 && !SAVE.unlocks.species.includes('dataf')) unlockFrog('dataf', 'Riding the Data Whale!', 'You are riding on the back of a huge whale made of glowing code, high above ∅! As it swims, its data rubs off on you... and some of it hops off as a whole new frog, made of green wireframe and 0s and 1s.');
+    if (IN.keys.Space && NF.rideT > 1) { NF.riding = false; PL.onGround = false; PL.vel.set(0, 3, 0); PL.floatT = 6; PL.airT = 0.2; toast('You hop off the Data Whale and float gently down.', 'quiet'); }
+  }
+}
+// ---- the Sock Frog: 10 lost socks hidden around the world ----
+const SOCKS = [];
+function buildSocks() {
+  const places = [[POND, POND.r + 6], [MEADOW, 12], [MARSH, MARSH.r + 4], [OAK, 6], [MILL, MILL.r + 6], [DUNES, 20], [BAMBOO, 15], [TARN, TARN.r + 6], [RAIN, 20], [SWAMP, 30]];
+  const g = new THREE.Group(); scene.add(g); if (W.mainWorld) W.mainWorld.push(g);
+  const cols = [0xe02030, 0x2050d0, 0x20a040, 0xf0a020, 0x9030c0, 0xff60a0, 0x20b0c0, 0x805030, 0xffffff, 0x404040];
+  places.forEach(([P, r], i) => { const p = dryNearTop(P, r, 1 + i), s = new THREE.Group(); s.position.set(p.x, p.y + 0.15, p.z); g.add(s);
+    const m = mat(cols[i], { roughness: 1 }), st = mat(0xffffff, { roughness: 1 });
+    addTo(s, G.cyl, m, 0, 0.3, 0, 0.13, 0.5, 0.13); const foot = addTo(s, G.cyl, m, 0, 0.08, 0.15, 0.13, 0.34, 0.13); foot.rotation.x = Math.PI / 2; addTo(s, G.sphM, m, 0, 0.08, 0.32, 0.13); addTo(s, G.cyl, st, 0, 0.5, 0, 0.14, 0.1, 0.14);
+    s.rotation.set(0, i * 1.7, Math.PI / 2 - 0.2); SOCKS.push({ s, x: p.x, z: p.z, y: p.y, i }); });
+}
+function socksTick(dt) {
+  if (curLevel() !== 'top') return; const got = SAVE.stats.socks || [];
+  for (const S of SOCKS) { const has = got.includes(S.i); S.s.visible = !has; if (has) continue; if (Math.hypot(PL.pos.x - S.x, PL.pos.z - S.z) < 1.6 && Math.abs(PL.pos.y - S.y) < 2.5) {
+    SAVE.stats.socks = got.concat([S.i]); persist(); SFX.pickup(); sparkle(S.s.position.clone(), 10); const n = SAVE.stats.socks.length;
+    if (n >= 10) { setTimeout(() => unlockFrog('sock', 'All 10 lost socks!', 'You put all 10 socks in a pile... and the pile WIGGLED. One sock stood up, blinked its button eyes and said "Hello! Where is my other half?" It is the Sock Frog!'), 400); }
+    else toast(n === 1 ? 'You found a lost sock! Who loses a sock in a pond? There might be more of them around the world... (1 of 10)' : 'Another lost sock! (' + n + ' of 10)', n === 1 ? 'guide' : 'quiet'); return; } }
+}
+// ---- the Rock Frog: the Old Turtle's pet rocks, and the boulder by the stream ----
+const PETROCKS = [];
+function buildTurtleQuest() {
+  const g = new THREE.Group(); scene.add(g); if (W.mainWorld) W.mainWorld.push(g);
+  // the Old Turtle sits on the bank of the Babbling Stream
+  const A = STREAM[2], B = STREAM[3], nx = -(B[1] - A[1]), nz = B[0] - A[0], nl = Math.hypot(nx, nz); let tx = (A[0] + B[0]) / 2 + nx / nl * 9, tz = (A[1] + B[1]) / 2 + nz / nl * 9;
+  const tp = dryNearTop({ x: tx, z: tz }, 0.5, 0.2); tx = tp.x; tz = tp.z;
+  const T = makeTurtle(); T.root.scale.setScalar(0.75); T.root.position.set(tx, tp.y, tz); T.root.rotation.y = Math.atan2(-nx, -nz); g.add(T.root);
+  const specs = new THREE.Group(); const fm = mat(0x302010); for (const sx of [-1, 1]) { const r = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.02, 6, 14), fm); r.position.set(sx * 0.13, 0.12, 0.66); specs.add(r); } T.head.add(specs);
+  const mark = new THREE.Sprite(new THREE.SpriteMaterial({ map: markTex('!', '#ffd040'), transparent: true, depthWrite: false })); mark.scale.setScalar(1); mark.position.set(tx, tp.y + 2.4, tz); g.add(mark);
+  NF.turtle = { T, x: tx, z: tz, y: tp.y, mark }; addColl(tx, tz, 1.3, tp.y + 1.2, 'rock');
+  // the boulder that is secretly a frog, just along the bank
+  const bp = dryNearTop({ x: tx + (B[0] - A[0]) / Math.hypot(B[0] - A[0], B[1] - A[1]) * 5, z: tz + (B[1] - A[1]) / Math.hypot(B[0] - A[0], B[1] - A[1]) * 5 }, 0.5, 0.9);
+  NF.rockGeo = NF.rockGeo || lumpyGeo(2, 0.3, 4.4); const bould = new THREE.Group(); bould.position.set(bp.x, bp.y, bp.z); g.add(bould);
+  const rk = new THREE.Mesh(NF.rockGeo, mat(0x8a8478, { flatShading: true, map: TEX.detail, roughness: 0.95 })); rk.scale.set(1.3, 0.95, 1.4); rk.position.y = 0.7; bould.add(rk);
+  const moss = new THREE.Mesh(NF.rockGeo, mat(0x5a7a34, { flatShading: true })); moss.scale.set(0.9, 0.25, 1); moss.position.y = 1.5; bould.add(moss);
+  const eyes = new THREE.Group(); bould.add(eyes); eyes.visible = false; for (const sx of [-1, 1]) { const w = addTo(eyes, G.sphM, mat(0xffffff, { roughness: 0.2 }), sx * 0.35, 1.45, 0.9, 0.24); addTo(w, G.sphM, mat(0x101010), 0, 0.1, 0.6, 0.55); }
+  bould.rotation.y = Math.atan2(tx - bp.x, tz - bp.z); NF.boulder = { g: bould, eyes, x: bp.x, z: bp.z, y: bp.y }; addColl(bp.x, bp.z, 1.3, bp.y + 1.6, 'rock');
+  // 5 painted pet rocks around the world
+  const spots = [[MEADOW, 6], [LAKE, LAKE.r + 5], [CAVE, CAVE.r + 4], [{ x: BIGROCK.x, z: BIGROCK.z }, BIGROCK.r + 3], [MARSH, MARSH.r + 8]], faces = ['^_^', 'o_o', '>_<', 'u_u', '*_*'], cols = ['#ff6040', '#40a0ff', '#ffd040', '#60e060', '#e070ff'];
+  spots.forEach(([P, r], i) => { const p = dryNearTop(P, r, 3 + i * 0.7), s = new THREE.Group(); s.position.set(p.x, p.y + 0.12, p.z); g.add(s);
+    const rock = new THREE.Mesh(lumpyGeo(1, 0.2, 7 + i), mat(0xa09888, { flatShading: true })); rock.scale.set(0.3, 0.22, 0.28); s.add(rock);
+    const face = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.24), new THREE.MeshBasicMaterial({ map: textTex([[faces[i], 'bold 54px monospace', 44]], 128, 72, { bg: 'rgba(0,0,0,0)', col: cols[i] }), transparent: true })); face.position.set(0, 0.04, 0.26); s.add(face);
+    glowSprite(s, 0, 0.1, 0, 0xfff0c0, 1.4, 0.5); PETROCKS.push({ s, x: p.x, z: p.z, y: p.y, i }); });
+}
+const rocksGot = () => (SAVE.stats.petRocks || []).length;
+function turtleTalk() {
+  const st = SAVE.stats.turtle || 0, n = rocksGot();
+  if (st === 0) { wormSay('Hello there, young frog. I am the Old Turtle. I have lived by this stream for 150 years. I used to have 5 pet rocks, each with a little face painted on, but they wandered off. Rocks do that, you know. Would you find them for me?', [{ label: 'I\'ll find them!', fn: () => { closeWormSay(); SAVE.stats.turtle = 1; persist(); toast('Find the Old Turtle\'s 5 painted pet rocks. (They are marked on your map.)', 'guide'); } }, { label: 'Maybe later', fn: closeWormSay }], 'Old Turtle'); return; }
+  if (st === 1 && n < 5) { wormSay('Any luck? You have found ' + n + ' of my 5 pet rocks. They like to sit in pretty places: meadows, lakes, caves, big rocks, muddy marshes...', [{ label: 'Still looking!', fn: closeWormSay }], 'Old Turtle'); return; }
+  if (st === 1 && n >= 5) { SAVE.stats.turtle = 2; persist();
+    sayChain(['My pet rocks! All five of them! Hello Sunny, hello Dot, hello Grumpy, hello Sleepy, hello Sparkles. I missed you all so much.', 'Thank you, young frog. You know... there is one more rock I should tell you about. That big boulder, right over there by the stream?', 'It is not a rock. It is a FROG. It has been sitting there the whole time. 150 years! It just never moves. Go and say hello to it.'], () => { NF.boulder.eyes.visible = true; tone('sine', 200, 300, 0.4, 0.06); toast('The boulder by the stream just opened its eyes...', 'guide'); }, 'Old Turtle'); return; }
+  wormSay(['Have you said hello to the boulder yet? It is very shy.', 'My pet rocks send their regards.', 'Slow and steady, young frog. Slow and steady.'][Math.floor(Math.random() * 3)], [{ label: 'Bye!', fn: closeWormSay }], 'Old Turtle');
+}
+function turtleTick(dt) {
+  if (curLevel() !== 'top' || !NF.turtle) return; const st = SAVE.stats.turtle || 0, got = SAVE.stats.petRocks || [];
+  NF.turtle.mark.visible = st === 0 || (st === 1 && got.length >= 5); NF.turtle.mark.material.map = st === 1 ? markTex('!', '#60ff80') : markTex('!', '#ffd040'); NF.turtle.mark.position.y = NF.turtle.y + 2.4 + Math.sin(GAME.t * 3) * 0.1;
+  NF.turtle.T.head.rotation.y = Math.sin(GAME.t * 0.5) * 0.3;
+  NF.boulder.eyes.visible = st >= 2; if (st >= 2) NF.boulder.eyes.children.forEach(e => e.scale.y = 0.24 * ((GAME.t % 4) < 0.15 ? 0.1 : 1));
+  for (const R of PETROCKS) { const has = got.includes(R.i); R.s.visible = st >= 1 && !has; if (!R.s.visible) continue; R.s.rotation.y += dt;
+    if (Math.hypot(PL.pos.x - R.x, PL.pos.z - R.z) < 1.6 && Math.abs(PL.pos.y - R.y) < 2.5) { SAVE.stats.petRocks = got.concat([R.i]); persist(); SFX.pickup(); sparkle(R.s.position.clone(), 10); const n = SAVE.stats.petRocks.length; toast(n < 5 ? 'You found one of the Old Turtle\'s pet rocks! It smiles at you. (' + n + ' of 5)' : 'That\'s all 5 pet rocks! Take them back to the Old Turtle by the Babbling Stream.', 'guide'); return; } }
+}
+
+/* ---------- talking, pressing E ---------- */
+{ const _fi3 = findInteract; findInteract = function () { _fi3(); if (INTERACT.cur || GAME.state !== 'play' || PL.stage < 3) return; const lv = curLevel(), P = PL.pos;
+  if (lv === 'top' && NF.turtle && Math.hypot(P.x - NF.turtle.x, P.z - NF.turtle.z) < 3) { INTERACT.cur = { label: 'Talk to the Old Turtle', act: turtleTalk }; return; }
+  if (lv === 'top' && NF.boulder && (SAVE.stats.turtle || 0) >= 2 && Math.hypot(P.x - NF.boulder.x, P.z - NF.boulder.z) < 3.2) { INTERACT.cur = { label: 'Say hello to the boulder', act: () => { if (SAVE.unlocks.species.includes('rock')) { toast('The boulder blinks at you, very slowly. It is happy to see you.', 'quiet'); return; } unlockFrog('rock', 'The boulder was a frog all along!', '"...hello." The boulder said hello back! It has been sitting by the stream for 150 years, watching the water go by. It cannot jump, it is very slow, but NOTHING can ever hurt it. It is a Rock Frog.'); } }; return; }
+  if (lv === 'mantle' && NF.egg && !SAVE.stats.eggHatched && Math.hypot(P.x - NF.egg.x, P.z - NF.egg.z) < 2.8) { INTERACT.cur = { label: 'Warm up the egg', act: warmEgg }; return; }
+  if (lv === 'ug' && UG.ufo && SAVE.stats.ufoSolved && !SAVE.stats.ufoFlies && cellsGot() >= 3 && Math.hypot(P.x - UG.ufo.hatch.x, P.z - UG.ufo.hatch.z) < 4) { INTERACT.cur = { label: 'Put the power cells into the UFO', act: ufoFly }; return; }
+  if (lv === 'nil' && NIL.whale && !NF.riding && NIL.whale.low && Math.hypot(P.x - NIL.whale.g.position.x, P.z - NIL.whale.g.position.z) < 16) { INTERACT.cur = { label: 'Climb onto the Data Whale', act: () => { NF.riding = true; NF.rideT = 0; tone('sine', 60, 90, 2, 0.08); toast('You climbed onto the Data Whale! Hold on... (Space to hop off.)', 'guide'); } }; return; }
+}; }
+// map marks for the quests
+{ const _qm = questMarks; questMarks = function (lv) { const out = _qm(lv);
+  if (SAVE.stats.ufoSolved && !SAVE.stats.ufoFlies) { CELLS.forEach((C, i) => { if (C.m && C.lv === lv && !(SAVE.stats.cells || []).includes(i)) out.push({ x: C.x, z: C.z, col: '#30d060', ch: '⚡' }); }); if (lv === 'ug' && cellsGot() >= 3 && UG.ufo) out.push({ x: UG.ufo.x, z: UG.ufo.z, col: '#30d060', ch: '!' }); }
+  if (lv === 'top' && (SAVE.stats.turtle || 0) === 1) PETROCKS.forEach(R => { if (!(SAVE.stats.petRocks || []).includes(R.i)) out.push({ x: R.x, z: R.z, col: '#a09080', ch: '•' }); });
+  if (lv === 'top' && NF.turtle && (SAVE.stats.turtle || 0) !== 1) out.push({ x: NF.turtle.x, z: NF.turtle.z, col: '#60a040', ch: 'T' });
+  if (lv === 'mantle' && NF.egg && SAVE.stats.eggSeen && !SAVE.stats.eggHatched) out.push({ x: NF.egg.x, z: NF.egg.z, col: '#e06020', ch: '!' });
+  return out; }; }
+function buildNewFrogs() {
+  const keep = CL;
+  buildTinyFrog();
+  CL = UG; buildCactusFrog(); buildSocks(); buildTurtleQuest(); buildCells();
+  CL = UG; buildIceCave();
+  if (typeof MANTLE !== 'undefined' && MANTLE.floor) { CL = MANTLE; buildDragonEgg(); }
+  CL = NIL; buildWhaleStop();
+  CL = keep;
+  if (UG.ufo && SAVE.stats.ufoFlies && UG.ufo.S) { UG.ufo.S.rotation.z = 0; UG.ufo.S.position.y = 3.2; }
+}
+function newFrogsAllTick(dt) {
+  if (GAME.state === 'play' && NF.lastDay !== GAME.day) { if (NF.lastDay !== undefined) { SAVE.stats.dayCount = (SAVE.stats.dayCount || 0) + 1; persist(); } NF.lastDay = GAME.day; }
+  newFrogsTick(dt); stormTick(dt); stormShowTick(dt); iceCaveTick(dt); glitchEdgeTick(dt); eggTick(dt); cellsTick(dt); whaleTick(dt); socksTick(dt); turtleTick(dt);
+}
+
+/* ---------- the Tiny Frog: napping inside a water lily in the Lily Pond ---------- */
+function buildTinyFrog() {
+  const fl = (W.flowerPads || []).filter(p => Math.hypot(p.x - POND.x, p.z - POND.z) < POND.r).sort((a, b) => Math.hypot(a.x - POND.x, a.z - POND.z) - Math.hypot(b.x - POND.x, b.z - POND.z));
+  const pad = fl[Math.floor(fl.length * 0.6)] || fl[0]; if (!pad) return;
+  const F = makeFrog('tiny', 'classic'); F.root.scale.setScalar(0.2); scene.add(F.root);
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xffe0a0, transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending })); glow.scale.setScalar(3); glow.position.y = 1; F.root.add(glow);
+  makeCreature('rare', 'tinyfrog', F.root, function (dt) {
+    const k = this; k.t += dt; k.ct -= dt;
+    F.root.position.set(pad.fx, pad.y + (pad.by || 0) + 0.14, pad.fz); F.root.rotation.y = Math.sin(k.t * 0.3) * 1.2;
+    const d = F.root.position.distanceTo(PL.pos);
+    if (k.ct <= 0) { k.ct = mr(3, 6); k.croakT = 0.4; if (d < 30) SFX.croak('tiny', F.root.position.clone(), d < 10); if (d < 12) sparkle(F.root.position.clone().add(new V3(0, 0.15, 0)), 3, 0xfff0a0); }
+    k.croakT = Math.max(0, (k.croakT || 0) - dt); frogAnimate(F, dt, { croak: k.croakT });
+    glow.material.opacity = 0.25 + Math.max(0, Math.sin(k.t * 2)) * 0.3;
+  }, { F, ct: 1, seeR: 3 });
+  NF.tinyPad = pad;
 }
 /* ============================================================
    Multiplayer servers (claude.ai live rooms)
@@ -12260,7 +13005,7 @@ function tick(dt) {
   for (const c of CREATURES) {
     if (c._tgt && c._tgt.caught) continue;
     if (c.eatenT > 0 && c.kind !== 'frog' && c.kind !== 'treefrog') { c.eatenT -= dt; c.root.visible = false; if (c.eatenT <= 0) respawnPrey(c); continue; }
-    if (c.wizDis > 0 || c.wizGone > 0) { wizardGoneTick(c, dt); continue; }
+    if (creatureHold(c, dt)) continue;
     if (c.ctrl || c.stuck) continue;
     if (!c.burrow && (c.level || 'top') !== (W.level || 'top')) continue;
     if (GAME.freezeT > 0 && c.root.position.distanceTo(PL.pos) < 80) continue;
