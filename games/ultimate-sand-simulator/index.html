@@ -147,24 +147,19 @@ table.t th{color:var(--dim);font-weight:600;font-size:11px}
     <div class="brand" id="brand" title="Main menu">ULTIMATE SAND SIM <small>v1.0</small></div>
     <button id="bPlay" title="Pause / Play (Space)">❚❚</button>
     <button id="bStep" title="Single step (.)">⏭</button>
-    <div id="speedWrap" title="Simulation speed (− / = keys)">Speed <input type="range" id="speed" min="0" max="6" step="1" value="3"><span id="speedLbl" class="mono">1×</span></div>
+    <div id="speedWrap" title="Simulation speed (− / = keys)">Speed <input type="range" id="speed" min="0" max="7" step="1" value="3"><span id="speedLbl" class="mono">1×</span></div>
     <div class="sep"></div>
     <button id="bUndo" title="Undo (Ctrl+Z)">↶</button>
     <button id="bRedo" title="Redo (Ctrl+Y / Ctrl+Shift+Z)">↷</button>
     <button id="bReset" title="Reset world (clears everything)">⟲<span class="lbl"> Reset</span></button>
     <div class="sep"></div>
-    <select id="modeSel" title="Sandbox mode">
-      <option value="free">Free Sandbox</option><option value="chem">Chemistry Lab</option><option value="eco">Ecosystem Lab</option><option value="eng">Engineering Lab</option><option value="dis">Disaster Lab</option>
-    </select>
     <button id="bWorld" title="New world / generator">🌍<span class="lbl"> World</span></button>
     <button id="bSaves" title="Save & load (Ctrl+S)">💾<span class="lbl"> Saves</span></button>
-    <button id="bDis" title="Natural disasters">🌪<span class="lbl"> Disasters</span></button>
-    <button id="bChal" title="Challenges">🏆<span class="lbl"> Challenges</span></button>
-    <button id="bEncy" title="Reaction & material encyclopedia">📖<span class="lbl"> Encyclopedia</span></button>
+    <button id="bSun" title="Sun: show / hide and adjust (drag it around outside the world)">☀<span class="lbl"> Sun</span></button>
     <button id="bShot" title="Save a screenshot of the view (Shift+P)">📷</button>
     <button id="bStats" title="Live statistics">📊<span class="lbl"> Stats</span></button>
     <select id="overlaySel" title="Overlay (O cycles)">
-      <option value="none">No overlay</option><option value="temp">Temperature</option><option value="dens">Density</option><option value="pres">Pressure</option><option value="vel">Velocity / flow</option><option value="cond">Conductivity</option><option value="ident">Material ID</option><option value="light">Light</option><option value="power">Power</option>
+      <option value="none">Normal</option><option value="temp">Temperature</option><option value="mag">Magnetic fields</option>
     </select>
     <div class="grow"></div>
     <button id="bMute" title="Mute / unmute sound">🔊</button>
@@ -247,7 +242,7 @@ const MV = { NONE: 0, POWDER: 1, LIQUID: 2, GAS: 3, FIRE: 4, PARTICLE: 5 };
 const SP = {
   NONE: 0, SPARK: 1, EMBER: 2, PLASMA: 3, ELEC: 4, LIGHTNING: 5, HEATP: 6, COLDP: 7, RAD: 8, MAGIC: 9,
   MICROBE: 10, MACHINE: 11, SOURCE: 12, DRAIN: 13, URANIUM: 14, SPONGE: 15, DYE: 16, MUDDY: 17, NITRO: 18,
-  SLIME: 19, LARVA: 20, CLONE: 21, FUSE: 22, ANTI: 23, NEON: 24, MAGNET: 25, ROCKET: 26, CLOUD: 27
+  SLIME: 19, LARVA: 20, CLONE: 21, FUSE: 22, ANTI: 23, NEON: 24, MAGNET: 25, ROCKET: 26, CLOUD: 27, ACIDX: 28, LIGHTSRC: 29
 };
 
 const MATS = [];
@@ -425,7 +420,7 @@ D('moss', 'Moss', LF, S, '#5f8f3a', { flam: 0.2, ign: 240, burnTo: 'ash', hard: 
 D('algae', 'Algae', LF, P, '#2f8f5c', { dens: 990, slide: 0.95, light: 0.8, flam: 0.05, ign: 300, burnTo: 'organic', acid: 1, vary: 0.2, desc: 'Grows through sunlit water, producing oxygen. Fish and microbes eat it. Salt and darkness kill it.' });
 D('vine', 'Vines', LF, S, '#3c8a2e', { flam: 0.4, ign: 220, burnTo: 'ash', hard: 3, acid: 1, life: [20, 60], vary: 0.15, desc: 'Grows down from ceilings and walls toward the light.' });
 D('roots', 'Roots', LF, S, '#8a6a3e', { flam: 0.2, ign: 300, burnTo: 'ash', hard: 6, acid: 0.9, vary: 0.15, desc: 'Grow down through soil and draw water up into the plant.' });
-D('plant', 'Plant cells', LF, S, '#58b844', { flam: 0.35, ign: 220, burnTo: 'ash', hard: 4, acid: 1, vary: 0.12, light: 0.6, desc: 'Living plant stem. Grows toward light when roots supply water.' });
+D('plant', 'Plant', LF, S, '#58b844', { flam: 0.35, ign: 220, burnTo: 'ash', hard: 4, acid: 1, vary: 0.12, light: 0.6, desc: 'Living plant stem. Grows toward light when roots supply water.' });
 D('flower', 'Flower', LF, S, '#ff6fa8', { light: 0.6, flam: 0.5, ign: 200, burnTo: 'ash', hard: 2, acid: 1, vary: 0.35, desc: 'Blooms at the top of plants. Releases pollen and drops seeds.' });
 D('sapling', 'Sapling', LF, S, '#6bb04a', { flam: 0.3, ign: 220, burnTo: 'ash', hard: 4, acid: 1, desc: 'Grows into a tree with a wooden trunk and a leafy canopy if it has soil, water and light.' });
 D('mushroom', 'Mushroom', LF, S, '#d9b9a3', { flam: 0.3, ign: 230, burnTo: 'ash', hard: 3, acid: 1, vary: 0.25, desc: 'Fungus. Spreads over rotting matter and wood in damp, dim places; releases spores.' });
@@ -462,6 +457,9 @@ D('cr_bat', 'Bat', CRB, CR, '#4a3a52', { hidden: true, desc: 'Bat' });
 D('cr_lizard', 'Lizard', CRB, CR, '#6fbf3a', { hidden: true, desc: 'Lizard' });
 D('cr_penguin', 'Penguin', CRB, CR, '#1e2230', { hidden: true, desc: 'Penguin' });
 D('cr_mouse', 'Mouse', CRB, CR, '#a8a0a0', { hidden: true, desc: 'Mouse' });
+D('cr_deer', 'Deer', CRB, CR, '#a86f3e', { hidden: true, desc: 'Deer' });
+D('cr_cow', 'Cow', CRB, CR, '#e8e2d8', { hidden: true, desc: 'Cow' });
+D('cr_bear', 'Bear', CRB, CR, '#5a3a22', { hidden: true, desc: 'Bear' });
 D('cr_snake', 'Snake', CRB, CR, '#5f8a2a', { hidden: true, desc: 'Snake' });
 D('cr_jellyfish', 'Jellyfish', CRB, CR, '#e59cff', { hidden: true, desc: 'Jellyfish' });
 D('cr_termite', 'Termite', CRB, CR, '#e8d6a8', { hidden: true, desc: 'Termite' });
@@ -589,6 +587,45 @@ MD('chord', 'Chord block', EL, '#5a2a6a', 'Plays a random chord every time it ge
 MD('note', 'Note block', EL, '#7a4a2a', 'Plays a musical note each time it is powered. Click with Interact to change the pitch (two octaves).');
 
 // ======================= COMPILE PROPERTY ARRAYS =======================
+// ======================= OVERHAUL: kept materials, reworked =======================
+const OV = (k, o) => { if (ID[k] !== undefined) Object.assign(MATS[ID[k]], o); };
+OV('sand', { hiT: 900, hiTo: 'glass', phaseP: 0.03, desc: 'Piles into slopes and slides. Heat it past 900° and it turns into glass.' });
+OV('dirt', { desc: 'Loose soil. Piles up like sand.' });
+OV('snow', { desc: 'Fluffy frozen water. Cools whatever it touches; melts into water when warmed.' });
+OV('metal_powder', { desc: 'Iron filings. Every grain is pulled toward magnets on its own.' });
+OV('water', { alpha: 0.55, light: 0.9, desc: 'Flows and pools. See-through — light passing through it turns blue. Cools hot things: pour it on lava to make stone.' });
+OV('oil', { desc: 'Floats on water and burns.' });
+OV('lava', { heat: 1000, desc: 'Molten rock that never cools on its own. Only water, ice, snow, liquid air or the Temperature tool can turn it into stone. Lights up its surroundings.' });
+OV('acid', { sp: SP.ACIDX, life: null, alpha: 0.6, light: 0.9, hiT: null, hiTo: null, desc: 'See-through. Each drop dissolves up to five pixels of whatever it touches, then is used up. Glows a little as it eats.' });
+OV('slime', { dens: 1400, spread: 1, visc: 0.025, flam: 0, ign: 99999, burn: null, burnTo: null, hiT: null, hiTo: null, acid: 0, alpha: 0.72, light: 0.6, desc: 'Thick, super-viscous goo. Oozes slowly, clings to walls, sinks in water and will not burn. Partly see-through.' });
+OV('liquid_metal', { desc: 'Molten metal. Stays molten until something cold touches it. Pulled by magnets.' });
+OV('steam', { alpha: 0.35, light: 0.97, desc: 'Rises. Turns back into water when it reaches the top of the world (or when something cold touches it).' });
+OV('smoke', { alpha: 0.55, light: 0.85, desc: 'Rises from fires. Hangs around until it reaches the top of the world, then fades away.' });
+OV('methane', { color: '#f0dc4a', alpha: 0.45, light: 0.95, desc: 'Yellow and see-through. Rises and ignites explosively.' });
+OV('stone', { desc: 'Solid rock.' });
+OV('bedrock', { hiT: null, hiTo: null, desc: 'Completely indestructible: nothing can melt, dissolve, explode, corrupt or swallow it.' });
+OV('wood', { desc: 'Burns.' });
+OV('ice', { alpha: 0.62, light: 0.85, desc: 'Frozen water, partly see-through. Cools whatever it touches.' });
+OV('metal', { desc: 'Solid metal. Magnets pull whole pieces of it without breaking them apart.' });
+OV('crystal', { color: '#d68cf0', alpha: 0.62, light: 0.8, glow: 0.15, hiTo: 'molten_glass', desc: 'Pink and partly see-through. Slowly grows into any water it touches.' });
+OV('uranium', { glow: 0.5, desc: 'Radioactive: glows faintly and throws off radiation. If two of its radiation particles collide — nuclear explosion.' });
+OV('plant', { flam: 0.6, ign: 200, burnTo: 'ash', desc: 'Grows quickly wherever it touches water — and burns well.' });
+OV('glass', { hiT: 1400, hiTo: 'molten_glass', alpha: 0.3, light: 0.95, desc: 'Made by heating sand. Transparent. Melts above 1400°.' });
+OV('molten_glass', { heat: 1600, loT: 1300, loTo: 'glass', phaseP: 0.08, alpha: 0.85, light: 0.85, desc: 'Melted glass. Unlike almost everything else it cools back into glass on its own — the hotter it is, the longer that takes.' });
+OV('fire', { desc: 'Burns anything flammable and lights up its surroundings.' });
+OV('lightning', { desc: 'Click to call down a lightning bolt.' });
+OV('star', { heat: 5000, desc: 'A tiny sun. Pulls loose things toward it (from five times its size away) without destroying them, holds its temperature, and glows a colour that depends on how hot it is — cool it with the Temperature tool to turn it red, heat it to make it blue-white.' });
+OV('antimatter', { desc: 'Annihilates anything it touches in a flash of light.' });
+OV('src_water', { desc: 'Pours out water forever. Glows very faintly.' });
+OV('src_lava', { desc: 'Pours out lava forever. Glows a bit more than lava.' });
+OV('magnet', { desc: 'Pulls metal: grains of metal powder and drops of liquid metal fly toward it, and solid metal slides over in one piece. Bigger magnets reach further.' });
+OV('portal_in', { desc: 'Anything loose that touches it comes out of a Portal (out). Light goes through too.' });
+OV('portal_out', { desc: 'Where things (and light) come out of the blue portals.' });
+OV('black_hole', { desc: 'Swallows whatever touches it and pulls things in from five times its size away. Light can\'t escape from near it.' });
+OV('void', { desc: 'Deletes anything that touches it — except light, which passes straight through.' });
+D('liquid_air', 'Liquid air', LQ, L, '#cfe8ff', { dens: 870, spread: 6, heat: -5000, hc: 1.5, cond: 0.6, alpha: 0.5, light: 0.95, life: [400, 800], desc: 'Unbelievably cold. Freezes whatever it touches and slowly boils away into nothing. Cool empty air to about −5000° with the Temperature tool and it condenses out.' });
+D('light', 'Light', 'Light', S, '#ffffff', { hard: 255, sp: SP.LIGHTSRC, desc: 'An indestructible block that shines light. Pick its colour, brightness and reach in the tool panel. A black light gives off darkness.' });
+D('liquid_light', 'Liquid light', 'Light', L, '#ffffff', { dens: 900, spread: 5, alpha: 0.9, sp: SP.LIGHTSRC, desc: 'A glowing liquid that flows like water and shines light. Pick its colour, brightness and reach in the tool panel.' });
 const NM = MATS.length;
 const STATE = new Uint8Array(NM), MOVE = new Uint8Array(NM), SPEC = new Uint8Array(NM);
 const DENS = new Float32Array(NM), COND = new Float32Array(NM), HCAP = new Float32Array(NM);
@@ -808,6 +845,8 @@ for (const m of MATS) {
     R('acid', m.key, 'same', null, 0.12 * m.acid, { wear: true, emit: co2 ? 'co2' : 'toxic_gas', emitP: co2 ? 0.6 : 0.06, snd: 'fizz', label: 'Acid dissolves ' + m.name.toLowerCase() + (co2 ? ' (fizzing CO₂)' : '') });
   }
 }
+// overhaul: acid has its own eat-five-then-vanish behaviour; slime no longer grows; stars no longer fuse
+for (const r of REACTIONS) { if (r.a === 'acid' || r.b === 'acid' || r.a === 'star' || r.b === 'star' || (r.a === 'slime' && (r.b === 'water' || r.b === 'salt'))) r.p = 0; }
 // index (both orientations)
 const RX = new Array(NM * NM);
 for (const r of REACTIONS) {
@@ -853,7 +892,7 @@ for (const m of MATS) {
 
 ['Coal crushed by an explosion → Diamond', 'Steam reaching the top of the sky → Rain cloud', 'Antimatter annihilates matter', 'Powered neon glows', 'Magnets pull iron', 'Antimatter levitates near a magnet', 'Firework launches and bursts', 'Popcorn pops', 'Solar panel powered by sunlight', 'Tungsten filament glows white-hot', 'Gasoline evaporates into flammable vapour', 'Phosphorus ignites in warm air', 'Coral bleaches in hot water', 'Bamboo shoots skyward', 'Cactus grows in the desert', 'Kelp grows toward the light', 'Flour blown into a cloud'].forEach(t => extraEntry('x:' + t, t, 'Expansion'));
 function discoverX(t) { discoverExtra('x:' + t); }
-['Portal teleports matter', 'Black hole swallows matter', 'Dispenser fires material', 'Detector senses material', 'Toggle remembers', 'Note block plays music', 'You took control of a creature', 'Night falls', 'It is raining frogs', 'Found a secret code', 'Nuclear explosion', 'Starlight', 'Nether portal lit', 'Travelled to the Underworld', 'Found the mystery world', 'Chord block plays a chord', 'Unlocked Eytes', 'Unlocked the Eye', 'A little eye opens', 'Seeds sprout into watching flowers', 'Found the white world', 'Found the little key', 'Opened the tiny door', 'Found the corrupt world', 'Glitch spreads', 'Glitch corrupts water', 'Something alive became a glitch'].forEach(t => extraEntry('x:' + t, t, 'Expansion'));
+['Portal teleports matter', 'Black hole swallows matter', 'Dispenser fires material', 'Detector senses material', 'Toggle remembers', 'Note block plays music', 'You took control of a creature', 'Night falls', 'It is raining frogs', 'Found a secret code', 'Nuclear explosion', 'Starlight', 'Nether portal lit', 'Travelled to the Underworld', 'Found the mystery world', 'Chord block plays a chord', 'Unlocked Eytes', 'Unlocked the Eye', 'A little eye opens', 'Seeds sprout into watching flowers', 'Found the white world', 'Found the little key', 'Opened the tiny door', 'Found the corrupt world', 'Glitch spreads', 'Glitch corrupts water', 'Something alive became a glitch', 'Air condenses into liquid air', 'Acid eats', 'Crystal grows', 'Plants drink water and grow'].forEach(t => extraEntry('x:' + t, t, 'Expansion'));
 
 // ======================= WORLD STATE =======================
 const CS = 16; // chunk size
@@ -1010,7 +1049,7 @@ const M = {}; for (const m of MATS) M[m.key] = m.id;
 // fixups on compiled tables
 KEEPO.fill(0); KEEPO[M.liquid_metal] = 1;
 const DECAYS = new Uint8Array(NM);
-for (const k of ['smoke', 'toxic_gas', 'spores', 'pollen', 'combustion_gas', 'wet_concrete', 'paint', 'snail_slime']) DECAYS[M[k]] = 1;
+for (const k of ['smoke', 'toxic_gas', 'spores', 'pollen', 'combustion_gas', 'wet_concrete', 'paint', 'snail_slime', 'liquid_air']) DECAYS[M[k]] = 1;
 const LIGHTMAT = new Uint8Array(NM); // wind-blown powders
 for (const k of ['dust', 'ash', 'snow', 'sawdust', 'soot', 'volcanic_ash', 'ice_powder', 'seeds']) LIGHTMAT[M[k]] = 1;
 const SANDY = new Uint8Array(NM);
@@ -1263,7 +1302,6 @@ function gas(i, x, y, m) {
 let portalCheckFrame = -1, portalChecks = 0;
 function fireUpdate(i, x, y) {
   if (portalCheckFrame !== frameNo) { portalCheckFrame = frameNo; portalChecks = 0; }
-  if (portalChecks < 40) { portalChecks++; if (insideObsidianFrame(x, y) && tryLightPortal(x, y)) return -1; }
   life[i]--;
   if (tmp[i] < 600) tmp[i] = 600 + rnd() * 250;
   if (life[i] <= 0) {
@@ -1397,31 +1435,53 @@ function discoverExtra(key) { const id = EXTRA_INDEX[key]; if (id !== undefined 
 
 // ---------- temperature, phase change, ignition ----------
 const LQM = () => M.liquid_metal;
+// Heat spreads from hot things into colder things, but nothing cools down on its own:
+//  • hot substances don't lose heat to the air or other gases (the air just warms up and drifts back to room temperature)
+//  • lava and liquid metal only lose heat to coolants (water, ice, snow, liquid air… or anything below 0°)
+//  • stars and liquid air hold their temperature no matter what touches them
+//  • melted glass is the exception: it cools back into glass by itself
+const COOLANT = new Uint8Array(NM), KEEPHOT = new Uint8Array(NM), FIXEDT = new Uint8Array(NM);
+for (const k of ['water', 'salt_water', 'brine', 'muddy_water', 'hot_spring', 'ice', 'snow', 'ice_powder', 'liquid_air', 'liquid_nitrogen', 'cold_vapor', 'frozen_soil', 'liquid_glitch']) if (M[k] !== undefined) COOLANT[M[k]] = 1;
+for (const k of ['lava', 'magma', 'liquid_metal', 'molten_salt']) if (M[k] !== undefined) KEEPHOT[M[k]] = 1;
+for (const k of ['star', 'liquid_air']) if (M[k] !== undefined) FIXEDT[M[k]] = 1;
+const AIRLIKE = new Uint8Array(NM); for (let k = 0; k < NM; k++) if (k === 0 || STATE[k] === ST.GAS) AIRLIKE[k] = 1;
+function heatSwap(a, b, d) { // d > 0: heat flows from b into a
+  const hot = d > 0 ? b : a, cold = d > 0 ? a : b, q = d > 0 ? d : -d;
+  const mh = mat[hot], mc = mat[cold];
+  if (!FIXEDT[mc]) tmp[cold] += q / HCAP[mc];
+  if (FIXEDT[mh]) return;
+  if (AIRLIKE[mc] && !AIRLIKE[mh]) return;                                  // substances don't cool into the air
+  if (KEEPHOT[mh] && !COOLANT[mc] && tmp[cold] >= 0) return;               // molten stuff only cools on coolants
+  tmp[hot] -= q / HCAP[mh];
+}
 function temperaturePass() {
   const amb = settings.ambient, rate = 0.25 * settings.heatRate;
-  const LM = M.liquid_metal;
+  const LM = M.liquid_metal, MG = M.molten_glass, STEAM = M.steam;
   for (let y = 0; y < H; y++) {
     let i = y * W;
     const lastRow = y === H - 1;
     for (let x = 0; x < W; x++, i++) {
       const m = mat[i];
-      let T = tmp[i];
-      const c = COND[m], hc = HCAP[m];
+      const c = COND[m];
       if (x < W - 1) {
-        const j = i + 1, mj = mat[j], cj = COND[mj];
-        const k = (c < cj ? c : cj) * rate;
-        const d = (tmp[j] - T) * k;
-        if (d > 0.0005 || d < -0.0005) { T += d / hc; tmp[j] -= d / HCAP[mj]; }
+        const j = i + 1, cj = COND[mat[j]];
+        const d = (tmp[j] - tmp[i]) * (c < cj ? c : cj) * rate;
+        if (d > 0.0005 || d < -0.0005) heatSwap(i, j, d);
       }
       if (!lastRow) {
-        const j = i + W, mj = mat[j], cj = COND[mj];
-        const k = (c < cj ? c : cj) * rate;
-        const d = (tmp[j] - T) * k;
-        if (d > 0.0005 || d < -0.0005) { T += d / hc; tmp[j] -= d / HCAP[mj]; }
+        const j = i + W, cj = COND[mat[j]];
+        const d = (tmp[j] - tmp[i]) * (c < cj ? c : cj) * rate;
+        if (d > 0.0005 || d < -0.0005) heatSwap(i, j, d);
       }
-      if (m === 0) { T += (amb - T) * 0.04; tmp[i] = T; continue; }
-      if (STATE[m] === ST.GAS) T += (amb - T) * 0.004;
-      tmp[i] = T;
+      let T = tmp[i];
+      if (m === 0) {
+        let dd = (amb - T) * 0.04; if (dd > 20) dd = 20; else if (dd < -20) dd = -20; // empty air drifts back to room temperature
+        T += dd; tmp[i] = T;
+        if (T <= -5000) { setCell(i, M.liquid_air); discoverX('Air condenses into liquid air'); }
+        continue;
+      }
+      if (m === MG) { T -= 1.2; tmp[i] = T; } // melted glass cools on its own
+      if (m === STEAM && y <= 1) { transform(i, M.water); continue; } // steam reaching the top becomes water
       let lot = LOT[m];
       if (m === LM) { const o = aux[i]; lot = o && o !== LM && HIT[o] < 1e8 ? HIT[o] - 40 : 1400; }
       if (T > HIT[m] || T < lot || (T >= IGN[m] && (FLAM[m] > 0 || EXPL[m]))) phaseCheck(i, x, y, m, T, lot);
@@ -1444,7 +1504,6 @@ function phaseCheck(i, x, y, m, T, lot) {
   }
   if (T < lot && rnd() < PHP[m]) {
     let to = LOTO[m];
-    if (m === M.steam && gOn && gdy === 1 && y < H * 0.35 && rnd() < 0.6) { transform(i, M.rain_cloud); life[i] = 1; discoverX('Steam reaching the top of the sky → Rain cloud'); return; } // holds exactly the water it came from
     if (m === M.liquid_metal) { const o = aux[i]; to = o && o !== m ? (o === M.metal_powder || o === M.burning_thermite || o === M.thermite ? M.metal : o) : M.metal; }
     discoverExtra('lo:' + MATS[m].key);
     if (to <= 0) { clearCell(i); return; }
@@ -1675,7 +1734,6 @@ function special(i, x, y, m) {
     case SP.URANIUM: {
       let n = 0;
       for (let k = 0; k < 8; k++) { const j = idx(x + NB8[k][0], y + NB8[k][1]); if (j >= 0 && mat[j] === m) n++; }
-      tmp[i] += 0.15 + n * n * 0.03;
       if (rnd() < 0.02 + n * 0.006) {
         const j = spawnNear(x, y, M.radiation);
         if (j >= 0) { const a = rnd() * 6.283; vx[j] = Math.round(Math.cos(a) * 40); vy[j] = Math.round(Math.sin(a) * 40); aux[j] = 1; } // aux 1 = fresh from uranium
@@ -1716,6 +1774,8 @@ function special(i, x, y, m) {
       wakeI(i); return;
     }
     case SP.ANTI: antimatterTick(i, x, y, m); return;
+    case SP.ACIDX: acidTick(i, x, y, m); return;
+    case SP.LIGHTSRC: return;
     case SP.NEON: neonTick(i, x, y, m); return;
     case SP.MAGNET: magnetTick(i, x, y, m); return;
     case SP.ROCKET: rocketTick(i, x, y, m); return;
@@ -1732,6 +1792,7 @@ function special(i, x, y, m) {
 // generic decay for gases with lifetimes etc.
 function decayTick(i, x, y, m) {
   if (m === M.paint) { if (!exposedToAir(x, y)) return; }
+  if (m === M.smoke) { if (y > 2) { wakeI(i); return; } if (life[i] > 40) life[i] = 40; } // smoke lingers until it reaches the top
   life[i]--;
   if (life[i] <= 0) {
     const to = DECAY[m];
@@ -1828,9 +1889,9 @@ function stepSim() {
   if (settings.corrupt) corruptTick();
   if (littleEyes.length) littleEyesTick();
   if (settings.lavaClimate && (frameNo & 3) === 0) lavaClimatePass();
+  overhaulPass();
   if (frameNo % 6 === 0) lightPass();
   updateCreatures();
-  updateDisasters();
   updateDoors();
 }
 
@@ -2677,7 +2738,7 @@ const SPECIES = [
   { key: 'snail', name: 'Snail', icon: '🐌', mat: M.cr_snail, len: 1, hab: 'land', climb: true, speed: 0.12, hp: 8, maxE: 140, repro: 110, maturity: 1200, maxAge: 16000, eggs: true, eat: 20, cap: 20, tMin: 0, tMax: 38, diet: ['leaves', 'grass', 'moss', 'mushroom', 'plant'], prey: [], drop: 'snail_slime', dropRate: 0.006, remains: 'organic', desc: 'Slowly slides along (even up walls) munching greens and leaving a shiny slime trail that dries up after a few seconds.' },
   { key: 'spider', name: 'Spider', icon: '🕷️', mat: M.cr_spider, len: 1, hab: 'land', climb: true, speed: 0.5, hp: 6, maxE: 120, repro: 95, maturity: 800, maxAge: 11000, eggs: true, eat: 25, cap: 16, tMin: 0, tMax: 45, diet: ['larva'], prey: ['ant', 'bee', 'firefly', 'beetle', 'termite'], remains: 'organic', desc: 'Scuttles up walls and ceilings hunting insects.' },
   { key: 'crab', name: 'Crab', icon: '🦀', mat: M.cr_crab, len: 2, hab: 'amphib', speed: 0.35, hp: 18, maxE: 180, repro: 140, maturity: 1500, maxAge: 18000, eggs: true, eat: 30, cap: 16, tMin: 2, tMax: 40, diet: ['algae', 'organic', 'rotting', 'kelp', 'flesh'], prey: ['microbe', 'worm'], remains: 'bone', desc: 'Scavenges along beaches and sea floors. Equally happy in and out of water.' },
-  { key: 'shark', name: 'Shark', icon: '🦈', mat: M.cr_shark, len: 4, hab: 'water', speed: 0.8, hp: 40, maxE: 300, repro: 260, maturity: 3000, maxAge: 25000, eggs: false, eat: 60, cap: 5, tMin: 4, tMax: 34, diet: ['flesh'], prey: ['fish', 'frog', 'crab', 'penguin', 'jellyfish'], remains: 'bone', desc: 'Top predator of the deep. Hunts fish, crabs and penguins.' },
+  { key: 'shark', name: 'Shark', icon: '🦈', mat: M.cr_shark, len: 8, hab: 'water', speed: 0.8, hp: 40, maxE: 300, repro: 260, maturity: 3000, maxAge: 25000, eggs: false, eat: 60, cap: 5, tMin: 4, tMax: 34, diet: ['flesh'], prey: ['fish', 'frog', 'crab', 'penguin', 'jellyfish'], remains: 'bone', desc: 'Big top predator of the deep. Hunts fish and frogs.' },
   { key: 'firefly', name: 'Firefly', icon: '✨', mat: M.cr_firefly, len: 1, hab: 'air', speed: 0.55, hp: 2, maxE: 80, repro: 60, maturity: 500, maxAge: 6000, eggs: false, eat: 12, cap: 40, tMin: 8, tMax: 40, diet: ['pollen', 'flower', 'leaves', 'grass'], sip: ['flower', 'leaves', 'grass'], glow: true, prey: [], remains: 'organic', desc: 'Drifts through the air glowing — beautiful at night.' },
   { key: 'bat', name: 'Bat', icon: '🦇', mat: M.cr_bat, len: 2, hab: 'air', speed: 0.75, hp: 10, maxE: 160, repro: 130, maturity: 1400, maxAge: 15000, eggs: false, eat: 30, cap: 8, tMin: -5, tMax: 40, diet: ['larva'], prey: ['bee', 'firefly', 'spider', 'termite', 'ant'], remains: 'flesh', desc: 'Flits around caves and night skies catching insects.' },
   { key: 'lizard', name: 'Lizard', icon: '🦎', mat: M.cr_lizard, len: 2, hab: 'land', climb: true, speed: 0.55, hp: 12, maxE: 160, repro: 120, maturity: 1200, maxAge: 15000, eggs: true, eat: 30, cap: 14, tMin: 8, tMax: 65, diet: ['larva'], prey: ['ant', 'beetle', 'spider', 'bee', 'termite'], remains: 'flesh', desc: 'Loves the heat. Climbs rocks and walls hunting insects. Fine in deserts.' },
@@ -2685,7 +2746,11 @@ const SPECIES = [
   { key: 'mouse', name: 'Mouse', icon: '🐭', mat: M.cr_mouse, len: 1, hab: 'land', speed: 0.65, hp: 6, maxE: 120, repro: 80, maturity: 700, maxAge: 9000, eggs: false, eat: 25, cap: 30, tMin: -5, tMax: 42, diet: ['seeds', 'cheese', 'bread', 'flour', 'popcorn', 'kernel', 'sugar', 'cooked', 'grass', 'mushroom', 'larva', 'leaves'], prey: [], remains: 'flesh', desc: 'Scurries about nibbling seeds, cheese and anything in the kitchen. Breeds fast.' },
   { key: 'snake', name: 'Snake', icon: '🐍', mat: M.cr_snake, len: 6, hab: 'land', speed: 0.4, hp: 22, maxE: 260, repro: 200, maturity: 2500, maxAge: 22000, eggs: true, eat: 50, cap: 6, tMin: 5, tMax: 50, diet: [], prey: ['mouse', 'frog', 'lizard', 'bird', 'ant'], remains: 'bone', desc: 'Slithers along the ground swallowing mice, frogs, lizards and birds.' },
   { key: 'jellyfish', name: 'Jellyfish', icon: '🪼', mat: M.cr_jellyfish, len: 2, hab: 'water', speed: 0.25, hp: 6, maxE: 100, repro: 70, maturity: 700, maxAge: 9000, eggs: false, eat: 15, cap: 20, tMin: 2, tMax: 32, diet: ['microbes', 'algae'], glow: true, prey: ['microbe', 'fish'], remains: 'water', desc: 'Pulses gently through the sea, glowing softly. Stings small fish.' },
-  { key: 'termite', name: 'Termite', icon: '🪳', mat: M.cr_termite, len: 1, hab: 'land', climb: true, speed: 0.45, hp: 3, maxE: 100, repro: 70, maturity: 500, maxAge: 8000, eggs: true, eat: 15, cap: 60, tMin: 5, tMax: 45, diet: ['wood', 'planks', 'paper', 'cardboard'], prey: [], remains: 'organic', desc: 'Chews through wood, planks and paper, leaving sawdust. Keep them away from your house!' }
+  { key: 'termite', name: 'Termite', icon: '🪳', mat: M.cr_termite, len: 1, hab: 'land', climb: true, speed: 0.45, hp: 3, maxE: 100, repro: 70, maturity: 500, maxAge: 8000, eggs: true, eat: 15, cap: 60, tMin: 5, tMax: 45, diet: ['wood', 'planks', 'paper', 'cardboard'], prey: [], remains: 'organic', desc: 'Chews through wood, planks and paper, leaving sawdust. Keep them away from your house!' },
+  // ---- big land animals ----
+  { key: 'deer', name: 'Deer', icon: '🦌', mat: M.cr_deer, len: 3, hab: 'land', speed: 0.6, hp: 30, maxE: 260, repro: 200, maturity: 2600, maxAge: 24000, eggs: false, eat: 40, cap: 10, tMin: -20, tMax: 40, diet: ['plant', 'grass', 'leaves', 'flower'], prey: [], remains: 'bone', jump: true, desc: 'A quick, shy grazer. Leaps over small bumps and nibbles plants.' },
+  { key: 'cow', name: 'Cow', icon: '🐄', mat: M.cr_cow, len: 4, hab: 'land', speed: 0.25, hp: 45, maxE: 320, repro: 240, maturity: 3200, maxAge: 26000, eggs: false, eat: 50, cap: 8, tMin: -10, tMax: 38, diet: ['plant', 'grass', 'leaves'], prey: [], remains: 'bone', desc: 'A big, slow grazer that wanders about munching plants.' },
+  { key: 'bear', name: 'Bear', icon: '🐻', mat: M.cr_bear, len: 4, hab: 'land', speed: 0.4, hp: 70, maxE: 360, repro: 280, maturity: 3600, maxAge: 28000, eggs: false, eat: 60, cap: 5, tMin: -30, tMax: 36, diet: ['plant', 'flesh', 'honey'], prey: ['deer', 'cow', 'fish', 'ant', 'frog'], remains: 'bone', desc: 'A strong omnivore. Eats plants and hunts deer, cows and fish.' }
 ];
 // nutrition per food and what is left behind when eaten (grazing keeps food webs renewable)
 const FOODVAL = new Float32Array(NM), LEFTOVER = new Int16Array(NM).fill(-1);
@@ -3509,7 +3574,7 @@ envDamage[M.antimatter] = 50;
 ROLE[M.solar] = ROLE_SRC; ROLE[M.electromagnet] = ROLE_LOAD; NEEDPOWER[M.electromagnet] = 1;
 [['bread', 40], ['popcorn', 30], ['chocolate', 45], ['liquid_chocolate', 40], ['cheese', 40], ['curds', 30], ['flour', 12], ['dough', 20], ['ice_cream', 40], ['cocoa', 20], ['kelp', 16], ['bamboo', 12], ['milk', 15]].forEach(([k, v]) => FOODVAL[M[k]] = v);
 for (const k of ['bread', 'popcorn', 'chocolate', 'cheese', 'curds', 'dough', 'ice_cream', 'cocoa']) if (!SPECIES_BY_KEY.ant.diet.includes(k)) SPECIES_BY_KEY.ant.diet.push(k);
-SPECIES_BY_KEY.fish.diet.push('kelp'); SPECIES_BY_KEY.beetle.diet.push('bamboo', 'kelp');
+SPECIES_BY_KEY.fish.diet.push('kelp', 'plant'); SPECIES_BY_KEY.beetle.diet.push('bamboo', 'kelp');
 for (const s of SPECIES) rebuildDiet(s);
 for (const k of ['bamboo', 'cactus', 'coral', 'kelp']) PLANTLIKE[M[k]] = 1;
 
@@ -3555,6 +3620,7 @@ function neonTick(i, x, y, m) {
 }
 // ---- magnets ----
 function magnetTick(i, x, y, m) {
+  if (m === M.magnet) return; // reworked: see magnetPass
   if (m === M.electromagnet && !pow[i]) return;
   wakeI(i);
   for (let k = 0; k < 60; k++) {
@@ -3738,94 +3804,9 @@ function gadgetUpdate(i, x, y, m) {
         if (STATE[nm] === ST.CREATURE) { const c = creatureAtIndex(n); if (c) { c.cause = 'swallowed by a black hole'; removeCreature(c, false); if (c.g) blobOnDeath(c); } else clearCell(n); continue; }
         clearCell(n); if (rnd() < 0.02) discoverX('Black hole swallows matter');
       }
-      // gravity well: EVERYTHING within ~30 cells (powders, liquids, gases, solids, machines, creatures) is dragged inward, nearest first
-      for (let k = 0; k < BH_OFF.length; k++) {
-        const o = BH_OFF[k], t = idx(x + o[0], y + o[1]); if (t < 0) continue;
-        const tm = mat[t]; if (!tm || UNBREAKABLE[tm]) continue;
-        const stT = STATE[tm];
-        let p = 1.25 - o[2] / 30;
-        if (stT === ST.SOLID || stT === ST.MACHINE) p *= 0.75;
-        if (rnd() > p) continue;
-        const sx = -Math.sign(o[0]), sy = -Math.sign(o[1]);
-        if (stT === ST.CREATURE) {
-          const c = creatureAtIndex(t);
-          if (c && !c.frozen && t === c.segs[0]) tryMoveCreature(c, x + o[0] + sx, y + o[1] + sy, true, true);
-          continue;
-        }
-        // slight swirl: sometimes step sideways along the orbit
-        const sw = rnd() < 0.2;
-        const cands = sw ? [[-sy, sx], [sx, sy], [sx, 0], [0, sy]] : [[sx, sy], [sx, 0], [0, sy]];
-        for (const [ddx, ddy] of cands) {
-          if (!ddx && !ddy) continue;
-          const st = idx(x + o[0] + ddx, y + o[1] + ddy); if (st < 0) continue;
-          const sm = mat[st];
-          if (sm === 0) { moveCell(t, st); }
-          else if (sm !== tm && !UNBREAKABLE[sm] && STATE[sm] !== ST.CREATURE && (STATE[sm] === ST.GAS || STATE[sm] === ST.LIQUID || STATE[sm] === ST.ENERGY)) swapCells(t, st);
-          else continue;
-          clk[st] = fc; wakeI(st);
-          // keep it flying toward the hole so gravity can't drag it back down
-          if (MOVE[mat[st]] !== MV.NONE) { const ox = o[0] + ddx, oy = o[1] + ddy, dd = Math.hypot(ox, oy) || 1; vx[st] = clamp(Math.round(-ox / dd * 35), -100, 100); vy[st] = clamp(Math.round(-oy / dd * 35), -100, 100); }
-          else { vx[st] = 0; vy[st] = 0; }
-          break;
-        }
-      }
-      // beyond that: the whole world feels the pull (weaker with distance, but it never stops)
-      const samples = Math.max(1500, Math.min(9000, (N / 30) | 0));
-      for (let k = 0; k < samples; k++) {
-        const t = rint(N);
-        const tm = mat[t]; if (!tm || UNBREAKABLE[tm]) continue;
-        const dx = t % W - x, dy = ((t / W) | 0) - y;
-        const d = Math.sqrt(dx * dx + dy * dy); if (d <= 30) continue;
-        const sx = -Math.sign(dx), sy = -Math.sign(dy), stT = STATE[tm];
-        if (stT === ST.SOLID || stT === ST.MACHINE) {
-          // solids creep inward a step at a time, through air, gas or liquid
-          let cur = t;
-          for (let n = 0; n < 2; n++) {
-            const cx = cur % W, cy = (cur / W) | 0, st = idx(cx + sx, cy + sy); if (st < 0) break;
-            const sm = mat[st];
-            if (sm === 0) moveCell(cur, st);
-            else if (!UNBREAKABLE[sm] && (STATE[sm] === ST.GAS || STATE[sm] === ST.LIQUID || STATE[sm] === ST.POWDER)) swapCells(cur, st);
-            else break;
-            wakeI(st); cur = st;
-          }
-          continue;
-        }
-        if (stT === ST.CREATURE) {
-          const c = creatureAtIndex(t);
-          if (c && !c.frozen && t === c.segs[0] && rnd() < 0.5) tryMoveCreature(c, t % W + sx, ((t / W) | 0) + sy, true, true);
-          continue;
-        }
-        if (ISMOVABLE[tm] || (stT === ST.ENERGY && MOVE[tm] !== MV.NONE)) {
-          const f = 30 + 900 / (d + 3);
-          vx[t] = clamp(Math.round(vx[t] - dx / d * f + dy / d * f * 0.25), -100, 100);
-          vy[t] = clamp(Math.round(vy[t] - dy / d * f - dx / d * f * 0.25), -100, 100);
-          wakeI(t);
-        }
-      }
       return;
     }
-    case M.star: {
-      wakeI(i); tmp[i] = 5500;
-      if (frameNo - starScanAt >= 30) refreshStars();
-      let core = 0;
-      for (let k = 0; k < 8; k++) {
-        const n = idx(x + NB8[k][0], y + NB8[k][1]); if (n < 0) continue;
-        const nm = mat[n];
-        if (nm === M.star) { core++; continue; }
-        if (tmp[n] < 3000) tmp[n] += 90;                       // radiant heat
-        if (nm === 0 && rnd() < 0.004) {                         // solar flare
-          setCell(n, rnd() < 0.3 ? M.plasma : M.fire); tmp[n] = 3000;
-          const d = NB8[k]; vx[n] = d[0] * (30 + rint(40)); vy[n] = d[1] * (30 + rint(40));
-        } else if (nm === 0 && rnd() < 0.002) { setCell(n, M.heat_p); vx[n] = NB8[k][0] * 40; vy[n] = NB8[k][1] * 40; }
-      }
-      // gentle gravity on loose matter nearby
-      for (let k = 0; k < 6; k++) {
-        const dx = rint(33) - 16, dy = rint(33) - 16, t = idx(x + dx, y + dy); if (t < 0) continue;
-        const tm = mat[t]; if (!tm || tm === M.star) continue;
-        if (ISMOVABLE[tm]) { const d = Math.hypot(dx, dy) || 1, s = 120 / (d + 4); vx[t] = clamp(Math.round(vx[t] - dx / d * s), -90, 90); vy[t] = clamp(Math.round(vy[t] - dy / d * s), -90, 90); wakeI(t); }
-      }
-      return;
-    }
+    case M.star: return; // pull + fixed temperature are handled globally
     case M.dispenser: {
       wakeI(i);
       if (!pow[i]) return;
@@ -4244,6 +4225,234 @@ async function travelNether(c) {
     else toast('🌍 Back in the Overworld.', 'good');
   } catch (e) { toast('Portal failed: ' + e.message, 'bad'); }
   netherTravelling = false;
+}
+
+// ======================= OVERHAUL: clusters, stars, black holes, magnets, acid, crystal, plants =======================
+// Groups of touching cells of the same material act as one object: its size sets how far it reaches.
+let clusterCache = {}, metalClusters = [], metalClustersAt = -999;
+const clusterMark = { arr: null };
+function findClusters(m, maxCells) {
+  if (!clusterMark.arr || clusterMark.arr.length !== N) clusterMark.arr = new Int32Array(N);
+  const mark = clusterMark.arr, out = [];
+  const stamp = (findClusters.stamp = (findClusters.stamp || 0) + 1);
+  const q = [];
+  for (let s = 0; s < N; s++) {
+    if (mat[s] !== m || mark[s] === stamp) continue;
+    q.length = 0; q.push(s); mark[s] = stamp;
+    let sx = 0, sy = 0, minX = 1e9, maxX = -1, minY = 1e9, maxY = -1;
+    for (let h = 0; h < q.length; h++) {
+      const c = q[h], x = c % W, y = (c / W) | 0;
+      sx += x; sy += y; if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y;
+      if (q.length >= (maxCells || 1e9)) continue;
+      if (x > 0 && mat[c - 1] === m && mark[c - 1] !== stamp) { mark[c - 1] = stamp; q.push(c - 1); }
+      if (x < W - 1 && mat[c + 1] === m && mark[c + 1] !== stamp) { mark[c + 1] = stamp; q.push(c + 1); }
+      if (y > 0 && mat[c - W] === m && mark[c - W] !== stamp) { mark[c - W] = stamp; q.push(c - W); }
+      if (y < H - 1 && mat[c + W] === m && mark[c + W] !== stamp) { mark[c + W] = stamp; q.push(c + W); }
+    }
+    const n = q.length, diam = Math.max(maxX - minX + 1, maxY - minY + 1);
+    out.push({ n, cx: sx / n, cy: sy / n, diam, cells: m === M.metal ? q.slice() : null, minX, maxX, minY, maxY });
+  }
+  return out;
+}
+function getClusters(m) {
+  const c = clusterCache[m];
+  if (c && frameNo - c.at < 20) return c.list;
+  const list = findClusters(m);
+  clusterCache[m] = { at: frameNo, list };
+  return list;
+}
+function hasMat(m) { // cheap check using the material's population counter if available
+  const c = clusterCache[m]; if (c && frameNo - c.at < 20) return c.list.length > 0;
+  return getClusters(m).length > 0;
+}
+const STAR_REACH = 5, HOLE_REACH = 5;
+function reachOf(cl) { return Math.max(6, cl.diam * 5); }
+
+// pulls loose things toward a cluster's centre; black holes also drag solids and creatures
+function pullToward(cl, R, solids) {
+  const area = Math.PI * R * R, K = Math.min(5000, Math.max(60, (area / 3) | 0));
+  const cx = cl.cx, cy = cl.cy, core = Math.max(1, cl.diam / 2);
+  for (let k = 0; k < K; k++) {
+    const a = rnd() * 6.283, r = core + Math.sqrt(rnd()) * (R - core);
+    const tx = Math.round(cx + Math.cos(a) * r), ty = Math.round(cy + Math.sin(a) * r), t = idx(tx, ty);
+    if (t < 0) continue;
+    const tm = mat[t]; if (!tm || tm === M.star || tm === M.black_hole || tm === M.bedrock || tm === M.wall || tm === M.light) continue;
+    const dx = tx - cx, dy = ty - cy, d = Math.hypot(dx, dy) || 1;
+    if (ISMOVABLE[tm] || (STATE[tm] === ST.ENERGY && MOVE[tm] !== MV.NONE)) {
+      const f = 14 + 420 / (d + 4) * (1 - d / (R + 1));
+      vx[t] = clamp(Math.round(vx[t] - dx / d * f + dy / d * f * 0.2), -100, 100);
+      vy[t] = clamp(Math.round(vy[t] - dy / d * f - dx / d * f * 0.2), -100, 100);
+      wakeI(t);
+    } else if (solids && (STATE[tm] === ST.SOLID || STATE[tm] === ST.MACHINE) && !UNBREAKABLE[tm] && rnd() < 0.35) {
+      const st = idx(tx - Math.sign(Math.round(dx / d)), ty - Math.sign(Math.round(dy / d)));
+      if (st >= 0 && (mat[st] === 0 || STATE[mat[st]] === ST.GAS)) { if (mat[st]) swapCells(t, st); else moveCell(t, st); wakeI(st); }
+    } else if (solids && STATE[tm] === ST.CREATURE && rnd() < 0.3) {
+      const c = creatureAtIndex(t); if (c && !c.frozen && t === c.segs[0]) tryMoveCreature(c, tx - Math.sign(dx), ty - Math.sign(dy), true, true);
+    }
+  }
+}
+
+// ---------- magnets ----------
+// field from every magnet: strong close up, fading to nothing at its reach (bigger magnets reach further)
+function magnetReach(cl) { return 8 + Math.sqrt(cl.n) * 4; }
+function magnetPull(x, y, mags) { // returns [fx, fy, strength 0..1] toward the strongest nearby magnet
+  let bx = 0, by = 0, best = 0;
+  for (const g of mags) {
+    const R = magnetReach(g), dx = g.cx - x, dy = g.cy - y;
+    const d = Math.max(0.5, Math.hypot(dx, dy) - g.diam / 2);
+    if (d > R) continue;
+    const s = 1 - d / R;
+    if (s > best) { best = s; bx = dx; by = dy; }
+  }
+  if (!best) return null;
+  const l = Math.hypot(bx, by) || 1;
+  return [bx / l, by / l, best];
+}
+function magnetField(x, y) {
+  const mags = getClusters(M.magnet); let s = 0;
+  for (const g of mags) { const R = magnetReach(g), d = Math.max(0, Math.hypot(g.cx - x, g.cy - y) - g.diam / 2); if (d < R) s += (1 - d / R) * (1 - d / R); }
+  return Math.min(1, s);
+}
+function touchesMagnet(x, y) { for (let k = 0; k < 4; k++) { const j = idx(x + NB4[k][0], y + NB4[k][1]); if (j >= 0 && mat[j] === M.magnet) return true; } return false; }
+const LOOSE_METAL = new Uint8Array(NM); for (const k of ['metal_powder', 'liquid_metal']) LOOSE_METAL[M[k]] = 1;
+function magnetPass() {
+  const mags = getClusters(M.magnet); if (!mags.length) return;
+  // each grain of metal powder and drop of liquid metal is pulled on its own
+  for (const g of mags) {
+    const R = Math.ceil(magnetReach(g) + g.diam / 2);
+    const x0 = Math.max(0, Math.floor(g.cx - R)), x1 = Math.min(W - 1, Math.ceil(g.cx + R)), y0 = Math.max(0, Math.floor(g.cy - R)), y1 = Math.min(H - 1, Math.ceil(g.cy + R));
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const i = y * W + x; if (!LOOSE_METAL[mat[i]]) continue;
+      if (touchesMagnet(x, y)) { vx[i] = 0; vy[i] = 0; continue; }       // stuck to the magnet
+      const p = magnetPull(x, y, mags); if (!p) continue;
+      const f = 6 + p[2] * 40;
+      vx[i] = clamp(Math.round(vx[i] * 0.6 + p[0] * f), -70, 70); vy[i] = clamp(Math.round(vy[i] * 0.6 + p[1] * f), -70, 70);
+      wakeI(i); discoverX('Magnets pull iron');
+    }
+  }
+  // solid metal slides over in one piece
+  if (frameNo - metalClustersAt >= 8) { metalClustersAt = frameNo; metalClusters = findClusters(M.metal, 4000); }
+  for (const mc of metalClusters) {
+    if (!mc.cells || mc.n > 4000) continue;
+    if (mc.cells.some(c => mat[c] !== M.metal)) { mc.cells = null; continue; } // changed since we looked
+    if (mc.cells.some(c => touchesMagnet(c % W, (c / W) | 0))) continue;       // already stuck on
+    // strongest pull on any part of the piece
+    let best = null;
+    for (const g of mags) {
+      const R = magnetReach(g);
+      const nx = clamp(g.cx, mc.minX, mc.maxX), ny = clamp(g.cy, mc.minY, mc.maxY);
+      const d = Math.max(0.5, Math.hypot(g.cx - nx, g.cy - ny) - g.diam / 2);
+      if (d > R) continue;
+      const s = 1 - d / R; if (!best || s > best.s) best = { s, dx: g.cx - mc.cx, dy: g.cy - mc.cy };
+    }
+    if (!best) continue;
+    // stronger pull = moves more often
+    mc.acc = (mc.acc || 0) + best.s * 0.9 / Math.max(1, Math.sqrt(mc.n) / 3);
+    if (mc.acc < 1) continue;
+    mc.acc -= 1;
+    const steps = Math.abs(best.dx) > Math.abs(best.dy) ? [[Math.sign(best.dx), 0], [0, Math.sign(best.dy)]] : [[0, Math.sign(best.dy)], [Math.sign(best.dx), 0]];
+    for (const [sx, sy] of steps) { if ((sx || sy) && moveRigid(mc, sx, sy)) { discoverX('Magnets pull iron'); break; } }
+  }
+}
+// moves a whole piece of metal one cell, pushing loose stuff out of the way into the space it leaves
+function moveRigid(mc, sx, sy) {
+  const S = new Set(mc.cells);
+  const targets = [];
+  for (const c of mc.cells) {
+    const x = c % W + sx, y = ((c / W) | 0) + sy, t = idx(x, y);
+    if (t < 0) return false;
+    if (S.has(t)) continue;
+    const m = mat[t];
+    if (m && !(STATE[m] === ST.GAS || STATE[m] === ST.LIQUID || STATE[m] === ST.POWDER || STATE[m] === ST.ENERGY)) return false;
+    targets.push(t);
+  }
+  const data = mc.cells.map(c => [mat[c], tmp[c], life[c], aux[c], shade[c]]);
+  const disp = targets.map(t => [mat[t], tmp[t], life[t], aux[t], shade[t]]);
+  const newCells = mc.cells.map(c => idx(c % W + sx, ((c / W) | 0) + sy));
+  const NS = new Set(newCells);
+  const vacated = mc.cells.filter(c => !NS.has(c));
+  newCells.forEach((t, k) => { const d = data[k]; mat[t] = d[0]; tmp[t] = d[1]; life[t] = d[2]; aux[t] = d[3]; shade[t] = d[4]; vx[t] = 0; vy[t] = 0; wakeI(t); });
+  vacated.forEach((v, k) => { const d = disp[k]; if (d && d[0]) { mat[v] = d[0]; tmp[v] = d[1]; life[v] = d[2]; aux[v] = d[3]; shade[v] = d[4]; } else { mat[v] = 0; life[v] = 0; aux[v] = 0; tmp[v] = settings.ambient; } vx[v] = 0; vy[v] = 0; wakeI(v); });
+  mc.cells = newCells; mc.cx += sx; mc.cy += sy; mc.minX += sx; mc.maxX += sx; mc.minY += sy; mc.maxY += sy;
+  return true;
+}
+
+// ---------- stars & black holes reach five times their size ----------
+function gravityPass() {
+  if (frameNo & 1) return;
+  for (const cl of getClusters(M.star)) pullToward(cl, reachOf(cl), false);
+  for (const cl of getClusters(M.black_hole)) pullToward(cl, reachOf(cl), true);
+}
+
+// ---------- light flashes (acid eating, etc.) for the lighting engine ----------
+const lightFlashes = [];
+function addFlash(x, y, r, g, b, s, life) { if (lightFlashes.length < 400) lightFlashes.push({ x, y, r, g, b, s, life, max: life }); }
+function flashTick() { for (let k = lightFlashes.length - 1; k >= 0; k--) if (--lightFlashes[k].life <= 0) lightFlashes.splice(k, 1); }
+
+// ---------- acid: eats up to five pixels, then it's used up ----------
+const ACID_SAFE = new Uint8Array(NM);
+for (const k of ['bedrock', 'wall', 'light', 'void', 'black_hole', 'portal_in', 'portal_out', 'star', 'acid']) if (M[k] !== undefined) ACID_SAFE[M[k]] = 1;
+function acidTick(i, x, y, m) {
+  for (let k = 0; k < 2; k++) {
+    const d = NB8[rint(8)], j = idx(x + d[0], y + d[1]); if (j < 0) continue;
+    const n = mat[j];
+    if (!n || ACID_SAFE[n] || STATE[n] === ST.GAS || STATE[n] === ST.ENERGY) continue;
+    if (rnd() > 0.3) continue;
+    if (STATE[n] === ST.CREATURE) damageCreatureAt(j, 3, 'acid'); else clearCell(j);
+    addFlash(x + d[0], y + d[1], 130, 255, 90, 0.5, 18);
+    discoverX('Acid eats'); if (rnd() < 0.3) sfxAt('fizz', x, y, 0.3);
+    life[i]++;
+    if (life[i] >= 5) { clearCell(i); return; }
+    break;
+  }
+  wakeI(i);
+}
+
+// ---------- crystal grows slowly into water ----------
+RT[M.crystal] = (i, x, y) => {
+  if (rnd() > 0.25) return;
+  const d = NB4[rint(4)], j = idx(x + d[0], y + d[1]);
+  if (j >= 0 && mat[j] === M.water) { transform(j, M.crystal); discoverX('Crystal grows'); }
+};
+// ---------- plants grow quickly wherever they touch water ----------
+RT[M.plant] = (i, x, y) => {
+  let w = -1;
+  const o = rint(8);
+  for (let k = 0; k < 8; k++) { const d = NB8[(k + o) & 7], j = idx(x + d[0], y + d[1]); if (j >= 0 && mat[j] === M.water) { w = j; break; } }
+  if (w < 0) return;
+  if (rnd() < 0.55) transform(w, M.plant); // drinks the water and grows into its place
+  else { const d = rnd() < 0.5 ? [0, -1] : NB8[rint(8)], t = idx(x + d[0], y + d[1]); if (t >= 0 && mat[t] === 0) setCell(t, M.plant); }
+  discoverX('Plants drink water and grow');
+};
+// plants grow quickly: every few frames, every plant cell touching water gets a chance to grow
+let plantFront = [], crystalFront = [];
+function plantBoost() {
+  const P = M.plant, Wt = M.water;
+  if (frameNo % 8 === 0) {
+    plantFront = [];
+    for (let i = W; i < N - W; i++) if (mat[i] === P && (mat[i - 1] === Wt || mat[i + 1] === Wt || mat[i - W] === Wt || mat[i + W] === Wt)) { plantFront.push(i); if (plantFront.length > 3000) break; }
+  }
+  if (frameNo % 30 === 0) { crystalFront = []; const C = M.crystal; for (let i = W; i < N - W; i++) if (mat[i] === C && (mat[i - 1] === Wt || mat[i + 1] === Wt || mat[i - W] === Wt || mat[i + W] === Wt)) { crystalFront.push(i); if (crystalFront.length > 2000) break; } }
+  if (crystalFront.length && (frameNo & 3) === 0) { const i = crystalFront[rint(crystalFront.length)]; if (mat[i] === M.crystal) RT[M.crystal](i, i % W, (i / W) | 0); }
+  if (!plantFront.length) return;
+  for (let k = 0; k < 40; k++) { const i = plantFront[rint(plantFront.length)]; if (mat[i] === P && rnd() < 0.5) RT[P](i, i % W, (i / W) | 0, P); }
+}
+function overhaulPass() {
+  gravityPass();
+  if ((frameNo & 1) === 0) magnetPass();
+  flashTick();
+  plantBoost();
+}
+
+// magnetic field map for the overlay (half resolution, refreshed a few times a second)
+let magMap = null, MAGW = 0, magMapAt = -999;
+function buildMagMap() {
+  if (frameNo - magMapAt < 10 && magMap) return; magMapAt = frameNo;
+  MAGW = Math.ceil(W / 2); const MH = Math.ceil(H / 2);
+  if (!magMap || magMap.length !== MAGW * MH) magMap = new Float32Array(MAGW * MH);
+  magMap.fill(0);
+  const mags = getClusters(M.magnet); if (!mags.length) return;
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MAGW; x++) magMap[y * MAGW + x] = magnetField(x * 2 + 1, y * 2 + 1);
 }
 
 // ======================= EXPLOSIONS, LIGHTNING, FX, AUDIO =======================
@@ -4799,6 +5008,40 @@ const GENERATORS = [
   { key: 'mine', name: 'Old mine', desc: 'A shaft and tunnels propped up with planks and lit by lamps, packed with coal, copper, gold, crystals and diamonds.' },
   { key: 'random', name: 'Fully randomized', desc: 'Everything random — terrain, materials, settings.' }
 ];
+// only the materials on the palette appear in generated worlds: everything else becomes its nearest kept cousin
+const WORLD_KEEP_GENS = ['starter', 'flat', 'beach', 'desert', 'mountains', 'caves', 'volcanic', 'frozen', 'forest', 'river', 'ocean', 'canyon', 'random'];
+for (let k = GENERATORS.length - 1; k >= 0; k--) if (!WORLD_KEEP_GENS.includes(GENERATORS[k].key)) GENERATORS.splice(k, 1);
+let KEEPMAP = null;
+function buildKeepMap() {
+  KEEPMAP = new Uint16Array(NM);
+  const to = (list, k) => { for (const n of list) if (M[n] !== undefined) KEEPMAP[M[n]] = M[k]; };
+  for (let m = 0; m < NM; m++) {
+    if (!m || placeable(m) || STATE[m] === ST.CREATURE || m === M.egg || m === M.larva) { KEEPMAP[m] = m; continue; }
+    const s = STATE[m];
+    KEEPMAP[m] = s === ST.SOLID || s === ST.MACHINE ? M.stone : s === ST.POWDER ? M.dirt : s === ST.LIQUID ? M.water : 0;
+  }
+  to(['grass', 'leaves', 'flower', 'vine', 'moss', 'bamboo', 'mushroom', 'cactus', 'seeds', 'sapling'], 'plant');
+  to(['roots'], 'dirt');
+  to(['kelp', 'algae', 'coral', 'reeds', 'lily'], 'water');
+  to(['planks', 'trunk', 'log', 'bark', 'sawdust', 'paper', 'cardboard'], 'wood');
+  to(['nutrient_soil', 'mud', 'gravel', 'ash', 'frozen_soil', 'clay', 'compost', 'soil'], 'dirt');
+  to(['salt', 'red_sand', 'black_sand', 'sandstone_powder'], 'sand');
+  to(['salt_water', 'brine', 'muddy_water', 'hot_spring', 'swamp_water'], 'water');
+  to(['magma'], 'lava');
+  to(['ice_powder', 'packed_snow'], 'snow');
+  to(['permafrost', 'blue_ice'], 'ice');
+  to(['iron', 'steel', 'copper_ore', 'iron_ore'], 'stone');
+  to(['crystal_seed', 'amethyst', 'diamond', 'quartz'], 'crystal');
+  to(['wall'], 'bedrock');
+}
+function keepOnlyListed() {
+  if (!KEEPMAP) buildKeepMap();
+  for (let i = 0; i < N; i++) { const m = mat[i]; if (m && KEEPMAP[m] !== m) { const t = KEEPMAP[m]; if (t) { mat[i] = t; life[i] = 0; aux[i] = 0; } else { mat[i] = 0; life[i] = 0; aux[i] = 0; } } }
+  // plants touching water would swallow lakes straight away: leave a strip of dirt between them
+  const P = M.plant, Wt = M.water;
+  for (let i = 0; i < N; i++) if (mat[i] === P) { const x = i % W, y = (i / W) | 0; for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) { const j = idx(x + dx, y + dy); if (j >= 0 && mat[j] === Wt) { mat[i] = M.dirt; dy = 9; break; } } }
+  for (let k = creatures.length - 1; k >= 0; k--) { const c = creatures[k]; if (!CREATURE_TOOL_KEYS.includes(c.sp.key)) removeCreature(c, false); }
+}
 let genRand = Math.random, moonGravityOn = false;
 function GP(x, y, key) { const i = idx(x, y); if (i >= 0) { setCell(i, M[key]); } return i; }
 function GI(i, key) { if (i >= 0) setCell(i, M[key]); }
@@ -4953,7 +5196,7 @@ function generateWorld(gen, p) {
       for (let x = lc - lw - 6; x < lc + lw + 6; x++) for (let y = lvl; y < H; y++) { const i = idx(x, y); if (i < 0) continue; if (mat[i] !== 0) break; setCell(i, M.water); }
       decorateSurface(0.4 + p.veg * 0.5, { mushrooms: true });
       for (let k = 0; k < 6; k++) pockets('nutrient_soil', 1, 2, 3, [M.dirt]);
-      spawnSome('ant', 10, 'surface'); spawnSome('worm', 8, 'soil'); spawnSome('fish', 8, 'water'); spawnSome('beetle', 3, 'surface'); spawnSome('frog', 2, 'surface'); spawnSome('bird', 3, 'surface'); spawnSome('bee', 4, 'surface'); spawnSome('snail', 3, 'surface'); spawnSome('mouse', 3, 'surface');
+      spawnSome('ant', 10, 'surface'); spawnSome('deer', 2, 'surface'); spawnSome('cow', 2, 'surface'); spawnSome('worm', 8, 'soil'); spawnSome('fish', 8, 'water'); spawnSome('beetle', 3, 'surface'); spawnSome('frog', 2, 'surface'); spawnSome('bird', 3, 'surface'); spawnSome('bee', 4, 'surface'); spawnSome('snail', 3, 'surface'); spawnSome('mouse', 3, 'surface');
       pockets('algae', 8, 1, 3, [M.water]);
       for (let k = 0; k < 20; k++) { const x = lc - lw + gint(lw * 2), i = idx(x, lvl + 1 + gint(4)); if (i >= 0 && mat[i] === M.water) setCell(i, M.algae); }
       break;
@@ -5372,6 +5615,10 @@ function generateWorld(gen, p) {
     const pool = ['oil', 'salt', 'lava', 'acid', 'gunpowder', 'crystal', 'slime', 'seeds', 'honey', 'tnt'];
     for (let k = 0; k < 6; k++) pockets(pool[gint(pool.length)], 1, 3, 7);
   }
+  if (!settings.mystery && !settings.whiteWorld && !settings.corrupt) keepOnlyListed();
+  if (gen === 'forest' || gen === 'mountains') { spawnSome('deer', 3, 'surface'); spawnSome('bear', 1, 'surface'); }
+  if (gen === 'river' || gen === 'desert') spawnSome('cow', 2, 'surface');
+  if (gen === 'ocean' || gen === 'beach') spawnSome('shark', 1, 'water');
   // final temperature initialisation for hot/cold placed materials
   for (let i = 0; i < N; i++) { const m = mat[i]; if (HASHEAT[m]) tmp[i] = HEAT0[m]; }
   lightPass();
@@ -5469,6 +5716,7 @@ function computeSun() {
   wasNight = night;
 }
 function skyTick() {
+  if (!settings.mystery && !settings.whiteWorld && !settings.corrupt) { settings.dayNight = false; settings.weather = 'clear'; }
   if (settings.dayNight) {
     const len = Math.max(1, settings.dayLength) * 60 * 60; // minutes → ticks
     timeOfDay = (timeOfDay + 1 / len) % 1;
@@ -6014,8 +6262,8 @@ function unlockEye() {
   setTimeout(() => toast('👁️ You unlocked the Eye. Paint it anywhere (Energy tab) and it will watch you.', 'good'), 7000);
 }
 if (eyeUnlocked()) MATS[M.eye].hidden = false;
-function spawnLittleEye(x, y) {
-  const r = 5;
+function spawnLittleEye(x, y, size) {
+  const r = size || 5;
   for (const e of littleEyes) if (!e.dead && Math.abs(e.x - x) < r * 2 + 1 && Math.abs(e.y - y) < r + 2) return false; // one eye per spot
   const e = { x, y, r, px: 0, py: 0, blink: 0, nextBlink: 100 + rint(400), small: true };
   // only open where there's room
@@ -6410,16 +6658,21 @@ for (let k = 0; k < 256; k++) {
   HEATR[k] = clamp(140 + t * 400, 0, 255); HEATG[k] = clamp(-40 + t * 330, 0, 255); HEATB[k] = clamp(-200 + t * 450, 0, 255);
 }
 const FIRECOL = [[255, 240, 160], [255, 210, 90], [255, 170, 50], [255, 130, 30], [240, 90, 20], [220, 60, 15], [255, 190, 70], [255, 120, 40]];
-const TEMPMAP = new Uint32Array(512); // -200..3000 mapped
+// temperature overlay: −5000 (black) … cold blues … 20° (dim) … reds … yellows … 20000 (white)
+const TEMPMAP = new Uint32Array(2048), TMIN = -5000, TMAX = 20000;
+function tempKey(T) { const s = T < 0 ? -Math.sqrt(-T / 5000) : Math.sqrt(T / 20000); return clamp(Math.round((s + 1) / 2 * 2047), 0, 2047); }
 function tempColor(T) {
-  let r, g, b;
-  if (T < 20) { const t = clamp((20 - T) / 220, 0, 1); r = 30 * (1 - t); g = 40 + 80 * t * (1 - t) * 2; b = 60 + 195 * t; }
-  else if (T < 100) { const t = (T - 20) / 80; r = 30 + 170 * t; g = 40 - 10 * t; b = 60 - 40 * t; }
-  else if (T < 600) { const t = (T - 100) / 500; r = 200 + 55 * t; g = 30 + 150 * t; b = 20; }
-  else { const t = clamp((T - 600) / 1400, 0, 1); r = 255; g = 180 + 75 * t; b = 20 + 235 * t; }
+  T = clamp(T, TMIN, TMAX); let r, g, b;
+  if (T < -1000) { const t = (T + 5000) / 4000; r = 0; g = 10 * t; b = 120 * t; }               // black → deep blue
+  else if (T < 0) { const t = (T + 1000) / 1000; r = 40 * t; g = 10 + 150 * t; b = 120 + 135 * t; } // deep blue → icy blue
+  else if (T < 20) { const t = T / 20; r = 40 - 5 * t; g = 160 - 122 * t; b = 255 - 205 * t; }      // icy → mild (room temperature is dim)
+  else if (T < 400) { const t = Math.sqrt((T - 20) / 380); r = 35 + 215 * t; g = 38 - 8 * t; b = 50 - 30 * t; }  // → red
+  else if (T < 2000) { const t = (T - 400) / 1600; r = 250 + 5 * t; g = 30 + 150 * t; b = 20; }       // red → orange
+  else if (T < 6000) { const t = (T - 2000) / 4000; r = 255; g = 180 + 65 * t; b = 20 + 60 * t; }     // → yellow
+  else { const t = (T - 6000) / 14000; r = 255; g = 245 + 10 * t; b = 80 + 175 * t; }                 // yellow → white
   return pack(r, g, b);
 }
-for (let k = 0; k < 512; k++) TEMPMAP[k] = tempColor(-200 + k * 6.25);
+for (let k = 0; k < 2048; k++) { const s = k / 2047 * 2 - 1; TEMPMAP[k] = tempColor(s < 0 ? -s * s * 5000 : s * s * 20000); }
 
 function resizeCanvas() {
   const st = $('stage');
@@ -6473,10 +6726,12 @@ function renderWorld() {
   const trails = settings.trails;
   const fcl = frameNo;
   const ov = overlay;
+  if (ov === 'mag') buildMagMap();
   const LIQ = ST.LIQUID, GASS = ST.GAS;
   const WATERM = M.water, FIRE = M.fire;
   if (skyDirty) { skyDirty = false; buildBackground(); }
-  const dn = settings.dayNight, sMin = dn ? 0.2 + 0.22 * sunLevel : 0.42, stars = starLevel > 0 && !trails, skyL = Math.max(1, 250 * sunLevel), shadeAny = (shadeOn || dn) && !settings.whiteWorld && !settings.corrupt;
+  lightTick();
+  const dn = settings.dayNight, sMin = dn ? 0.2 + 0.22 * sunLevel : 0.42, stars = starLevel > 0 && !trails, skyL = Math.max(1, 250 * sunLevel), shadeAny = !!settings.mystery; // only the mystery world is dark; elsewhere unlit things keep their own colour
   for (let y = 0; y < H; y++) {
     const br = bgR[y], bgg = bgG[y], bb = bgB[y], bgcol = trails ? 0 : bgC[y];
     let i = y * W;
@@ -6519,7 +6774,8 @@ function renderWorld() {
         case 18: { const f = 0.5 + 0.5 * Math.sin(fcl * 0.2 + i); r = 20 + 50 * f; g = 0; b = 40 + 70 * f; selfLit = true; break; } // black hole
         case 19: { if (aux[i] & 2) { r = 170; g = 110; b = 255; } break; } // toggle state
         case 20: { if (life[i] > 0) { const c = hslToRgb((aux[i] % 12) / 12, 0.9, 0.6); r = c[0]; g = c[1]; b = c[2]; selfLit = true; } break; } // note
-        case 23: { const f = 0.85 + 0.15 * Math.sin(fcl * 0.12 + (x * 7 + y * 13)); r = 255; g = 225 + 30 * f - (shade[i] & 7) * 6; b = 120 + 90 * f; selfLit = true; break; } // star
+        case 23: { const f = 0.9 + 0.1 * Math.sin(fcl * 0.12 + (x * 7 + y * 13)), c = starRGB(tmp[i]); r = c[0] * f; g = c[1] * f - (shade[i] & 7) * 3; b = c[2] * f; selfLit = true; break; } // star: colour follows temperature
+        case 29: { const c = from565(aux[i]); const br = Math.min(1, (life[i] & 127) / 60); if (c[0] + c[1] + c[2] < 40) { r = 6; g = 6; b = 8; } else { r = c[0] * (0.55 + 0.45 * br); g = c[1] * (0.55 + 0.45 * br); b = c[2] * (0.55 + 0.45 * br); } selfLit = true; break; } // light sources
         case 24: { const f = 0.5 + 0.5 * Math.sin(fcl * 0.1 + x * 0.6 + Math.sin(y * 0.4 + fcl * 0.05) * 3); r = 110 + 90 * f; g = 30 + 40 * f; b = 200 + 55 * f; selfLit = true; break; } // nether portal
         case 25: { if (life[i] > 0) { const c = (aux[i] & 1) ? hslToRgb(0.58 + vy[i] * 0.008, 0.8, 0.6) : hslToRgb(0.1 + vy[i] * 0.01, 0.95, 0.6); r = c[0]; g = c[1]; b = c[2]; selfLit = true; } else if (aux[i] & 1) { r *= 0.8; g *= 0.85; b *= 1.25; } break; } // chord block
         case 26: { const c = hslToRgb(((fcl * 0.012 + x * 0.04 + y * 0.03) % 1 + 1) % 1, 1, 0.6); r = c[0]; g = c[1]; b = c[2]; selfLit = true; break; } // eyte: rainbow
@@ -6538,7 +6794,7 @@ function renderWorld() {
       }
       // incandescence
       const T = tmp[i];
-      if (T > 480 && st !== GASS) {
+      if (T > 480 && st !== GASS && m !== M.star) {
         const t = Math.min(1, (T - 480) / 1300), hk = (t * 255) | 0, mixv = Math.min(0.9, t * 1.2);
         r = r * (1 - mixv) + HEATR[hk] * mixv; g = g * (1 - mixv) + HEATG[hk] * mixv; b = b * (1 - mixv) + HEATB[hk] * mixv; a = 1;
       } else if (T < -40 && st !== GASS) {
@@ -6553,6 +6809,7 @@ function renderWorld() {
       buf[i] = pack(r, g, b);
     }
   }
+  if (ov === 'none') applyDistortion(buf);
   wctx.putImageData(wimg, 0, 0);
   // bloom map
   if (glowOn && ov === 'none') {
@@ -6571,6 +6828,7 @@ function renderWorld() {
         if (m === M.cr_blob) { const c = creatureById.get(aux[i]); if (c && c.g && c.g.glow) gl = 1; }
         if (m === M.cr_firefly || m === M.cr_jellyfish) gl = 0.9;
         if ((m === M.lamp || m === M.alarm) && pow[i]) gl = 1;
+        if (m === M.light || m === M.liquid_light) { const c = aux[i]; gl = (((c >> 11) & 31) + ((c >> 5) & 63) / 2 + (c & 31)) < 5 ? 0 : 0.8; }
         if (tmp[i] > 600 && STATE[m] !== ST.GAS) gl = Math.max(gl, Math.min(1, (tmp[i] - 600) / 800));
         if (gl > 0) { const c = buf[i]; rr += (c & 255) * gl; gg += ((c >> 8) & 255) * gl; bb2 += ((c >> 16) & 255) * gl; }
       }
@@ -6588,13 +6846,14 @@ SPECR[M.paint] = 1; SPECR[M.dried_paint] = 1; SPECR[M.ink] = 2; SPECR[M.lamp] = 
 SPECR[M.wire] = 6; SPECR[M.ins_wire] = 6; SPECR[M.pipe] = 7; SPECR[M.sponge] = 8; SPECR[M.source] = 9; SPECR[M.clone] = 9; SPECR[M.battery] = 11;
 for (const s of SPECIES) SPECR[s.mat] = 10;
 for (const k of ['g_and', 'g_or', 'g_not', 'g_xor', 'g_nand', 'g_nor', 'timer', 'sensor', 'heat_sensor', 'plate', 'button', 'generator']) SPECR[M[k]] = 12;
-SPECR[M.valve] = 13; SPECR[M.star] = 23; SPECR[M.glitch] = 27; SPECR[M.liquid_glitch] = 28; SPECR[M.eyte] = 26; SPECR[M.chord] = 25; SPECR[M.nether_portal] = 24; SPECR[M.portal_in] = 17; SPECR[M.portal_out] = 17; SPECR[M.black_hole] = 18; SPECR[M.toggle] = 19; SPECR[M.note] = 20; SPECR[M.detector] = 12; SPECR[M.delay] = 12; SPECR[M.dispenser] = 21; SPECR[M.neon] = 14; SPECR[M.glitter] = 15; SPECR[M.solar] = 16; SPECR[M.electromagnet] = 12;
+SPECR[M.light] = 29; SPECR[M.liquid_light] = 29; SPECR[M.valve] = 13; SPECR[M.star] = 23; SPECR[M.glitch] = 27; SPECR[M.liquid_glitch] = 28; SPECR[M.eyte] = 26; SPECR[M.chord] = 25; SPECR[M.nether_portal] = 24; SPECR[M.portal_in] = 17; SPECR[M.portal_out] = 17; SPECR[M.black_hole] = 18; SPECR[M.toggle] = 19; SPECR[M.note] = 20; SPECR[M.detector] = 12; SPECR[M.delay] = 12; SPECR[M.dispenser] = 21; SPECR[M.neon] = 14; SPECR[M.glitter] = 15; SPECR[M.solar] = 16; SPECR[M.electromagnet] = 12;
 const _rgbCache = {};
 function hexToRgbCached(h) { return _rgbCache[h] || (_rgbCache[h] = hexToRgb(h)); }
 
 function overlayColor(i, m, y) {
   switch (overlay) {
-    case 'temp': { const T = tmp[i]; let k = ((T + 200) / 6.25) | 0; k = k < 0 ? 0 : k > 511 ? 511 : k; const c = TEMPMAP[k]; return m === 0 ? ((c >>> 1) & 0x7f7f7f7f) | 0xff000000 : c; }
+    case 'temp': { const c = TEMPMAP[tempKey(tmp[i])]; return m === 0 ? ((c >>> 1) & 0x7f7f7f7f) | 0xff000000 : c; }
+    case 'mag': { const f = magMap ? magMap[((y >> 1) * MAGW) + ((i % W) >> 1)] : 0; if (m === M.magnet) return 0xffffffff; if (f <= 0.01) return m === 0 ? 0xff0c0c0c : 0xff262626; const v = Math.min(1, f * 1.3); return pack(26 + 229 * v, 24 + 216 * v, 14 + 126 * v * v); }
     case 'dens': { if (m === 0) return 0xff100c0a; const d = Math.log10(DENS[m] + 1) / 4.4; const v = clamp(d * 255, 20, 255); return pack(v * 0.6, v * 0.85, v); }
     case 'pres': { const p = pres[i]; if (p > 0.02) { const t = Math.min(1, p / 8); return pack(60 + 195 * t, 30, 30); } if (p < -0.02) { const t = Math.min(1, -p / 8); return pack(30, 50, 60 + 195 * t); } return m === 0 ? 0xff141414 : 0xff2a2a2a; }
     case 'vel': {
@@ -6626,6 +6885,7 @@ function drawFrame() {
   const copies = settings.bound === BOUND.WRAP ? [-W, 0, W] : [0];
   for (const ox of copies) {
     ctx.drawImage(worldCanvas, ox, 0);
+    drawLightLayers(ctx, ox);
     if (settings.glow && settings.quality !== 'low' && overlay === 'none') {
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.imageSmoothingEnabled = true;
       ctx.globalAlpha = 0.85; ctx.drawImage(bloomBlur, ox, 0, W, H);
@@ -6637,6 +6897,8 @@ function drawFrame() {
     ctx.lineWidth = 1 / z; ctx.strokeStyle = settings.bound === BOUND.VOID ? 'rgba(255,90,90,0.5)' : 'rgba(233,180,76,0.35)';
     ctx.setLineDash(settings.bound === BOUND.VOID ? [4 / z, 4 / z] : []); ctx.strokeRect(0, 0, W, H); ctx.setLineDash([]);
   }
+  drawSun(ctx, z);
+  if (overlay === 'none') drawBigAnimals(ctx);
   // pixel grid
   if (settings.grid && z >= 10) {
     const x0 = Math.max(0, Math.floor(cam.x)), x1 = Math.min(W, Math.ceil(cam.x + viewW / z));
@@ -6712,6 +6974,378 @@ function drawMinimap() {
 }
 let miniCache = null;
 
+// ======================= LIGHT ENGINE =======================
+// Emitters cast light (ray traced by default, or a cheaper soft-light flood fill). Unlit things keep their own
+// colour; light only ever adds its colour on top, fading smoothly back to the base colour. Transparent things
+// let light through and tint it (water turns it blue). An optional Sun hangs outside the world.
+Object.assign(settings, { lightMode: 'ray', lightRays: 3000, lightBounces: 1, lightRes: 2, lightEvery: 2, lightAir: 0.25, distort: 'low' });
+let showA = null, blurA = null, blurT = null;
+const sun = { on: false, x: 0, y: 0, b: 1, i: 1, col: '#fff1d0', placed: false };
+function sunHome() { sun.x = W * 0.5; sun.y = -12; sun.placed = true; }
+
+let LS_ = 2, LW = 0, LH = 0, LN = 0;
+let tR, tG, tB, emR, emG, emB, emRange, emDark, accR, accG, accB, accD, outR, outG, outB, outD, sR, sG, sB, airF, absorbL, heatF, heatTmp, albR, albG, albB;
+const lightCanvas = document.createElement('canvas'); let lctx = null, limg = null, lbuf = null;
+const darkCanvas = document.createElement('canvas'); let dctx = null, dimg = null, dbuf = null;
+let lightAny = false, darkAny = false, heatAny = false, lightFrame = 0, distBuf = null;
+
+// ---- per-material optical tables ----
+const OPT_TR = new Float32Array(NM), OPT_TG = new Float32Array(NM), OPT_TB = new Float32Array(NM);
+const EM_R = new Float32Array(NM), EM_G = new Float32Array(NM), EM_B = new Float32Array(NM), EM_RANGE = new Float32Array(NM);
+const ALB_R = new Float32Array(NM), ALB_G = new Float32Array(NM), ALB_B = new Float32Array(NM), ISAIRL = new Uint8Array(NM);
+function buildOptics() {
+  for (let m = 0; m < NM; m++) {
+    const def = MATS[m]; if (!def) continue;
+    const [r, g, b] = hexToRgb(def.color), mx = Math.max(r, g, b, 1);
+    ALB_R[m] = r / 255; ALB_G[m] = g / 255; ALB_B[m] = b / 255;
+    const st = STATE[m];
+    const clear = m === 0 || st === ST.GAS || st === ST.ENERGY || ALPHA[m] < 1 || m === M.void || m === M.portal_in || m === M.portal_out;
+    ISAIRL[m] = m === 0 || st === ST.GAS ? 1 : 0;
+    if (!clear) { OPT_TR[m] = OPT_TG[m] = OPT_TB[m] = 0; continue; }
+    if (m === 0 || m === M.void || m === M.portal_in || m === M.portal_out) { OPT_TR[m] = OPT_TG[m] = OPT_TB[m] = 1; continue; }
+    // light that passes through takes on the substance's colour
+    const t = Math.min(1, TRANS[m] < 0.3 ? 0.85 : TRANS[m]), mix = st === ST.GAS ? 0.12 : st === ST.ENERGY ? 0 : 0.35;
+    OPT_TR[m] = t * (1 - mix + mix * r / mx); OPT_TG[m] = t * (1 - mix + mix * g / mx); OPT_TB[m] = t * (1 - mix + mix * b / mx);
+  }
+  const E = (k, c, s, range) => { const m = M[k]; if (m === undefined) return; EM_R[m] = c[0] / 255 * s; EM_G[m] = c[1] / 255 * s; EM_B[m] = c[2] / 255 * s; EM_RANGE[m] = range; };
+  E('lava', [255, 110, 30], 0.9, 26); E('src_lava', [255, 130, 40], 1.2, 30); E('fire', [255, 150, 50], 0.9, 22);
+  E('antimatter', [190, 110, 255], 0.9, 22); E('uranium', [110, 255, 110], 0.22, 10); E('src_water', [80, 150, 255], 0.12, 7);
+  E('eyte', [255, 255, 255], 0.6, 16); E('plasma', [255, 190, 255], 1, 22); E('lightning', [210, 225, 255], 2, 30);
+  E('molten_glass', [255, 150, 60], 0.5, 14); E('magma', [255, 110, 30], 0.9, 24);
+}
+function starRGB(T) { // a star's colour follows its temperature: red → orange → yellow-white → blue-white
+  const t = clamp(T, 500, 30000);
+  if (t < 3000) { const k = (t - 500) / 2500; return [255, 70 + 90 * k, 30 + 30 * k]; }
+  if (t < 6000) { const k = (t - 3000) / 3000; return [255, 160 + 80 * k, 60 + 150 * k]; }
+  if (t < 12000) { const k = (t - 6000) / 6000; return [255 - 70 * k, 240 - 20 * k, 210 + 45 * k]; }
+  const k = Math.min(1, (t - 12000) / 18000); return [185 - 40 * k, 220 - 30 * k, 255];
+}
+function lightAlloc() {
+  LS_ = settings.lightRes || 2; LW = Math.ceil(W / LS_); LH = Math.ceil(H / LS_); LN = LW * LH;
+  const F = () => new Float32Array(LN);
+  tR = F(); tG = F(); tB = F(); emR = F(); emG = F(); emB = F(); emRange = F(); emDark = F();
+  accR = F(); accG = F(); accB = F(); accD = F(); outR = F(); outG = F(); outB = F(); outD = F();
+  showA = new Float32Array(LN * 3); blurA = F(); blurT = F();
+  sR = F(); sG = F(); sB = F(); airF = F(); absorbL = new Uint8Array(LN); heatF = F(); heatTmp = F(); albR = F(); albG = F(); albB = F();
+  lightCanvas.width = LW; lightCanvas.height = LH; lctx = lightCanvas.getContext('2d'); limg = lctx.createImageData(LW, LH); lbuf = new Uint32Array(limg.data.buffer);
+  darkCanvas.width = LW; darkCanvas.height = LH; dctx = darkCanvas.getContext('2d'); dimg = dctx.createImageData(LW, LH); dbuf = new Uint32Array(dimg.data.buffer);
+  if (!sun.placed) sunHome();
+}
+function from565(c) { return [((c >> 11) & 31) * 8.23, ((c >> 5) & 63) * 4.05, (c & 31) * 8.23]; }
+
+// ---- gather: transmission, emission, albedo and heat into the (coarser) light grid ----
+function gatherLight() {
+  tR.fill(0); tG.fill(0); tB.fill(0); emR.fill(0); emG.fill(0); emB.fill(0); emRange.fill(0); emDark.fill(0);
+  airF.fill(0); albR.fill(0); albG.fill(0); albB.fill(0); heatF.fill(0); absorbL.fill(0);
+  const s = LS_, LIGHT = M.light, LLIGHT = M.liquid_light, STAR = M.star, EYTE = M.eyte, fcl = frameNo;
+  let hot = false;
+  for (let y = 0; y < H; y++) {
+    const ly = (y / s) | 0, row = y * W;
+    for (let x = 0; x < W; x++) {
+      const i = row + x, m = mat[i], c = ly * LW + ((x / s) | 0);
+      tR[c] += OPT_TR[m]; tG[c] += OPT_TG[m]; tB[c] += OPT_TB[m];
+      if (m === 0) { airF[c] += 1; continue; }
+      airF[c] += ISAIRL[m]; albR[c] += ALB_R[m]; albG[c] += ALB_G[m]; albB[c] += ALB_B[m];
+      const T = tmp[i];
+      if (T > 250) { const h = Math.min(1, (T - 250) / 2500); if (h > heatF[c]) heatF[c] = h; hot = true; }
+      let er = EM_R[m], eg = EM_G[m], eb = EM_B[m], rg = EM_RANGE[m];
+      if (m === LIGHT || m === LLIGHT) {
+        const col = aux[i], br = (life[i] & 127) / 40, it = (life[i] >> 7) & 127;
+        const [r, g, b] = from565(col);
+        if (r + g + b < 40) { emDark[c] += br; if (rg < 1) rg = 6 + it * 0.7; if (rg > emRange[c]) emRange[c] = rg; continue; }
+        er = r / 255 * br; eg = g / 255 * br; eb = b / 255 * br; rg = 6 + it * 0.7;
+      } else if (m === STAR) { const k = starRGB(T); er = k[0] / 255 * 1.4; eg = k[1] / 255 * 1.4; eb = k[2] / 255 * 1.4; rg = 40; }
+      else if (m === EYTE) { const k = hslToRgb(((fcl * 0.012 + x * 0.04 + y * 0.03) % 1 + 1) % 1, 1, 0.6); er = k[0] / 255 * 0.6; eg = k[1] / 255 * 0.6; eb = k[2] / 255 * 0.6; }
+      else if (er === 0 && eg === 0 && eb === 0 && T > 550 && STATE[m] !== ST.GAS) { // anything glowing hot
+        const t = Math.min(1, (T - 550) / 1500), hk = (t * 255) | 0; er = HEATR[hk] / 255 * t * 0.8; eg = HEATG[hk] / 255 * t * 0.8; eb = HEATB[hk] / 255 * t * 0.8; rg = 8 + t * 16;
+      }
+      if (er > 0 || eg > 0 || eb > 0) { emR[c] += er; emG[c] += eg; emB[c] += eb; if (rg > emRange[c]) emRange[c] = rg; }
+    }
+  }
+  heatAny = hot;
+  // flashes from acid, lightning bolts
+  for (const f of lightFlashes) { const c = lcell(f.x, f.y); if (c >= 0) { const a = f.life / f.max * f.s; emR[c] += f.r / 255 * a; emG[c] += f.g / 255 * a; emB[c] += f.b / 255 * a; if (emRange[c] < 8) emRange[c] = 8; } }
+  for (const b of fx.bolts) for (let k = 0; k < b.pts.length; k += 2) { const p = b.pts[k], c = lcell(p[0], p[1]); if (c >= 0) { const a = Math.min(1, b.life / 4) * 1.2; emR[c] += 0.82 * a; emG[c] += 0.88 * a; emB[c] += a; if (emRange[c] < 34) emRange[c] = 34; } }
+  const inv = 1 / (s * s), pw = s;
+  for (let c = 0; c < LN; c++) {
+    // per-light-cell transmission across s world cells
+    tR[c] = Math.pow(tR[c] * inv, pw); tG[c] = Math.pow(tG[c] * inv, pw); tB[c] = Math.pow(tB[c] * inv, pw);
+    airF[c] *= inv; albR[c] *= inv; albG[c] *= inv; albB[c] *= inv;
+  }
+  // black holes swallow light that passes near them
+  for (const cl of getClusters(M.black_hole)) {
+    const R = Math.max(2, cl.diam * 1.5) / s, cx = cl.cx / s, cy = cl.cy / s;
+    for (let y = Math.max(0, Math.floor(cy - R)); y <= Math.min(LH - 1, Math.ceil(cy + R)); y++) for (let x = Math.max(0, Math.floor(cx - R)); x <= Math.min(LW - 1, Math.ceil(cx + R)); x++) if ((x - cx) ** 2 + (y - cy) ** 2 <= R * R) { absorbL[y * LW + x] = 1; emR[y * LW + x] = emG[y * LW + x] = emB[y * LW + x] = 0; }
+  }
+}
+function lcell(x, y) { const lx = (x / LS_) | 0, ly = (y / LS_) | 0; return lx < 0 || ly < 0 || lx >= LW || ly >= LH ? -1 : ly * LW + lx; }
+
+// ---- the sun: a directional sweep from outside the world (cheap, crisp shadows) ----
+function sunPass() {
+  sR.fill(0); sG.fill(0); sB.fill(0);
+  if (!sun.on) return;
+  const [cr, cg, cb] = hexToRgb(sun.col), B = sun.b * 1.1;
+  const s = LS_, cxw = W / 2, cyw = H / 2;
+  let dx = cxw - sun.x, dy = cyw - sun.y; const dl = Math.hypot(dx, dy) || 1; dx /= dl; dy /= dl;
+  const reach = Math.max(W, H) * 1.2 * sun.i;
+  const vis = new Float32Array(LN * 3);
+  const lit = (c, x, y, ir, ig, ib) => {
+    // light arriving at this cell, fading with distance from the sun (intensity = reach)
+    const d = Math.hypot(x * s - sun.x, y * s - sun.y), f = B / (1 + (d / reach) ** 2);
+    sR[c] = ir * cr / 255 * f; sG[c] = ig * cg / 255 * f; sB[c] = ib * cb / 255 * f;
+    if (absorbL[c]) { vis[c * 3] = vis[c * 3 + 1] = vis[c * 3 + 2] = 0; sR[c] = sG[c] = sB[c] = 0; return; }
+    vis[c * 3] = ir * tR[c]; vis[c * 3 + 1] = ig * tG[c]; vis[c * 3 + 2] = ib * tB[c];
+  };
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    const sx = dx > 0 ? 1 : -1, sy = dy > 0 ? 1 : -1, t = Math.abs(dy / dx);
+    for (let k = 0; k < LW; k++) {
+      const x = sx > 0 ? k : LW - 1 - k, px = x - sx;
+      for (let y = 0; y < LH; y++) {
+        const c = y * LW + x; let ir, ig, ib;
+        if (px < 0 || px >= LW) { ir = ig = ib = 1; }
+        else {
+          const a = y * LW + px, by = y - sy, bIn = by >= 0 && by < LH, bb = by * LW + px;
+          ir = vis[a * 3] * (1 - t) + (bIn ? vis[bb * 3] : 1) * t; ig = vis[a * 3 + 1] * (1 - t) + (bIn ? vis[bb * 3 + 1] : 1) * t; ib = vis[a * 3 + 2] * (1 - t) + (bIn ? vis[bb * 3 + 2] : 1) * t;
+        }
+        lit(c, x, y, ir, ig, ib);
+      }
+    }
+  } else {
+    const sy = dy > 0 ? 1 : -1, sx = dx > 0 ? 1 : -1, t = Math.abs(dx / dy);
+    for (let k = 0; k < LH; k++) {
+      const y = sy > 0 ? k : LH - 1 - k, py = y - sy;
+      for (let x = 0; x < LW; x++) {
+        const c = y * LW + x; let ir, ig, ib;
+        if (py < 0 || py >= LH) { ir = ig = ib = 1; }
+        else {
+          const a = py * LW + x, bx = x - sx, bIn = bx >= 0 && bx < LW, bb = py * LW + bx;
+          ir = vis[a * 3] * (1 - t) + (bIn ? vis[bb * 3] : 1) * t; ig = vis[a * 3 + 1] * (1 - t) + (bIn ? vis[bb * 3 + 1] : 1) * t; ib = vis[a * 3 + 2] * (1 - t) + (bIn ? vis[bb * 3 + 2] : 1) * t;
+        }
+        lit(c, x, y, ir, ig, ib);
+      }
+    }
+  }
+}
+
+// ---- ray traced emitters ----
+const EB = 2; // emitter blocks of EB×EB light cells become one emitter
+function collectEmitters(withSunBounce) {
+  const out = [];
+  for (let by = 0; by < LH; by += EB) for (let bx = 0; bx < LW; bx += EB) {
+    let r = 0, g = 0, b = 0, d = 0, rg = 0, sx = 0, sy = 0, w = 0;
+    for (let y = by; y < Math.min(LH, by + EB); y++) for (let x = bx; x < Math.min(LW, bx + EB); x++) {
+      const c = y * LW + x; let er = emR[c], eg = emG[c], eb = emB[c];
+      if (withSunBounce && tR[c] + tG[c] + tB[c] < 0.3 && sR[c] + sG[c] + sB[c] > 0.05) { er += sR[c] * albR[c] * 0.35; eg += sG[c] * albG[c] * 0.35; eb += sB[c] * albB[c] * 0.35; if (rg < 14) rg = 14; }
+      const e = er + eg + eb + emDark[c]; if (e <= 0) continue;
+      r += er; g += eg; b += eb; d += emDark[c]; if (emRange[c] > rg) rg = emRange[c]; sx += (x + 0.5) * e; sy += (y + 0.5) * e; w += e;
+    }
+    if (w > 0.02) out.push({ x: sx / w, y: sy / w, r, g, b, d, range: Math.max(4, rg / LS_ * (1 + Math.min(1.5, Math.sqrt(w) * 0.12))), p: w });
+  }
+  return out;
+}
+function castRay(x, y, dx, dy, r, g, b, dark, range, bounces) {
+  const decay = Math.exp(-1 / range), maxSteps = Math.min(400, range * 2.6) | 0;
+  let px = (x | 0), py = (y | 0), lastOpen = true;
+  for (let k = 0; k < maxSteps; k++) {
+    x += dx; y += dy;
+    const cx = x | 0, cy = y | 0;
+    if (cx < 0 || cy < 0 || cx >= LW || cy >= LH) return;
+    const c = cy * LW + cx;
+    if (absorbL[c]) return;
+    if (dark) { accD[c] += dark; dark *= decay; if (dark < 0.003) return; }
+    else {
+      const emitting = emR[c] + emG[c] + emB[c] > 0;
+      const tr = emitting ? 1 : tR[c], tg = emitting ? 1 : tG[c], tb = emitting ? 1 : tB[c];
+      if (tr + tg + tb < 0.15) {
+        // hit something solid: light its face, maybe bounce off it tinted by its colour
+        accR[c] += r * 1.6; accG[c] += g * 1.6; accB[c] += b * 1.6;
+        if (bounces <= 0) return;
+        bounces--; r *= albR[c] * 0.55; g *= albG[c] * 0.55; b *= albB[c] * 0.55;
+        if (r + g + b < 0.004) return;
+        x -= dx; y -= dy;
+        if (cx !== px) dx = -dx; if (cy !== py) dy = -dy;
+        const a = Math.atan2(dy, dx) + (rnd() - 0.5) * 1.6; dx = Math.cos(a); dy = Math.sin(a);
+        continue;
+      }
+      accR[c] += r; accG[c] += g; accB[c] += b;
+      r *= tr * decay; g *= tg * decay; b *= tb * decay;
+      if (r + g + b < 0.003) return;
+    }
+    px = cx; py = cy;
+  }
+}
+function rayPass() {
+  accR.fill(0); accG.fill(0); accB.fill(0); accD.fill(0);
+  const ems = collectEmitters(settings.lightBounces > 0 && sun.on);
+  if (!ems.length) return;
+  let P = 0; for (const e of ems) P += Math.sqrt(e.p);
+  const budget = settings.lightRays, bnc = settings.lightBounces | 0;
+  ems.sort((a, b) => b.p - a.p);
+  let used = 0;
+  for (const e of ems) {
+    if (used > budget * 1.5) break;
+    const n = clamp(Math.round(budget * Math.sqrt(e.p) / P), 10, 360); used += n;
+    const k = 6.2832 / n * 0.9, off = rnd() * 6.2832;
+    const r = e.r * k, g = e.g * k, b = e.b * k, d = e.d * k;
+    for (let j = 0; j < n; j++) {
+      const a = off + j * 6.2832 / n, dx = Math.cos(a), dy = Math.sin(a);
+      if (r + g + b > 0) castRay(e.x, e.y, dx, dy, r, g, b, 0, e.range, bnc);
+      if (d > 0) castRay(e.x, e.y, dx, dy, 0, 0, 0, d, e.range, 0);
+    }
+  }
+}
+// ---- soft light: a few flood-fill sweeps, light bleeding outward and fading ----
+function softPass() {
+  for (let c = 0; c < LN; c++) { accR[c] = emR[c] * 1.6; accG[c] = emG[c] * 1.6; accB[c] = emB[c] * 1.6; accD[c] = emDark[c] * 2.5; }
+  if (settings.lightBounces > 0 && sun.on) for (let c = 0; c < LN; c++) if (tR[c] + tG[c] + tB[c] < 0.3) { accR[c] += sR[c] * albR[c] * 0.3; accG[c] += sG[c] * albG[c] * 0.3; accB[c] += sB[c] * albB[c] * 0.3; }
+  const dec = 0.9;
+  const step = (c, p) => {
+    if (absorbL[c]) { accR[c] = accG[c] = accB[c] = accD[c] = 0; return; }
+    const em = emR[p] + emG[p] + emB[p] > 0;
+    const kr = dec * (em ? 1 : tR[p]), kg = dec * (em ? 1 : tG[p]), kb = dec * (em ? 1 : tB[p]), kd = dec * (em ? 1 : (tR[p] + tG[p] + tB[p]) / 3);
+    const r = accR[p] * kr, g = accG[p] * kg, b = accB[p] * kb, d = accD[p] * kd;
+    if (r > accR[c]) accR[c] = r; if (g > accG[c]) accG[c] = g; if (b > accB[c]) accB[c] = b; if (d > accD[c]) accD[c] = d;
+  };
+  for (let it = 0; it < 1; it++) {
+    for (let y = 0; y < LH; y++) { const o = y * LW; for (let x = 1; x < LW; x++) step(o + x, o + x - 1); for (let x = LW - 2; x >= 0; x--) step(o + x, o + x + 1); }
+    for (let x = 0; x < LW; x++) { for (let y = 1; y < LH; y++) step(y * LW + x, (y - 1) * LW + x); for (let y = LH - 2; y >= 0; y--) step(y * LW + x, (y + 1) * LW + x); }
+  }
+}
+function blur3(a, tmpA) { // separable 3-tap blur, in place
+  for (let y = 0; y < LH; y++) { const o = y * LW; for (let x = 0; x < LW; x++) { const l = x > 0 ? a[o + x - 1] : a[o + x], r = x < LW - 1 ? a[o + x + 1] : a[o + x]; tmpA[o + x] = (l + a[o + x] * 2 + r) * 0.25; } }
+  for (let y = 0; y < LH; y++) { const o = y * LW; for (let x = 0; x < LW; x++) { const u = y > 0 ? tmpA[o + x - LW] : tmpA[o + x], d = y < LH - 1 ? tmpA[o + x + LW] : tmpA[o + x]; a[o + x] = (u + tmpA[o + x] * 2 + d) * 0.25; } }
+}
+
+function lightUpdate() {
+  if (!OPT_TR[0]) buildOptics();
+  if (LW !== Math.ceil(W / (settings.lightRes || 2)) || LH !== Math.ceil(H / (settings.lightRes || 2)) || !tR) lightAlloc();
+  gatherLight();
+  sunPass();
+  const mode = settings.lightMode;
+  let anyEm = sun.on || lightFlashes.length || fx.bolts.length; if (!anyEm) for (let c = 0; c < LN; c++) if (emR[c] + emG[c] + emB[c] + emDark[c] > 0) { anyEm = true; break; }
+  if (mode === 'off' || !anyEm) { outR.fill(0); outG.fill(0); outB.fill(0); outD.fill(0); }
+  else {
+    if (mode === 'soft') softPass(); else rayPass();
+    const k = mode === 'ray' ? 0.45 : 1;
+    for (let c = 0; c < LN; c++) { outR[c] += (accR[c] - outR[c]) * k; outG[c] += (accG[c] - outG[c]) * k; outB[c] += (accB[c] - outB[c]) * k; outD[c] += (accD[c] - outD[c]) * k; }
+  }
+  // compose the light image (air shows only a little of the light passing through it)
+  const air = settings.lightAir, show = showA;
+  let any = false, anyD = false;
+  for (let c = 0; c < LN; c++) {
+    const af = airF[c], vis = 1 - af + af * air;
+    const r = (outR[c] + sR[c] * (1 - af * 0.8)) * vis, g = (outG[c] + sG[c] * (1 - af * 0.8)) * vis, b = (outB[c] + sB[c] * (1 - af * 0.8)) * vis;
+    show[c * 3] = r; show[c * 3 + 1] = g; show[c * 3 + 2] = b;
+    if (r + g + b > 0.004) any = true; if (outD[c] > 0.004) anyD = true;
+  }
+  lightAny = any; darkAny = anyD;
+  if (any) {
+    // soften into sub-pixel gradients
+    const a = blurA, t = blurT;
+    for (let ch = 0; ch < 3; ch++) { for (let c = 0; c < LN; c++) a[c] = show[c * 3 + ch]; blur3(a, t); if (mode === 'ray') blur3(a, t); for (let c = 0; c < LN; c++) show[c * 3 + ch] = a[c]; }
+    for (let c = 0; c < LN; c++) lbuf[c] = pack(255 * (1 - Math.exp(-show[c * 3] * 1.3)), 255 * (1 - Math.exp(-show[c * 3 + 1] * 1.3)), 255 * (1 - Math.exp(-show[c * 3 + 2] * 1.3)));
+    lctx.putImageData(limg, 0, 0);
+  }
+  if (anyD) { const a = blurA, t = blurT; a.set(outD); blur3(a, t); for (let c = 0; c < LN; c++) { const v = 255 * Math.exp(-a[c] * 2.2); dbuf[c] = pack(v, v, v); } dctx.putImageData(dimg, 0, 0); }
+  // heat distortion field: spreads into the air around hot things, stronger when hotter and closer
+  if (heatAny && settings.distort !== 'off') { for (let p = 0; p < 2; p++) { blur3(heatF, heatTmp); for (let c = 0; c < LN; c++) heatF[c] *= 1.6; } }
+}
+function lightTick() {
+  if (overlay !== 'none') return;
+  if (lightFrame++ % Math.max(1, settings.lightEvery | 0) === 0) lightUpdate();
+}
+// heat shimmer applied to the finished world image: air near hot things wobbles
+function applyDistortion(buf) {
+  if (!heatAny || settings.distort === 'off' || !heatF) return;
+  if (!distBuf || distBuf.length !== buf.length) distBuf = new Uint32Array(buf.length);
+  distBuf.set(buf);
+  const A = settings.distort === 'high' ? 3.2 : 1.8, s = LS_, t = frameNo;
+  for (let ly = 0; ly < LH; ly++) for (let lx = 0; lx < LW; lx++) {
+    const h0 = heatF[ly * LW + lx]; if (h0 < 0.03) continue;
+    const h = Math.min(1, h0);
+    for (let yy = 0; yy < s; yy++) {
+      const y = ly * s + yy; if (y >= H) break;
+      for (let xx = 0; xx < s; xx++) {
+        const x = lx * s + xx; if (x >= W) break;
+        const i = y * W + x; if (!ISAIRL[mat[i]]) continue;
+        const ox = Math.round(Math.sin(y * 0.55 + t * 0.23 + x * 0.11) * h * A), oy = Math.round(Math.sin(x * 0.43 - t * 0.19) * h * A * 0.6 - h * 0.6);
+        const sx2 = clamp(x + ox, 0, W - 1), sy2 = clamp(y + oy, 0, H - 1);
+        buf[i] = distBuf[sy2 * W + sx2];
+      }
+    }
+  }
+}
+function drawLightLayers(ctx, ox) {
+  if (overlay !== 'none' || settings.lightMode === 'off' && !sun.on) return;
+  ctx.save(); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+  if (lightAny) { ctx.globalCompositeOperation = 'screen'; ctx.drawImage(lightCanvas, ox, 0, LW * LS_, LH * LS_); }
+  if (darkAny) { ctx.globalCompositeOperation = 'multiply'; ctx.drawImage(darkCanvas, ox, 0, LW * LS_, LH * LS_); }
+  ctx.restore();
+}
+function drawSun(ctx, z) {
+  if (!sun.on || overlay !== 'none') return;
+  const R = Math.max(6, 16 / z * 2), [r, g, b] = hexToRgb(sun.col);
+  const gr = ctx.createRadialGradient(sun.x, sun.y, 0, sun.x, sun.y, R * 3);
+  gr.addColorStop(0, `rgba(${r},${g},${b},${Math.min(1, 0.55 + sun.b * 0.3)})`); gr.addColorStop(0.3, `rgba(${r},${g},${b},${Math.min(0.6, 0.2 * sun.b)})`); gr.addColorStop(1, `rgba(${r},${g},${b},0)`);
+  ctx.fillStyle = gr; ctx.fillRect(sun.x - R * 3, sun.y - R * 3, R * 6, R * 6);
+  ctx.fillStyle = `rgb(${Math.min(255, r + 20)},${Math.min(255, g + 20)},${Math.min(255, b + 20)})`; ctx.beginPath(); ctx.arc(sun.x, sun.y, R * 0.6, 0, 6.283); ctx.fill();
+}
+// the sun lives outside the world: if you drag it inside, it gets nudged back out past the nearest edge
+function keepSunOutside() {
+  const m = 6;
+  if (sun.x > -m && sun.x < W + m && sun.y > -m && sun.y < H + m) {
+    const dl = sun.x + m, dr = W + m - sun.x, du = sun.y + m, dd = H + m - sun.y, mn = Math.min(dl, dr, du, dd);
+    if (mn === dl) sun.x = -m; else if (mn === dr) sun.x = W + m; else if (mn === du) sun.y = -m; else sun.y = H + m;
+  }
+}
+let sunDrag = false;
+function sunHit(wx, wy) { return sun.on && Math.hypot(wx - sun.x, wy - sun.y) < Math.max(8, 22 / cam.z); }
+function openSunPanel() {
+  openWindow('sun', '☀ Sun', body => {
+    body.appendChild(check('Show the sun', sun.on, v => { sun.on = v; if (v && !sun.placed) sunHome(); }));
+    body.appendChild(slider('Brightness', 'sunB', 0, 3, 0.05, sun.b, v => (+v).toFixed(2) + '×', v => sun.b = +v));
+    body.appendChild(slider('Intensity', 'sunI', 0.2, 3, 0.05, sun.i, v => (+v).toFixed(2) + '×', v => sun.i = +v));
+    const c = el('input', { type: 'color', value: sun.col }); c.addEventListener('input', () => sun.col = c.value);
+    body.appendChild(el('div', { class: 'opt wide' }, el('span', null, 'Colour'), c));
+    body.appendChild(el('button', { style: 'width:100%;margin-top:6px', onclick: () => { sunHome(); } }, 'Put it back above the world'));
+    body.appendChild(el('div', { class: 'hint' }, 'Drag the sun around outside the world. Brightness is how strong it shines, intensity is how far its light reaches.'));
+  }, { x: 80, y: 80, w: 280 });
+}
+
+// ======================= BIG ANIMAL SPRITES =======================
+// big animals move as a short chain of cells; on screen they're drawn as a proper little pixel-art body over it
+const BIG_SPRITES = {
+  deer: { rows: ['......a.a', '.......a.', '......BBk', 'BBBBBBBe.', 'BWWWWWB..', '.L....L..', '.L....L..'], pal: { B: '#a86f3e', W: '#dcb98f', a: '#efe2bd', k: '#3a2416', e: '#1a1a1a', L: '#6b4423' }, legs: 5 },
+  cow: { rows: ['........h.', 'WWBBWWWWWW', 'WBBWWWBBWk', 'WWWWWBBWe.', '.L.L..L.L.', '.L.L..L.L.'], pal: { W: '#efeae2', B: '#2b2b2b', h: '#d8c8a0', k: '#e8a3a3', e: '#111111', L: '#cfc8bc' }, legs: 4 },
+  bear: { rows: ['......B.B.', '.....BBBB.', 'BBBBBBBBek', 'BBBBBBBBB.', 'BBBBBBBBB.', '.BB...BB..', '.BB...BB..'], pal: { B: '#5a3a22', k: '#24160c', e: '#0a0a0a' }, legs: 5 },
+  shark: { rows: ['......F.....', '.....FF.....', 'T.GGGGGGGGG.', 'TTGGGGGGGGGe', 'T.WWWWWWWWG.'], pal: { G: '#7d8ea3', F: '#66788d', T: '#66788d', W: '#dfe6ee', e: '#0a0a0a' }, legs: -1 }
+};
+function drawBigAnimals(ctx) {
+  for (const c of creatures) {
+    if (c.g) continue;
+    const sp = BIG_SPRITES[c.sp.key]; if (!sp || !c.segs || !c.segs.length) continue;
+    let minX = 1e9, maxX = -1, maxY = -1, sy = 0;
+    for (const s of c.segs) { const x = s % W, y = (s / W) | 0; if (x < minX) minX = x; if (x > maxX) maxX = x; if (y > maxY) maxY = y; sy += y; }
+    const hx = c.segs[0] % W, tx = c.segs[c.segs.length - 1] % W;
+    if (hx !== tx) c._face = hx > tx ? 1 : -1; else if (c._lx !== undefined && c._lx !== hx) c._face = hx > c._lx ? 1 : -1;
+    if (c._lx !== hx) { c._step = (c._step || 0) + 1; c._lx = hx; }
+    const face = c._face || 1, rows = sp.rows, SW = rows[0].length, SH = rows.length;
+    const left = Math.round((minX + maxX + 1) / 2 - SW / 2), top = sp.legs < 0 ? Math.round(sy / c.segs.length - SH / 2 + 0.5) : maxY - SH + 1;
+    const walk = (c._step >> 1) & 1;
+    for (let r = 0; r < SH; r++) {
+      const row = rows[r];
+      for (let k = 0; k < SW; k++) {
+        let ch = row[k]; if (ch === '.') continue;
+        let px = face > 0 ? k : SW - 1 - k;
+        if (ch === 'L' && walk && r === SH - 1) px += face > 0 ? (k % 2 ? 1 : -1) * 0 + 1 : -1; // legs shuffle as it walks
+        ctx.fillStyle = sp.pal[ch] || '#fff';
+        ctx.fillRect(left + px, top + r, 1, 1);
+      }
+    }
+    if (c === selCreature && (frameNo >> 3) & 1) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 0.3; ctx.strokeRect(left - 0.5, top - 0.5, SW + 1, SH + 1); }
+  }
+}
+
 // ======================= TOOLS, BRUSHES, EDITING =======================
 const TOOLS = [
   { key: 'brush', icon: '🖌️', name: 'Material brush', sc: 'B', desc: 'Paint the selected material. Right-click erases.' },
@@ -6727,12 +7361,13 @@ const TOOLS = [
   { key: 'move', icon: '✥', name: 'Move region', sc: 'V', desc: 'Drag a selection to move its contents.' },
   { key: 'paste', icon: '📋', name: 'Paste', sc: 'Ctrl+V', desc: 'Click to stamp the copied region.' },
   { key: 'fill', icon: '🪣', name: 'Fill enclosed area', sc: 'F', desc: 'Fill the empty space connected to where you click.' },
-  { key: 'flood', icon: '🌊', name: 'Flood replace', sc: 'Shift+F', desc: 'Replace a connected region of one material with the selected material.' },
+  { key: 'flood', icon: '🌊', name: 'Flood replace', sc: 'F', desc: 'Replace a connected region of one material with the selected material.' },
   { key: 'replace', icon: '🔁', name: 'Replace brush', sc: 'Shift+E', desc: 'Brush that only replaces the material you first click on.' },
   { key: 'clone', icon: '🧬', name: 'Clone brush', sc: 'Shift+B', desc: 'Alt-click to set a source, then paint copies of it.' },
   { key: 'eyedrop', icon: '💧', name: 'Eyedropper', sc: 'I', desc: 'Pick the material under the cursor.' },
   { sep: true },
-  { key: 'heat', icon: '🌡️', name: 'Heat', sc: 'T', desc: 'Raise the temperature of everything under the brush.' },
+  { key: 'temp', icon: '🌡️', name: 'Temperature', sc: 'T', desc: 'Left button heats, right button cools. Cool empty air far enough (around −5000°) and it condenses into liquid air.' },
+  { key: 'heat', icon: '🌡️', name: 'Heat', sc: '', desc: 'Raise the temperature of everything under the brush.' },
   { key: 'cool', icon: '🧊', name: 'Cool', sc: 'Y', desc: 'Lower the temperature of everything under the brush.' },
   { key: 'fire', icon: '🔥', name: 'Fire', sc: 'U', desc: 'Ignite flammable things and add flames.' },
   { key: 'water', icon: '🚿', name: 'Water injection', sc: 'N', desc: 'Inject a jet of water in the direction you drag.' },
@@ -6749,6 +7384,7 @@ const TOOLS = [
   { key: 'interact', icon: '👆', name: 'Interact', sc: 'H', desc: 'Toggle switches, valves and doors, press buttons, rotate machines, cycle timers.' }
 ];
 const TOOL_BY_KEY = {}; TOOLS.forEach(t => { if (t.key) TOOL_BY_KEY[t.key] = t; });
+settings.lightColor = '#ffe8b0'; settings.lightBright = 60; settings.lightInt = 50;
 const brush = { size: 6, shape: 'circle', soft: false, density: 0, overwrite: false, intensity: 1, lineAngle: 0 };
 let tool = 'brush';
 let selMat = M.sand;
@@ -6825,7 +7461,7 @@ function placeMat(i, m, force) {
   if (cur === m && !force) return false;
   if (def.key === 'lightning') return false; // strikes are triggered by the brush itself, never mass-placed
   if (def.key === 'air') { recCell(i); if (cur) clearCell(i); pres[i] += 3 * brush.intensity; presActive = true; return true; }
-  if (m === M.eye) { const x = i % W, y = (i / W) | 0; return spawnLittleEye(x, y); }
+  if (m === M.eye) return spawnLittleEye(Math.round(mouse.cx), Math.round(mouse.cy), clamp(Math.round(brush.size * 0.8), 3, 40)); // eye size follows the brush
   recCell(i);
   let real = m, auxv = 0;
   if (def.placeAs) { real = M[def.placeAs]; if (def.placeAux) auxv = M[def.placeAux]; }
@@ -6840,6 +7476,7 @@ function placeMat(i, m, force) {
   if (real === M.note) auxv = notePitch;
   if (real === M.chord) auxv = chordMood;
   if (real === M.paint) auxv = hexTo565(settings.paintColor);
+  if (real === M.light || real === M.liquid_light) { aux[i] = hexTo565(settings.lightColor); life[i] = (clamp(settings.lightBright, 0, 127) | (clamp(settings.lightInt, 0, 127) << 7)); }
   if (real === M.dispenser) life[i] = dispenserMat;
   if (auxv) aux[i] = auxv;
   if (real === M.egg) aux[i] = SPECIES_BY_KEY[creatureKind] ? SPECIES_BY_KEY[creatureKind].index + 1 : 1;
@@ -6914,9 +7551,9 @@ function stampBrush(cx, cy, primary) {
     return;
   }
   const I = brush.intensity;
-  if (t === 'heat' || t === 'cool') {
-    const s = (t === 'heat' ? 1 : -1) * 14 * I * (primary ? 1 : -1);
-    forBrush(cx, cy, (i, d) => { const f = brush.soft ? 1 - d : 1; tmp[i] += s * f / HCAP[mat[i]]; if (tmp[i] < -273) tmp[i] = -273; stats.energyAdded += s * f; wakeI(i); });
+  if (t === 'heat' || t === 'cool' || t === 'temp') {
+    const s = (t === 'cool' ? -1 : 1) * 45 * I * (primary ? 1 : -1);
+    forBrush(cx, cy, (i, d) => { const f = brush.soft ? 1 - d : 1; tmp[i] += s * f / HCAP[mat[i]]; if (tmp[i] < -9000) tmp[i] = -9000; if (tmp[i] > 30000) tmp[i] = 30000; stats.energyAdded += s * f; wakeI(i); });
     return;
   }
   if (t === 'fire') {
@@ -7182,7 +7819,7 @@ function stampTerrain(kind, cx, cy, size) {
 }
 
 // ======================= INPUT =======================
-const CONTINUOUS = new Set(['brush', 'eraser', 'replace', 'clone', 'heat', 'cool', 'fire', 'water', 'air', 'pressure', 'wind', 'gravity']);
+const CONTINUOUS = new Set(['brush', 'eraser', 'replace', 'clone', 'heat', 'cool', 'temp', 'fire', 'water', 'air', 'pressure', 'wind', 'gravity']);
 const EDITING = new Set(['brush', 'eraser', 'replace', 'clone', 'fire', 'water']);
 const SHAPES = new Set(['line', 'rect', 'frect', 'circle', 'fcircle']);
 let panning = false, spaceDown = false, spaceUsed = false, altDown = false;
@@ -7211,6 +7848,7 @@ view.addEventListener('mousedown', e => {
   updateMouseWorld(e);
   if (activeChallenge && activeChallenge.lockEdit && activeChallenge.phase !== 'build' && tool !== 'inspect' && tool !== 'measure' && e.button !== 1 && !spaceDown) { toast('Editing is locked while the challenge test runs.'); return; }
   if (e.button === 1 || spaceDown) { panning = true; spaceUsed = true; mouse.lastSX = mouse.sx; mouse.lastSY = mouse.sy; e.preventDefault(); return; }
+  if (e.button === 0 && sunHit(mouse.wx, mouse.wy)) { sunDrag = true; return; }
   if (pendingTarget) { const pt = pendingTarget; pendingTarget = null; pt(mouse.cx, mouse.cy); return; }
   const primary = e.button === 0;
   mouse.down = true; mouse.button = e.button; mouse.startX = mouse.cx; mouse.startY = mouse.cy; mouse.lastX = mouse.cx; mouse.lastY = mouse.cy;
@@ -7271,6 +7909,7 @@ window.addEventListener('mousemove', e => {
   updateMouseWorld(e);
   mouse.inside = e.target === view;
   if (panning) { cam.x -= (mouse.sx - psx) / cam.z; cam.y -= (mouse.sy - psy) / cam.z; clampCam(); return; }
+  if (sunDrag) { sun.x = mouse.wx; sun.y = mouse.wy; keepSunOutside(); return; }
   if (!mouse.down) return;
   mouse.dragDX = mouse.dragDX * 0.6 + (mouse.cx - mouse.lastX) * 0.4; mouse.dragDY = mouse.dragDY * 0.6 + (mouse.cy - mouse.lastY) * 0.4;
   if (CONTINUOUS.has(tool) && (mouse.cx !== mouse.lastX || mouse.cy !== mouse.lastY)) {
@@ -7281,6 +7920,7 @@ window.addEventListener('mousemove', e => {
 });
 window.addEventListener('mouseup', e => {
   if (panning) { panning = false; return; }
+  if (sunDrag) { sunDrag = false; return; }
   if (!mouse.down) return;
   mouse.down = false;
   const primary = mouse.button === 0;
@@ -7325,8 +7965,8 @@ function habitatHint(k) { if (k === 'blob') return designHabHint(activeDesign())
 let pendingTarget = null;
 
 // keyboard
-const KEYMAP = { b: 'brush', e: 'eraser', l: 'line', r: 'rect', c: 'circle', s: 'select', v: 'move', f: 'fill', i: 'eyedrop', t: 'heat', y: 'cool', u: 'fire', n: 'water', a: 'air', p: 'pressure', x: 'explode', w: 'wind', g: 'gravity', k: 'creature', q: 'inspect', m: 'measure', h: 'interact' };
-const SHIFTMAP = { r: 'frect', c: 'fcircle', s: 'lasso', f: 'flood', e: 'replace', b: 'clone', g: 'terrain' };
+const KEYMAP = { b: 'brush', s: 'select', r: 'rect', c: 'circle', f: 'flood', k: 'creature', t: 'temp' };
+const SHIFTMAP = { r: 'frect', c: 'fcircle' };
 window.addEventListener('keydown', e => {
   const tg = e.target;
   if (tg && (tg.tagName === 'INPUT' && tg.type !== 'range' && tg.type !== 'checkbox' || tg.tagName === 'TEXTAREA' || tg.tagName === 'SELECT')) { if (e.key === 'Escape') tg.blur(); return; }
@@ -7360,13 +8000,11 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Home') { fitCamera(); return; }
   if (e.key.startsWith('Arrow')) { const s = 40 / cam.z; if (e.key === 'ArrowLeft') cam.x -= s; if (e.key === 'ArrowRight') cam.x += s; if (e.key === 'ArrowUp') cam.y -= s; if (e.key === 'ArrowDown') cam.y += s; clampCam(); e.preventDefault(); return; }
   if (/^[0-9]$/.test(e.key)) { const n = e.key === '0' ? 9 : +e.key - 1; if (hotbar[n] !== undefined) { selectMaterial(hotbar[n]); if (!['brush', 'line', 'rect', 'frect', 'circle', 'fcircle', 'fill', 'flood', 'replace'].includes(tool)) setTool('brush'); } return; }
-  if (k === 'd') { placeDir = (placeDir + 1) & 3; renderToolOpts(); toast('Machine direction: ' + ['→ right', '↓ down', '← left', '↑ up'][placeDir]); return; }
   if (k === 'o') { const s = $('overlaySel'); s.selectedIndex = (s.selectedIndex + 1) % s.options.length; setOverlay(s.value); return; }
   if (k === 'z' && !e.shiftKey) { }
   if (e.shiftKey && k === 'p') { takeScreenshot(); return; }
   const map = e.shiftKey ? SHIFTMAP : KEYMAP;
   if (map[k]) { setTool(map[k]); return; }
-  if (k === 'j') { setTool('cool'); }
 });
 window.addEventListener('keyup', e => {
   controlKey(e, false);
@@ -7576,6 +8214,7 @@ view.addEventListener('dblclick', e => {
   travelNether(c);
 });
 
+const CREATURE_TOOL_KEYS = ['ant', 'frog', 'deer', 'cow', 'bear', 'fish', 'shark', 'bird', 'blob'];
 // ======================= USER INTERFACE =======================
 const LS = {
   get(k, d) { try { const v = localStorage.getItem('uss.' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -7621,14 +8260,27 @@ function buildIcons() {
 }
 
 // ---------- palette ----------
-const CATS = ['Favorites', 'Powders', 'Liquids', 'Gases', 'Solids', 'Energy', 'Explosives', 'Life', 'Kitchen', 'Machines', 'Electric', 'All'];
+const CATS = ['Favorites', 'Powders', 'Liquids', 'Gases', 'Solids', 'Energy', 'Misc', 'Light', 'All'];
+// the only materials you can paint (everything else exists only as a by-product or inside secret places)
+const PALCAT = {}, PALORDER = {};
+[['Powders', ['sand', 'dirt', 'snow', 'metal_powder', 'gunpowder']],
+ ['Liquids', ['water', 'oil', 'lava', 'acid', 'slime', 'liquid_metal', 'liquid_air']],
+ ['Gases', ['steam', 'smoke', 'methane']],
+ ['Solids', ['stone', 'bedrock', 'wood', 'ice', 'metal', 'sponge', 'crystal', 'uranium', 'plant', 'glass']],
+ ['Energy', ['fire', 'lightning', 'star', 'antimatter']],
+ ['Misc', ['src_water', 'src_lava', 'magnet', 'portal_in', 'portal_out', 'black_hole', 'void', 'glitch', 'liquid_glitch', 'eye', 'eyte']],
+ ['Light', ['light', 'liquid_light']]].forEach(([c, ks], ci) => ks.forEach((k, ki) => { const id = M[k]; if (id === undefined) return; PALCAT[id] = c; PALORDER[id] = ci * 100 + ki; MATS[id].cat = c; }));
+const LOCKED = new Set(['glitch', 'liquid_glitch', 'eye', 'eyte'].map(k => M[k]).filter(v => v !== undefined));
+for (const id in PALCAT) if (!LOCKED.has(+id)) MATS[id].hidden = false;
 let curCat = 'Powders';
-let favorites = new Set(LS.get('favorites', [M.sand, M.water, M.fire, M.lava, M.wood, M.seeds].map(i => MATS[i].key)).map(k => M[k]).filter(v => v !== undefined));
-let hotbar = LS.get('hotbar', ['sand', 'water', 'stone', 'wood', 'fire', 'oil', 'lava', 'salt', 'seeds', 'acid']).map(k => M[k]).filter(v => v !== undefined);
+let favorites = new Set(LS.get('favorites', ['sand', 'water', 'fire', 'lava', 'wood']).map(k => M[k]).filter(v => v !== undefined && PALCAT[v]));
+const DEFAULT_HOTBAR = ['sand', 'water', 'stone', 'wood', 'fire', 'oil', 'lava', 'dirt', 'plant', 'acid'];
+let hotbar = LS.get('hotbar', DEFAULT_HOTBAR).map(k => M[k]).filter(v => v !== undefined && PALCAT[v]);
+if (hotbar.length < 6) hotbar = DEFAULT_HOTBAR.map(k => M[k]);
 let recent = [];
 let hotbarPin = 0;
 let allowedMats = null; // challenge restriction
-function placeable(m) { const d = MATS[m]; return !d.hidden && d.state !== ST.CREATURE && m !== 0; }
+function placeable(m) { return PALCAT[m] !== undefined && !(LOCKED.has(m) && MATS[m].hidden); }
 function allowedCheck() {
   if (tool === 'eraser' || !allowedMats) return true;
   if (['brush', 'line', 'rect', 'frect', 'circle', 'fcircle', 'fill', 'flood', 'replace'].includes(tool) && !allowedMats.has(selMat)) { toast('This challenge only allows: ' + [...allowedMats].map(m => MATS[m].name).join(', '), 'bad'); return false; }
@@ -7659,6 +8311,7 @@ function renderPalette() {
     wrap.appendChild(el('div', { class: 'palgrp' }, list.length + ' result' + (list.length === 1 ? '' : 's')));
   } else if (curCat === 'Favorites') { list = list.filter(m => favorites.has(m)); if (!list.length) wrap.appendChild(el('div', { class: 'hint' }, 'Right-click any material to add it to favourites.')); }
   else if (curCat !== 'All') list = list.filter(m => MATS[m].cat === curCat);
+  if (!q) list.sort((a, b) => PALORDER[a] - PALORDER[b]);
   if (curCat === 'All' && !q) {
     for (const c of CATS.slice(1, -1)) {
       const sub = list.filter(m => MATS[m].cat === c); if (!sub.length) continue;
@@ -7712,7 +8365,7 @@ function renderMatInfo() {
 function buildToolbar() {
   const box = $('tools'); box.innerHTML = '';
   // trimmed toolbar: only these tools get buttons (every other tool still works from its keyboard shortcut)
-  const SHOWN = ['brush', 'select', '|', 'rect', 'frect', 'circle', 'fcircle', '|', 'eraser', 'flood', '|', 'creature', '|', 'heat', 'cool'];
+  const SHOWN = ['brush', 'select', '|', 'rect', 'frect', 'circle', 'fcircle', '|', 'flood', '|', 'creature', '|', 'temp'];
   for (const k of SHOWN) {
     if (k === '|') { box.appendChild(el('div', { class: 'tsep' })); continue; }
     const t = TOOL_BY_KEY[k]; if (!t) continue;
@@ -7783,12 +8436,20 @@ function renderToolOpts() {
     if (real === M.delay) box.appendChild(slider('Delay', 'optDel', 1, 14, 1, delayTicks, v => v * 2 + ' ticks', v => delayTicks = +v));
     if (real === M.chord) box.appendChild(seg('Mood', [[0, '😊 Happy'], [1, '😢 Sad']], chordMood, v => { chordMood = +v; audioInit(); playChord(chordMood, cam.x + viewW / cam.z / 2, cam.y + viewH / cam.z / 2); }));
     if (real === M.note) box.appendChild(slider('Pitch', 'optNote', 0, 24, 1, notePitch, v => noteName(+v), v => { notePitch = +v; audioInit(); playNote(notePitch, cam.x + viewW / cam.z / 2, cam.y + viewH / cam.z / 2); }));
+    if (real === M.light || real === M.liquid_light) {
+      const c = el('input', { type: 'color', value: settings.lightColor }); c.addEventListener('input', () => settings.lightColor = c.value);
+      box.appendChild(el('div', { class: 'opt wide' }, el('span', null, 'Light colour'), c));
+      box.appendChild(slider('Brightness', 'optLB', 0, 120, 1, settings.lightBright, v => v + '', v => settings.lightBright = +v));
+      box.appendChild(slider('Intensity', 'optLI', 0, 120, 1, settings.lightInt, v => v + '', v => settings.lightInt = +v));
+      box.appendChild(el('div', { class: 'hint' }, 'Brightness is how strong it shines; intensity is how far the light reaches. Pick black to make it give off darkness instead.'));
+    }
     if (real === M.paint) { const c = el('input', { type: 'color', value: settings.paintColor }); c.addEventListener('input', () => settings.paintColor = c.value); box.appendChild(el('div', { class: 'opt wide' }, el('span', null, 'Paint colour'), c)); }
     if (real === M.egg) box.appendChild(el('div', { class: 'opt wide' }, el('span', null, 'Hatches into'), speciesSelect()));
   }
   if (tool === 'creature') {
     const g = el('div', { class: 'grid2', style: 'grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px' });
     for (const s of SPECIES) {
+      if (!CREATURE_TOOL_KEYS.includes(s.key)) continue;
       if (s.key === 'blob') { g.appendChild(el('button', { class: creatureKind === 'blob' ? 'on' : '', title: 'Your own creatures, made in the design studio', style: 'text-align:left;font-size:12px', onclick: () => { creatureKind = 'blob'; renderToolOpts(); } }, '🧬 Custom blobs ', el('span', { class: 'faint' }, String(creatureCounts.blob || 0)))); continue; }
       const b = el('button', { class: s.key === creatureKind ? 'on' : '', title: s.desc, style: 'text-align:left;font-size:12px;overflow:hidden;text-overflow:ellipsis;min-width:0', onclick: () => { creatureKind = s.key; renderToolOpts(); } }, s.icon + ' ' + s.name + ' ', el('span', { class: 'faint' }, String(creatureCounts[s.key] || 0)));
       g.appendChild(b);
@@ -8168,7 +8829,7 @@ async function serializeWorld(name) {
   const obj = {
     format: SAVE_FORMAT, version: SAVE_VERSION, name: name || 'World', saved: new Date().toISOString(), W, H,
     matKeys: MATS.map(m => m.key), z: false, data: '', frameNo,
-    settings: { gravity: settings.gravity, gdir: settings.gdir, ambient: settings.ambient, wind: settings.wind, bound: settings.bound, reactionRate: settings.reactionRate, heatRate: settings.heatRate, simSpeed: settings.simSpeed, paintColor: settings.paintColor, quality: settings.quality, evaporation: settings.evaporation, erosion: settings.erosion, dayNight: settings.dayNight, dayLength: settings.dayLength, weather: settings.weather, weatherAmt: settings.weatherAmt, timeOfDay, lavaClimate: !!settings.lavaClimate, mystery: !!settings.mystery, whiteWorld: !!settings.whiteWorld, corrupt: !!settings.corrupt },
+    settings: { gravity: settings.gravity, gdir: settings.gdir, ambient: settings.ambient, wind: settings.wind, bound: settings.bound, reactionRate: settings.reactionRate, heatRate: settings.heatRate, simSpeed: settings.simSpeed, paintColor: settings.paintColor, quality: settings.quality, evaporation: settings.evaporation, erosion: settings.erosion, dayNight: settings.dayNight, dayLength: settings.dayLength, weather: settings.weather, weatherAmt: settings.weatherAmt, timeOfDay, lavaClimate: !!settings.lavaClimate, mystery: !!settings.mystery, whiteWorld: !!settings.whiteWorld, corrupt: !!settings.corrupt, sun: { on: sun.on, x: sun.x, y: sun.y, b: sun.b, i: sun.i, col: sun.col } },
     camera: { x: cam.x, y: cam.y, z: cam.z }, mode: currentMode,
     palette: { hotbar: hotbar.map(m => MATS[m].key), favorites: [...favorites].map(m => MATS[m].key), selected: MATS[selMat].key, tool, brush: Object.assign({}, brush), placeDir },
     creatures: creatures.filter(c => c.alive).map(c => ({ sp: c.sp.key, segs: c.segs, hp: c.hp, energy: c.energy, age: c.age, dir: c.dir, frozen: c.frozen, hab: c.hab, speed: c.speed, tMin: c.tMin, tMax: c.tMax, breath: c.breath, genes: c.g ? genesJSON(c.g) : undefined })),
@@ -8215,7 +8876,7 @@ async function deserializeWorld(text) {
   }
   const s = obj.settings || {};
   for (const k of ['gravity', 'gdir', 'ambient', 'wind', 'bound', 'reactionRate', 'heatRate', 'simSpeed', 'paintColor', 'quality', 'evaporation', 'erosion', 'dayNight', 'dayLength', 'weather', 'weatherAmt']) if (s[k] !== undefined) settings[k] = s[k];
-  settings.lavaClimate = !!s.lavaClimate; settings.mystery = !!s.mystery; settings.whiteWorld = !!s.whiteWorld; settings.corrupt = !!s.corrupt; if (typeof setVolume === 'function') { setVolume(); if (settings.whiteWorld && master) master.gain.value = 0; }
+  settings.lavaClimate = !!s.lavaClimate; settings.mystery = !!s.mystery; settings.whiteWorld = !!s.whiteWorld; settings.corrupt = !!s.corrupt; if (s.sun) { Object.assign(sun, s.sun); sun.placed = true; } else { sun.on = false; sun.placed = false; } if (typeof setVolume === 'function') { setVolume(); if (settings.whiteWorld && master) master.gain.value = 0; }
   if (s.timeOfDay !== undefined) timeOfDay = s.timeOfDay;
   if (s.dayNight === undefined) { settings.dayNight = false; settings.weather = 'clear'; }
   computeSun(); skyDirty = true;
@@ -8252,12 +8913,12 @@ async function deserializeWorld(text) {
   if (obj.camera && isFinite(obj.camera.z)) { cam.x = obj.camera.x; cam.y = obj.camera.y; cam.z = cam.tz = clamp(obj.camera.z, 0.5, 48); clampCam(); } else fitCamera();
   const pal = obj.palette;
   if (pal) {
-    if (Array.isArray(pal.hotbar)) hotbar = pal.hotbar.map(k => M[k]).filter(v => v !== undefined);
-    if (pal.selected && M[pal.selected] !== undefined) selMat = M[pal.selected];
+    if (Array.isArray(pal.hotbar)) { const hb = pal.hotbar.map(k => M[k]).filter(v => v !== undefined && placeable(v)); if (hb.length >= 6) hotbar = hb; }
+    if (pal.selected && M[pal.selected] !== undefined && placeable(M[pal.selected])) selMat = M[pal.selected];
     if (pal.brush) Object.assign(brush, pal.brush);
     if (pal.placeDir !== undefined) placeDir = pal.placeDir & 3;
   }
-  if (obj.mode) { currentMode = obj.mode; $('modeSel').value = currentMode; }
+  currentMode = 'free';
   lightPass(); wakeAll();
   history.length = 0; future.length = 0; updateUndoButtons();
   selection = null; measureRes = null; pinned = null; selCreature = null;
@@ -8344,7 +9005,7 @@ function autosaveTick(dt) {
   if (autosaveTimer > 120000) { autosaveTimer = 0; saveToSlot('autosave', 'Autosave', true); }
 }
 function saveSettings() {
-  const s = {}; for (const k of ['quality', 'texture', 'glow', 'shading', 'trails', 'grid', 'sound', 'volume', 'autosave', 'minimap', 'tooltips']) s[k] = settings[k];
+  const s = {}; for (const k of ['quality', 'texture', 'glow', 'trails', 'grid', 'sound', 'volume', 'autosave', 'minimap', 'tooltips', 'lightMode', 'lightRays', 'lightBounces', 'lightRes', 'lightEvery', 'lightAir', 'distort']) s[k] = settings[k];
   LS.set('settings', s);
 }
 function loadSettings() { const s = LS.get('settings', null); if (s) Object.assign(settings, s); }
@@ -8352,7 +9013,7 @@ function loadSettings() { const s = LS.get('settings', null); if (s) Object.assi
 // ======================= MODES, DIALOGS, CHALLENGES, TITLE, TUTORIAL =======================
 let currentMode = 'free';
 let paused = false, stepRequested = 0;
-const SPEEDS = [0.1, 0.25, 0.5, 1, 2, 3, 4];
+const SPEEDS = [0.1, 0.25, 0.5, 1, 2, 3, 5, 10];
 function setSpeed(v) { settings.simSpeed = clamp(v | 0, 0, SPEEDS.length - 1); $('speed').value = settings.simSpeed; $('speedLbl').textContent = SPEEDS[settings.simSpeed] + '×'; }
 function togglePause(force) {
   paused = force !== undefined ? force : !paused;
@@ -8461,7 +9122,7 @@ function openWorldModal() {
 }
 function newWorld(gen) {
   stopChallenge(true); labLabels = [];
-  currentMode = 'free'; $('modeSel').value = 'free';
+  currentMode = 'free';
   const w = clamp(genParams.w | 0, 64, MAX_DIM_W), h = clamp(genParams.h | 0, 64, MAX_DIM_H);
   if (w !== W || h !== H) { allocWorld(w, h); setupWorldCanvas(); }
   if (gen === 'empty') { generateWorld('flat', { seed: 1 }); mat.fill(0); tmp.fill(settings.ambient); creatures.length = 0; creatureById.clear(); lightPass(); wakeAll(); }
@@ -8478,7 +9139,6 @@ function openSettings() {
   a.appendChild(seg('Quality', [['low', 'Low'], ['med', 'Medium'], ['high', 'High']], settings.quality, v => { settings.quality = v; saveSettings(); }));
   a.appendChild(check('Texture variation', settings.texture, v => { settings.texture = v; saveSettings(); }));
   a.appendChild(check('Glow / bloom', settings.glow, v => { settings.glow = v; saveSettings(); }));
-  a.appendChild(check('Sunlight shading', settings.shading, v => { settings.shading = v; saveSettings(); }));
   a.appendChild(check('Motion trails', settings.trails, v => { settings.trails = v; saveSettings(); }));
   a.appendChild(check('Pixel grid when zoomed', settings.grid, v => { settings.grid = v; saveSettings(); }));
   a.appendChild(check('Minimap', settings.minimap, v => { settings.minimap = v; saveSettings(); }));
@@ -8488,19 +9148,22 @@ function openSettings() {
   a.appendChild(slider('Master volume', 'sVol', 0, 1, 0.05, settings.volume, v => Math.round(v * 100) + '%', v => { settings.volume = +v; audioInit(); setVolume(); syncSettingsUI(); saveSettings(); }));
   a.appendChild(el('div', { class: 'palgrp', style: 'margin-top:10px' }, 'Saving'));
   a.appendChild(check('Autosave every 2 minutes', settings.autosave, v => { settings.autosave = v; saveSettings(); }));
-  b.appendChild(el('div', { class: 'palgrp' }, 'Physics'));
-  b.appendChild(seg('Gravity', [[0, 'Zero'], [0.35, 'Low'], [1, 'Normal'], [2, 'High'], [3, 'Extreme']], settings.gravity, v => { settings.gravity = v; wakeAll(); }));
-  b.appendChild(seg('Direction', [[0, '↓'], [1, '↑ reversed'], [2, '←'], [3, '→']], settings.gdir, v => { settings.gdir = v; applyGravityDir(); wakeAll(); }));
-  b.appendChild(slider('Air temp.', 'sAmb', -60, 80, 1, Math.round(settings.ambient), v => v + '°C', v => { settings.ambient = +v; }));
-  b.appendChild(slider('Wind', 'sWind', -4, 4, 0.5, settings.wind, v => (v > 0 ? '→' : v < 0 ? '←' : '') + Math.abs(v), v => { settings.wind = +v; wakeAll(); }));
-  b.appendChild(slider('Reaction rate', 'sRx', 0.1, 3, 0.1, settings.reactionRate, v => (+v).toFixed(1) + '×', v => settings.reactionRate = +v));
-  b.appendChild(slider('Heat transfer', 'sHt', 0.2, 2, 0.1, settings.heatRate, v => (+v).toFixed(1) + '×', v => settings.heatRate = +v));
-  b.appendChild(check('Evaporation', settings.evaporation, v => settings.evaporation = v, 'Warm water slowly evaporates'));
-  b.appendChild(check('Erosion', settings.erosion, v => settings.erosion = v, 'Flowing water picks up and deposits sediment'));
-  b.appendChild(el('div', { class: 'palgrp', style: 'margin-top:10px' }, 'Sky & weather'));
-  b.appendChild(dayNightControls());
-  b.appendChild(weatherControls());
-  b.appendChild(el('div', { class: 'hint' }, 'Physics, sky and weather settings are stored with each saved world.'));
+  a.appendChild(el('div', { class: 'palgrp', style: 'margin-top:10px' }, 'Physics'));
+  a.appendChild(seg('Gravity', [[0, 'Zero'], [0.35, 'Low'], [1, 'Normal'], [2, 'High'], [3, 'Extreme']], settings.gravity, v => { settings.gravity = v; wakeAll(); }));
+  a.appendChild(slider('Air temp.', 'sAmb', -60, 80, 1, Math.round(settings.ambient), v => v + '°C', v => { settings.ambient = +v; }));
+  a.appendChild(slider('Heat transfer', 'sHt', 0.2, 2, 0.1, settings.heatRate, v => (+v).toFixed(1) + '×', v => settings.heatRate = +v));
+  const sv = () => saveSettings();
+  b.appendChild(el('div', { class: 'palgrp' }, 'Lighting'));
+  b.appendChild(seg('Mode', [['ray', 'Ray traced', 'Light travels in rays: sharp shadows, bounces, coloured light through water and glass'], ['soft', 'Soft light', 'Light flows outward and fades softly — cheaper'], ['off', 'Off']], settings.lightMode, v => { settings.lightMode = v; sv(); }));
+  b.appendChild(slider('Rays', 'sRays', 500, 20000, 500, settings.lightRays, v => (+v).toLocaleString(), v => { settings.lightRays = +v; sv(); }));
+  b.appendChild(seg('Bounces', [[0, '0'], [1, '1'], [2, '2'], [3, '3']], settings.lightBounces, v => { settings.lightBounces = v; sv(); }));
+  b.appendChild(seg('Resolution', [[1, 'Full'], [2, 'Half'], [4, 'Quarter']], settings.lightRes, v => { settings.lightRes = v; sv(); }));
+  b.appendChild(seg('Update', [[1, 'Every frame'], [2, 'Every 2nd'], [4, 'Every 4th']], settings.lightEvery, v => { settings.lightEvery = v; sv(); }));
+  b.appendChild(slider('Glow in air', 'sLAir', 0, 1, 0.05, settings.lightAir, v => Math.round(v * 100) + '%', v => { settings.lightAir = +v; sv(); }));
+  b.appendChild(el('div', { class: 'hint' }, 'More rays and bounces look smoother but cost more. Bounces only apply to ray traced light and the sun.'));
+  b.appendChild(el('div', { class: 'palgrp', style: 'margin-top:10px' }, 'Heat distortion'));
+  b.appendChild(seg('Shimmer', [['off', 'Off'], ['low', 'Low'], ['high', 'High']], settings.distort, v => { settings.distort = v; sv(); }));
+  b.appendChild(el('div', { class: 'hint' }, 'Hot things make the air around them wobble — more when hotter and closer.'));
   body.append(a, b);
   openModal('⚙ Settings', body, [{ label: 'Close', cls: 'primary' }], { width: 760 });
 }
@@ -8508,26 +9171,19 @@ function openSettings() {
 // ---------- help ----------
 function openHelp() {
   const body = el('div');
-  body.appendChild(el('p', { class: 'dim' }, 'Paint materials into the world and watch them interact. Everything has real behaviour: sand piles and gets wet, water flows and freezes, fire needs fuel and oxygen, acid eats, electricity follows wires, plants grow toward light, creatures eat, breed and die.'));
+  body.appendChild(el('p', { class: 'dim' }, 'Paint materials into the world and watch them interact: sand piles up, water flows, lava glows and stays molten, magnets pull metal, and light pours through glass and water.'));
   const t = el('table', { class: 't' });
   const row = (k, v) => t.appendChild(el('tr', null, el('td', null, el('span', { class: 'kbd' }, k)), el('td', null, v)));
   t.appendChild(el('tr', null, el('th', null, 'Mouse'), el('th', null, '')));
-  row('Left drag', 'Use the current tool / paint'); row('Right drag', 'Erase (or the tool\'s secondary action)'); row('Wheel', 'Zoom at cursor'); row('Shift + wheel', 'Brush size');
-  row('Middle drag / Space + drag', 'Pan the camera'); row('Alt + click', 'Set clone-brush source');
+  row('Left drag', 'Use the current tool / paint'); row('Right drag', 'Erase with the brush and shapes · cool with the Temperature tool · remove a creature');
+  row('Wheel', 'Zoom at cursor'); row('Shift + wheel', 'Brush size'); row('Middle drag / Space + drag', 'Pan the camera'); row('Drag the ☀', 'Move the sun (when it is shown)');
   t.appendChild(el('tr', null, el('th', null, 'Keys'), el('th', null, '')));
-  row('Space (tap)', 'Pause / play'); row('.', 'Single step (pauses)'); row('< ,  >', 'Slower / faster simulation'); row('[  ]', 'Brush size'); row('1 – 0', 'Hotbar materials');
-  row('D', 'Rotate machine direction'); row('O', 'Cycle overlays'); row('Ctrl+Z / Ctrl+Y', 'Undo / redo'); row('Ctrl+C / X / V', 'Copy / cut / paste selection'); row('Del', 'Delete selection');
-  row('Ctrl+A', 'Select whole world'); row('Ctrl+S', 'Quick save'); row('Arrows', 'Pan'); row('= / −', 'Zoom'); row('Home', 'Fit world to screen'); row('Tab', 'Hide / show side panel'); row('Esc', 'Cancel / close'); row('F1 / ?', 'This help'); row('Shift+P', 'Screenshot');
-  t.appendChild(el('tr', null, el('th', null, 'Creature control'), el('th', null, '')));
-  row('Inspector → 🎮 Take control', 'Drive any creature yourself (or Interact tool on a creature)'); row('WASD / arrows', 'Move · W jumps (walkers) · swimmers and flyers move freely'); row('F / Enter', 'Bite or eat what\'s next to you · blobs with a ranged attack shoot at the mouse'); row('Esc', 'Let go of the creature');
+  row('Space (tap)', 'Pause / play'); row('.', 'Single step (pauses)'); row('< ,  >', 'Slower / faster (0.1× – 10×)'); row('[  ]', 'Brush size'); row('1 – 0', 'Hotbar materials');
+  row('O', 'Cycle overlays (normal · temperature · magnetic fields)'); row('Ctrl+Z / Ctrl+Y', 'Undo / redo'); row('Ctrl+C / X / V', 'Copy / cut / paste a selection'); row('Del', 'Delete selection'); row('Ctrl+A', 'Select whole world');
+  row('Ctrl+S', 'Quick save'); row('Arrows', 'Pan'); row('= / −', 'Zoom'); row('Home', 'Fit world to screen'); row('Tab', 'Hide / show side panel'); row('Esc', 'Cancel / close'); row('F1 / ?', 'This help'); row('Shift+P', 'Screenshot');
   t.appendChild(el('tr', null, el('th', null, 'Tools'), el('th', null, '')));
-  for (const tl of TOOLS) if (tl.key) row(tl.sc, tl.icon + ' ' + tl.name + ' — ' + tl.desc);
+  for (const k of ['brush', 'select', 'rect', 'frect', 'circle', 'fcircle', 'flood', 'creature', 'temp']) { const tl = TOOL_BY_KEY[k]; row(k === 'flood' ? 'F' : tl.sc, tl.icon + ' ' + tl.name + ' — ' + tl.desc); }
   body.appendChild(t);
-  body.appendChild(el('div', { class: 'palgrp', style: 'margin-top:12px' }, 'Tips'));
-  for (const tip of ['Pause, build something intricate, then press Space — nothing moves while paused.', 'Wet sand holds steep walls; dry sand slumps. Pour water on a sand castle and watch it change.', 'Heat sand past 1500°C (lava, thermite or plasma) to make glass. Lightning makes glass instantly.',
-    'Seeds need moist soil; plants need light and water from their roots. Saplings grow into trees.', 'Wire a battery to a switch and a lamp. Batteries drain — and short out in water! Generators recharge them when heated.',
-    'Logic gates read wires on their LEFT and RIGHT and power wires ABOVE and BELOW.', 'Machines run on their own unless you connect a wire — then they obey the circuit.', 'Pumps suck from behind and push out the front, straight into pipes. Pipes spill out of their open ends.',
-    'Use the Measure tool to read water volume and level in any region.', 'Every reaction you trigger is recorded in the 📖 Encyclopedia.']) body.appendChild(el('div', { style: 'margin:3px 0' }, '• ' + tip));
   openModal('❓ Help & shortcuts', body, [{ label: 'Restart tutorial', on: () => startTutorial() }, { label: 'Close', cls: 'primary' }], { width: 760 });
 }
 
@@ -8615,7 +9271,7 @@ function startChallenge(key) {
   settings.gravity = 1; settings.gdir = 0; applyGravityDir(); settings.wind = 0; settings.ambient = 20; settings.bound = BOUND.SOLID;
   allocWorld(CH_W, CH_H); setupWorldCanvas();
   mat.fill(0); tmp.fill(20);
-  currentMode = 'free'; $('modeSel').value = 'free';
+  currentMode = 'free';
   activeChallenge = { def, phase: 'build', t: 0, zones: [], lockEdit: def.lockEdit };
   def.setup(activeChallenge);
   allowedMats = new Set(def.allowed.map(k => M[k]));
@@ -8680,25 +9336,15 @@ function challengeOnDiscover() { }
 
 // ======================= MODES =======================
 function applyMode(mode) {
+  // sandbox only
   stopChallenge(true);
-  currentMode = mode; $('modeSel').value = mode;
+  currentMode = 'free';
   for (const d of activeDisasters.slice()) stopDisaster(d);
   settings.gravity = 1; settings.gdir = 0; applyGravityDir(); settings.wind = 0;
-  // the bench-top labs use a compact world so the demos are large on screen
-  const small = mode === 'chem' || mode === 'eng';
-  const tw = small ? 260 : genParams.w, th = small ? 160 : genParams.h;
-  if (W !== tw || H !== th) { allocWorld(tw, th); setupWorldCanvas(); }
-  if (mode === 'free') { generateWorld('starter', { seed: genParams.seed }); }
-  else buildLab(mode);
+  if (W !== genParams.w || H !== genParams.h) { allocWorld(genParams.w, genParams.h); setupWorldCanvas(); }
+  generateWorld('starter', { seed: genParams.seed });
   fitCamera(); history.length = 0; future.length = 0; updateUndoButtons();
   togglePause(false);
-  if (mode === 'chem' || mode === 'eng') { // zoom onto the bench
-    cam.z = clamp(viewW / 150, 1, 12); cam.x = 2; cam.y = Math.round(H * 0.82) - viewH / cam.z * 0.8; clampCam();
-  }
-  if (mode === 'chem') { curCat = 'Liquids'; setTool('brush'); openEncyclopedia(); }
-  if (mode === 'eco') { setTool('creature'); openStats(); }
-  if (mode === 'eng') { curCat = 'Electric'; setTool('interact'); }
-  if (mode === 'dis') { openDisasters(); }
   renderCats(); renderPalette();
 }
 
@@ -8706,32 +9352,27 @@ function applyMode(mode) {
 function showTitle() {
   const t = el('div', { id: 'title' });
   const box = el('div', { class: 'box' });
-  box.append(el('h1', null, 'ULTIMATE SAND SIM'), el('div', { class: 'sub' }, MATS.filter(m => placeable(m.id)).length + ' materials · ' + REACTIONS.filter(r => r.p > 0).length + ' reactions · electricity · ecosystems · disasters'));
+  box.append(el('h1', null, 'ULTIMATE SAND SIM'), el('div', { class: 'sub' }, MATS.filter(m => placeable(m.id)).length + ' materials · real light · heat · magnets · creatures'));
   const close = () => { t.remove(); togglePause(false); };
   const btns = el('div', { class: 'btns' });
   btns.append(el('button', { class: 'primary', onclick: () => { close(); if (!LS.get('tutDone', false)) startTutorial(); } }, '▶ Play'),
     el('button', { onclick: () => { close(); openWorldModal(); } }, '🌍 New world'),
     el('button', { onclick: () => { close(); openSaves(); } }, '💾 Load world'),
     el('button', { onclick: () => { close(); startTutorial(); } }, '🎓 Tutorial'),
-    el('button', { onclick: () => { close(); openChallenges(); } }, '🏆 Challenges'),
     el('button', { onclick: () => { close(); openHelp(); } }, '❓ Controls'));
   box.appendChild(btns);
-  const modes = el('div', { class: 'modes' });
-  for (const [k, l] of [['free', '🏜️ Free Sandbox'], ['chem', '🧪 Chemistry Lab'], ['eco', '🌿 Ecosystem Lab'], ['eng', '⚙️ Engineering Lab'], ['dis', '🌪️ Disaster Lab']]) modes.appendChild(el('button', { onclick: () => { close(); applyMode(k); } }, l));
-  box.appendChild(modes);
   box.appendChild(el('div', { class: 'foot' }, 'Tip: tap Space to pause, then build without anything moving. Everything runs locally in your browser.'));
   t.appendChild(box);
   document.body.appendChild(t);
   togglePause(false);
 }
 const TUT = [
-  ['Welcome!', 'This world is fully simulated. Pick Sand (press 1) and hold the left mouse button to pour it. Watch it pile up and slide.'],
-  ['Erase, zoom & pan', 'Right-drag erases. Scroll to zoom toward the cursor. Middle-drag (or hold Space and drag) to pan around. Home fits the world.'],
-  ['Water & fire', 'Press 2 for Water — it flows, pools and wets sand. Press 4 for Wood, then 5 for Fire and set it alight. Fire needs fuel and air.'],
-  ['Pause & build', 'Tap Space to pause. While paused, build freely — nothing moves. Press . to advance one tick, Space to resume.'],
-  ['Tools', 'The left toolbar has shapes, selection & copy/paste, heat, cold, explosions, wind, creatures and more. Hover any tool to see its shortcut.'],
-  ['Materials', 'The right panel lists every material. Search with /, right-click to favourite, shift-click to pin to the hotbar. The info card shows each material\'s properties.'],
-  ['Discover', 'Every reaction you cause is logged in the 📖 Encyclopedia. Try 🌪 Disasters, 🏆 Challenges and the overlays (O). Save with 💾. Have fun!']
+  ['Welcome!', 'This world is fully simulated. Pick Sand (press 1) and hold the left mouse button to pour it. Right-click with the brush to erase.'],
+  ['Zoom & pan', 'Scroll to zoom toward the cursor. Middle-drag (or hold Space and drag) to pan around. Home fits the world.'],
+  ['Temperature', 'The 🌡 Temperature tool heats with the left button and cools with the right. Lava never cools on its own — pour water on it.'],
+  ['Light', 'Lava, fire, stars and Light blocks glow and cast coloured light through glass and water. Press ☀ Sun to add a sun you can drag around outside the world.'],
+  ['Pause & build', 'Tap Space to pause. While paused, build freely — nothing moves. Press . to advance one tick. The speed slider goes from 0.1× to 10×.'],
+  ['Have fun!', 'Try the overlays (O) for temperature and magnetic fields. Save with 💾. And maybe… see what lies far off to the right.']
 ];
 let tutStep = -1;
 function startTutorial() { tutStep = 0; renderTut(); }
@@ -9177,13 +9818,10 @@ function wireTopbar() {
   $('bStep').onclick = () => stepOnce();
   $('speed').oninput = () => setSpeed(+$('speed').value);
   $('bUndo').onclick = undo; $('bRedo').onclick = redo;
-  $('bReset').onclick = () => confirmBox('Reset the world? Everything not saved will be lost.', () => { if (activeChallenge) startChallenge(activeChallenge.def.key); else applyMode(currentMode); toast('World reset'); }, 'Reset');
-  $('modeSel').onchange = () => { const v = $('modeSel').value; $('modeSel').value = currentMode; confirmBox('Switch to ' + $('modeSel').querySelector('option[value=' + v + ']').textContent + '? The current world will be replaced.', () => applyMode(v), 'Switch'); };
+  $('bReset').onclick = () => confirmBox('Reset the world? Everything not saved will be lost.', () => { applyMode('free'); toast('World reset'); }, 'Reset');
   $('bWorld').onclick = openWorldModal;
   $('bSaves').onclick = openSaves;
-  $('bDis').onclick = () => toggleWindow('dis', openDisasters);
-  $('bChal').onclick = openChallenges;
-  $('bEncy').onclick = () => toggleWindow('ency', openEncyclopedia);
+  $('bSun').onclick = () => toggleWindow('sun', openSunPanel);
   $('bStats').onclick = () => toggleWindow('stats', openStats);
   $('overlaySel').onchange = () => setOverlay($('overlaySel').value);
   $('bMute').onclick = () => { audioInit(); settings.sound = !(settings.sound && settings.volume > 0); if (settings.sound && settings.volume <= 0) settings.volume = 0.35; setVolume(); syncSettingsUI(); saveSettings(); toast(settings.sound ? '🔊 Sound on' : '🔇 Muted'); };
@@ -9212,13 +9850,13 @@ function frame(now) {
     let steps = 0;
     if (!paused) {
       acc += dt / (1000 / 60) * speed;
-      const budget = speed >= 2 ? 6 : 3;
+      const budget = Math.ceil(speed) + 2;
       const t0 = performance.now();
       while (acc >= 1 && steps < budget) {
         stepSim(); challengeTick(); steps++; acc -= 1;
-        if (performance.now() - t0 > 28) { acc = Math.min(acc, 1); break; }
+        if (performance.now() - t0 > 40) { acc = Math.min(acc, 1); break; }
       }
-      if (acc > 4) acc = 4;
+      if (acc > Math.max(4, speed * 1.5)) acc = Math.max(4, speed * 1.5);
     } else {
       while (stepRequested > 0) { stepSim(); challengeTick(); stepRequested--; steps++; }
       acc = 0;
