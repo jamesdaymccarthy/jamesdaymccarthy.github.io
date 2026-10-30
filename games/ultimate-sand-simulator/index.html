@@ -6774,8 +6774,8 @@ function renderWorld() {
         case 18: { const f = 0.5 + 0.5 * Math.sin(fcl * 0.2 + i); r = 20 + 50 * f; g = 0; b = 40 + 70 * f; selfLit = true; break; } // black hole
         case 19: { if (aux[i] & 2) { r = 170; g = 110; b = 255; } break; } // toggle state
         case 20: { if (life[i] > 0) { const c = hslToRgb((aux[i] % 12) / 12, 0.9, 0.6); r = c[0]; g = c[1]; b = c[2]; selfLit = true; } break; } // note
-        case 23: { const f = 0.9 + 0.1 * Math.sin(fcl * 0.12 + (x * 7 + y * 13)), c = starRGB(tmp[i]); r = c[0] * f; g = c[1] * f - (shade[i] & 7) * 3; b = c[2] * f; selfLit = true; break; } // star: colour follows temperature
-        case 29: { const c = from565(aux[i]); const br = Math.min(1, (life[i] & 127) / 60); if (c[0] + c[1] + c[2] < 40) { r = 6; g = 6; b = 8; } else { r = c[0] * (0.55 + 0.45 * br); g = c[1] * (0.55 + 0.45 * br); b = c[2] * (0.55 + 0.45 * br); } selfLit = true; break; } // light sources
+        case 23: { const f = 0.55 + 0.08 * Math.sin(fcl * 0.12 + (x * 7 + y * 13)) + shade[i] * 0.026, c = starRGB(tmp[i]); r = c[0] * f; g = c[1] * f; b = c[2] * f * 0.92; selfLit = true; break; } // star: colour follows temperature
+        case 29: { const c = from565(aux[i]); const br = Math.min(1, (life[i] & 127) / 60); if (c[0] + c[1] + c[2] < 40) { r = 6; g = 6; b = 8; } else { const v = (0.5 + 0.38 * br) * (0.84 + shade[i] * 0.016); r = c[0] * v; g = c[1] * v; b = c[2] * v; } selfLit = true; break; } // light sources
         case 24: { const f = 0.5 + 0.5 * Math.sin(fcl * 0.1 + x * 0.6 + Math.sin(y * 0.4 + fcl * 0.05) * 3); r = 110 + 90 * f; g = 30 + 40 * f; b = 200 + 55 * f; selfLit = true; break; } // nether portal
         case 25: { if (life[i] > 0) { const c = (aux[i] & 1) ? hslToRgb(0.58 + vy[i] * 0.008, 0.8, 0.6) : hslToRgb(0.1 + vy[i] * 0.01, 0.95, 0.6); r = c[0]; g = c[1]; b = c[2]; selfLit = true; } else if (aux[i] & 1) { r *= 0.8; g *= 0.85; b *= 1.25; } break; } // chord block
         case 26: { const c = hslToRgb(((fcl * 0.012 + x * 0.04 + y * 0.03) % 1 + 1) % 1, 1, 0.6); r = c[0]; g = c[1]; b = c[2]; selfLit = true; break; } // eyte: rainbow
@@ -6888,7 +6888,7 @@ function drawFrame() {
     drawLightLayers(ctx, ox);
     if (settings.glow && settings.quality !== 'low' && overlay === 'none') {
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.imageSmoothingEnabled = true;
-      ctx.globalAlpha = 0.85; ctx.drawImage(bloomBlur, ox, 0, W, H);
+      ctx.globalAlpha = 0.35; ctx.drawImage(bloomBlur, ox, 0, W, H);
       ctx.restore();
     }
   }
@@ -6978,7 +6978,7 @@ let miniCache = null;
 // Emitters cast light (ray traced by default, or a cheaper soft-light flood fill). Unlit things keep their own
 // colour; light only ever adds its colour on top, fading smoothly back to the base colour. Transparent things
 // let light through and tint it (water turns it blue). An optional Sun hangs outside the world.
-Object.assign(settings, { lightMode: 'ray', lightRays: 3000, lightBounces: 1, lightRes: 2, lightEvery: 2, lightAir: 0.25, distort: 'low' });
+Object.assign(settings, { lightMode: 'ray', lightRays: 3000, lightBounces: 1, lightRes: 2, lightEvery: 2, lightAir: 0.15, distort: 'low' });
 let showA = null, blurA = null, blurT = null;
 const sun = { on: false, x: 0, y: 0, b: 1, i: 1, col: '#fff1d0', placed: false };
 function sunHome() { sun.x = W * 0.5; sun.y = -12; sun.placed = true; }
@@ -7054,7 +7054,7 @@ function gatherLight() {
         const [r, g, b] = from565(col);
         if (r + g + b < 40) { emDark[c] += br; if (rg < 1) rg = 6 + it * 0.7; if (rg > emRange[c]) emRange[c] = rg; continue; }
         er = r / 255 * br; eg = g / 255 * br; eb = b / 255 * br; rg = 6 + it * 0.7;
-      } else if (m === STAR) { const k = starRGB(T); er = k[0] / 255 * 1.4; eg = k[1] / 255 * 1.4; eb = k[2] / 255 * 1.4; rg = 40; }
+      } else if (m === STAR) { const k = starRGB(T); er = k[0] / 255; eg = k[1] / 255; eb = k[2] / 255; rg = 40; }
       else if (m === EYTE) { const k = hslToRgb(((fcl * 0.012 + x * 0.04 + y * 0.03) % 1 + 1) % 1, 1, 0.6); er = k[0] / 255 * 0.6; eg = k[1] / 255 * 0.6; eb = k[2] / 255 * 0.6; }
       else if (er === 0 && eg === 0 && eb === 0 && T > 550 && STATE[m] !== ST.GAS) { // anything glowing hot
         const t = Math.min(1, (T - 550) / 1500), hk = (t * 255) | 0; er = HEATR[hk] / 255 * t * 0.8; eg = HEATG[hk] / 255 * t * 0.8; eb = HEATB[hk] / 255 * t * 0.8; rg = 8 + t * 16;
@@ -7243,7 +7243,13 @@ function lightUpdate() {
     // soften into sub-pixel gradients
     const a = blurA, t = blurT;
     for (let ch = 0; ch < 3; ch++) { for (let c = 0; c < LN; c++) a[c] = show[c * 3 + ch]; blur3(a, t); if (mode === 'ray') blur3(a, t); for (let c = 0; c < LN; c++) show[c * 3 + ch] = a[c]; }
-    for (let c = 0; c < LN; c++) lbuf[c] = pack(255 * (1 - Math.exp(-show[c * 3] * 1.3)), 255 * (1 - Math.exp(-show[c * 3 + 1] * 1.3)), 255 * (1 - Math.exp(-show[c * 3 + 2] * 1.3)));
+    // gentler exposure, capped so lit things never wash out to white; glowing substances themselves get almost
+    // none of the overlay so you can still see their own texture
+    const EXP = 0.5, CAP = 0.7;
+    for (let c = 0; c < LN; c++) {
+      const own = emR[c] + emG[c] + emB[c] > 0 ? 0.12 : 1;
+      lbuf[c] = pack(255 * CAP * (1 - Math.exp(-show[c * 3] * EXP)) * own, 255 * CAP * (1 - Math.exp(-show[c * 3 + 1] * EXP)) * own, 255 * CAP * (1 - Math.exp(-show[c * 3 + 2] * EXP)) * own);
+    }
     lctx.putImageData(limg, 0, 0);
   }
   if (anyD) { const a = blurA, t = blurT; a.set(outD); blur3(a, t); for (let c = 0; c < LN; c++) { const v = 255 * Math.exp(-a[c] * 2.2); dbuf[c] = pack(v, v, v); } dctx.putImageData(dimg, 0, 0); }
@@ -8266,7 +8272,7 @@ const PALCAT = {}, PALORDER = {};
 [['Powders', ['sand', 'dirt', 'snow', 'metal_powder', 'gunpowder']],
  ['Liquids', ['water', 'oil', 'lava', 'acid', 'slime', 'liquid_metal', 'liquid_air']],
  ['Gases', ['steam', 'smoke', 'methane']],
- ['Solids', ['stone', 'bedrock', 'wood', 'ice', 'metal', 'sponge', 'crystal', 'uranium', 'plant', 'glass']],
+ ['Solids', ['stone', 'bedrock', 'wood', 'ice', 'metal', 'crystal', 'uranium', 'plant', 'glass']],
  ['Energy', ['fire', 'lightning', 'star', 'antimatter']],
  ['Misc', ['src_water', 'src_lava', 'magnet', 'portal_in', 'portal_out', 'black_hole', 'void', 'glitch', 'liquid_glitch', 'eye', 'eyte']],
  ['Light', ['light', 'liquid_light']]].forEach(([c, ks], ci) => ks.forEach((k, ki) => { const id = M[k]; if (id === undefined) return; PALCAT[id] = c; PALORDER[id] = ci * 100 + ki; MATS[id].cat = c; }));
@@ -8612,7 +8618,7 @@ function onDiscover(id, label) {
   const gr = id < 1000000 && REACTIONS[id] && REACTIONS[id].gen;
   if (gr && frameNo - lastGenToast < 240) { scheduleEncyRefresh(); return; }
   if (gr) lastGenToast = frameNo;
-  toast('🔬 Discovered: ' + label, 'good'); sfx('chime');
+  // discovery pop-ups are switched off
   saveDiscoveries();
   scheduleEncyRefresh();
   if (typeof challengeOnDiscover === 'function') challengeOnDiscover(id);
