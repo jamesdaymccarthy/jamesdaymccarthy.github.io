@@ -593,7 +593,7 @@ OV('sand', { hiT: 900, hiTo: 'glass', phaseP: 0.03, desc: 'Piles into slopes and
 OV('dirt', { desc: 'Loose soil. Piles up like sand.' });
 OV('snow', { desc: 'Fluffy frozen water. Cools whatever it touches; melts into water when warmed.' });
 OV('metal_powder', { desc: 'Iron filings. Every grain is pulled toward magnets on its own.' });
-OV('water', { alpha: 0.55, light: 0.9, desc: 'Flows and pools. See-through — light passing through it turns blue. Cools hot things: pour it on lava to make stone.' });
+OV('water', { alpha: 0.45, light: 0.92, desc: 'Flows and pools. See-through — light passing through it turns blue. Cools hot things: pour it on lava to make stone.' });
 OV('oil', { desc: 'Floats on water and burns.' });
 OV('lava', { heat: 1000, desc: 'Molten rock that never cools on its own. Only water, ice, snow, liquid air or the Temperature tool can turn it into stone. Lights up its surroundings.' });
 OV('acid', { sp: SP.ACIDX, life: null, alpha: 0.6, light: 0.9, hiT: null, hiTo: null, desc: 'See-through. Each drop dissolves up to five pixels of whatever it touches, then is used up. Glows a little as it eats.' });
@@ -605,12 +605,12 @@ OV('methane', { color: '#f0dc4a', alpha: 0.45, light: 0.95, desc: 'Yellow and se
 OV('stone', { desc: 'Solid rock.' });
 OV('bedrock', { hiT: null, hiTo: null, desc: 'Completely indestructible: nothing can melt, dissolve, explode, corrupt or swallow it.' });
 OV('wood', { desc: 'Burns.' });
-OV('ice', { alpha: 0.62, light: 0.85, desc: 'Frozen water, partly see-through. Cools whatever it touches.' });
+OV('ice', { alpha: 0.5, light: 0.85, desc: 'Frozen water, partly see-through. Cools whatever it touches.' });
 OV('metal', { desc: 'Solid metal. Magnets pull whole pieces of it without breaking them apart.' });
 OV('crystal', { color: '#d68cf0', alpha: 0.62, light: 0.8, glow: 0.15, hiTo: 'molten_glass', desc: 'Pink and partly see-through. Slowly grows into any water it touches.' });
 OV('uranium', { glow: 0.5, desc: 'Radioactive: glows faintly and throws off radiation. If two of its radiation particles collide — nuclear explosion.' });
 OV('plant', { flam: 0.6, ign: 200, burnTo: 'ash', desc: 'Grows quickly wherever it touches water — and burns well.' });
-OV('glass', { hiT: 1400, hiTo: 'molten_glass', alpha: 0.3, light: 0.95, desc: 'Made by heating sand. Transparent. Melts above 1400°.' });
+OV('glass', { hiT: 1400, hiTo: 'molten_glass', alpha: 0.18, light: 0.96, desc: 'Made by heating sand. Transparent. Melts above 1400°.' });
 OV('molten_glass', { heat: 1600, loT: 1300, loTo: 'glass', phaseP: 0.08, alpha: 0.85, light: 0.85, desc: 'Melted glass. Unlike almost everything else it cools back into glass on its own — the hotter it is, the longer that takes.' });
 OV('fire', { desc: 'Burns anything flammable and lights up its surroundings.' });
 OV('lightning', { desc: 'Click to call down a lightning bolt.' });
@@ -6796,7 +6796,7 @@ function renderWorld() {
       const T = tmp[i];
       if (T > 480 && st !== GASS && m !== M.star) {
         const t = Math.min(1, (T - 480) / 1300), hk = (t * 255) | 0, mixv = Math.min(0.9, t * 1.2);
-        r = r * (1 - mixv) + HEATR[hk] * mixv; g = g * (1 - mixv) + HEATG[hk] * mixv; b = b * (1 - mixv) + HEATB[hk] * mixv; a = 1;
+        r = r * (1 - mixv) + HEATR[hk] * mixv; g = g * (1 - mixv) + HEATG[hk] * mixv; b = b * (1 - mixv) + HEATB[hk] * mixv; if (ALPHA[m] >= 1) a = 1; else a = Math.min(1, a + mixv * 0.25); // hot glass glows but stays see-through
       } else if (T < -40 && st !== GASS) {
         const t = Math.min(0.4, (-40 - T) / 400); r = r * (1 - t) + 200 * t; g = g * (1 - t) + 230 * t; b = b * (1 - t) + 255 * t;
       }
@@ -6809,7 +6809,7 @@ function renderWorld() {
       buf[i] = pack(r, g, b);
     }
   }
-  if (ov === 'none') applyDistortion(buf);
+  if (ov === 'none') { buildEmitLayer(buf); applyDistortion(buf); }
   wctx.putImageData(wimg, 0, 0);
   // bloom map
   if (glowOn && ov === 'none') {
@@ -6886,6 +6886,7 @@ function drawFrame() {
   for (const ox of copies) {
     ctx.drawImage(worldCanvas, ox, 0);
     drawLightLayers(ctx, ox);
+    drawEmitLayer(ctx, ox);
     if (settings.glow && settings.quality !== 'low' && overlay === 'none') {
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.imageSmoothingEnabled = true;
       ctx.globalAlpha = 0.35; ctx.drawImage(bloomBlur, ox, 0, W, H);
@@ -6992,7 +6993,7 @@ let lightAny = false, darkAny = false, heatAny = false, lightFrame = 0, distBuf 
 // ---- per-material optical tables ----
 const OPT_TR = new Float32Array(NM), OPT_TG = new Float32Array(NM), OPT_TB = new Float32Array(NM);
 const EM_R = new Float32Array(NM), EM_G = new Float32Array(NM), EM_B = new Float32Array(NM), EM_RANGE = new Float32Array(NM);
-const ALB_R = new Float32Array(NM), ALB_G = new Float32Array(NM), ALB_B = new Float32Array(NM), ISAIRL = new Uint8Array(NM);
+const CLEARL = new Float32Array(NM), EMITM = new Uint8Array(NM), ALB_R = new Float32Array(NM), ALB_G = new Float32Array(NM), ALB_B = new Float32Array(NM), ISAIRL = new Uint8Array(NM);
 function buildOptics() {
   for (let m = 0; m < NM; m++) {
     const def = MATS[m]; if (!def) continue;
@@ -7001,10 +7002,12 @@ function buildOptics() {
     const st = STATE[m];
     const clear = m === 0 || st === ST.GAS || st === ST.ENERGY || ALPHA[m] < 1 || m === M.void || m === M.portal_in || m === M.portal_out;
     ISAIRL[m] = m === 0 || st === ST.GAS ? 1 : 0;
+    CLEARL[m] = ISAIRL[m];
     if (!clear) { OPT_TR[m] = OPT_TG[m] = OPT_TB[m] = 0; continue; }
     if (m === 0 || m === M.void || m === M.portal_in || m === M.portal_out) { OPT_TR[m] = OPT_TG[m] = OPT_TB[m] = 1; continue; }
     // light that passes through takes on the substance's colour
     const t = Math.min(1, TRANS[m] < 0.3 ? 0.85 : TRANS[m]), mix = st === ST.GAS ? 0.12 : st === ST.ENERGY ? 0 : 0.35;
+    CLEARL[m] = Math.max(CLEARL[m], 0.97);
     OPT_TR[m] = t * (1 - mix + mix * r / mx); OPT_TG[m] = t * (1 - mix + mix * g / mx); OPT_TB[m] = t * (1 - mix + mix * b / mx);
   }
   const E = (k, c, s, range) => { const m = M[k]; if (m === undefined) return; EM_R[m] = c[0] / 255 * s; EM_G[m] = c[1] / 255 * s; EM_B[m] = c[2] / 255 * s; EM_RANGE[m] = range; };
@@ -7012,6 +7015,8 @@ function buildOptics() {
   E('antimatter', [190, 110, 255], 0.9, 22); E('uranium', [110, 255, 110], 0.22, 10); E('src_water', [80, 150, 255], 0.12, 7);
   E('eyte', [255, 255, 255], 0.6, 16); E('plasma', [255, 190, 255], 1, 22); E('lightning', [210, 225, 255], 2, 30);
   E('molten_glass', [255, 150, 60], 0.5, 14); E('magma', [255, 110, 30], 0.9, 24);
+  for (let m = 0; m < NM; m++) EMITM[m] = EM_R[m] + EM_G[m] + EM_B[m] > 0 ? 1 : 0;
+  for (const k of ['light', 'liquid_light', 'star', 'eyte']) if (M[k] !== undefined) EMITM[M[k]] = 1;
 }
 function starRGB(T) { // a star's colour follows its temperature: red → orange → yellow-white → blue-white
   const t = clamp(T, 500, 30000);
@@ -7045,7 +7050,7 @@ function gatherLight() {
       const i = row + x, m = mat[i], c = ly * LW + ((x / s) | 0);
       tR[c] += OPT_TR[m]; tG[c] += OPT_TG[m]; tB[c] += OPT_TB[m];
       if (m === 0) { airF[c] += 1; continue; }
-      airF[c] += ISAIRL[m]; albR[c] += ALB_R[m]; albG[c] += ALB_G[m]; albB[c] += ALB_B[m];
+      airF[c] += CLEARL[m]; albR[c] += ALB_R[m]; albG[c] += ALB_G[m]; albB[c] += ALB_B[m];
       const T = tmp[i];
       if (T > 250) { const h = Math.min(1, (T - 250) / 2500); if (h > heatF[c]) heatF[c] = h; hot = true; }
       let er = EM_R[m], eg = EM_G[m], eb = EM_B[m], rg = EM_RANGE[m];
@@ -7247,7 +7252,7 @@ function lightUpdate() {
     // none of the overlay so you can still see their own texture
     const EXP = 0.5, CAP = 0.7;
     for (let c = 0; c < LN; c++) {
-      const own = emR[c] + emG[c] + emB[c] > 0 ? 0.12 : 1;
+      const own = 1;
       lbuf[c] = pack(255 * CAP * (1 - Math.exp(-show[c * 3] * EXP)) * own, 255 * CAP * (1 - Math.exp(-show[c * 3 + 1] * EXP)) * own, 255 * CAP * (1 - Math.exp(-show[c * 3 + 2] * EXP)) * own);
     }
     lctx.putImageData(limg, 0, 0);
@@ -7317,6 +7322,19 @@ function openSunPanel() {
     body.appendChild(el('div', { class: 'hint' }, 'Drag the sun around outside the world. Brightness is how strong it shines, intensity is how far its light reaches.'));
   }, { x: 80, y: 80, w: 280 });
 }
+
+// glowing pixels are copied onto their own layer and drawn on top of the light, so they keep their own colour and
+// texture — never lit, shaded or haloed by themselves
+const emitCanvas = document.createElement('canvas'); let ectx = null, eimg = null, ebuf = null, emitAny = false;
+function buildEmitLayer(buf) {
+  if (emitCanvas.width !== W || emitCanvas.height !== H || !ebuf) { emitCanvas.width = W; emitCanvas.height = H; ectx = emitCanvas.getContext('2d'); eimg = ectx.createImageData(W, H); ebuf = new Uint32Array(eimg.data.buffer); }
+  if (!OPT_TR[0]) buildOptics();
+  ebuf.fill(0); let any = false;
+  for (let i = 0; i < N; i++) { const m = mat[i]; if (m && (EMITM[m] || (tmp[i] > 1000 && !ISAIRL[m] && !CLEARL[m]))) { ebuf[i] = buf[i]; any = true; } }
+  emitAny = any;
+  if (any) ectx.putImageData(eimg, 0, 0);
+}
+function drawEmitLayer(ctx, ox) { if (emitAny && overlay === 'none' && settings.lightMode !== 'off') ctx.drawImage(emitCanvas, ox, 0); }
 
 // ======================= BIG ANIMAL SPRITES =======================
 // big animals move as a short chain of cells; on screen they're drawn as a proper little pixel-art body over it
