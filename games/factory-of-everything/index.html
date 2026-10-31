@@ -352,8 +352,8 @@ const BD={
   megaarm:{n:'Mega Arm',tier:0,secret:1,rot:1,desc:'A giant hydraulic robot arm. Grabs up to 4 items at once from anything touching its back side and swings them out of its arrow tile. No power needed.'},
   droneport:{n:'Drone Port',tier:0,secret:1,rot:0,pw:150,desc:'Belt anything into it. Little delivery drones pick up 5 items at a time and fly them straight to the Hub, up to 3 drones in the air at once. Needs power.'},
   tesla:{n:'Tesla Tower',tier:0,secret:1,rot:0,desc:'A giant power pole. Powers everything within 7 tiles and links to other Tesla Towers up to 18 tiles away with crackling lightning.'},
-  cargolauncher:{n:'Cargo Launcher',tier:0,secret:1,desc:'Belt anything into it. Every few seconds it fires a cargo rocket with up to 10 items to another world (pick which in its panel). The items wait there until a Cargo Pad on that world unloads them. No power needed.'},
-  cargopad:{n:'Cargo Pad',tier:0,secret:1,rot:1,desc:'Cargo rockets sent to this world land here and unload out of the arrow side. No power needed.'},
+  cargolauncher:{n:'Cargo Launcher',tier:0,secret:1,desc:'Belt anything into it. Every few seconds it fires a cargo rocket with up to 10 items. Pick a world (or this world) and a color: it only lands on Cargo Pads of the SAME color there, taking turns between them. No power needed.'},
+  cargopad:{n:'Cargo Pad',tier:0,secret:1,rot:1,desc:'Only catches cargo rockets from launchers of the same color, and unloads them out of the arrow side. New pads and launchers use the last color you picked. No power needed.'},
   terraformer:{n:'Terraformer',tier:11,rot:0,desc:'Belt a Terraformer core into it to power it. Then select it to open the map editor and paint ore, water, oil, gas, sand and cheese anywhere on the map.'},
   quantum:{n:'Quantum Portal',tier:12,size:3,rot:0,desc:'Belt a Quantum core into it to power it, then click it to step into its own brand-new dimension. Every portal leads to a different dimension. Belts and pipes that go into one side of a portal come out the opposite side of the portal in the other world.'},
   colony:{n:'Moon Jeff Colony',tier:99,size:3,desc:'Home of the Moon Jeffs. They always need something: belt what they ask for into the colony to help them. Belt in the wrong thing and they smash it!'},
@@ -522,7 +522,7 @@ const TIERS=[
    tip:'Assemble a robot lobster (processor, 2 motors, toy robot), then bring it to life in an Infuser with 3 biomatter. Biomatter is brutal: a Bioreactor needs pizzas, wood, a fuel cell and water, and takes 40 seconds for one. Build lots of bioreactors.'},
   {name:'Dairy Products',need:{cheese:100,colony_help:3},unlock:'The Terraformer',
    tip:'Get 10 Jeffs to space so the Moon Jeff colony appears, then click the moon at night to fly there. Mine moon cheese into the moon Hub, and help the Moon Jeffs by belting what they ask for into their colony.'},
-  {name:'Terraformer',need:{},cond:()=>list.some(e=>e.type==='terraformer'&&e.cores)||Object.values(S.worlds||{}).some(w=>(w.ents||[]).some(e=>e.type==='terraformer'&&e.cores)),condText:'Build a Terraformer and power it with a core',unlock:'The Quantum Portal',
+  {name:'Terraformer',need:{},cond:()=>worldLists().some(L=>L.some(e=>e.type==='terraformer'&&e.cores)),condText:'Build a Terraformer and power it with a core',unlock:'The Quantum Portal',
    tip:'Build a Terraformer (it is in your build bar), then craft a Terraformer core in an assembler: 10 cheese, 1 The Everything, 2 processors, 3 copper wire, 5 biomatter and 1 fuel cell. Belt the core into the Terraformer to power it. Then select it to paint ore and water onto the map.'},
   {name:'Quantum',need:{},cond:()=>(S.universe||1)>=2,condText:'Travel to the next universe',unlock:'A whole new universe',
    tip:'Quantum core: 3 fuel cells, 2 The Everything, 2 processors, 3 copper wire, 5 advanced circuits, 4 gears and 1 Tyler. Belt it into a Quantum Portal, then click the portal to step through.'},
@@ -766,7 +766,7 @@ function genMap(sd){
   for(let k=0;k<7;k++){let x,y;do{x=4+r3()*(MW-8);y=4+r3()*(MH-8);}while(!far(x,y,12));stampFree(R_GAS,x,y,1.3+r3()*1.3);}
   bakeTerrain();
 }
-function bakeTerrain(){
+function bakeTerrain(){if(NOBAKE)return;
   const g=tg;
   for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
     const i=idx(x,y),r=res[i],X=x*TS,Y=y*TS,v=(h2(i,1)-0.5)*14;
@@ -852,7 +852,7 @@ function makeEnt(type,x,y,dir){
   if(type==='battery')e.charge=0;
   return e;
 }
-function addEnt(e){ents.set(e.id,e);const sz=footprint(e.type);for(let dy=0;dy<sz;dy++)for(let dx=0;dx<sz;dx++)occ[idx(e.x+dx,e.y+dy)]=e.id;list=[...ents.values()];netDirty=true;}
+function addEnt(e){if((e.type==='cargopad'||e.type==='cargolauncher')&&!e.color&&S&&S.lastCcol&&!BGW&&!NOBAKE)e.color=S.lastCcol;ents.set(e.id,e);const sz=footprint(e.type);for(let dy=0;dy<sz;dy++)for(let dx=0;dx<sz;dx++)occ[idx(e.x+dx,e.y+dy)]=e.id;list=[...ents.values()];netDirty=true;}
 function place(type,x,y,dir){
   const ex=entAt(x,y);
   if(ex&&isBeltTool(type)&&ex.type==='belt'){ex.dir=dir;if(type==='fastbelt')ex.fast=true;return ex;}
@@ -869,6 +869,9 @@ function makeCracks(){
   applyCracks();log('The ground splits open. Liquid uranium is seeping from cracks across the map.');showBanner('Cracks have opened in the floor');
 }
 const CARGO_COLORS=[['green','#5cbf6a','Green'],['red','#e8574a','Red'],['blue','#4a9ae8','Blue'],['yellow','#f4c542','Yellow'],['purple','#b46bff','Purple'],['orange','#ff9a3a','Orange']];
+const cargoName=c=>(CARGO_COLORS.find(x=>x[0]===c)||CARGO_COLORS[0])[2];
+function cargoWorlds(){return Object.keys(S.visited||{}).concat(['earth',S.world||'earth']).filter((w,i,a)=>a.indexOf(w)===i);}
+function padsIn(w,col){const L=w===(S.world||'earth')?list:(LIVE[w]?LIVE[w].list:[]);return L.filter(p=>p.type==='cargopad'&&(p.color||'green')===col);}
 const cargoKey=(w,c)=>!c||c==='green'?w:w+':'+c;const cargoCol=c=>(CARGO_COLORS.find(x=>x[0]===c)||CARGO_COLORS[0])[1];
 const COLONY_REQ=[['glass',20],['pizza',15],['motor',10],['cell',10],['plastic',20],['processor',5],['lobster',3],['jeff',5],['furniture',10],['fuel_cell',5]];
 const WORLD_NAMES={earth:'Earth',moon:'The Moon',u2:'Dimension 2'};const wname=w=>WORLD_NAMES[w]||('Dimension '+String(w).replace(/^[a-z]+/,''));const isDim=w=>w&&w!=='earth'&&w!=='moon';const WKEYS=['floor','craters','meniacs','ghosts','rjeffs','huge','angry','seek','comet'];
@@ -878,6 +881,20 @@ function worldBase(w){
       st(39,36,3.4);st(57,36,3.4);for(let k=0;k<14;k++){let x,y;do{x=5+rnd()*(MW-10);y=5+rnd()*(MH-10);}while(Math.hypot(x-48,y-36)<12);st(x,y,2+rnd()*3.5);}}}
   const m=(S.resMods||{})[w];if(m)for(const k in m)res[+k]=m[k];
   bakeTerrain();}
+let LIVE={},BGW=null,NOBAKE=0;
+function grabCtx(){const c={res,occ,ents,list,grids,cov,poleLinks,fnets,netDirty,fx,booms,ufo,coreOn,wk:{}};for(const k of WKEYS)c.wk[k]=S[k];return c;}
+function putCtx(c){res=c.res;occ=c.occ;ents=c.ents;list=c.list;grids=c.grids;cov=c.cov;poleLinks=c.poleLinks;fnets=c.fnets;netDirty=c.netDirty;fx=c.fx||[];booms=c.booms||[];ufo=c.ufo||null;coreOn=c.coreOn;for(const k of WKEYS){if(c.wk[k]===undefined)delete S[k];else S[k]=c.wk[k];}}
+const stripE=e=>{const o={...e};delete o.grid;delete o.fnet;delete o.pf;delete o.avail;return o;};
+function snapCtx(c){return {ents:c.list.map(stripE),cam:c.cam||{x:cam.x,y:cam.y,z:cam.z},...c.wk};}
+function worldLists(){const out=[list];for(const w in LIVE)if(w!==(S.world||'earth'))out.push(LIVE[w].list);for(const w in (S.worlds||{}))out.push(S.worlds[w].ents||[]);return out;}
+function inflateWorld(w,d){const me=grabCtx(),cur=S.world;S.world=w;NOBAKE=1;try{worldBase(w);}finally{NOBAKE=0;}occ=new Int32Array(MW*MH);ents=new Map();list=[];fnets=null;grids=[];fx=[];booms=[];ufo=null;
+  for(const k of WKEYS)delete S[k];for(const k of WKEYS)if(d[k]!==undefined)S[k]=d[k];
+  for(const e of d.ents){if(!BD[e.type])continue;e.grid=-1;e.fnet=-1;e.pf=0;if(e.type==='miner')delete e.ore;addEnt(e);}rebuildNets();
+  const c=grabCtx();c.cam=d.cam;S.world=cur;putCtx(me);return c;}
+function inflateAll(){LIVE={};if(!S.worlds)return;for(const w of Object.keys(S.worlds)){if(w===(S.world||'earth')){delete S.worlds[w];continue;}try{LIVE[w]=inflateWorld(w,S.worlds[w]);delete S.worlds[w];}catch(err){console.error(err);}}}
+function tickBg(){const cur=S.world||'earth',ws=Object.keys(LIVE).filter(w=>w!==cur);if(!ws.length)return;const me=grabCtx(),sun=S.sun,pw=S.pw;LIVE[cur]=me;
+  try{for(const w of ws){putCtx(LIVE[w]);S.world=w;BGW=w;try{tick();}catch(err){console.error(err);}const c=grabCtx();c.cam=LIVE[w].cam;LIVE[w]=c;}}
+  finally{BGW=null;S.world=cur;delete LIVE[cur];putCtx(me);S.sun=sun;S.pw=pw;}}
 function snapWorld(){return {ents:list.map(e=>{const o={...e};delete o.grid;delete o.fnet;delete o.pf;delete o.avail;return o;}),cam:{x:cam.x,y:cam.y,z:cam.z},...Object.fromEntries(WKEYS.map(k=>[k,S[k]]))};}
 function startWorld(w){const P=(t,x,y,d)=>{const e=makeEnt(t,x,y,d);addEnt(e);return e;};
   if(w==='moon'){addEnt(makeEnt('hub',47,35,0));P('colony',41,28,0);}
@@ -899,13 +916,18 @@ let pendingDimLink=null;
 function portalTarget(e){if(e.back)return {w:e.back,id:e.backId||0};if(e.cores&&e.dim)return {w:e.dim,id:e.dimPortal||0};return null;}
 function enterPortal(e){if(!e||e.type!=='quantum')return;if(!e.back&&!e.cores){showBanner('This portal needs a Quantum core');return;}
   if(!e.back&&!e.dim){S.dimN=Math.max(S.dimN||2,2)+1;e.dim=(S.dimN===3&&!(S.worlds&&S.worlds.u2)&&!(S.visited&&S.visited.u2))?'u2':'d'+S.dimN;if(e.dim==='u2')S.dimN=2;e.dimPortal=nextId++;}
-  const tg=portalTarget(e);if(!tg)return;const exists=(S.worlds&&S.worlds[tg.w]);
+  const tg=portalTarget(e);if(!tg)return;const exists=(S.worlds&&S.worlds[tg.w])||LIVE[tg.w];
   pendingDimLink=exists?null:{id:tg.id,back:S.world||'earth',backId:e.id};
   if(isDim(tg.w))S.universe=Math.max(S.universe||1,2);
   switchWorld(tg.w);pendingDimLink=null;const p2=ents.get(tg.id);if(p2){centerOn(p2.x+1.5,p2.y+1.5);}}
 function switchWorld(w){
   if(!S.worlds)S.worlds={};const cur=S.world||'earth';if(cur===w)return;
-  S.worlds[cur]=snapWorld();for(const k of WKEYS)delete S[k];
+  const mine=grabCtx();mine.cam={x:cam.x,y:cam.y,z:cam.z};LIVE[cur]=mine;
+  if(LIVE[w]){const c=LIVE[w];delete LIVE[w];S.world=w;if(!S.visited)S.visited={};S.visited[w]=1;putCtx(c);netDirty=true;bakeTerrain();if(c.cam){cam.x=c.cam.x;cam.y=c.cam.y;cam.z=c.cam.z;clampCam();}terraOn=false;
+    sel=null;inspKey='';buildHotbar();setTool('select');renderWorldBtns();
+    log(w==='moon'?'Back on the Moon.':isDim(w)?`You stepped through the portal into ${wname(w)}.`:'Back on Earth. Everything kept running while you were away.');
+    showBanner(w==='moon'?'THE MOON':isDim(w)?wname(w).toUpperCase():'BACK ON EARTH');return;}
+  for(const k of WKEYS)delete S[k];
   S.world=w;if(!S.visited)S.visited={};S.visited[w]=1;if(w!=='earth'&&!S.cargoUnlocked){S.cargoUnlocked=1;setTimeout(()=>{log('Unlocked the Cargo Launcher and Cargo Pad: send items between worlds!');showBanner('CARGO LAUNCHER unlocked');},50);}worldBase(w);occ=new Int32Array(MW*MH);ents=new Map();list=[];fnets=null;grids=[];fx=[];booms=[];ufo=null;terraOn=false;
   const d=S.worlds[w];
   if(d){for(const k of WKEYS)if(d[k]!==undefined)S[k]=d[k];for(const e of d.ents){if(!BD[e.type])continue;e.grid=-1;e.fnet=-1;e.pf=0;if(e.type==='miner')delete e.ore;addEnt(e);}delete S.worlds[w];rebuildNets();if(d.cam){cam.x=d.cam.x;cam.y=d.cam.y;cam.z=d.cam.z;clampCam();}}
@@ -1142,8 +1164,8 @@ function count(item,n){const b=S.bins[S.bin];b[item]=(b[item]||0)+(n||1);if(!S.m
 function windAt(e){return clamp(0.5+0.3*Math.sin(S.t*0.021)+0.18*Math.sin(S.t*0.083+e.id*1.7)+0.1*Math.sin(S.t*0.31+e.id),0.05,1);}
 function sunAt(t){const f=(t/DAY)%1;if(f<0.2||f>0.8)return 0;return clamp(Math.sin((f-0.2)/0.6*Math.PI)*1.5,0,1);}
 function tick(){
-  const dt=DT;S.t+=dt;
-  const bin=Math.floor(S.t/5)%12;if(bin!==S.bin){S.bin=bin;S.bins[bin]={};}
+  const dt=DT;if(!BGW){S.t+=dt;
+  const bin=Math.floor(S.t/5)%12;if(bin!==S.bin){S.bin=bin;S.bins[bin]={};}}
   if(netDirty)rebuildNets();
   S.sun=S.world==='moon'?1:sunAt(S.t);
   solvePower(dt);
@@ -1205,16 +1227,18 @@ function tick(){
             else{const c=Math.max(1,Math.round(val(it)*1.2));S.coins=(S.coins||0)+c;S.earned=(S.earned||0)+c;S.shredded=(S.shredded||0)+1;e.last=it;e.cash=(e.cash||0)+c;}e.chomp=S.t;}
           e.status=`Shredding… ${Math.round(e.cash||0)} coins made`;}
         else{e.active=false;e.status=`Hungry. Belt anything in. (${Math.round(e.cash||0)} coins made so far)`;}break;}
-      case 'cargolauncher':{if(!e.pend)e.pend=[];const vis=Object.keys(S.visited||{earth:1}).concat(['earth']).filter((w,i,a)=>a.indexOf(w)===i&&w!==(S.world||'earth'));
-        if(!e.dest||!vis.includes(e.dest))e.dest=vis[0]||null;e.ct=(e.ct||0)+dt;
-        if(!e.dest){e.status='Visit another world first';break;}
-        if(e.launchT>0){e.launchT-=dt;}
-        if(e.pend.length&&e.ct>=4&&!(e.launchT>0)){e.ct=0;const load=e.pend.splice(0,10);if(!S.cargo)S.cargo={};const ck=cargoKey(e.dest,e.color);if(!S.cargo[ck])S.cargo[ck]=[];S.cargo[ck].push(...load);e.launchT=2;S.cargoSent=(S.cargoSent||0)+load.length;log(`A ${(CARGO_COLORS.find(x=>x[0]===(e.color||'green'))||CARGO_COLORS[0])[2].toLowerCase()} cargo rocket left for ${wname(e.dest)} with ${load.length} items.`);}
-        e.status=`Sending to ${(CARGO_COLORS.find(x=>x[0]===(e.color||'green'))||CARGO_COLORS[0])[2]} pads on ${wname(e.dest)} · ${e.pend.length} items loaded`;break;}
-      case 'cargopad':{if(!e.pend)e.pend=[];if(!S.cargo)S.cargo={};const ck=cargoKey(S.world||'earth',e.color);if(!S.cargo[ck])S.cargo[ck]=[];const q=S.cargo[ck];
-        if(e.pend.length<4&&q.length){e.pend.push(q.shift());e.land=S.t;}
+      case 'cargolauncher':{if(!e.pend)e.pend=[];const vis=cargoWorlds();
+        if(!e.dest||!vis.includes(e.dest))e.dest=vis.find(w=>w!==(S.world||'earth'))||vis[0];e.ct=(e.ct||0)+dt;
+        if(e.launchT>0){e.launchT-=dt;}const col=e.color||'green',cn=cargoName(col),pads=padsIn(e.dest,col),there=e.dest===(S.world||'earth')?'this world':wname(e.dest);
+        if(!pads.length){e.status=`No ${cn} Cargo Pads on ${there} yet · ${e.pend.length} items loaded`;break;}
+        if(e.pend.length&&e.ct>=4&&!(e.launchT>0)){e.ct=0;let sent=0;
+          for(let k=0;k<10&&e.pend.length;k++){let ok=false;for(let j=0;j<pads.length;j++){const pd=pads[(e.rr=(e.rr||0)+1)%pads.length];if(!pd.inbox)pd.inbox=[];if(pd.inbox.length<60){pd.inbox.push(e.pend.shift());ok=true;sent++;break;}}if(!ok)break;}
+          if(sent){e.launchT=2;S.cargoSent=(S.cargoSent||0)+sent;}}
+        e.status=`Sending to ${pads.length} ${cn} pad${pads.length>1?'s':''} on ${there} · ${e.pend.length} items loaded`;break;}
+      case 'cargopad':{if(!e.pend)e.pend=[];if(!e.inbox)e.inbox=[];if(!S.cargo)S.cargo={};const ck=cargoKey(S.world||'earth',e.color);const q=S.cargo[ck]||[];
+        if(e.pend.length<4){if(e.inbox.length){e.pend.push(e.inbox.shift());e.land=S.t;}else if(q.length){e.pend.push(q.shift());e.land=S.t;}}
         if(e.pend.length&&pushFrom(e,e.pend[0]))e.pend.shift();
-        e.status=(q.length+e.pend.length?`Unloading cargo: ${q.length+e.pend.length} items left`:'Waiting for cargo rockets')+` · ${(CARGO_COLORS.find(x=>x[0]===(e.color||'green'))||CARGO_COLORS[0])[2]} pad`;break;}
+        e.status=(e.inbox.length+q.length+e.pend.length?`Unloading cargo: ${e.inbox.length+q.length+e.pend.length} items left`:'Waiting for cargo rockets')+` · ${(CARGO_COLORS.find(x=>x[0]===(e.color||'green'))||CARGO_COLORS[0])[2]} pad`;break;}
       case 'rocketpad':{if(!e.pend)e.pend=[];if(e.pend.length&&pushFrom(e,e.pend[0])){count(e.pend.shift());}
         e.status=e.catch===false?'Catching is OFF: Rocket Jeffs deliver to the Hub':`Rocket Jeffs drop their items here`+(e.pend.length?` · ${e.pend.length} waiting to come out`:'');break;}
       case 'truckdepot':{if(!e.pend)e.pend=[];const hub=list.find(o=>o.type==='hub');if(!hub){e.status='No Hub';break;}
@@ -1894,9 +1918,9 @@ function checkTier(){
 
 // ================= log & banner =================
 function stamp(t){const d=Math.floor(t/DAY)+1,m=Math.floor(((t/DAY)%1)*1440);return `D${d} ${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;}
-function log(s){S.log.push({t:S.t,s});if(S.log.length>40)S.log.shift();S.logVer++;}
+function log(s){if(BGW)s=`[${wname(BGW)}] `+s;S.log.push({t:S.t,s});if(S.log.length>40)S.log.shift();S.logVer++;}
 let bannerT=0;
-function showBanner(s){const b=$('#banner');b.textContent=s;b.hidden=false;bannerT=performance.now()+4500;}
+function showBanner(s){if(BGW)return;const b=$('#banner');b.textContent=s;b.hidden=false;bannerT=performance.now()+4500;}
 
 // ================= rendering =================
 const cv=$('#c'),ctx=cv.getContext('2d'),view=$('#view');
@@ -2119,7 +2143,7 @@ function drawEnt1(g,e,t){
     case 'cargopad':{
       const pc=cargoCol(e.color);box(g,X,Y,'#2b3038',pc,1.4);g.strokeStyle=pc;g.lineWidth=1.2;g.beginPath();g.arc(cx,cy,8,0,6.283);g.stroke();g.strokeStyle='rgba(255,255,255,.7)';g.beginPath();g.moveTo(cx-4,cy-4);g.lineTo(cx+4,cy+4);g.moveTo(cx+4,cy-4);g.lineTo(cx-4,cy+4);g.stroke();
       const ld=e.land!==undefined&&S?Math.max(0,1-(S.t-e.land)/0.6):0;if(ld>0){g.fillStyle=`rgba(255,200,120,${ld*0.6})`;g.beginPath();g.arc(cx,cy,3+(1-ld)*8,0,6.283);g.fill();}
-      const q=((S&&S.cargo)||{})[cargoKey(S&&S.world||'earth',e.color)]||[];if(q.length||(e.pend&&e.pend.length)){g.fillStyle='#a86a3c';rr(g,cx-4,cy-3,8,6,1);g.fill();const it=(e.pend&&e.pend[0])||q[0];if(SPR[it])g.drawImage(SPR[it],cx-3,cy-3,6,6);}
+      const q=(e.inbox&&e.inbox.length?e.inbox:null)||((S&&S.cargo)||{})[cargoKey(S&&S.world||'earth',e.color)]||[];if(q.length||(e.pend&&e.pend.length)){g.fillStyle='#a86a3c';rr(g,cx-4,cy-3,8,6,1);g.fill();const it=(e.pend&&e.pend[0])||q[0];if(SPR[it])g.drawImage(SPR[it],cx-3,cy-3,6,6);}
       arrow(g,X,Y,e.dir);break;}
     case 'terraformer':{
       box(g,X,Y,'#2b3038',e.cores?'#7fff3a':'#5a636d',1.3);const on=!!e.cores;g.save();g.translate(cx,cy);g.beginPath();g.arc(0,0,8,0,6.283);g.fillStyle='#2e6fb5';g.fill();g.clip();
@@ -2887,8 +2911,8 @@ function updateInspector(){
     if(e.type==='chest'&&((S.made.rocket_jeff||0)>0||(S.rjeffs||[]).length))h+=`<div class="iact"><button class="tbtn" id="iNoRk" aria-pressed="${!!e.noRocket}">🚫🚀 ${e.noRocket?'Allow rockets':'No rockets'}</button></div>`;
     if(e.type==='rocketpad')h+=`<div class="iact"><button class="tbtn" id="iCatch" aria-pressed="${e.catch!==false}">${e.catch===false?'Catch: OFF':'Catch: ON'}</button></div>`;
     if(e.type==='chest'&&(S.jeffsInSpace||0)>=1)h+=`<div class="iact"><button class="tbtn" id="iUfo" aria-pressed="${!!e.ufoMark}">👽 ${e.ufoMark?'Remove UFO mark':'UFO mark'}</button></div>`;
-    if(e.type==='cargolauncher'){const vis=Object.keys(S.visited||{}).concat(['earth']).filter((w,i,a)=>a.indexOf(w)===i&&w!==(S.world||'earth'));
-      h+=cargoColorBtns(e)+'<p class="formula">Send cargo to:</p><div class="recipes">'+vis.map(w=>`<button class="rbtn" data-dest="${w}" aria-pressed="${e.dest===w}">${({earth:'🌍',moon:'🌙',u2:'🌌'})[w]} ${wname(w)}</button>`).join('')+'</div>';}
+    if(e.type==='cargolauncher'){const vis=cargoWorlds();
+      h+=cargoColorBtns(e)+'<p class="formula">Send cargo to:</p><div class="recipes">'+vis.map(w=>`<button class="rbtn" data-dest="${w}" aria-pressed="${e.dest===w}">${({earth:'🌍',moon:'🌙'})[w]||'🌌'} ${w===(S.world||'earth')?'This world':wname(w)}</button>`).join('')+'</div>';}
     if(e.type==='cargopad')h+=cargoColorBtns(e);
     if(e.type==='terraformer'){if(!e.cores)h+='<p class="formula">Belt a Terraformer core into it to power it up.</p>';
       else h+='<p class="formula">MAP EDITOR: pick something, then click or drag on the map to paint it.</p><div class="recipes">'+TERRA_PAINTS.map(([c,n])=>`<button class="rbtn" data-tf="${c}" aria-pressed="${terraOn&&terraBrush===c}">${c&&ORE_OF[c]?icon(ORE_OF[c]):c===R_WATER?'💧':c===R_OIL?'🛢️':c===R_GAS?'💨':'🧽'}${n}</button>`).join('')+'</div><p class="formula">Brush size</p><div class="recipes">'+[1,3,5].map(z=>`<button class="rbtn" data-tfs="${z}" aria-pressed="${terraSize===z}">${z}×${z}</button>`).join('')+`<button class="rbtn" data-tf="off">Stop painting</button></div>`;}
@@ -2908,7 +2932,7 @@ function updateInspector(){
     el.querySelectorAll('[data-jt]').forEach(b=>b.addEventListener('click',()=>{const ee=ents.get(sel);if(!ee)return;ee.target=b.dataset.jt||null;if(ee.target&&ee.pend)ee.pend=ee.pend.map(()=>ee.target);ee.jt=0;updateInspector();}));
     const ink=$('#iNoRk');if(ink)ink.addEventListener('click',()=>{const ee=ents.get(sel);if(!ee)return;ee.noRocket=!ee.noRocket;updateInspector();});
     const ic=$('#iCatch');if(ic)ic.addEventListener('click',()=>{const ee=ents.get(sel);if(!ee)return;ee.catch=ee.catch===false?true:false;updateInspector();});
-    el.querySelectorAll('[data-ccol]').forEach(b=>b.addEventListener('click',()=>{const ee=ents.get(sel);if(!ee)return;ee.color=b.dataset.ccol;inspKey='';updateInspector();}));
+    el.querySelectorAll('[data-ccol]').forEach(b=>b.addEventListener('click',()=>{const ee=ents.get(sel);if(!ee)return;ee.color=b.dataset.ccol;S.lastCcol=ee.color;inspKey='';updateInspector();}));
     el.querySelectorAll('[data-dest]').forEach(b=>b.addEventListener('click',()=>{const ee=ents.get(sel);if(!ee)return;ee.dest=b.dataset.dest;inspKey='';updateInspector();}));
     el.querySelectorAll('[data-tf]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.tf==='off'){terraOn=false;}else{terraOn=true;terraBrush=+b.dataset.tf;showBanner('Map editor: paint on the map');}inspKey='';updateInspector();}));
     el.querySelectorAll('[data-tfs]').forEach(b=>b.addEventListener('click',()=>{terraSize=+b.dataset.tfs;inspKey='';updateInspector();}));
@@ -3073,7 +3097,7 @@ function updateUI(){
 // ================= new game / save =================
 function freshState(){return {coins:0,earned:0,sold:0,up:{},ach:{},made:{},t:DAY*0.3,tier:0,hub:{},delivered:{},bins:Array.from({length:12},()=>({})),bin:0,log:[],logVer:0,built:0,lastAsm:'gear',sun:1,pw:null};}
 function newGame(sd){
-  S=freshState();genMap(sd);occ=new Int32Array(MW*MH);ents=new Map();list=[];nextId=1;fnets=null;grids=[];sel=null;inspKey='';
+  LIVE={};S=freshState();genMap(sd);occ=new Int32Array(MW*MH);ents=new Map();list=[];nextId=1;fnets=null;grids=[];sel=null;inspKey='';
   addEnt(makeEnt('hub',47,35,0));
   const P=(t,x,y,d)=>{const e=makeEnt(t,x,y,d);addEnt(e);return e;};
   P('miner',40,36,0);P('belt',41,36,0);P('belt',42,36,0);P('smelter',43,36,0);P('belt',44,36,0);P('belt',45,36,0);P('belt',46,36,0);
@@ -3087,12 +3111,12 @@ function newGame(sd){
   cam.z=1.5;centerOn(48,37.5);buildHotbar();setTool('select');
 }
 const KEY='factory-of-everything-v2';
-function serialize(){return {v:2,seed,S:{...S,pw:null},nextId,cam:{x:cam.x,y:cam.y,z:cam.z},ents:list.map(e=>{const o={...e};delete o.grid;delete o.fnet;delete o.pf;delete o.avail;return o;})};}
+function serialize(){const wl={...(S.worlds||{})};for(const w in LIVE)if(w!==(S.world||'earth'))wl[w]=snapCtx(LIVE[w]);return {v:2,seed,S:{...S,pw:null,worlds:wl},nextId,cam:{x:cam.x,y:cam.y,z:cam.z},ents:list.map(e=>{const o={...e};delete o.grid;delete o.fnet;delete o.pf;delete o.avail;return o;})};}
 function deserialize(d){
   if(!d||d.v!==2)throw new Error('old save');
   S=Object.assign(freshState(),d.S);seed=d.seed;worldBase(S.world||'earth');occ=new Int32Array(MW*MH);ents=new Map();list=[];fnets=null;nextId=d.nextId;fx=[];
   for(const e of d.ents){if(!BD[e.type])continue;e.grid=-1;e.fnet=-1;e.pf=0;if(e.type==='miner')delete e.ore;addEnt(e);}
-  rebuildNets();sel=null;inspKey='';shownLog=-1;buildHotbar();setTool('select');terraOn=false;setTimeout(renderWorldBtns,0);
+  rebuildNets();migrateMoon();inflateAll();sel=null;inspKey='';shownLog=-1;buildHotbar();setTool('select');terraOn=false;setTimeout(renderWorldBtns,0);
   if(d.cam){cam.x=d.cam.x;cam.y=d.cam.y;cam.z=d.cam.z;clampCam();}else centerOn(48,37.5);
 }
 const AUTOKEY=KEY+'-auto';
@@ -3141,7 +3165,7 @@ function frame(now){
   if(keysDown.has('w')||keysDown.has('arrowup'))cam.y-=pan;if(keysDown.has('s')||keysDown.has('arrowdown'))cam.y+=pan;
   if(keysDown.has('a')||keysDown.has('arrowleft'))cam.x-=pan;if(keysDown.has('d')||keysDown.has('arrowright'))cam.x+=pan;
   if(keysDown.size)clampCam();
-  if(speed>0){acc+=el*speed;let n=0;while(acc>=DT&&n<16){tick();acc-=DT;n++;}if(n>=16)acc=0;}
+  if(speed>0){acc+=el*speed;let n=0;while(acc>=DT&&n<16){tick();tickBg();acc-=DT;n++;}if(n>=16)acc=0;}
   render(S.t);
   if(now-uiT>250){uiT=now;updateUI();}
   requestAnimationFrame(frame);
