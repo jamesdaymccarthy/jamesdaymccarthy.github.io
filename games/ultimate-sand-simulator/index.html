@@ -357,7 +357,7 @@ D('limestone', 'Limestone', SD, S, '#cec5a6', { hard: 40, hiT: 900, hiTo: 'limes
 D('granite', 'Granite', SD, S, '#9b8b84', { hard: 85, hiT: 1250, hiTo: 'magma', phaseP: 0.015, acid: 0.06, debris: 'gravel', desc: 'Very hard igneous rock.' });
 D('marble', 'Marble', SD, S, '#e8e3db', { hard: 60, hiT: 1200, hiTo: 'magma', acid: 0.5, debris: 'crushed_stone', desc: 'Polished metamorphic rock. Acid dissolves it into CO₂.' });
 D('sandstone', 'Sandstone', SD, S, '#d4b276', { hard: 30, hiT: 1400, hiTo: 'molten_glass', acid: 0.4, debris: 'sand', desc: 'Compacted sand. Forms under deep sand piles; crumbles back to sand when broken.' });
-D('obsidian', 'Obsidian', SD, S, '#3a2f4f', { hard: 75, hiT: 1100, hiTo: 'lava', acid: 0.05, debris: 'glass_shards', desc: 'Volcanic glass from lava quenched in water.' });
+D('obsidian', 'Obsidian', SD, S, '#3a2f4f', { hard: 75, hiT: 1100, hiTo: 'lava', acid: 0.05, debris: 'glass_shards', desc: 'Volcanic glass from lava quenched in water. Build a closed frame of it and light a fire inside to open a nether portal to the Underworld.' });
 D('brick', 'Brick', SD, S, '#a44a34', { hard: 55, hiT: 1400, hiTo: 'lava', acid: 0.2, debris: 'crushed_stone', vary: 0.05, desc: 'Fired clay blocks. Sturdy building material.' });
 D('concrete', 'Concrete', SD, S, '#a7a59e', { hard: 70, hiT: 1500, hiTo: 'lava', acid: 0.25, debris: 'gravel', desc: 'Strong cast stone. Pour wet concrete to make it.' });
 D('wood', 'Wood', SD, S, '#7d5129', { dens: 600, flam: 0.35, ign: 280, burn: 'burning_wood', hard: 30, acid: 0.4, porous: 2, debris: 'sawdust', desc: 'Burns into charcoal and ash. Trees grow from saplings.' });
@@ -966,7 +966,7 @@ function lifeFor(m) { const a = LIFE0[m], b = LIFE1[m]; return a || b ? a + rint
 // only the materials on the palette (plus melted glass, radiation, eggs and creatures) may exist in a normal world:
 // anything else a reaction tries to make turns into its nearest kept cousin instead
 let BANNED = null, rawPlace = false;
-function remapOn() { return !rawPlace && !settings.mystery && !settings.whiteWorld && !settings.corrupt; }
+function remapOn() { return !rawPlace && !settings.mystery && !settings.whiteWorld && !settings.corrupt && !settings.exotic; }
 function setCell(i, m, keepTemp) {
   if (BANNED && BANNED[m] && remapOn()) { m = KEEPMAP[m]; if (!m) { clearCell(i); tmp[i] = settings.ambient; return; } }
   mat[i] = m; life[i] = lifeFor(m); aux[i] = 0; vx[i] = 0; vy[i] = 0;
@@ -1308,6 +1308,7 @@ function gas(i, x, y, m) {
 let portalCheckFrame = -1, portalChecks = 0;
 function fireUpdate(i, x, y) {
   if (portalCheckFrame !== frameNo) { portalCheckFrame = frameNo; portalChecks = 0; }
+  if (portalChecks < 40) { portalChecks++; if (insideObsidianFrame(x, y) && tryLightPortal(x, y)) return -1; } // fire inside an obsidian frame lights a nether portal
   life[i]--;
   if (tmp[i] < 600) tmp[i] = 600 + rnd() * 250;
   if (life[i] <= 0) {
@@ -4170,7 +4171,7 @@ function insideObsidianFrame(x, y) {
   for (let k = 0; k < 4; k++) {
     const dx = NB4[k][0], dy = NB4[k][1];
     let cx = x, cy = y, hit = false;
-    for (let s = 0; s < 42; s++) {
+    for (let s = 0, lim = Math.max(W, H); s < lim; s++) {
       cx += dx; cy += dy; const j = idx(cx, cy); if (j < 0) return false;
       const m = mat[j];
       if (m === M.obsidian) { hit = true; break; }
@@ -4183,12 +4184,14 @@ function insideObsidianFrame(x, y) {
 function nearObsidian(x, y) { for (let k = 0; k < 4; k++) { const j = idx(x + NB4[k][0], y + NB4[k][1]); if (j >= 0 && mat[j] === M.obsidian) return true; } return false; }
 
 // fire inside a closed obsidian frame (any shape) lights a portal that fills the whole inside
+let bigPortalFailAt = -999;
 function tryLightPortal(x, y) {
   const start = idx(x, y); if (start < 0) return false;
+  const cap = frameNo - bigPortalFailAt < 60 ? 1500 : N; // any size you like — but don't keep re-checking a huge space that failed a moment ago
   const open = m => m === 0 || STATE[m] === ST.GAS || m === M.fire || (STATE[m] === ST.ENERGY && MOVE[m] !== MV.NONE);
   const seen = new Set([start]), q = [start]; let minX = x, maxX = x, minY = y, maxY = y;
   for (let h = 0; h < q.length; h++) {
-    if (q.length > 900) return false;
+    if (q.length > cap) { if (cap === N) bigPortalFailAt = frameNo; return false; }
     const c = q[h], cx = c % W, cy = (c / W) | 0;
     for (let k = 0; k < 4; k++) {
       const nx = cx + NB4[k][0], ny = cy + NB4[k][1], n = idx(nx, ny);
@@ -4196,10 +4199,9 @@ function tryLightPortal(x, y) {
       if (seen.has(n)) continue;
       const m = mat[n];
       if (m === M.obsidian) continue;
-      if (!open(m)) return false;                    // something other than obsidian touches the inside
+      if (!open(m)) { if (q.length > 1500) bigPortalFailAt = frameNo; return false; } // something other than obsidian touches the inside
       seen.add(n); q.push(n);
       if (nx < minX) minX = nx; if (nx > maxX) maxX = nx; if (ny < minY) minY = ny; if (ny > maxY) maxY = ny;
-      if (maxX - minX > 40 || maxY - minY > 40) return false;
     }
   }
   if (q.length < 6 || maxX - minX < 1 || maxY - minY < 2) return false;
@@ -4462,7 +4464,7 @@ function moveRigid(mc, sx, sy) {
 // ---------- stars & black holes reach five times their size ----------
 function gravityPass() {
   if (frameNo & 1) return;
-  for (const cl of getClusters(M.star)) pullToward(cl, reachOf(cl), false);
+  for (const cl of getClusters(M.star)) if (cl.n < 20000) pullToward(cl, reachOf(cl), false); // (the Sun's whole surface is too big to pull — regular gravity does that job)
   // black holes use their own whole-world pull (see gadgetUpdate)
 }
 
@@ -4520,6 +4522,7 @@ function plantBoost() {
   for (let k = 0; k < 40; k++) { const i = plantFront[rint(plantFront.length)]; if (mat[i] === P && rnd() < 0.5) RT[P](i, i % W, (i / W) | 0, P); }
 }
 function overhaulPass() {
+  if (settings.sunWorld) sunWorldTick();
   sweepBanned();
   gravityPass();
   if ((frameNo & 1) === 0) magnetPass();
@@ -5120,12 +5123,14 @@ const GENERATORS = [
 ];
 // only the materials on the palette appear in generated worlds: everything else becomes its nearest kept cousin
 const WORLD_KEEP_GENS = ['starter', 'flat', 'beach', 'desert', 'mountains', 'caves', 'volcanic', 'frozen', 'forest', 'river', 'ocean', 'canyon', 'random'];
-for (let k = GENERATORS.length - 1; k >= 0; k--) if (!WORLD_KEEP_GENS.includes(GENERATORS[k].key)) GENERATORS.splice(k, 1);
+// every other world (candy land, coral reef, the Moon, the Underworld…) keeps its own special materials
+// the Moon isn't in the world menu — you have to fly up there
+{ const k = GENERATORS.findIndex(g => g.key === 'moon'); if (k >= 0) GENERATORS.splice(k, 1); }
 let KEEPMAP = null;
 function buildKeepMap() {
   KEEPMAP = new Uint16Array(NM); BANNED = new Uint8Array(NM);
   const to = (list, k) => { for (const n of list) if (M[n] !== undefined && BANNED[M[n]]) KEEPMAP[M[n]] = k ? M[k] : 0; };
-  const extra = new Set(['molten_glass', 'radiation', 'hot_air', 'rain_cloud', 'storm_cloud', 'egg', 'larva'].map(k => M[k]));
+  const extra = new Set(['molten_glass', 'radiation', 'hot_air', 'rain_cloud', 'storm_cloud', 'nether_portal', 'burning_fuse', 'egg', 'larva'].map(k => M[k]));
   for (let m = 0; m < NM; m++) {
     if (!m || PALCAT[m] !== undefined || STATE[m] === ST.CREATURE || extra.has(m)) { KEEPMAP[m] = m; continue; }
     BANNED[m] = 1;
@@ -5136,12 +5141,12 @@ function buildKeepMap() {
   to(['roots', 'organic', 'flesh', 'rotting', 'nutrient_soil', 'mud', 'gravel', 'frozen_soil', 'clay', 'compost', 'soil', 'sawdust'], 'dirt');
   to(['kelp', 'algae', 'coral', 'reeds', 'lily', 'salt_water', 'brine', 'muddy_water', 'hot_spring', 'swamp_water'], 'water');
   to(['planks', 'trunk', 'log', 'bark', 'paper', 'cardboard'], 'wood');
-  to(['charcoal', 'coal', 'burning_coal', 'soot', 'cinders'], 'ash');
+  to(['charcoal', 'coal', 'burning_coal', 'soot', 'cinders', 'volcanic_ash', 'pumice'], 'ash');
   to(['salt', 'red_sand', 'black_sand', 'sandstone_powder', 'wet_sand', 'glass_shards'], 'sand');
   to(['magma'], 'lava');
   to(['ice_powder', 'packed_snow'], 'snow');
   to(['permafrost', 'blue_ice', 'frost'], 'ice');
-  to(['iron', 'steel', 'copper_ore', 'iron_ore', 'obsidian', 'marble', 'bone', 'basalt', 'granite'], 'stone');
+  to(['iron', 'steel', 'copper_ore', 'iron_ore', 'marble', 'bone', 'basalt', 'granite'], 'stone');
   to(['rust', 'iron_filings'], 'metal_powder');
   to(['molten_metal', 'molten_iron', 'molten_copper', 'molten_gold', 'mercury'], 'liquid_metal');
   to(['liquid_nitrogen'], 'liquid_air');
@@ -5277,7 +5282,8 @@ function generateWorld(gen, p) {
   if (moonGravityOn) { settings.gravity = 1; moonGravityOn = false; }
   if (settings.mystery) { settings.dayNight = false; computeSun(); skyDirty = true; }
   if (settings.whiteWorld) { settings.whiteWorld = false; if (typeof setVolume === 'function') setVolume(); }
-  settings.corrupt = false;
+  settings.corrupt = false; settings.moon = false; settings.sunWorld = false;
+  settings.exotic = !WORLD_KEEP_GENS.includes(gen) && gen !== 'mystery' && gen !== 'white' && gen !== 'corrupt';
   settings.lavaClimate = false; settings.mystery = false; mysteryHome = null; mysteryEye = null; littleEyes = []; eyeFlowers = []; if (typeof stopDrone === 'function') { stopDrone(); mysteryTitle(false); }
   const amp = 10 + p.rough * H * 0.22;
   const sea = Math.round(H * (0.45 + p.water * 0.3));
@@ -5665,6 +5671,7 @@ function generateWorld(gen, p) {
       for (let k = 0, n = 0; k < 200 && n < 4; k++) { const x = 3 + gint(W - 6); let y = ceil[x] + 14; while (y < H - 2 && mat[idx(x, y)] === 0) y++; if (WATERISH[mat[idx(x, y)]] || mat[idx(x, y)] === M.lava) continue; if (spawnCreature('lizard', x, y - 1)) n++; }
       break;
     }
+    case 'sun': { genSunWorld(S, p); break; }
     case 'moon': {
       settings.gravity = 0.35; moonGravityOn = true;
       settings.ambient = -20; tmp.fill(-20);
@@ -5730,7 +5737,7 @@ function generateWorld(gen, p) {
     const pool = ['oil', 'salt', 'lava', 'acid', 'gunpowder', 'crystal', 'slime', 'seeds', 'honey', 'tnt'];
     for (let k = 0; k < 6; k++) pockets(pool[gint(pool.length)], 1, 3, 7);
   }
-  if (!settings.mystery && !settings.whiteWorld && !settings.corrupt) keepOnlyListed();
+  if (!settings.mystery && !settings.whiteWorld && !settings.corrupt && !settings.exotic) keepOnlyListed();
   if (gen === 'forest' || gen === 'mountains') { spawnSome('deer', 3, 'surface'); spawnSome('bear', 1, 'surface'); }
   if (gen === 'river' || gen === 'desert') spawnSome('cow', 2, 'surface');
   if (gen === 'ocean' || gen === 'beach') spawnSome('shark', 1, 'water');
@@ -5822,6 +5829,8 @@ const WEATHERS = [['clear', '☀ Clear'], ['rain', '🌧 Rain'], ['snow', '❄ S
 function computeSun() {
   if (settings.mystery) { sunLevel = 0.1; starLevel = 0; return; }
   if (settings.whiteWorld || settings.corrupt) { sunLevel = 1; starLevel = 0; return; }
+  if (settings.moon) { sunLevel = 1; starLevel = 1; return; }
+  if (settings.sunWorld) { sunLevel = 1; starLevel = 0; return; }
   if (!settings.dayNight) { sunLevel = 1; starLevel = 0; return; }
   const s = Math.sin((timeOfDay - 0.25) * Math.PI * 2); // -1 midnight … 1 noon
   sunLevel = clamp(0.5 + s * 0.9, 0.08, 1);
@@ -5848,6 +5857,8 @@ function clockText() {
 function skyRow(t) {
   if (settings.mystery) return [8 + t * 30, 4 + t * 6, 10 + t * 8]; // dead, blood-tinged horizon
   if (settings.whiteWorld) return [243, 243, 241];
+  if (settings.moon) return [3 + t * 4, 3 + t * 4, 7 + t * 6]; // black space
+  if (settings.sunWorld) { const f = 0.85 + 0.15 * Math.sin(frameNo * 0.01); return [(70 + t * 150) * f, (18 + t * 70) * f, 6 + t * 10]; } // the Sun's blazing corona
   if (settings.corrupt) { const c = hslToRgb(((t * 0.6 + frameNo * 0.0015) % 1 + 1) % 1, 0.75, 0.78); return c; } // a sickly-sweet rainbow sky
   const nr = 14 + (1 - t) * 10, ng = 17 + (1 - t) * 16, nb = 26 + (1 - t) * 30;
   if (!settings.dayNight) return [nr, ng, nb];
@@ -6723,6 +6734,125 @@ function unlockGlitch() {
 }
 try { if (localStorage.getItem('uss.glitch') === '1') { MATS[M.glitch].hidden = false; MATS[M.liquid_glitch].hidden = false; } } catch (e) { }
 
+// ======================= UP, UP AND AWAY: THE MOON =======================
+// keep scrolling the camera up past the top of the sky and you eventually reach the Moon;
+// scroll back down past the bottom of the Moon to fall home again
+settings.moon = false;
+const MOON_DIST = 2.2; // screens past the top
+let moonHome = null, moonBusy = false;
+function edgeOverY() {
+  if (typeof viewH === 'undefined' || !viewH) return [0, 0];
+  const vh = viewH / cam.z, c = cam.y + vh * 0.5;
+  return [-c / vh, (c - H) / vh];
+}
+function moonFrame() {
+  if (moonBusy || mysteryBusy || settings.mystery || settings.whiteWorld || settings.corrupt || settings.lavaClimate) return;
+  const [up, down] = edgeOverY();
+  if (settings.sunWorld) { if (down > MOON_DIST) leaveSun(); return; }
+  if (!settings.moon && up > MOON_DIST) enterMoon();
+  else if (settings.moon && down > MOON_DIST) leaveMoon();
+  else if (settings.moon && up > MOON_DIST) enterSun();
+}
+async function enterMoon() {
+  moonBusy = true;
+  try {
+    releaseControl();
+    const home = await serializeWorld('Home');
+    generateWorld('moon', { seed: (Math.random() * 1e9) | 0 });
+    settings.moon = true; moonHome = home;
+    history.length = 0; future.length = 0; updateUndoButtons();
+    const vh = viewH / cam.z; cam.y = H - vh * 0.75; clampCam();
+    computeSun(); skyDirty = true; wakeAll();
+    if (typeof flashScreen === 'function') flashScreen();
+    toast('🌙 Up, up and away… you made it to the Moon! Gravity is weak out here. Scroll back down past the bottom to fall home.', 'good');
+  } catch (e) { toast('The rocket fizzled: ' + e.message, 'bad'); }
+  moonBusy = false;
+}
+async function leaveMoon() {
+  moonBusy = true;
+  try {
+    const home = moonHome; moonHome = null;
+    if (home) await deserializeWorld(home); else generateWorld('starter', { seed: (Math.random() * 1e9) | 0 });
+    settings.moon = false; if (moonGravityOn) { settings.gravity = 1; moonGravityOn = false; }
+    history.length = 0; future.length = 0; updateUndoButtons();
+    const vh = viewH / cam.z; cam.y = -vh * 0.25; clampCam();
+    computeSun(); skyDirty = true; wakeAll();
+    toast('🌍 Welcome back down to Earth.', 'good');
+  } catch (e) { toast('Re-entry failed: ' + e.message, 'bad'); }
+  moonBusy = false;
+}
+// the Earth hangs in the Moon's black sky
+function drawEarth(ctx) {
+  if (!settings.moon || overlay !== 'none') return;
+  const x = W * 0.8, y = H * 0.16, r = Math.max(8, H * 0.06);
+  const g = ctx.createRadialGradient(x, y, r * 0.8, x, y, r * 1.6); g.addColorStop(0, 'rgba(120,180,255,0.35)'); g.addColorStop(1, 'rgba(120,180,255,0)');
+  ctx.fillStyle = g; ctx.fillRect(x - r * 1.6, y - r * 1.6, r * 3.2, r * 3.2);
+  ctx.save(); ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.clip();
+  ctx.fillStyle = '#2f6fd0'; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+  ctx.fillStyle = '#4fae4a';
+  for (const [a, b, s] of [[-0.4, -0.3, 0.45], [0.3, 0.1, 0.35], [-0.1, 0.45, 0.3], [0.5, -0.5, 0.2]]) { ctx.beginPath(); ctx.ellipse(x + a * r, y + b * r, s * r, s * r * 0.7, a, 0, 6.283); ctx.fill(); }
+  ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.fillRect(x - r, y - r * 0.95, r * 2, r * 0.18); ctx.fillRect(x - r * 0.6, y + r * 0.1, r * 0.9, r * 0.12);
+  ctx.fillStyle = 'rgba(0,0,20,0.45)'; ctx.beginPath(); ctx.arc(x + r * 0.45, y + r * 0.2, r, 0, 6.283); ctx.fill(); // night side
+  ctx.restore();
+}
+
+// ======================= …AND EVEN FURTHER: THE SUN =======================
+// keep flying up from the Moon and you reach the Sun: a sea of blazing star-stuff, a scorching sky and solar flares
+settings.sunWorld = false;
+let moonSnapshot = null;
+function genSunWorld(S, p) {
+  settings.ambient = 600; tmp.fill(600);
+  settings.gravity = 1.6;
+  const top = heightProfile(H * 0.55, H * 0.04, 0.8, S, 40);
+  for (let x = 0; x < W; x++) for (let y = top[x]; y < H; y++) setCell(idx(x, y), M.star);
+  // a shimmering layer of plasma and fire licking the surface
+  for (let x = 0; x < W; x++) for (let k = 1; k <= 3; k++) { const i = idx(x, top[x] - k); if (i >= 0 && gr() < 0.5 / k) setCell(i, gr() < 0.5 ? M.plasma : M.fire); }
+}
+function sunWorldTick() {
+  // solar flares: a loop of plasma bursts up off the surface and arcs back down
+  if (rnd() < 0.12) {
+    const x0 = 10 + rint(W - 20); let sy = 0; while (sy < H - 1 && mat[idx(x0, sy)] !== M.star) sy++;
+    const span = 8 + rint(30), hgt = 10 + rint(Math.max(10, H * 0.25)), dir = rnd() < 0.5 ? -1 : 1;
+    for (let k = 0; k <= 24; k++) {
+      const t = k / 24, x = Math.round(x0 + dir * span * t), y = Math.round(sy - 1 - Math.sin(t * Math.PI) * hgt), i = idx(x, y);
+      if (i >= 0 && (mat[i] === 0 || STATE[mat[i]] === ST.GAS)) { setCell(i, M.plasma); vy[i] = -10 - rint(20); vx[i] = dir * rint(10); }
+    }
+    if (rnd() < 0.3) sfxAt('fizz', x0, sy, 0.3);
+  }
+  // fire dances across the whole surface
+  for (let k = 0; k < 120; k++) { const x = rint(W), i0 = idx(x, rint(H)); if (i0 < 0 || mat[i0] !== M.star) continue; const j = idx(x, ((i0 / W) | 0) - 1); if (j >= 0 && mat[j] === 0 && rnd() < 0.5) setCell(j, rnd() < 0.6 ? M.fire : M.plasma); }
+}
+async function enterSun() {
+  moonBusy = true;
+  try {
+    releaseControl();
+    moonSnapshot = await serializeWorld('Moon');
+    const home = moonHome;
+    generateWorld('sun', { seed: (Math.random() * 1e9) | 0 });
+    settings.sunWorld = true; moonHome = home;
+    history.length = 0; future.length = 0; updateUndoButtons();
+    const vh = viewH / cam.z; cam.y = H - vh * 0.75; clampCam();
+    computeSun(); skyDirty = true; wakeAll();
+    if (typeof flashScreen === 'function') flashScreen();
+    toast('☀️ You flew right into the Sun! Everything here is scorching hot. Scroll back down to return to the Moon.', 'good');
+  } catch (e) { toast('Too hot to go any further: ' + e.message, 'bad'); }
+  moonBusy = false;
+}
+async function leaveSun() {
+  moonBusy = true;
+  try {
+    const home = moonHome, moonW = moonSnapshot; moonSnapshot = null;
+    if (moonW) await deserializeWorld(moonW); else generateWorld('moon', { seed: (Math.random() * 1e9) | 0 });
+    settings.sunWorld = false; settings.moon = true; settings.exotic = true; moonHome = home;
+    settings.gravity = 0.35; moonGravityOn = true;
+    history.length = 0; future.length = 0; updateUndoButtons();
+    const vh = viewH / cam.z; cam.y = -vh * 0.25; clampCam();
+    computeSun(); skyDirty = true; wakeAll();
+    toast('🌙 Back on the Moon. Phew, much cooler.', 'good');
+  } catch (e) { toast('Could not get back to the Moon: ' + e.message, 'bad'); }
+  moonBusy = false;
+}
+
 // ======================= RENDERING =======================
 const view = $('view'), vctx = view.getContext('2d', { alpha: false });
 const mini = $('mini'), mctx = mini.getContext('2d');
@@ -6828,7 +6958,10 @@ function clampCam() {
     if (!settings.whiteWorld && !settings.corrupt) hi = Math.max(hi, W - vw * 0.5 + far);
     cam.x = clamp(cam.x, lo, hi);
   }
-  cam.y = clamp(cam.y, -my + H * 0.5 - vh * 0.5, H - vh * 0.5 + my - H * 0.5);
+  let ylo = -my + H * 0.5 - vh * 0.5, yhi = H - vh * 0.5 + my - H * 0.5;
+  // the Moon is far above the sky (and home is far below the Moon)
+  if (typeof MOON_DIST !== 'undefined' && !settings.mystery && !settings.whiteWorld && !settings.corrupt && !settings.lavaClimate) { if (settings.moon || settings.sunWorld) yhi = Math.max(yhi, H - vh * 0.5 + vh * (MOON_DIST + 0.3)); if (!settings.sunWorld) ylo = Math.min(ylo, -vh * 0.5 - vh * (MOON_DIST + 0.3)); }
+  cam.y = clamp(cam.y, ylo, yhi);
   if (settings.bound === BOUND.WRAP) cam.x = ((cam.x % W) + W) % W;
 }
 function zoomAt(sx, sy, nz) {
@@ -6892,7 +7025,7 @@ function renderWorld() {
         case 18: { const f = 0.5 + 0.5 * Math.sin(fcl * 0.2 + i); r = 20 + 50 * f; g = 0; b = 40 + 70 * f; selfLit = true; break; } // black hole
         case 19: { if (aux[i] & 2) { r = 170; g = 110; b = 255; } break; } // toggle state
         case 20: { if (life[i] > 0) { const c = hslToRgb((aux[i] % 12) / 12, 0.9, 0.6); r = c[0]; g = c[1]; b = c[2]; selfLit = true; } break; } // note
-        case 23: { const f = 0.55 + 0.08 * Math.sin(fcl * 0.12 + (x * 7 + y * 13)) + shade[i] * 0.026, c = starRGB(tmp[i]); r = c[0] * f; g = c[1] * f; b = c[2] * f * 0.92; selfLit = true; break; } // star: colour follows temperature
+        case 23: { const f = 0.68 + 0.16 * Math.sin(x * 0.9 + fcl * 0.05 + Math.sin(y * 0.7 - fcl * 0.03) * 2) + 0.1 * Math.sin(y * 1.1 + fcl * 0.07 + x * 0.3) + shade[i] * 0.012, /* churning, boiling surface */ c = starRGB(tmp[i]); r = c[0] * f; g = c[1] * f; b = c[2] * f * 0.92; selfLit = true; break; } // star: colour follows temperature
         case 29: { const c = from565(aux[i]); const br = Math.min(1, (life[i] & 127) / 60); if (c[0] + c[1] + c[2] < 40) { r = 6; g = 6; b = 8; } else { const v = (0.5 + 0.38 * br) * (0.84 + shade[i] * 0.016); r = c[0] * v; g = c[1] * v; b = c[2] * v; } selfLit = true; break; } // light sources
         case 24: { const f = 0.5 + 0.5 * Math.sin(fcl * 0.1 + x * 0.6 + Math.sin(y * 0.4 + fcl * 0.05) * 3); r = 110 + 90 * f; g = 30 + 40 * f; b = 200 + 55 * f; selfLit = true; break; } // nether portal
         case 25: { if (life[i] > 0) { const c = (aux[i] & 1) ? hslToRgb(0.58 + vy[i] * 0.008, 0.8, 0.6) : hslToRgb(0.1 + vy[i] * 0.01, 0.95, 0.6); r = c[0]; g = c[1]; b = c[2]; selfLit = true; } else if (aux[i] & 1) { r *= 0.8; g *= 0.85; b *= 1.25; } break; } // chord block
@@ -7017,6 +7150,7 @@ function drawFrame() {
     ctx.setLineDash(settings.bound === BOUND.VOID ? [4 / z, 4 / z] : []); ctx.strokeRect(0, 0, W, H); ctx.setLineDash([]);
   }
   drawSun(ctx, z);
+  drawEarth(ctx);
   if (overlay === 'none') drawBigAnimals(ctx);
   // pixel grid
   if (settings.grid && z >= 10) {
@@ -7134,15 +7268,15 @@ function buildOptics() {
   E('lava', [255, 110, 30], 0.9, 26); E('src_lava', [255, 130, 40], 1.2, 30); E('fire', [255, 150, 50], 0.9, 22);
   E('antimatter', [190, 110, 255], 0.9, 22); E('uranium', [110, 255, 110], 0.22, 10); E('src_water', [80, 150, 255], 0.12, 7);
   E('eyte', [255, 255, 255], 0.6, 16); E('plasma', [255, 190, 255], 1, 22); E('lightning', [210, 225, 255], 2, 30);
-  E('molten_glass', [255, 150, 60], 0.5, 14); E('magma', [255, 110, 30], 0.9, 24);
+  E('molten_glass', [255, 150, 60], 0.5, 14); E('nether_portal', [170, 70, 255], 0.55, 18); E('magma', [255, 110, 30], 0.9, 24);
   for (let m = 0; m < NM; m++) EMITM[m] = EM_R[m] + EM_G[m] + EM_B[m] > 0 ? 1 : 0;
   for (const k of ['light', 'liquid_light', 'star', 'eyte']) if (M[k] !== undefined) EMITM[M[k]] = 1;
 }
 function starRGB(T) { // a star's colour follows its temperature: red → orange → yellow-white → blue-white
   const t = clamp(T, 500, 30000);
   if (t < 3000) { const k = (t - 500) / 2500; return [255, 70 + 90 * k, 30 + 30 * k]; }
-  if (t < 6000) { const k = (t - 3000) / 3000; return [255, 160 + 80 * k, 60 + 150 * k]; }
-  if (t < 12000) { const k = (t - 6000) / 6000; return [255 - 70 * k, 240 - 20 * k, 210 + 45 * k]; }
+  if (t < 6000) { const k = (t - 3000) / 3000; return [255, 140 + 80 * k, 40 + 90 * k]; }
+  if (t < 12000) { const k = (t - 6000) / 6000; return [255 - 70 * k, 220 + 0 * k, 130 + 125 * k]; }
   const k = Math.min(1, (t - 12000) / 18000); return [185 - 40 * k, 220 - 30 * k, 255];
 }
 function lightAlloc() {
@@ -8410,7 +8544,7 @@ const PALCAT = {}, PALORDER = {};
 [['Powders', ['sand', 'dirt', 'snow', 'ash', 'metal_powder', 'gunpowder']],
  ['Liquids', ['water', 'oil', 'lava', 'acid', 'slime', 'liquid_metal', 'liquid_air']],
  ['Gases', ['steam', 'smoke', 'methane']],
- ['Solids', ['stone', 'bedrock', 'wood', 'ice', 'metal', 'crystal', 'uranium', 'plant', 'glass']],
+ ['Solids', ['stone', 'bedrock', 'wood', 'ice', 'obsidian', 'metal', 'crystal', 'tnt', 'fuse', 'uranium', 'plant', 'glass']],
  ['Energy', ['fire', 'plasma', 'lightning', 'star', 'antimatter']],
  ['Misc', ['source', 'src_water', 'src_lava', 'magnet', 'portal_in', 'portal_out', 'black_hole', 'void', 'glitch', 'liquid_glitch', 'eye', 'eyte']],
  ['Light', ['light', 'liquid_light']]].forEach(([c, ks], ci) => ks.forEach((k, ki) => { const id = M[k]; if (id === undefined) return; PALCAT[id] = c; PALORDER[id] = ci * 100 + ki; MATS[id].cat = c; }));
@@ -8973,7 +9107,7 @@ async function serializeWorld(name) {
   const obj = {
     format: SAVE_FORMAT, version: SAVE_VERSION, name: name || 'World', saved: new Date().toISOString(), W, H,
     matKeys: MATS.map(m => m.key), z: false, data: '', frameNo,
-    settings: { gravity: settings.gravity, gdir: settings.gdir, ambient: settings.ambient, wind: settings.wind, bound: settings.bound, reactionRate: settings.reactionRate, heatRate: settings.heatRate, simSpeed: settings.simSpeed, paintColor: settings.paintColor, quality: settings.quality, evaporation: settings.evaporation, erosion: settings.erosion, dayNight: settings.dayNight, dayLength: settings.dayLength, weather: settings.weather, weatherAmt: settings.weatherAmt, timeOfDay, lavaClimate: !!settings.lavaClimate, mystery: !!settings.mystery, whiteWorld: !!settings.whiteWorld, corrupt: !!settings.corrupt, sun: { on: sun.on, x: sun.x, y: sun.y, b: sun.b, i: sun.i, col: sun.col } },
+    settings: { gravity: settings.gravity, gdir: settings.gdir, ambient: settings.ambient, wind: settings.wind, bound: settings.bound, reactionRate: settings.reactionRate, heatRate: settings.heatRate, simSpeed: settings.simSpeed, paintColor: settings.paintColor, quality: settings.quality, evaporation: settings.evaporation, erosion: settings.erosion, dayNight: settings.dayNight, dayLength: settings.dayLength, weather: settings.weather, weatherAmt: settings.weatherAmt, timeOfDay, lavaClimate: !!settings.lavaClimate, mystery: !!settings.mystery, whiteWorld: !!settings.whiteWorld, corrupt: !!settings.corrupt, moon: !!settings.moon, sunWorld: !!settings.sunWorld, exotic: !!settings.exotic, sun: { on: sun.on, x: sun.x, y: sun.y, b: sun.b, i: sun.i, col: sun.col } },
     camera: { x: cam.x, y: cam.y, z: cam.z }, mode: currentMode,
     palette: { hotbar: hotbar.map(m => MATS[m].key), favorites: [...favorites].map(m => MATS[m].key), selected: MATS[selMat].key, tool, brush: Object.assign({}, brush), placeDir },
     creatures: creatures.filter(c => c.alive).map(c => ({ sp: c.sp.key, segs: c.segs, hp: c.hp, energy: c.energy, age: c.age, dir: c.dir, frozen: c.frozen, hab: c.hab, speed: c.speed, tMin: c.tMin, tMax: c.tMax, breath: c.breath, genes: c.g ? genesJSON(c.g) : undefined })),
@@ -9020,7 +9154,7 @@ async function deserializeWorld(text) {
   }
   const s = obj.settings || {};
   for (const k of ['gravity', 'gdir', 'ambient', 'wind', 'bound', 'reactionRate', 'heatRate', 'simSpeed', 'paintColor', 'quality', 'evaporation', 'erosion', 'dayNight', 'dayLength', 'weather', 'weatherAmt']) if (s[k] !== undefined) settings[k] = s[k];
-  settings.lavaClimate = !!s.lavaClimate; settings.mystery = !!s.mystery; settings.whiteWorld = !!s.whiteWorld; settings.corrupt = !!s.corrupt; if (s.sun) { Object.assign(sun, s.sun); sun.placed = true; } else { sun.on = false; sun.placed = false; } if (typeof setVolume === 'function') { setVolume(); if (settings.whiteWorld && master) master.gain.value = 0; }
+  settings.lavaClimate = !!s.lavaClimate; settings.mystery = !!s.mystery; settings.whiteWorld = !!s.whiteWorld; settings.corrupt = !!s.corrupt; settings.moon = !!s.moon; settings.sunWorld = !!s.sunWorld; settings.exotic = !!s.exotic; if (s.sun) { Object.assign(sun, s.sun); sun.placed = true; } else { sun.on = false; sun.placed = false; } if (typeof setVolume === 'function') { setVolume(); if (settings.whiteWorld && master) master.gain.value = 0; }
   if (s.timeOfDay !== undefined) timeOfDay = s.timeOfDay;
   if (s.dayNight === undefined) { settings.dayNight = false; settings.weather = 'clear'; }
   computeSun(); skyDirty = true;
@@ -10010,7 +10144,7 @@ function frame(now) {
     tickCount += steps;
     updateFx();
     controlCamera();
-    mysteryFrame(); littleEyesFrame(); eyeFlowersFrame();
+    mysteryFrame(); moonFrame(); littleEyesFrame(); eyeFlowersFrame();
     // smooth zoom is applied in zoomAt; render
     renderWorld();
     drawFrame();
