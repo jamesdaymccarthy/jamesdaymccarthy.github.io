@@ -827,6 +827,7 @@ function makeEnt(type,x,y,dir){
   const v=VARIANT[type];if(v)type=v[0];
   const e={id:nextId++,type,x,y,dir:dir||0,grid:-1,pf:0,active:false,status:''};if(v)e[v[1]]=true;
   if(type==='belt')e.items=[];
+  if(type==='cargopad'||type==='cargolauncher')e.color=(S&&S.lastCcol)||'green';
   if(['miner','smelter','assembler','chem','oven','greenhouse','bioreactor','infuser','fishtank','freezer','jeffgen'].includes(type)){e.inv={};e.out=0;e.outItem=null;e.prog=0;e.busy=false;e.recipe=null;e.pass=[];}
   if(type==='smelter'){e.coal=0;e.fuelLeft=0;e.burning=false;}
   if(type==='assembler'||type==='oven'){e.recipe=null;e.manual=false;}
@@ -852,7 +853,7 @@ function makeEnt(type,x,y,dir){
   if(type==='battery')e.charge=0;
   return e;
 }
-function addEnt(e){if((e.type==='cargopad'||e.type==='cargolauncher')&&!e.color&&S&&S.lastCcol&&!BGW&&!NOBAKE)e.color=S.lastCcol;ents.set(e.id,e);const sz=footprint(e.type);for(let dy=0;dy<sz;dy++)for(let dx=0;dx<sz;dx++)occ[idx(e.x+dx,e.y+dy)]=e.id;list=[...ents.values()];netDirty=true;}
+function addEnt(e){ents.set(e.id,e);const sz=footprint(e.type);for(let dy=0;dy<sz;dy++)for(let dx=0;dx<sz;dx++)occ[idx(e.x+dx,e.y+dy)]=e.id;list=[...ents.values()];netDirty=true;}
 function place(type,x,y,dir){
   const ex=entAt(x,y);
   if(ex&&isBeltTool(type)&&ex.type==='belt'){ex.dir=dir;if(type==='fastbelt')ex.fast=true;return ex;}
@@ -1232,7 +1233,9 @@ function tick(){
         if(e.launchT>0){e.launchT-=dt;}const col=e.color||'green',cn=cargoName(col),pads=padsIn(e.dest,col),there=e.dest===(S.world||'earth')?'this world':wname(e.dest);
         if(!pads.length){e.status=`No ${cn} Cargo Pads on ${there} yet · ${e.pend.length} items loaded`;break;}
         if(e.pend.length&&e.ct>=4&&!(e.launchT>0)){e.ct=0;let sent=0;
-          for(let k=0;k<10&&e.pend.length;k++){let ok=false;for(let j=0;j<pads.length;j++){const pd=pads[(e.rr=(e.rr||0)+1)%pads.length];if(!pd.inbox)pd.inbox=[];if(pd.inbox.length<60){pd.inbox.push(e.pend.shift());ok=true;sent++;break;}}if(!ok)break;}
+          const open=pads.filter(pd=>!pd.inbox||pd.inbox.length<60);
+          if(open.length){const pd=open[Math.floor(Math.random()*open.length)];if(!pd.inbox)pd.inbox=[];
+            while(sent<10&&e.pend.length&&pd.inbox.length<60){pd.inbox.push(e.pend.shift());sent++;}pd.land=S.t;}
           if(sent){e.launchT=2;S.cargoSent=(S.cargoSent||0)+sent;}}
         e.status=`Sending to ${pads.length} ${cn} pad${pads.length>1?'s':''} on ${there} · ${e.pend.length} items loaded`;break;}
       case 'cargopad':{if(!e.pend)e.pend=[];if(!e.inbox)e.inbox=[];if(!S.cargo)S.cargo={};const ck=cargoKey(S.world||'earth',e.color);const q=S.cargo[ck]||[];
