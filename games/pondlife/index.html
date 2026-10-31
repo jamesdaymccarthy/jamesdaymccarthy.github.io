@@ -415,7 +415,7 @@ const PACKS = [
   { k: 'bonus', name: 'Bonus Frogs', req: ['layers', 'other'], sp: ['dragon', 'storm', 'ice', 'cactus', 'glitch', 'alien', 'sock', 'rock'], adds: 'The dragon egg, the Frozen Cave, the UFO power cells, the lost socks and the Old Turtle.' },
   { k: 'nothing', name: 'Nothing', req: ['other', 'layers', 'wormory'], sp: ['nullf', 'dataf'], adds: 'The Pipe Eel, the Aquifer, .,<!∅!>,., the hole in the sky, ∅, the Data Whale, and the secret room in the UFO.' },
   { k: 'roboman', name: 'Ro-boman', req: ['other', 'wormory'], sp: ['machine', 'mech'], adds: 'The worms who need your help, their robot statue, and the Mech parts.' },
-  { k: 'ocean', name: 'The Ocean', req: ['some'], sp: ['kraken'], adds: 'A huge sea past the east edge of the Top: Seashell Beach, Rainbow Reef, the Kelp Forest, Turtle Island, a sunken worm ship and the Kraken Trench. Dolphins, sharks, whales, turtles and more. Plus the mystery of the Lost Wormship.' },
+  { k: 'ocean', name: 'The Ocean', req: ['some'], sp: ['kraken', 'seafrog'], adds: 'A huge sea past the east edge of the Top: Seashell Beach, Rainbow Reef, the Kelp Forest, Turtle Island, a sunken worm ship, the Kraken Trench and the Sunken City of the old sea-frogs. Dolphins, sharks, whales, turtles and more. Plus the mystery of the Lost Wormship.' },
   { k: 'legends', name: 'The Legends', req: ['more', 'some', 'unreal', 'layers', 'temple', 'wormory', 'other', 'bonus', 'nothing', 'roboman', 'ocean'], sp: ['legend', 'galaxy', 'thunder', 'magma'], adds: 'The five legendary frogs.' },
 ];
 const BASE_FROGS = ['green', 'bull', 'tree', 'dart'];
@@ -3607,6 +3607,7 @@ function updateInsects(dt) {
         dragonfly: day ? 0.6 * sunny * fly : 0, firefly: day ? 0 : 1 * fly, butterfly: day ? 0.5 * sunny * fly : 0
       };
       if (W.inCave) { weights.fly = 0; weights.grasshopper = 0; weights.dragonfly = 0; weights.butterfly = 0; weights.moth = 0.6; }
+      if (typeof insectWeightsHook === 'function') insectWeightsHook(weights, day);
       let tot = 0; for (const k in weights) tot += weights[k];
       let r = Math.random() * tot, type = null; for (const k in weights) { r -= weights[k]; if (r <= 0) { type = k; break; } }
       if (type) { const p = habitatPoint(type); if (p) spawnInsect(type, p); }
@@ -8839,7 +8840,7 @@ function wormoryTick(dt) {
   for (const w of L.worms) if (Math.abs(w.segs[0].parent.position.x - P.x) < 30) w.segs.forEach((s, k) => s.position.set(Math.sin(t * 3 + w.ph + k) * 0.04 * k, Math.cos(t * 2 + w.ph + k) * 0.03 * k, (0.15 + Math.max(0, Math.sin(t * 0.7 + w.ph)) * 0.5) * (k / 6)));
   for (const a of L.archivists) { a.a += a.sp * dt; const x = Math.cos(a.a) * a.r, z = Math.sin(a.a) * a.r; a.segs.forEach((s, k) => { const b = a.a - k * 0.02 * Math.sign(a.sp) / Math.max(a.r, 1) * 8, wob = Math.sin(t * 6 + a.ph - k * 0.8) * 0.12; const sx = Math.cos(b) * (a.r + wob), sz = Math.sin(b) * (a.r + wob); s.position.set(sx, caveFloorH(sx, sz) + 0.12, sz); }); }
   const got = SAVE.stats.lore || [], placed = SAVE.stats.lorePlaced || [];
-  for (const tb of L.tablets) { const have = got.includes(tb.lo.title), off = tb.lo.frog && !speciesOn(tb.lo.frog); if (tb.parts) for (const o of tb.parts) o.visible = !off; tb.t.visible = tb.glow.visible = !have && !off; tb.lt.intensity = have ? 0 : 0.9; if (!have) { tb.glow.material.opacity = 0.55 + Math.sin(t * 2 + tb.x) * 0.2; tb.t.position.y = caveFloorH(tb.x, tb.z) + (tb.y0 || 1.1) + Math.sin(t * 1.5 + tb.x) * 0.08; } }
+  for (const tb of L.tablets) { const have = got.includes(tb.lo.title), off = tb.lo.frog && !speciesOn(tb.lo.frog); if (tb.parts) { for (const o of tb.parts) o.visible = !off; if (!off) tb.parts[2].visible = SAVE.unlocks.species.includes(tb.lo.frog); } tb.t.visible = tb.glow.visible = !have && !off; tb.lt.intensity = have ? 0 : 0.9; if (!have) { tb.glow.material.opacity = 0.55 + Math.sin(t * 2 + tb.x) * 0.2; tb.t.position.y = caveFloorH(tb.x, tb.z) + (tb.y0 || 1.1) + Math.sin(t * 1.5 + tb.x) * 0.08; } }
   for (const s of L.slots) { const on = placed.includes(s.lo.title); if (!(LOREUI.forming > 0)) s.sl.visible = on && !SAVE.stats.loreBook; s.ghost.visible = !on; }
   L.book.visible = !!SAVE.stats.loreBook || LOREUI.forming > 0; if (L.book.visible) { L.book.rotation.y += dt * 0.5; L.book.position.y = 2.35 + Math.sin(t * 1.4) * 0.08; }
   // the tablets fly in and fuse into the book
@@ -12736,7 +12737,8 @@ const OC_PLACES = [
   { key: 'kelp', name: 'The Kelp Forest', x: -125, z: -120, r: 58 },
   { key: 'island', name: 'Turtle Island', x: 25, z: -150, r: 34 },
   { key: 'wreck', name: 'The Wormship Wreck', x: 95, z: 115, r: 30 },
-  { key: 'trench', name: 'The Kraken Trench', x: 205, z: 0, r: 70 }
+  { key: 'trench', name: 'The Kraken Trench', x: 205, z: 0, r: 70 },
+  { key: 'city', name: 'The Sunken City', x: 70, z: -45, r: 44 }
 ];
 const ocPlace = k => OC_PLACES.find(p => p.key === k);
 const OCEAN = {
@@ -12751,6 +12753,7 @@ const OCEAN = {
     { const P = ocPlace('kelp'), d = Math.hypot(x - P.x, z - P.z); h = lerp(h, y0 - 15 + 1.5 * vnoise(x * 0.07, z * 0.07), smooth(P.r, P.r * 0.6, d)); }
     { const P = ocPlace('island'), d = Math.hypot(x - P.x, z - P.z), t = d / P.r; h = Math.max(h, y0 + 6.5 - t * t * 8.5 - (t > 1 ? (t - 1) * 30 : 0) + 0.6 * vnoise(x * 0.12, z * 0.12)); }
     { const P = ocPlace('wreck'), d = Math.hypot(x - P.x, z - P.z); h = lerp(h, y0 - 22, smooth(P.r, P.r * 0.5, d)); }
+    { const P = ocPlace('city'), d = Math.hypot(x - P.x, z - P.z); h = lerp(h, y0 - 34 + 0.4 * vnoise(x * 0.1, z * 0.1), smooth(P.r + 6, P.r * 0.8, d)); }
     { const e = this.trenchE(x, z); h = lerp(y0 - 86 + 3 * vnoise(x * 0.05, z * 0.05), h, smooth(0.5, 1.05, e)); }
     // tall sea cliffs all the way round the edge
     h = lerp(h, y0 + 24 + 12 * vnoise(x * 0.03, z * 0.03), smooth(292, 318, Math.hypot(x, z)));
@@ -13418,6 +13421,359 @@ function blowHorn() { OWX.whale = 'come'; OWX.wt = 0; OWX.from = OTHER.whale.g.p
 { const _sk = skyTick; skyTick = function (dt) { _sk(dt); if ((SAVE.stats.skyFeathers || []).length >= 12 && HER && HER.state !== 'away' && curLevel() === 'sky') { HER.state = 'away'; HER.root.visible = false; HER.timer = 60; } }; }
 // the Worm only shows up once you are playing (on the start menu he would sit in the middle of the pond)
 { const _st = showTitle; showTitle = function () { _st.apply(this, arguments); if (typeof WNPC !== 'undefined' && WNPC.g) WNPC.g.visible = false; }; }
+/* =====================================================================
+   g24: SEASONS (spring, summer, autumn, winter with a frozen pond you can
+   slide on) and THE SUNKEN CITY of the old sea-frogs, at the bottom of
+   the Ocean, where you can earn the Sea Frog.
+   ===================================================================== */
+
+/* ---------------- seasons ---------------- */
+ENVS.spring = { name: 'Spring Pond', how: 'Seasons', grass: [0.3, 0.52, 0.18], grass2: [0.46, 0.64, 0.24], leaf: [[0.96, 0.72, 0.84], [0.3, 0.56, 0.2], [1, 0.86, 0.92], [0.4, 0.62, 0.24], [0.98, 0.95, 0.96]], water: [0.14, 0.36, 0.35], fog: 1, weather: 'drizzle', lily: [0.36, 0.6, 0.22] };
+ENVS.winter = { name: 'Winter Pond', how: 'Seasons', grass: [0.84, 0.87, 0.92], grass2: [0.94, 0.96, 1.0], leaf: [[0.9, 0.93, 0.97], [0.84, 0.88, 0.93], [0.22, 0.34, 0.24], [0.96, 0.97, 1.0]], water: [0.66, 0.8, 0.9], fog: 1.3, weather: 'cloudy', lily: [0.5, 0.6, 0.56] };
+for (const k of ['spring', 'winter']) if (!SAVE.unlocks.envs.includes(k)) SAVE.unlocks.envs.push(k);
+if (SAVE.settings.season === undefined) SAVE.settings.season = 'auto';
+const SEASONS = ['spring', 'summer', 'autumn', 'winter'], SEASON_DAYS = 3;
+const SEASON = { applied: null, frozen: false, iceV: new V3(), prev: null, slideT: 0, fx: null };
+const seasonFor = day => SEASONS[Math.floor(((day || 1) - 1) / SEASON_DAYS) % 4];
+const SEASON_MSG = {
+  spring: ['Spring is here!', 'The trees are covered in pink blossoms and the petals are floating on the wind.'],
+  summer: ['Summer is here!', 'Warm, green and sunny. Lots of bugs to eat!'],
+  autumn: ['Autumn is here!', 'The leaves are turning orange and red and drifting down from the trees.'],
+  winter: ['Winter is here!', 'Snow is falling and the water has FROZEN over. Hop onto the ice and slide!']
+};
+Object.assign(ACH, { skater: { name: 'Ice Skater', desc: 'Slide across the frozen pond in winter.' }, fourseasons: { name: 'All Four Seasons', desc: 'Live through spring, summer, autumn and winter.' }, sunkencity: { name: 'Atlantis Frog', desc: 'Open the palace of the Sunken City.' } });
+{ const _ae = applyEnv; applyEnv = function (key) { _ae(key); SEASON.frozen = key === 'winter'; const m = W.waterMat; if (!m) return;
+  if (SEASON.frozen) { m.roughness = 0.32; m.opacity = 0.97; m.envMapIntensity = 0.55; } else { m.roughness = 0.06; m.opacity = 0.88; m.envMapIntensity = 1.0; } }; }
+// in winter you can stand on the ice
+{ const _ga = groundAt; groundAt = function (x, z) { const g = _ga.apply(this, arguments); if (!SEASON.frozen || W.offTop || W.inBurrow || x > SEA_EDGE) return g; const wl = waterLevelAt(x, z); return terrainH(x, z) < wl - 0.02 ? Math.max(g, wl + 0.03) : g; }; }
+function buildSeasonFX() {
+  const mk = (n, col, size, vc) => { const p = [], c = []; for (let i = 0; i < n; i++) { p.push(0, -9999, 0); if (vc) { const k = vc[i % vc.length]; c.push(k[0], k[1], k[2]); } } const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); if (vc) g.setAttribute('color', new THREE.Float32BufferAttribute(c, 3));
+    const pts = new THREE.Points(g, new THREE.PointsMaterial({ color: vc ? 0xffffff : col, vertexColors: !!vc, size, map: TEX.glow, transparent: true, depthWrite: false, opacity: 0.95 })); pts.frustumCulled = false; pts.visible = false; scene.add(pts);
+    const seed = []; for (let i = 0; i < n; i++) seed.push([Math.random() * 60 - 30, Math.random() * 30, Math.random() * 60 - 30, 0.6 + Math.random(), Math.random() * 6]); return { pts, seed }; };
+  SEASON.fx = { snow: mk(1400, 0xffffff, 0.12), leaves: mk(260, 0, 0.42, [[0.9, 0.4, 0.1], [0.95, 0.7, 0.15], [0.7, 0.2, 0.08], [0.6, 0.45, 0.15]]), petals: mk(260, 0, 0.3, [[1, 0.75, 0.86], [1, 0.9, 0.95], [0.95, 0.6, 0.78]]) };
+}
+function seasonFxTick(dt) {
+  if (!SEASON.fx) return; const env = GAME.env, top = GAME.state === 'play' && !W.offTop && !W.inBurrow, C = camera.position, t = GAME.t, wind = (WEATHER.cur.wind || 0.4);
+  const run = (F, on, fall, sway, height) => { F.pts.visible = on; if (!on) return; const a = F.pts.geometry.attributes.position;
+    for (let i = 0; i < a.count; i++) { const s = F.seed[i], y = height - ((s[1] + t * fall * s[3]) % height); const x = C.x + ((s[0] + t * wind * 1.5 + 30) % 60 + 60) % 60 - 30 + Math.sin(t * sway + s[4]) * 0.8, z = C.z + s[2] + Math.cos(t * sway * 0.7 + s[4]) * 0.8; let yy = C.y - height * 0.4 + y; if (Math.abs(x - C.x) < 3.5 && Math.abs(z - C.z) < 3.5 && Math.abs(yy - C.y) < 3.5) yy = -9999; a.setXYZ(i, x, yy, z); } a.needsUpdate = true; };
+  run(SEASON.fx.snow, (top || (GAME.state === 'play' && W.inSky)) && env === 'winter', 1.6, 1.2, 30); run(SEASON.fx.leaves, top && env === 'autumn', 1.1, 2.2, 26); run(SEASON.fx.petals, top && env === 'spring', 0.8, 2.6, 24);
+}
+function seasonTick(dt) {
+  seasonFxTick(dt);
+  if (GAME.state !== 'play') return;
+  const mode = SAVE.settings.season || 'auto';
+  if (mode !== 'off') { const want = mode === 'auto' ? seasonFor(GAME.day) : mode;
+    if (want !== SEASON.applied) { SEASON.applied = want; if (GAME.env !== want) { GAME.env = want; applyEnv(want); WEATHER.type = ENVS[want].weather; const m = SEASON_MSG[want]; banner(m[0], m[1]); }
+      const seen = SAVE.stats.seasonsSeen || (SAVE.stats.seasonsSeen = []); if (!seen.includes(want)) { seen.push(want); persist(); if (seen.length >= 4) unlockAch('fourseasons'); } } }
+  // winter: no rain (it snows instead), the snow keeps you damp, and the ice is slippery
+  if (SEASON.frozen) {
+    if (WTYPES[WEATHER.type] && WTYPES[WEATHER.type].rain > 0) WEATHER.type = 'cloudy';
+    if (W.offTop || W.inBurrow) { SEASON.prev = null; return; }
+    if (PL.needs.hydration < 100) PL.needs.hydration = Math.min(100, PL.needs.hydration + dt * 1.2);
+    const P = PL.pos, wl = waterLevelAt(P.x, P.z), onIce = terrainH(P.x, P.z) < wl - 0.02;
+    if (onIce && PL.inWater) { PL.inWater = false; PL.diving = false; P.y = wl + 0.05; PL.vel.y = 0; PL.onGround = true; }
+    if (onIce && PL.onGround && SEASON.prev && dt > 0) {
+      const mx = (P.x - SEASON.prev.x) / dt, mz = (P.z - SEASON.prev.z) / dt;
+      SEASON.iceV.x = lerp(SEASON.iceV.x, mx, 1 - Math.exp(-dt * 1.3)); SEASON.iceV.z = lerp(SEASON.iceV.z, mz, 1 - Math.exp(-dt * 1.3));
+      const sp = Math.hypot(SEASON.iceV.x, SEASON.iceV.z); if (sp > 11) { SEASON.iceV.x *= 11 / sp; SEASON.iceV.z *= 11 / sp; }
+      const nx = P.x + SEASON.iceV.x * dt * 0.85, nz = P.z + SEASON.iceV.z * dt * 0.85; if (terrainH(nx, nz) < waterLevelAt(nx, nz) - 0.02) { P.x = nx; P.z = nz; } else SEASON.iceV.set(0, 0, 0);
+      if (sp > 2.5) { SEASON.slideT += dt; if (Math.random() < dt * 6) tone('triangle', 1800 + Math.random() * 600, 1400, 0.08, 0.015, P);
+        if (SEASON.slideT > 2 && !SAVE.ach.skater) { unlockAch('skater'); toast('Wheee! The ice is super slippery. You keep sliding even after you stop hopping!', 'guide'); } }
+    } else if (!onIce) SEASON.iceV.multiplyScalar(Math.exp(-dt * 6));
+    SEASON.prev = { x: P.x, z: P.z };
+  } else SEASON.prev = null;
+}
+// a seasons switch in the pause menu
+{ const _rp = renderPause; renderPause = function () { _rp.apply(this, arguments); const r = document.getElementById('pResume'); if (!r) return; const cur = SAVE.settings.season || 'auto';
+  const o = (v, l) => '<option value="' + v + '"' + (cur === v ? ' selected' : '') + '>' + l + '</option>';
+  r.insertAdjacentHTML('afterend', '<div class="row"><label for="sSeason">Seasons</label><select id="sSeason">' + o('auto', 'Change every ' + SEASON_DAYS + ' days') + o('spring', 'Always spring') + o('summer', 'Always summer') + o('autumn', 'Always autumn') + o('winter', 'Always winter') + o('off', 'Off (keep my pond)') + '</select></div>');
+  document.getElementById('sSeason').addEventListener('change', e => { SAVE.settings.season = e.target.value; SEASON.applied = null; persist(); }); }; }
+
+/* ---------------- the Sea Frog ---------------- */
+SPECIES.seafrog = { name: 'Sea Frog', size: 1.05, jump: 1.0, swim: 2.0, speed: 0.95, tongue: 3.6, climb: false, gills: true, hunger: 1.0, dry: 0.4, armor: 1,
+  color: 0x24808e, belly: 0xd8f4ec, spot: 0x70e8e0, eye: 0xffe080, throat: 0xa0e4d4, croak: 'gnorw',
+  desc: 'One of the old sea-frogs from the Sunken City: sea-green, with a tall fin down its back, frilly fins on its cheeks and pearly spots. The fastest swimmer of all, and it never needs to come up for air.', habitat: 'The palace of the Sunken City', ability: 'Fastest swimmer. Breathes underwater forever.' };
+SPECIES_UNLOCK.seafrog = 'Deep in the Ocean lie the ruins of a city built by frogs. Its palace is sealed by a wall of bubbles...';
+if (typeof LATE_FROGS !== 'undefined' && !LATE_FROGS.includes('seafrog')) LATE_FROGS.push('seafrog');
+SPECIES.seafrog.newParts = F => {
+  const fin = mat(0x40b0c0, { roughness: 0.3, transparent: true, opacity: 0.85, side: THREE.DoubleSide }), pearl = mat(0xfff8ff, { roughness: 0.1, metalness: 0.3, emissive: 0x302838 });
+  const sh = new THREE.Shape(); sh.moveTo(0, 0); sh.quadraticCurveTo(0.08, 0.32, -0.05, 0.42); sh.quadraticCurveTo(-0.2, 0.3, -0.5, 0.06); sh.lineTo(0, 0);
+  const dg = new THREE.ShapeGeometry(sh); dg.rotateY(Math.PI / 2); const d = new THREE.Mesh(dg, fin); d.position.set(0, 0.52, 0.12); F.tilt.add(d);
+  for (const s of [-1, 1]) { const fr = new THREE.Group(); fr.position.set(s * 0.26, 0.12, 0.08); fr.rotation.y = s * 0.5; F.head.add(fr); for (let k = 0; k < 3; k++) { const c = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.26, 4), fin); c.rotation.z = -s * (1.2 + k * 0.35); c.position.set(s * 0.06, 0.04 - k * 0.04, -k * 0.03); c.scale.z = 0.3; fr.add(c); }
+    for (let k = 0; k < 3; k++) { const gl = addTo(F.tilt, G.cyl, mat(0x145a64), s * 0.36, 0.36, 0.22 - k * 0.07, 0.008, 0.1, 0.008); gl.rotation.x = 0.3; } }
+  for (let i = 0; i < 9; i++) addTo(F.tilt, G.sphM, pearl, Math.sin(i * 2.4) * 0.28, 0.5 + Math.cos(i * 1.7) * 0.06, -0.3 + i * 0.07, 0.035);
+};
+
+/* ---------------- the Sunken City ---------------- */
+const CITY = { pearls: [], shells: [], lamps: [], vents: [] };
+function buildSunkenCity() {
+  const L = OCEAN, g = L.group, C = ocPlace('city'), f0 = L.floorAt(C.x, C.z), FA = (x, z) => L.floorAt(x, z); SEED = 5757;
+  const stone = mat(0x7a9a9a, { roughness: 0.9, map: TEX.detail }), stone2 = mat(0x9ab0a8, { roughness: 0.85, map: TEX.detail }), gold = mat(0xe0b040, { metalness: 0.8, roughness: 0.3, emissive: 0x302000 });
+  const coralC = [0xff6080, 0xffa040, 0xa070ff, 0x60e0c0, 0xff70d0];
+  const coral = (x, z, n) => { for (let i = 0; i < n; i++) { const c = new THREE.Mesh(G.sph, mat(coralC[(i + Math.floor(x)) % 5], { roughness: 0.8 })); const s = rr(0.25, 0.6); c.scale.set(s, s * 0.7, s); c.position.set(x + rr(-0.8, 0.8), FA(x, z) + s * 0.3, z + rr(-0.8, 0.8)); g.add(c); } };
+  // the plaza
+  const plaza = new THREE.Mesh(new THREE.CircleGeometry(15, 40), mat(0x8aa8a4, { roughness: 0.9, map: TEX.detail })); plaza.rotation.x = -Math.PI / 2; plaza.position.set(C.x, f0 + 0.06, C.z); g.add(plaza);
+  const ring = new THREE.Mesh(new THREE.RingGeometry(14.4, 15, 40), gold); ring.rotation.x = -Math.PI / 2; ring.position.set(C.x, f0 + 0.08, C.z); g.add(ring);
+  // the Sea-Frog King statue in the middle
+  { const ped = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.8, 1.6, 16), stone2); ped.position.set(C.x, f0 + 0.8, C.z); g.add(ped);
+    const F = makeFrog('green', 'classic'); stoneify(F.root, mat(0x88aaa6, { roughness: 0.8, map: TEX.detail })); F.root.scale.setScalar(4.5); F.root.position.set(C.x, f0 + 1.6, C.z); F.root.rotation.y = Math.PI; g.add(F.root);
+    const cr = new THREE.Group(); cr.position.set(C.x, f0 + 1.6 + 2.5, C.z - 0.6); g.add(cr); const band = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.12, 6, 20), gold); band.rotation.x = Math.PI / 2; cr.add(band);
+    for (let i = 0; i < 7; i++) { const a = i / 7 * TAU, sp = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.5, 5), gold); sp.position.set(Math.cos(a) * 0.8, 0.28, Math.sin(a) * 0.8); cr.add(sp); }
+    const tri = new THREE.Group(); tri.position.set(C.x + 2.6, f0 + 1.6, C.z - 1); g.add(tri); const sh = new THREE.Mesh(G.cyl, gold); sh.scale.set(0.12, 6.5, 0.12); sh.position.y = 3.25; tri.add(sh);
+    for (const s of [-1, 0, 1]) { const p = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.9, 5), gold); p.position.set(s * 0.45, 6.8 + (s ? 0 : 0.2), 0); tri.add(p); } const bar = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.14, 0.14), gold); bar.position.y = 6.4; tri.add(bar);
+    L.obs.push({ x: C.x, z: C.z, r: 3, top: f0 + 8 }); }
+  // houses all around, with domes and glowing windows
+  const houseCols = [0xb8a888, 0x80b8b0, 0xd89088, 0xa898c8, 0x98b878];
+  for (let i = 0; i < 9; i++) { const a = -Math.PI / 2 + 0.55 + i / 9 * (TAU - 1.1), r = 26 + (i % 2) * 4, x = C.x + Math.cos(a) * r, z = C.z + Math.sin(a) * r, f = FA(x, z), hc = houseCols[i % 5];
+    const H = new THREE.Group(); H.position.set(x, f, z); H.rotation.y = Math.atan2(C.x - x, C.z - z); g.add(H);
+    const wall = mat(hc, { roughness: 0.85, map: TEX.detail }), R = rr(2.8, 3.6), Hh = rr(3.2, 5);
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(R, R * 1.05, Hh, 14), wall); base.position.y = Hh / 2; H.add(base);
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(R * 1.02, 16, 8, 0, TAU, 0, Math.PI / 2), mat(i % 2 ? 0x5aa0a8 : 0xc0a060, { roughness: 0.5, metalness: 0.3 })); dome.position.y = Hh; H.add(dome);
+    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.2, 1, 6), gold); tip.position.y = Hh + R + 0.3; H.add(tip);
+    const door = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 2.2), new THREE.MeshBasicMaterial({ color: 0x061418 })); door.position.set(0, 1.1, R + 0.02); H.add(door);
+    const arch = new THREE.Mesh(new THREE.TorusGeometry(0.75, 0.12, 6, 12, Math.PI), stone2); arch.position.set(0, 2.2, R + 0.05); H.add(arch);
+    for (const s of [-1, 1]) { const w = new THREE.Mesh(G.sphM, new THREE.MeshStandardMaterial({ color: 0xa0fff0, emissive: 0x60ffe0, emissiveIntensity: 1.2 })); w.scale.set(0.35, 0.35, 0.1); w.position.set(Math.sin(s * 0.7) * R, Hh * 0.62, Math.cos(s * 0.7) * R); H.add(w); }
+    coral(x + Math.cos(a + 0.4) * (R + 1.5), z + Math.sin(a + 0.4) * (R + 1.5), 4);
+    L.obs.push({ x, z, r: R + 0.3, top: f + Hh + R }); }
+  // broken columns along the streets
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2 + Math.PI / 4; for (let k = 0; k < 4; k++) { const r = 16 + k * 6.5; for (const s of [-1, 1]) { const x = C.x + Math.cos(a) * r - Math.sin(a) * s * 3, z = C.z + Math.sin(a) * r + Math.cos(a) * s * 3, f = FA(x, z), h = (k + i + (s > 0 ? 1 : 0)) % 3 === 0 ? rr(1, 2) : rr(4, 6);
+    const col = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.55, h, 10), stone); col.position.set(x, f + h / 2, z); g.add(col); if (h > 3) { const cap = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.35, 1.4), stone2); cap.position.set(x, f + h + 0.15, z); g.add(cap); } else { const br = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 2.2, 10), stone); br.rotation.z = Math.PI / 2; br.rotation.y = rnd() * 3; br.position.set(x + 1.2, f + 0.45, z); g.add(br); }
+    L.obs.push({ x, z, r: 0.6, top: f + h }); } } }
+  // jellyfish lamps on tall posts
+  for (let i = 0; i < 12; i++) { const a = i / 12 * TAU, x = C.x + Math.cos(a) * 19, z = C.z + Math.sin(a) * 19, f = FA(x, z); const post = new THREE.Mesh(G.cyl, gold); post.scale.set(0.08, 3.4, 0.08); post.position.set(x, f + 1.7, z); g.add(post);
+    const col = [0x80ffe0, 0xff90e0, 0xa0c0ff][i % 3], orb = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 8, 0, TAU, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 1.3, transparent: true, opacity: 0.8 })); orb.position.set(x, f + 3.5, z); g.add(orb);
+    CITY.lamps.push({ orb, glow: glowSprite(g, x, f + 3.5, z, col, 3.5, 0.6), ph: i }); }
+  // bubbles rising from vents in the street
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2, x = C.x + Math.cos(a) * 11, z = C.z + Math.sin(a) * 11, f = FA(x, z); const p = []; for (let k = 0; k < 40; k++) p.push(x, f, z);
+    const bg = new THREE.BufferGeometry(); bg.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); const pts = new THREE.Points(bg, new THREE.PointsMaterial({ color: 0xe0faff, size: 0.25, map: TEX.glow, transparent: true, depthWrite: false })); pts.frustumCulled = false; g.add(pts); CITY.vents.push({ pts, x, z, f }); }
+  // the palace, sealed by a wall of bubbles
+  { const px = C.x, pz = C.z - 33, f = FA(px, pz); CITY.palace = { x: px, z: pz, f };
+    const plat = new THREE.Mesh(new THREE.CylinderGeometry(10, 10.6, 1, 28), stone2); plat.position.set(px, f + 0.5, pz); g.add(plat);
+    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; if (Math.abs(angDiff(a, Math.PI / 2)) < 0.3) continue; const pl = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 8, 10), stone2); pl.position.set(px + Math.cos(a) * 8.6, f + 5, pz + Math.sin(a) * 8.6); g.add(pl); L.obs.push({ x: px + Math.cos(a) * 8.6, z: pz + Math.sin(a) * 8.6, r: 0.7, top: f + 9 }); }
+    const roof = new THREE.Mesh(new THREE.SphereGeometry(9.6, 24, 10, 0, TAU, 0, Math.PI / 2), mat(0x3a90a0, { roughness: 0.4, metalness: 0.4, side: THREE.DoubleSide })); roof.position.set(px, f + 9, pz); roof.scale.y = 0.7; g.add(roof);
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(9.4, 0.35, 8, 40), gold); rim.rotation.x = Math.PI / 2; rim.position.set(px, f + 9, pz); g.add(rim);
+    const spire = new THREE.Mesh(new THREE.ConeGeometry(0.6, 4, 8), gold); spire.position.set(px, f + 17, pz); g.add(spire); glowSprite(g, px, f + 19.5, pz, 0xa0fff0, 6, 0.7);
+    // the throne and the mural inside
+    const throne = new THREE.Group(); throne.position.set(px, f + 1, pz - 4); g.add(throne); const seat = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.2, 2), gold); seat.position.y = 0.6; throne.add(seat); const back = new THREE.Mesh(new THREE.BoxGeometry(2.4, 3.4, 0.4), gold); back.position.set(0, 2.2, -0.9); throne.add(back);
+    for (const s of [-1, 1]) { const sh2 = new THREE.Mesh(new THREE.SphereGeometry(0.6, 10, 6, 0, TAU, 0, Math.PI / 2), mat(0xffd8e0)); sh2.position.set(s * 1.2, 3.9, -0.9); sh2.rotation.z = s * 0.4; throne.add(sh2); }
+    const crown = new THREE.Group(); crown.position.set(px, f + 2.5, pz - 3.9); g.add(crown); const cb = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.07, 6, 16), gold); cb.rotation.x = Math.PI / 2; crown.add(cb); for (let i = 0; i < 5; i++) { const a = i / 5 * TAU, s3 = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.3, 5), gold); s3.position.set(Math.cos(a) * 0.4, 0.17, Math.sin(a) * 0.4); crown.add(s3); }
+    ball(crown, mat(0xfff8ff, { roughness: 0.1, emissive: 0x404050 }), 0, 0.15, 0, 0.16); CITY.crown = crown; CITY.crownGlow = glowSprite(g, px, f + 2.6, pz - 3.9, 0xfff0a0, 3, 0.6);
+    const mural = new THREE.Mesh(new THREE.PlaneGeometry(6, 3), new THREE.MeshBasicMaterial({ map: (() => { const c = mkCanvas(512, 256), x = c.getContext('2d'); x.fillStyle = '#1a4a54'; x.fillRect(0, 0, 512, 256); x.strokeStyle = '#e0c060'; x.lineWidth = 6; x.strokeRect(6, 6, 500, 244);
+      x.fillStyle = '#80e0d0'; for (let i = 0; i < 5; i++) { const cx = 70 + i * 90, cy = 160; x.beginPath(); x.ellipse(cx, cy, 26, 18, 0, 0, TAU); x.fill(); x.beginPath(); x.arc(cx - 12, cy - 16, 7, 0, TAU); x.arc(cx + 12, cy - 16, 7, 0, TAU); x.fill(); }
+      x.fillStyle = '#c04050'; x.beginPath(); x.ellipse(256, 70, 60, 34, 0, 0, TAU); x.fill(); for (let i = 0; i < 6; i++) { x.strokeStyle = '#c04050'; x.lineWidth = 8; x.beginPath(); x.moveTo(206 + i * 20, 96); x.quadraticCurveTo(200 + i * 22, 130, 180 + i * 30, 120); x.stroke(); }
+      x.fillStyle = '#ffd040'; x.beginPath(); x.arc(236, 64, 8, 0, TAU); x.arc(276, 64, 8, 0, TAU); x.fill(); x.font = 'bold 22px serif'; x.fillStyle = '#e0c060'; x.textAlign = 'center'; x.fillText('THE FROGS OF THE SEA', 256, 236); return canvasTex(c); })() }));
+    mural.position.set(px, f + 5.6, pz - 8.2); g.add(mural);
+    const bub = new THREE.Mesh(new THREE.SphereGeometry(9.3, 28, 14), new THREE.MeshStandardMaterial({ color: 0x80f0ff, emissive: 0x2090a0, emissiveIntensity: 0.6, transparent: true, opacity: 0.35, roughness: 0.05, metalness: 0.2, side: THREE.DoubleSide, depthWrite: false })); bub.position.set(px, f + 1, pz); g.add(bub); CITY.bubble = bub;
+    CITY.wall = { x: px, z: pz, r: 9.6, top: f + 30 }; L.obs.push(CITY.wall);
+    L.obs.push({ x: px, z: pz - 4.4, r: 1.3, top: f + 2.2 }); }
+  // five giant shells around the edge, each hiding a pearl (grab it while the shell is open!)
+  const sa = [0.2, 1.1, 1.9, 2.8, 3.6];
+  sa.forEach((a0, i) => { const a = Math.PI / 2 + (a0 - 1.9) * 1.1, x = C.x + Math.cos(a) * 38, z = C.z + Math.sin(a) * 38, f = FA(x, z), S = new THREE.Group(); S.position.set(x, f, z); S.rotation.y = Math.atan2(C.x - x, C.z - z); g.add(S);
+    const shm = mat([0xf0c8d0, 0xd0e8f0, 0xf0e0c0, 0xe0d0f8, 0xc8f0d8][i], { roughness: 0.5 }); const bot = new THREE.Mesh(new THREE.SphereGeometry(1.8, 18, 8, 0, TAU, Math.PI / 2, Math.PI / 2), shm); bot.scale.y = 0.5; S.add(bot);
+    const lidP = new THREE.Group(); lidP.position.set(0, 0, -1.7); S.add(lidP); const lid = new THREE.Mesh(new THREE.SphereGeometry(1.8, 18, 8, 0, TAU, 0, Math.PI / 2), shm); lid.scale.y = 0.5; lid.position.z = 1.7; lidP.add(lid);
+    const pe = ball(S, mat(0xfff8ff, { roughness: 0.08, metalness: 0.3, emissive: 0x60607a }), 0, 0.35, 0.2, 0.32); const gl = glowSprite(S, 0, 0.4, 0.2, 0xf0f0ff, 2.5, 0.6);
+    CITY.shells.push({ i, x, z, f, lidP, pe, gl, ph: i * 1.3 }); L.obs.push({ x, z, r: 1.6, top: f + 0.9 }); });
+}
+{ const _bo = buildOcean; buildOcean = function () { _bo(); buildSunkenCity(); }; }
+function cityPearls() { return (SAVE.stats.cityPearls || []).length; }
+function openPalace() {
+  if (cityPearls() < 5) { sayChain(['(The wall of bubbles is as hard as glass. Around the bottom there are five little round holes, and ' + cityPearls() + ' of them are glowing. Pearl-shaped holes...)'], null, 'The Bubble Wall'); return; }
+  SAVE.stats.palaceOpen = 1; persist(); unlockAch('sunkencity'); CAM.shake = 0.5; tone('sine', 200, 900, 2, 0.1); SFX.chime(); sparkle(new V3(CITY.palace.x, CITY.palace.f + 4, CITY.palace.z), 40, 0xa0f0ff);
+  toast('You put the five pearls in the holes... and the wall of bubbles goes POP! The palace is open.', 'guide');
+}
+function readMural() {
+  const have = SAVE.unlocks.species.includes('seafrog');
+  sayChain(['(The picture on the wall shows a city full of frogs swimming between the houses. Above them, a big red frog with tentacles and glowing yellow eyes is wearing a golden crown.)',
+    '(Underneath it says:) "Here lived the Frogs of the Sea, before there was any land. Our king grew bigger and bigger, until he was too big for his palace, and went to sleep in the deep. We miss him."',
+    '"If you have found your way in here, little frog, then you are one of us. Wear the king\'s crown, and swim like a Sea Frog."',
+    'The Kraken... was their KING?!'], () => { if (!have) { CITY.crown.visible = false; CITY.crownGlow.visible = false; unlockFrog('seafrog', 'The Sea Frog!', 'You put on the old king\'s crown, and you felt fins grow down your back. You are a Sea Frog now: the fastest swimmer in the world, and you never need to come up for air.'); } }, 'The Palace Mural');
+}
+function cityTick(dt) {
+  const L = OCEAN, P = PL.pos, t = GAME.t, C = ocPlace('city');
+  if (Math.hypot(P.x - C.x, P.z - C.z) < C.r && !SAVE.stats.cityFound) { SAVE.stats.cityFound = 1; persist(); SFX.chime(); toast('Whoa! Down here are the ruins of a whole CITY, built for frogs. Who lived here? Look for pearls in the giant shells...', 'guide'); }
+  for (const Lm of CITY.lamps) { const k = 0.8 + Math.sin(t * 1.6 + Lm.ph) * 0.2; Lm.orb.scale.set(1 + (k - 0.8) * 0.4, k, 1 + (k - 0.8) * 0.4); Lm.glow.material.opacity = 0.4 + (k - 0.6) * 0.6; }
+  for (const V of CITY.vents) { const a = V.pts.geometry.attributes.position; for (let i = 0; i < a.count; i++) { const y = (t * 1.5 + i * 0.75) % 30; a.setXYZ(i, V.x + Math.sin(t + i) * 0.3, V.f + y, V.z + Math.cos(t * 1.3 + i) * 0.3); } a.needsUpdate = true; }
+  const got = SAVE.stats.cityPearls || (SAVE.stats.cityPearls = []);
+  for (const S of CITY.shells) { const open = Math.max(0, Math.sin(t * 0.7 + S.ph)); S.lidP.rotation.x = -open * 0.9; const have = got.includes(S.i); S.pe.visible = S.gl.visible = !have; S.gl.material.opacity = 0.3 + open * 0.5;
+    if (!have && open > 0.35 && Math.hypot(P.x - S.x, P.z - S.z) < 2.6 && P.y < S.f + 3) { got.push(S.i); persist(); SFX.chime(); sparkle(new V3(S.x, S.f + 0.6, S.z), 16, 0xffffff); toast('A giant pearl! ' + got.length + ' of 5.' + (got.length >= 5 ? ' Take them to the palace with the bubble wall!' : got.length === 1 ? ' Grab them while the shells are open!' : ''), 'guide'); }
+    if (!have && open <= 0.35 && Math.hypot(P.x - S.x, P.z - S.z) < 2.2 && !S.warn) { S.warn = 1; toast('The shell is shut tight. Wait for it to open...', 'quiet'); } }
+  const open = !!SAVE.stats.palaceOpen; CITY.bubble.visible = !open; CITY.wall.off = open; if (!open) CITY.bubble.material.opacity = 0.3 + Math.sin(t * 2) * 0.06;
+  const haveF = SAVE.unlocks.species.includes('seafrog'); CITY.crown.visible = CITY.crownGlow.visible = !haveF; if (!haveF) CITY.crown.rotation.y = t;
+}
+{ const _fi = findInteract; findInteract = function () { _fi(); if (INTERACT.cur || GAME.state !== 'play' || PL.stage < 1 || curLevel() !== 'ocean' || !CITY.palace) return; const P = PL.pos, Pa = CITY.palace, d = Math.hypot(P.x - Pa.x, P.z - Pa.z);
+  if (!SAVE.stats.palaceOpen && d < 12.5 && d > 8) { INTERACT.cur = { label: cityPearls() >= 5 ? 'Put the five pearls in the bubble wall' : 'Touch the wall of bubbles', act: openPalace }; return; }
+  if (SAVE.stats.palaceOpen && Math.hypot(P.x - Pa.x, P.z - (Pa.z - 4)) < 4.5) { INTERACT.cur = { label: 'Look at the picture on the wall', act: readMural }; return; } }; }
+{ const _qm = questMarks; questMarks = function (lv) { const out = _qm(lv); if (lv !== 'ocean' || !CITY.palace || !SAVE.stats.cityFound) return out; const got = SAVE.stats.cityPearls || [];
+  for (const S of CITY.shells) if (!got.includes(S.i)) out.push({ x: S.x, z: S.z, col: '#f0f0ff', ch: '○' });
+  if (got.length >= 5 && !SAVE.unlocks.species.includes('seafrog')) out.push({ x: CITY.palace.x, z: CITY.palace.z, col: '#60f0ff', ch: '!' }); return out; }; }
+
+/* ---------- hooking in ---------- */
+{ const _bn = buildNewWorldStuff; buildNewWorldStuff = function () { _bn(); buildSeasonFX(); }; }
+{ const _nw = newWorldTick; newWorldTick = function (dt) { _nw(dt); seasonTick(dt); if (GAME.state === 'play' && curLevel() === 'ocean' && CITY.palace) cityTick(dt); }; }
+{ const _sr = startRun; startRun = function () { SEASON.applied = null; SEASON.iceV.set(0, 0, 0); return _sr.apply(this, arguments); }; }
+
+/* =====================================================================
+   WINTER ON THE TOP: only winter bugs, turtles asleep in their mud
+   homes under the ice, and every frog asleep except you
+   ===================================================================== */
+const WINTER_BUGS = ['snowflea', 'wintermoth', 'stonefly', 'snowfly'];
+Object.assign(INSECT, {
+  snowflea: { food: 6, size: 0.7, speed: 0.6, fly: false, hop: true },
+  wintermoth: { food: 12, size: 1.1, speed: 1.4, fly: true, alt: [0.6, 2.6] },
+  stonefly: { food: 10, size: 1, speed: 0.45, fly: false },
+  snowfly: { food: 9, size: 1.1, speed: 0.4, fly: false }
+});
+Object.assign(GUIDE, {
+  snowflea: { name: 'Snow Flea', cat: 'Insect', desc: 'A tiny blue-black springtail that bounces around on top of the snow on sunny winter days. Thousands of them can make the snow look peppered.', hint: 'Winter, on the snow.' },
+  wintermoth: { name: 'Winter Moth', cat: 'Insect', desc: 'A pale, fluffy moth that flies in the middle of winter, when almost nothing else does. Its fur keeps it warm.', hint: 'Winter, especially at dusk.' },
+  stonefly: { name: 'Winter Stonefly', cat: 'Insect', desc: 'A long, dark bug that crawls out of the stream in winter and walks across the snow and ice. A slow, easy snack.', hint: 'Winter, on snow and ice.' },
+  snowfly: { name: 'Snow Fly', cat: 'Insect', desc: 'A strange crane fly with no wings and long spindly legs. It walks across the snow even when it is freezing cold.', hint: 'Winter, on the snow.' }
+});
+for (const k of WINTER_BUGS) if (!GUIDE_KEYS.includes(k)) GUIDE_KEYS.push(k);
+const winterTop = () => SEASON.frozen && !W.offTop && !W.inBurrow;
+function insectWeightsHook(w, day) {
+  if (!winterTop()) return;
+  for (const k in w) w[k] = 0;
+  w.snowflea = day ? 1.0 : 0.2; w.wintermoth = day ? 0.3 : 1.0; w.stonefly = 0.7; w.snowfly = day ? 0.6 : 0.2;
+}
+{ const _mi = makeInsect; makeInsect = function (type) {
+  if (!WINTER_BUGS.includes(type)) return _mi(type);
+  const root = new THREE.Group(), wings = [], m = (c, o) => iM('wb' + c, () => stdM(c, 0.6, o || {}));
+  const leg = (s, i, l, col) => { const g2 = addM(root, G.cyl, m(col), 0.006, l, 0.006, s * 0.05, -0.01, 0.05 - i * 0.05); g2.rotation.z = s * 1.0; };
+  if (type === 'snowflea') { addM(root, G.sphL, m(0x2a3448), 0.04, 0.035, 0.06, 0, 0, 0); addM(root, G.sphT, m(0x1a2030), 0.03, 0.03, 0.03, 0, 0.01, 0.05); }
+  else if (type === 'wintermoth') { addM(root, G.sphL, m(0xd8d0c0, { roughness: 0.95 }), 0.05, 0.05, 0.12, 0, 0, 0);
+    const wm = iM('wmw', () => new THREE.MeshStandardMaterial({ color: 0xe8e0d0, roughness: 0.95, side: THREE.DoubleSide }));
+    for (const s of [-1, 1]) { const g2 = new THREE.Group(); g2.position.set(s * 0.03, 0.03, 0); root.add(g2); const wmesh = new THREE.Mesh(G.wing, wm); wmesh.scale.set(0.22, 1, 0.17); wmesh.rotation.y = s < 0 ? Math.PI : 0; g2.add(wmesh); g2.userData.s = s; wings.push(g2); } }
+  else if (type === 'stonefly') { addM(root, G.sphL, m(0x2a2420), 0.035, 0.03, 0.18, 0, 0, 0); for (const s of [-1, 1]) for (let i = 0; i < 3; i++) leg(s, i, 0.1, 0x1a1410);
+    for (const s of [-1, 1]) { const t = addM(root, G.cyl, m(0x2a2420), 0.005, 0.12, 0.005, s * 0.02, 0, -0.2); t.rotation.x = Math.PI / 2 - 0.3; } }
+  else { addM(root, G.sphL, m(0x3a3028), 0.03, 0.03, 0.09, 0, 0.04, 0); for (const s of [-1, 1]) for (let i = 0; i < 3; i++) leg(s, i, 0.22, 0x4a3a30); }
+  return { root, wings };
+}; }
+{ const _hp = habitatPoint; habitatPoint = function (type) {
+  if (!WINTER_BUGS.includes(type)) return _hp(type);
+  const P = PL.pos; for (let k = 0; k < 14; k++) { const a = Math.random() * TAU, d = mr(6, 32), x = P.x + Math.cos(a) * d, z = P.z + Math.sin(a) * d; if (Math.hypot(x, z) > (W.limitR || WORLD_R) - 8) continue;
+    const h = terrainH(x, z), wl = waterLevelAt(x, z); if (h < wl) continue; return new V3(x, type === 'wintermoth' ? h + mr(0.8, 2.6) : h + 0.06, z); } return null; }; }
+// frogs and turtles asleep
+let ZZZ_TEX = null;
+function zzzSprite() { if (!ZZZ_TEX) ZZZ_TEX = textTex([['z Z z', 'bold 70px sans-serif', 64]], 256, 128, { bg: 'rgba(0,0,0,0)', col: '#e8f4ff' }); const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: ZZZ_TEX, transparent: true, depthWrite: false })); s.scale.set(0.9, 0.45, 1); return s; }
+function sleepFrog(c, dt) {
+  const F = c.F; if (!F) return;
+  if (!c.zz) { c.zz = zzzSprite(); scene.add(c.zz); c.eyeS = (F.eyes || []).map(e => e.scale.y); }
+  if (c.sunkY === undefined) { const p0 = c.root.position, wl = waterLevelAt(p0.x, p0.z), th = terrainH(p0.x, p0.z); c.sunkY = null; if (th < wl - 0.3 && p0.y < wl + 0.6) { c.sunkY = p0.y; p0.y = th + 0.15 * (c.size || 1); } }
+  if (c.sunkY !== null) { c.zz.visible = false; (F.eyes || []).forEach(e => e.scale.y = 0.12 * (e.scale.x || 1)); return; }
+  c.zz.visible = c.root.visible; const p = c.root.position, k = (GAME.t * 0.5 + (c.ph || 0)) % 1; c.zz.position.set(p.x + 0.2, p.y + 0.6 * (c.size || 1) + 0.4 + k * 0.6, p.z); c.zz.material.opacity = Math.sin(k * Math.PI) * 0.9;
+  (F.eyes || []).forEach(e => e.scale.y = 0.12 * (e.scale.x || 1)); (F.pupils || []).forEach(q => q.visible = false);
+  if (F.throat) F.throat.scale.setScalar(1 + Math.sin(GAME.t * 1.2 + (c.ph || 0)) * 0.04);
+}
+function wakeFrog(c) { if (c.sunkY !== undefined && c.sunkY !== null) c.root.position.y = c.sunkY; c.sunkY = undefined; if (!c.zz) return; c.zz.visible = false; const F = c.F; (F.eyes || []).forEach((e, i) => e.scale.y = c.eyeS[i]); (F.pupils || []).forEach(q => q.visible = true); }
+function turtleHome(c) {
+  if (c.home) return c.home; const b = c.bask || [c.root.position.x, c.root.position.z];
+  let best = null; for (let i = 0; i < 600 && !best; i++) { const a = i * 2.39996, d = 2 + Math.sqrt(i) * 0.8, x = b[0] + Math.cos(a) * d, z = b[1] + Math.sin(a) * d; const h = terrainH(x, z), wl = waterLevelAt(x, z); if (wl - h > 1.6) best = { x, z, y: h }; }
+  best = best || { x: b[0], z: b[1], y: terrainH(b[0], b[1]) };
+  const mound = new THREE.Mesh(G.sph, new THREE.MeshStandardMaterial({ color: 0x4a3a28, roughness: 1, map: TEX.detail })); mound.scale.set(1.9, 0.5, 2.1); mound.position.set(best.x, best.y + 0.05, best.z); scene.add(mound); if (W.mainWorld) W.mainWorld.push(mound); best.mound = mound;
+  c.home = best; return best;
+}
+function sleepTurtle(c, dt) {
+  const H = turtleHome(c), T = c.T; H.mound.visible = true;
+  c.root.position.set(H.x, H.y + 0.35 * (c.scale || 1), H.z); c.root.rotation.set(0, c.root.rotation.y, 0); c.state = 'bask';
+  if (T.head) { T.head.scale.setScalar(0.45); } if (T.flips) T.flips.forEach(f => { if (f && f.visible !== undefined) f.visible = false; });
+  if (!c.zz) { c.zz = zzzSprite(); scene.add(c.zz); } c.zz.visible = c.root.visible; const k = (GAME.t * 0.4) % 1; c.zz.position.set(H.x, H.y + 1.6 + k * 0.8, H.z); c.zz.material.opacity = Math.sin(k * Math.PI) * 0.8;
+}
+function wakeTurtle(c) { const T = c.T; if (T.head) T.head.scale.setScalar(1); if (T.flips) T.flips.forEach(f => { if (f && f.visible !== undefined) f.visible = true; }); if (c.zz) c.zz.visible = false; if (c.home) c.home.mound.visible = false; }
+function hookSleepers() {
+  for (const c of CREATURES) { if (c.level || c.burrow || c._sleepHook) continue; const isFrog = (c.kind === 'frog' || c.kind === 'treefrog' || (c.kind === 'rare' && c.F)), isTurtle = c.kind === 'turtle' && c.T;
+    if (!isFrog && !isTurtle) continue; c._sleepHook = true; c.ph = Math.random() * 6; const orig = c.update;
+    c.update = function (dt) { if (SEASON.frozen) { this.asleep = true; return isTurtle ? sleepTurtle(this, dt) : sleepFrog(this, dt); } if (this.asleep) { this.asleep = false; isTurtle ? wakeTurtle(this) : wakeFrog(this); } return orig.call(this, dt); }; }
+}
+{ const _bmi = buildMapImage; buildMapImage = function () { _bmi(); hookSleepers(); }; }
+// winter: the summer bugs fly away
+{ const _st2 = seasonTick; seasonTick = function (dt) { _st2(dt); if (!winterTop() || GAME.state !== 'play') return; for (const o of INS.list) if (o.alive && !o.caught && !o.ctrl && !WINTER_BUGS.includes(o.type)) removeInsect(o); }; }
+// the sleeping frogs and turtles do not wake up when you croak at them, but they do snore
+
+/* ---------- making the seasons more like real seasons ---------- */
+function seasonVis(o, v) { if (!o) return; if (W.offTop || W.inBurrow) { o.userData.vu = v; } else o.visible = v; if (!W.offTop) o.userData.vu = v; }
+function applySeasonLook(key) {
+  const winter = key === 'winter', autumn = key === 'autumn';
+  seasonVis(W.grass, !winter);              // the grass is buried under snow
+  seasonVis(W.flowers, !winter);            // no wildflowers in winter (the meadow is just snow)
+  seasonVis(W.petals, !winter && !autumn);  // water lilies only flower in spring and summer
+  seasonVis(W.lilyCenters, !winter && !autumn);
+  seasonVis(W.padMesh, !winter);            // lily pads die back under the ice
+}
+{ const _ae2 = applyEnv; applyEnv = function (key) { _ae2(key); applySeasonLook(key); }; }
+SEASON_MSG.winter = ['Winter is here!', 'Snow is falling and the pond has FROZEN over: hop on the ice and slide! The other frogs, turtles and snakes are all asleep, the herons have flown south, and the worms have shut the Wormory until spring.'];
+SEASON_MSG.spring = ['Spring is here!', 'Everyone is waking up! Blossoms on the trees, flowers in the meadow, and lily pads are growing back on the pond.'];
+SEASON_MSG.autumn = ['Autumn is here!', 'The leaves are turning orange and red. The water lilies have stopped flowering, and the dragonflies and butterflies are getting rare.'];
+// different bugs in different seasons
+{ const _iw = insectWeightsHook; insectWeightsHook = function (w, day) { _iw(w, day); if (winterTop()) return; const e = GAME.env;
+  if (e === 'autumn') { w.butterfly = (w.butterfly || 0) * 0.2; w.dragonfly = (w.dragonfly || 0) * 0.3; w.firefly = 0; w.mosquito = (w.mosquito || 0) * 0.5; w.moth = (w.moth || 0) * 1.3; w.beetle = (w.beetle || 0) * 1.3; }
+  if (e === 'spring') { w.butterfly = (w.butterfly || 0) * 1.6; w.firefly = (w.firefly || 0) * 0.3; w.dragonfly = (w.dragonfly || 0) * 0.6; w.grasshopper = (w.grasshopper || 0) * 0.4; } }; }
+// the Wormory is shut for the winter
+{ const _tr = travel; travel = function (lv) { if (lv === 'wormory' && SEASON.frozen && curLevel() === 'top') { if (GAME.t - (SEASON.wmT || -9) > 4) { SEASON.wmT = GAME.t; toast('The Wormory is closed for the winter! The door is frozen shut and the worms are all hibernating deep underground. Come back in spring.', 'guide'); } return; } return _tr.apply(this, arguments); }; }
+// herons fly south, snakes hibernate
+{ const _st3 = seasonTick; seasonTick = function (dt) { _st3(dt); if (!winterTop() || GAME.state !== 'play') return; if (HER.state !== 'away') { HER.state = 'away'; HER.root.visible = false; } HER.timer = Math.max(HER.timer || 0, 30);
+  if (typeof WNPC !== 'undefined' && WNPC.g) WNPC.g.visible = false; }; }
+{ const _hs = hookSleepers; hookSleepers = function () { _hs();
+  for (const c of CREATURES) { if (c.level || c.burrow || c._snakeHook || c.kind !== 'snake') continue; c._snakeHook = true; const orig = c.update;
+    c.update = function (dt) { if (SEASON.frozen) { this.root.visible = false; this.hib = true; return; } if (this.hib) { this.hib = false; this.root.visible = true; } return orig.call(this, dt); }; } }; }
+{ const _wt = wormTalk; wormTalk = function () { if (SEASON.frozen && curLevel() === 'top') return; return _wt.apply(this, arguments); }; }
+// in winter ALL the water on the Top freezes the same icy colour (the Muddy Marsh, the stream, the bog...)
+{ const _cw = colorWater; colorWater = function (env) { _cw(env); if (env !== ENVS.winter) return;
+  for (const m of [W.water, W.waterFar, W.water2, W.water3]) { if (!m) continue; const p = m.geometry.attributes.position, c = m.geometry.attributes.color;
+    for (let i = 0; i < p.count; i++) { const x = p.getX(i) + m.position.x, z = p.getZ(i) + m.position.z, n = vnoise(x * 0.15, z * 0.15) * 0.04, mud = smooth(36, 20, Math.hypot(x - MARSH.x, z - MARSH.z)) * 0.06;
+      c.setXYZ(i, 0.72 + n - mud, 0.84 + n - mud, 0.92 + n - mud * 0.5); if (c.itemSize === 4) c.setW(i, 0.97); }
+    c.needsUpdate = true; } }; }
+// snow covers the mud too (only steep rock stays bare)
+{ const _tc = terrainColor; terrainColor = function (x, z, h, ny, env, out) { _tc(x, z, h, ny, env, out); if (env !== ENVS.winter) return; const k = smooth(0.66, 0.84, ny) * 0.9, n = vnoise(x * 0.3, z * 0.3) * 0.03;
+  out[0] = lerp(out[0], 0.9 + n, k); out[1] = lerp(out[1], 0.92 + n, k); out[2] = lerp(out[2], 0.97 + n, k); }; }
+
+/* ---------- more winter: ice frogs out on the snow, a snowy sky, and an ice-cave Underground ---------- */
+const WINTERX = { iceFrogs: [], sky: null, ug: null };
+function buildWinterExtras() {
+  // ice frogs that come up out of the caves in winter
+  SEED = 3131;
+  for (let i = 0; i < 6; i++) { let x = 0, z = 0; for (let k = 0; k < 400; k++) { const a = rnd() * TAU, d = rr(14, 62); x = Math.cos(a) * d; z = 22 + Math.sin(a) * d; if (terrainH(x, z) > waterLevelAt(x, z) + 0.2 && slopeAt(x, z) < 0.6) break; }
+    const F = makeFrog('ice', 'classic'); F.root.scale.setScalar(0.9);
+    const c = makeCreature('icewander', 'icefrog', F.root, function (dt) { const c = this; if (!SEASON.frozen) { F.root.visible = false; return; } F.root.visible = true;
+      c.t -= dt; frogAnimate(F, dt, { moving: c.hop > 0 }); if (c.t <= 0) { c.t = mr(1.5, 4); c.hop = Math.random() < 0.65 ? 0.45 : 0; c.h += mr(-1.3, 1.3); }
+      if (c.hop > 0) { c.hop -= dt; const nx = c.x + Math.sin(c.h) * 3 * dt, nz = c.z + Math.cos(c.h) * 3 * dt; if (Math.hypot(nx - c.hx, nz - c.hz) < 30 && slopeAt(nx, nz) < 0.7) { c.x = nx; c.z = nz; } else c.h += Math.PI; }
+      const g = groundAt(c.x, c.z, 99, 300); F.root.position.set(c.x, g + (c.hop > 0 ? Math.sin(c.hop / 0.45 * Math.PI) * 0.5 : 0), c.z); F.root.rotation.y = c.h;
+      if (Math.random() < dt * 4) sparkle(F.root.position.clone().add(new V3(0, 0.3, 0)), 1, 0xd0f0ff); }, { F, x, z, hx: x, hz: z, h: rnd() * TAU, t: 0, hop: 0, seeR: 9 });
+    F.root.visible = false; WINTERX.iceFrogs.push(c); }
+  // Heron's Domain: remember the colours so winter can cover them in snow
+  if (SKY.group) { const W2 = WINTERX.sky = { land: null, orig: null, mats: [], clouds: [] };
+    SKY.group.traverse(o => { if (o.isMesh && !o.isInstancedMesh && o.geometry.attributes.color && !W2.land) { W2.land = o; W2.orig = o.geometry.attributes.color.array.slice(); }
+      if (o.material && o.material.color && !o.material.vertexColors) { const h = o.material.color.getHex(); if ((h === 0x7aa848 || h === 0x8ac0a0) && !W2.mats.some(m => m.m === o.material)) W2.mats.push({ m: o.material, c: h }); } });
+    for (let i = 0; i < 90; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.cloud, color: 0xf4f8ff, transparent: true, opacity: 0.85, depthWrite: false })); const a = rnd() * TAU, d = rr(10, 400); s.position.set(Math.cos(a) * d, SKY.y0 + rr(-20, 40), Math.sin(a) * d); s.scale.set(rr(30, 70), rr(14, 26), 1); s.visible = false; SKY.group.add(s); W2.clouds.push(s); } }
+  // the Underground: icicles hanging from the ceiling, and a cold blue light
+  if (UG.group) { const U = WINTERX.ug = {}; const coneD = new THREE.ConeGeometry(1, 1, 6); coneD.translate(0, -0.5, 0);
+    const spots = []; for (let k = 0; k < 40000 && spots.length < 2200; k++) { const x = rr(-UG.half + 6, UG.half - 6), z = rr(-UG.half + 6, UG.half - 6); if (lr(UG, x, z) > 2.5) spots.push([x, z]); }
+    const ic = inst(coneD, new THREE.MeshStandardMaterial({ color: 0xd8f4ff, emissive: 0x3070a0, emissiveIntensity: 0.5, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.85 }), spots.length, false); UG.group.add(ic);
+    spots.forEach(([x, z], i) => { const c = lc(UG, x, z), r = rr(0.08, 0.3), H = Math.min(rr(0.6, 2.6), (c - lf(UG, x, z)) * 0.3); setInst(ic, i, x, c + 0.1, z, rnd() * TAU, r, H, r); }); ic.visible = false; U.icicles = ic;
+    U.light = new THREE.HemisphereLight(0xa8e0ff, 0x6080a0, 0.55); U.light.visible = false; UG.group.add(U.light); }
+}
+function applyWinterLevels(winter) {
+  const S = WINTERX.sky; if (S && S.land) { const c = S.land.geometry.attributes.color, a = c.array;
+    for (let i = 0; i < a.length; i += 3) { const r = S.orig[i], g = S.orig[i + 1], b = S.orig[i + 2]; if (winter && g >= r - 0.02 && g > b + 0.12) { const n = (r * 7.3 + b * 3.1) % 0.05; a[i] = 0.9 + n; a[i + 1] = 0.93 + n; a[i + 2] = 0.98 + n; } else { a[i] = r; a[i + 1] = g; a[i + 2] = b; } } c.needsUpdate = true;
+    for (const M of S.mats) M.m.color.setHex(winter ? (M.c === 0x7aa848 ? 0xe8f0f4 : 0xe0ecf2) : M.c);
+    for (const s of S.clouds) s.visible = winter; for (const b of SKY.banks || []) b.material.opacity = winter ? 0.95 : 0.7; }
+  const U = WINTERX.ug; if (U) { U.icicles.visible = winter; U.light.visible = winter;
+    for (const m of [W.ugFloor, W.ugCeil]) if (m) { m.material.color.setRGB(winter ? 0.8 : 1, winter ? 0.98 : 1, winter ? 1.3 : 1); m.material.emissive.setHex(winter ? 0x0c1c2c : 0x000000); }
+    if (W.ugWater) { const m = W.ugWater.material; if (!U.wOrig) U.wOrig = { c: m.color.getHex(), o: m.opacity, r: m.roughness }; m.color.setHex(winter ? 0xb8dcef : U.wOrig.c); m.opacity = winter ? 0.95 : U.wOrig.o; m.roughness = winter ? 0.3 : U.wOrig.r; } }
+}
+{ const _ae3 = applyEnv; applyEnv = function (key) { _ae3(key); if (WINTERX.ug || WINTERX.sky) applyWinterLevels(key === 'winter'); }; }
+{ const _bn2 = buildNewWorldStuff; buildNewWorldStuff = function () { _bn2(); }; }
+{ const _bm2 = buildMapImage; buildMapImage = function () { _bm2(); buildWinterExtras(); applyWinterLevels(SEASON.frozen); }; }
+// the frozen Underground lakes are solid too
+{ const _ga2 = groundAt; groundAt = function (x, z) { const g = _ga2.apply(this, arguments); if (!SEASON.frozen || W.inBurrow || W.level !== 'ug') return g; return caveFloorH(x, z) < UG.water - 0.02 ? Math.max(g, UG.water + 0.03) : g; }; }
+{ const _st4 = seasonTick; seasonTick = function (dt) { _st4(dt); if (!SEASON.frozen || GAME.state !== 'play' || W.inBurrow) return; const lv = curLevel();
+  if (lv === 'sky' && HER.state !== 'away') { HER.state = 'away'; HER.root.visible = false; }
+  if (lv === 'ug') { const P = PL.pos; if (PL.inWater && caveFloorH(P.x, P.z) < UG.water - 0.02) { PL.inWater = false; PL.diving = false; P.y = UG.water + 0.05; PL.vel.y = 0; PL.onGround = true; } }
+  if (lv === 'top' && !SAVE.stats.iceFrogsOut && packOn('bonus') && WINTERX.iceFrogs.some(c => c.root.visible && c.root.position.distanceTo(PL.pos) < 25)) { SAVE.stats.iceFrogsOut = 1; persist(); toast('Ice Frogs! In winter they climb up out of their frozen cave and hop around on the snow.', 'guide'); } }; }
+SEASON_MSG.winter[1] += ' Ice Frogs have come up from their cave to play in the snow, the sky islands are buried in snow, and the whole Underground has turned into one big ice cave!';
+// the sky herons fly south for the winter too
+{ const _bm3 = buildMapImage; buildMapImage = function () { _bm3(); for (const c of CREATURES) { if (c.kind !== 'skyheron' || c._winterHook) continue; c._winterHook = true; const orig = c.update;
+  c.update = function (dt) { if (SEASON.frozen) { this.root.visible = false; this.gone = true; return; } if (this.gone) { this.gone = false; this.root.visible = true; } return orig.call(this, dt); }; } }; }
 /* ============================================================
    Multiplayer servers (claude.ai live rooms)
    lobby presence: { hosting: "1234" } advertises a running server
@@ -13776,7 +14132,7 @@ function updateWorldVisuals(dt) {
   if (W.camUnder) { const murky = regionAt(camera.position.x, camera.position.z) === 'Muddy Marsh' ? 0.6 : 1; scene.fog.color.setRGB(0.06, 0.2, 0.19).multiplyScalar(0.3 + 0.7 * dayK); near = 0.4; far = (W.envFog > 1.5 ? 11 : 17) * murky + 6 * dayK; }
   if (UGN && W.inWormory) { scene.fog.color.setRGB(0.1, 0.06, 0.03); near = 3; far = 50; }
   if (UGN && W.inGut) { const al = GUT.alertT > 0 ? 0.5 + 0.5 * Math.sin(GAME.t * 6) : 0; scene.fog.color.setRGB(0.24 + al * 0.25, 0.05, 0.08 - al * 0.04); near = 3; far = 55 - al * 15; }
-  if (UGN && !W.camUnder && !W.inMantle && !W.inGut && !W.inWormory) { scene.fog.color.setRGB(0.025, 0.03, 0.035); near = 4; far = SPECIES[GAME.species].caveSight ? 70 : 42; }
+  if (UGN && !W.camUnder && !W.inMantle && !W.inGut && !W.inWormory) { scene.fog.color.setRGB(0.025, 0.03, 0.035); near = 4; far = SPECIES[GAME.species].caveSight ? 70 : 42; if (typeof SEASON !== 'undefined' && SEASON.frozen && W.level === 'ug') { scene.fog.color.setRGB(0.1, 0.17, 0.24); far += 14; } }
   if (UGN && CL.fog) { scene.fog.color.setRGB(CL.fog[0], CL.fog[1], CL.fog[2]); near = CL.fog[3]; far = CL.fog[4]; }
   if (UGN && W.inMantle && !W.camUnder) { scene.fog.color.setRGB(0.16, 0.05, 0.02); near = 6; far = 80; }
   if (UGN && W.inMantle && W.camUnder) { scene.fog.color.setRGB(0.5, 0.13, 0.03); near = 1; far = 22; }
@@ -14096,7 +14452,7 @@ function renderMenu() {
     let h = '<p>' + (hasHome ? 'Your ' + HT.name + ' is your home (gold dot on the map and compass). Press <span class="kbd">E</span> there to settle in: predators can\'t reach you, you recover quickly, time passes faster, and you wake up there after fainting.' : HT.intro.replace('press E', 'press <span class="kbd">E</span>').replace('hold E', 'hold <span class="kbd">E</span>')) + '</p>';
     h += '<div class="sect">Decorations</div><div class="chips">' + Object.keys(DECOR).map(k => { const un = SAVE.unlocks.decor.includes(k), on = SAVE.decor.includes(k); return '<button class="chip' + (on ? ' on' : '') + (un ? '' : ' locked') + '" data-decor="' + k + '" title="' + (un ? '' : 'Locked: ' + DECOR[k].how) + '">' + DECOR[k].name + (un ? '' : ' (locked)') + '</button>'; }).join('') + '</div>';
     const spNote = PL.stage < 3 ? ' <small>takes effect when you become a froglet</small>' : '';
-    h = '<div class="sect">Kind of frog' + spNote + '</div><div class="grid2">' + Object.keys(SPECIES).filter(speciesOn).map(k => { const un = SAVE.unlocks.species.includes(k), sp = SPECIES[k]; return '<button class="card sp-card' + (GAME.species === k ? ' on' : '') + (un ? '' : ' locked') + '" data-sp="' + k + '"><span class="chip-col" style="background:' + speciesColor(k) + '"></span><span><b>' + (un ? sp.name : '???') + '</b><p>' + (un ? sp.ability : SPECIES_UNLOCK[k]) + '</p></span></button>'; }).join('') + '</div>' +
+    h = '<div class="sect">Kind of frog' + spNote + '</div><div class="grid2">' + Object.keys(SPECIES).filter(k => speciesOn(k) && SAVE.unlocks.species.includes(k)).map(k => { const un = SAVE.unlocks.species.includes(k), sp = SPECIES[k]; return '<button class="card sp-card' + (GAME.species === k ? ' on' : '') + (un ? '' : ' locked') + '" data-sp="' + k + '"><span class="chip-col" style="background:' + speciesColor(k) + '"></span><span><b>' + (un ? sp.name : '???') + '</b><p>' + (un ? sp.ability : SPECIES_UNLOCK[k]) + '</p></span></button>'; }).join('') + '</div>' +
       '<div class="sect">Pond</div><div class="chips">' + Object.keys(ENVS).map(k => { const un = SAVE.unlocks.envs.includes(k); return '<button class="chip' + (GAME.env === k ? ' on' : '') + (un ? '' : ' locked') + '" data-env="' + k + '" title="' + (un ? '' : 'Locked: ' + ENVS[k].how) + '">' + ENVS[k].name + (un ? '' : ' (locked)') + '</button>'; }).join('') + '</div>' + h;
     h += '<div class="sect">Skin pattern</div><div class="chips">' + Object.keys(PATTERNS).map(k => { const un = SAVE.unlocks.patterns.includes(k); return '<button class="chip' + (GAME.pattern === k ? ' on' : '') + (un ? '' : ' locked') + '" data-pat="' + k + '" title="' + (un ? '' : 'Locked: ' + PATTERNS[k].how) + '">' + PATTERNS[k].name + '</button>'; }).join('') + '</div>';
     h += '<div class="sect">Decorating</div><p><b>Only the Tiny Frog can see, collect and use furniture.</b> Furniture made from nature is hidden around the world, glinting softly: stools, tables, sofas, lamps, rugs, wallpaper, curtains, mirrors and more. Walk up and press <span class="kbd">E</span> to put one in your bag (' + bagN + '/' + BAG_MAX + '). Inside your home, press <span class="kbd">E</span> to place the selected thing, <span class="kbd">T</span> to choose a different one, and <span class="kbd">E</span> next to a placed thing to pick it back up. Your ' + HT.name + ' has ' + placedN + ' things in it.</p><p class="note">Where to look: ' + DECO_KEYS.map(k => DECO[k].name.toLowerCase() + ' ' + DECO[k].where).join('; ') + '.</p>';
