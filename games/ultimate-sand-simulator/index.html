@@ -608,7 +608,7 @@ OV('wood', { desc: 'Burns.' });
 OV('ice', { alpha: 0.5, light: 0.85, desc: 'Frozen water, partly see-through. Cools whatever it touches.' });
 OV('metal', { desc: 'Solid metal. Magnets pull whole pieces of it without breaking them apart.' });
 OV('crystal', { color: '#d68cf0', alpha: 0.62, light: 0.8, glow: 0.15, hiTo: 'molten_glass', desc: 'Pink and partly see-through. Slowly grows into any water it touches.' });
-OV('uranium', { glow: 0.5, desc: 'Radioactive: glows faintly and throws off radiation. If two of its radiation particles collide — nuclear explosion.' });
+OV('uranium', { glow: 0.5, desc: 'Radioactive: glows faintly and throws off radiation. If its radiation hits a different lump of uranium — NUCLEAR EXPLOSION. One lump on its own is safe.' });
 OV('plant', { flam: 0.6, ign: 200, burnTo: 'ash', desc: 'Grows quickly wherever it touches water — and burns well.' });
 OV('glass', { hiT: 1400, hiTo: 'molten_glass', alpha: 0.18, light: 0.96, desc: 'Made by heating sand. Transparent. Melts above 1400°.' });
 OV('molten_glass', { heat: 1600, loT: 1300, loTo: 'glass', phaseP: 0.08, alpha: 0.85, light: 0.85, desc: 'Melted glass. Unlike almost everything else it cools back into glass on its own — the hotter it is, the longer that takes.' });
@@ -831,7 +831,7 @@ R('diamond', 'oxygen', 'co2', 'co2', 0.05, { tmin: 900, label: 'Diamond burns in
 R('lava', 'steam', 'pumice', null, 0.03, { label: 'Lava + Steam → Frothy pumice' });
 R('tar', 'gravel', 'asphalt', 'asphalt', 0.05, { label: 'Tar + Gravel → Asphalt' });
 R('tar', 'crushed_stone', 'asphalt', 'asphalt', 0.05); R('tar', 'sand', 'asphalt', 'asphalt', 0.03);
-R('rain_cloud', 'hot_air', 'storm_cloud', 'same', 0.02, { label: 'Rain cloud + Rising hot air → Thunderstorm' });
+R('rain_cloud', 'hot_air', 'storm_cloud', null, 0.02, { label: 'Rain cloud + Rising hot air → Thunderstorm' });
 R('copper', 'salt_water', 'same', 'chem_solution', 0.0008, { label: 'Copper + Salt water slowly → Copper sulfate solution' });
 R('liquid_chocolate', 'milk', 'liquid_chocolate', 'liquid_chocolate', 0.01, { label: 'Chocolate + Milk → More chocolate' });
 R('fire', 'phosphorus', 'same', 'same', 0);
@@ -963,7 +963,12 @@ function newShade() { return settings.texture ? rint(16) : 8; }
 function lifeFor(m) { const a = LIFE0[m], b = LIFE1[m]; return a || b ? a + rint(b - a + 1) : 0; }
 
 // set a cell to a fresh material (used by tools and reactions)
+// only the materials on the palette (plus melted glass, radiation, eggs and creatures) may exist in a normal world:
+// anything else a reaction tries to make turns into its nearest kept cousin instead
+let BANNED = null, rawPlace = false;
+function remapOn() { return !rawPlace && !settings.mystery && !settings.whiteWorld && !settings.corrupt; }
 function setCell(i, m, keepTemp) {
+  if (BANNED && BANNED[m] && remapOn()) { m = KEEPMAP[m]; if (!m) { clearCell(i); tmp[i] = settings.ambient; return; } }
   mat[i] = m; life[i] = lifeFor(m); aux[i] = 0; vx[i] = 0; vy[i] = 0;
   shade[i] = newShade();
   if (!keepTemp) tmp[i] = HASHEAT[m] ? HEAT0[m] : settings.ambient;
@@ -974,6 +979,7 @@ function setCell(i, m, keepTemp) {
 let MAT_BURNING_START = -1;
 // transform a cell into another material keeping temperature/shade (reactions, phase changes)
 function transform(i, m) {
+  if (BANNED && BANNED[m] && remapOn()) { m = KEEPMAP[m]; if (!m) { clearCell(i); return; } }
   const old = mat[i];
   mat[i] = m; vx[i] = 0; vy[i] = 0;
   if (KEEPO[m] && !KEEPO[old]) aux[i] = old; // remember origin (molten metals)
@@ -1450,8 +1456,8 @@ function heatSwap(a, b, d) { // d > 0: heat flows from b into a
   const mh = mat[hot], mc = mat[cold];
   if (!FIXEDT[mc]) tmp[cold] += q / HCAP[mc];
   if (FIXEDT[mh]) return;
-  if (AIRLIKE[mc] && !AIRLIKE[mh]) return;                                  // substances don't cool into the air
-  if (KEEPHOT[mh] && !COOLANT[mc] && tmp[cold] >= 0) return;               // molten stuff only cools on coolants
+  if (AIRLIKE[mc] && (!AIRLIKE[mh] || mh === M.steam)) return;      // (steam doesn't cool in open air either: it rises to the top first)                                  // substances don't cool into the air
+  if (KEEPHOT[mh] && !COOLANT[mc] && tmp[cold] >= 0) { const base = HEAT0[mh] || 0; if (tmp[hot] > base) tmp[hot] = Math.max(base, tmp[hot] - q / HCAP[mh]); return; } // molten stuff only cools below its own heat on coolants (extra heat can still spread, so lava can't melt the whole world)
   tmp[hot] -= q / HCAP[mh];
 }
 function temperaturePass() {
@@ -1481,7 +1487,12 @@ function temperaturePass() {
         continue;
       }
       if (m === MG) { T -= 1.2; tmp[i] = T; } // melted glass cools on its own
-      if (m === STEAM && y <= 1) { transform(i, M.water); continue; } // steam reaching the top becomes water
+      if (m === STEAM && y <= 2) { // steam reaching the top: bunched-up steam gathers into a rain cloud, a lone wisp becomes water
+        let n = 0; for (let k = 0; k < 8; k++) { const j = idx(x + NB8[k][0], y + NB8[k][1]); if (j >= 0 && (mat[j] === STEAM || mat[j] === M.rain_cloud || mat[j] === M.storm_cloud)) n++; }
+        if (n >= 3) { transform(i, M.rain_cloud); discoverX('Steam reaching the top of the sky → Rain cloud'); } else if (y <= 1) transform(i, M.water);
+        continue;
+      }
+      if (m === M.hot_air) { T += (amb - T) * 0.01; tmp[i] = T; if (T < 60) { clearCell(i); tmp[i] = T; continue; } } // rising hot air cools back into plain air
       let lot = LOT[m];
       if (m === LM) { const o = aux[i]; lot = o && o !== LM && HIT[o] < 1e8 ? HIT[o] - 40 : 1400; }
       if (T > HIT[m] || T < lot || (T >= IGN[m] && (FLAM[m] > 0 || EXPL[m]))) phaseCheck(i, x, y, m, T, lot);
@@ -1701,7 +1712,6 @@ function special(i, x, y, m) {
     case SP.RAD: {
       life[i]--;
       if (life[i] <= 0) { clearCell(i); return; }
-      if (aux[i] === 1) { for (let k = 0; k < 8; k++) { const j = idx(x + NB8[k][0], y + NB8[k][1]); if (j >= 0 && mat[j] === m && aux[j] === 1) { nuclearBlast(x, y); return; } } }
       if (vx[i] === 0 && vy[i] === 0) { const a = rnd() * 6.283; vx[i] = Math.round(Math.cos(a) * 40); vy[i] = Math.round(Math.sin(a) * 40); }
       // collide with whatever is ahead
       const sx = Math.sign(vx[i]), sy = Math.sign(vy[i]);
@@ -1710,6 +1720,8 @@ function special(i, x, y, m) {
         const nm = mat[t];
         if (nm !== 0 && nm !== m) {
           if (STATE[nm] === ST.CREATURE) { damageCreatureAt(t, 4, 'radiation'); clearCell(i); return; }
+          // radiation hitting a DIFFERENT piece of uranium from the one that gave it off → nuclear explosion
+          if (nm === M.uranium) { refreshUraniumLabels(); if (aux[i] !== uLabel[t] + 2) { nuclearBlast(x, y); return; } clearCell(i); return; }
           tmp[t] += 25;
           if (DENS[nm] > 7000 || nm === M.wall || nm === M.bedrock || nm === M.concrete) { clearCell(i); return; }
           if ((STATE[nm] === ST.GAS || STATE[nm] === ST.LIQUID || TRANS[nm] > 0.5) && rnd() < 0.75) { swapCells(i, t); return; }
@@ -1736,7 +1748,7 @@ function special(i, x, y, m) {
       for (let k = 0; k < 8; k++) { const j = idx(x + NB8[k][0], y + NB8[k][1]); if (j >= 0 && mat[j] === m) n++; }
       if (rnd() < 0.02 + n * 0.006) {
         const j = spawnNear(x, y, M.radiation);
-        if (j >= 0) { const a = rnd() * 6.283; vx[j] = Math.round(Math.cos(a) * 40); vy[j] = Math.round(Math.sin(a) * 40); aux[j] = 1; } // aux 1 = fresh from uranium
+        if (j >= 0) { refreshUraniumLabels(); const a = rnd() * 6.283; vx[j] = Math.round(Math.cos(a) * 40); vy[j] = Math.round(Math.sin(a) * 40); aux[j] = (uLabel[i] + 2) & 0xffff; } // remembers which lump of uranium it came from
       }
       wakeI(i); return;
     }
@@ -3669,6 +3681,7 @@ function fireworkBurst(i, x, y) {
   discoverX('Firework launches and bursts');
 }
 // ---- clouds ----
+let lastCloudBolt = -999;
 function cloudTick(i, x, y, m) {
   wakeI(i);
   const storm = m === M.storm_cloud;
@@ -3681,7 +3694,7 @@ function cloudTick(i, x, y, m) {
     const dx = gOn ? gdx : 0, dy = gOn ? gdy : 1, b = idx(x + dx, y + dy);
     if (b >= 0 && mat[b] === 0) { setCell(b, tmp[i] < 0 ? M.snow : M.water); life[i]--; }
   }
-  if (storm && rnd() < 0.00025) lightningStrike(x, y + 1, false);
+  if (storm && rnd() < 0.0004 && frameNo - lastCloudBolt > 40) { lastCloudBolt = frameNo; lightningStrike(x, y + 1, false); } // a big storm still only flashes every so often
   if (life[i] <= 0) clearCell(i);
 }
 
@@ -3803,6 +3816,70 @@ function gadgetUpdate(i, x, y, m) {
         const nm = mat[n]; if (!nm || UNBREAKABLE[nm]) continue;
         if (STATE[nm] === ST.CREATURE) { const c = creatureAtIndex(n); if (c) { c.cause = 'swallowed by a black hole'; removeCreature(c, false); if (c.g) blobOnDeath(c); } else clearCell(n); continue; }
         clearCell(n); if (rnd() < 0.02) discoverX('Black hole swallows matter');
+      }
+      // gravity well: EVERYTHING within ~30 cells (powders, liquids, gases, solids, machines, creatures) is dragged inward, nearest first
+      for (let k = 0; k < BH_OFF.length; k++) {
+        const o = BH_OFF[k], t = idx(x + o[0], y + o[1]); if (t < 0) continue;
+        const tm = mat[t]; if (!tm || UNBREAKABLE[tm]) continue;
+        const stT = STATE[tm];
+        let p = 1.25 - o[2] / 30;
+        if (stT === ST.SOLID || stT === ST.MACHINE) p *= 0.75;
+        if (rnd() > p) continue;
+        const sx = -Math.sign(o[0]), sy = -Math.sign(o[1]);
+        if (stT === ST.CREATURE) {
+          const c = creatureAtIndex(t);
+          if (c && !c.frozen && t === c.segs[0]) tryMoveCreature(c, x + o[0] + sx, y + o[1] + sy, true, true);
+          continue;
+        }
+        // slight swirl: sometimes step sideways along the orbit
+        const sw = rnd() < 0.2;
+        const cands = sw ? [[-sy, sx], [sx, sy], [sx, 0], [0, sy]] : [[sx, sy], [sx, 0], [0, sy]];
+        for (const [ddx, ddy] of cands) {
+          if (!ddx && !ddy) continue;
+          const st = idx(x + o[0] + ddx, y + o[1] + ddy); if (st < 0) continue;
+          const sm = mat[st];
+          if (sm === 0) { moveCell(t, st); }
+          else if (sm !== tm && !UNBREAKABLE[sm] && STATE[sm] !== ST.CREATURE && (STATE[sm] === ST.GAS || STATE[sm] === ST.LIQUID || STATE[sm] === ST.ENERGY)) swapCells(t, st);
+          else continue;
+          clk[st] = fc; wakeI(st);
+          // keep it flying toward the hole so gravity can't drag it back down
+          if (MOVE[mat[st]] !== MV.NONE) { const ox = o[0] + ddx, oy = o[1] + ddy, dd = Math.hypot(ox, oy) || 1; vx[st] = clamp(Math.round(-ox / dd * 35), -100, 100); vy[st] = clamp(Math.round(-oy / dd * 35), -100, 100); }
+          else { vx[st] = 0; vy[st] = 0; }
+          break;
+        }
+      }
+      // beyond that: the whole world feels the pull (weaker with distance, but it never stops)
+      const samples = Math.max(1500, Math.min(9000, (N / 30) | 0));
+      for (let k = 0; k < samples; k++) {
+        const t = rint(N);
+        const tm = mat[t]; if (!tm || UNBREAKABLE[tm]) continue;
+        const dx = t % W - x, dy = ((t / W) | 0) - y;
+        const d = Math.sqrt(dx * dx + dy * dy); if (d <= 30) continue;
+        const sx = -Math.sign(dx), sy = -Math.sign(dy), stT = STATE[tm];
+        if (stT === ST.SOLID || stT === ST.MACHINE) {
+          // solids creep inward a step at a time, through air, gas or liquid
+          let cur = t;
+          for (let n = 0; n < 2; n++) {
+            const cx = cur % W, cy = (cur / W) | 0, st = idx(cx + sx, cy + sy); if (st < 0) break;
+            const sm = mat[st];
+            if (sm === 0) moveCell(cur, st);
+            else if (!UNBREAKABLE[sm] && (STATE[sm] === ST.GAS || STATE[sm] === ST.LIQUID || STATE[sm] === ST.POWDER)) swapCells(cur, st);
+            else break;
+            wakeI(st); cur = st;
+          }
+          continue;
+        }
+        if (stT === ST.CREATURE) {
+          const c = creatureAtIndex(t);
+          if (c && !c.frozen && t === c.segs[0] && rnd() < 0.5) tryMoveCreature(c, t % W + sx, ((t / W) | 0) + sy, true, true);
+          continue;
+        }
+        if (ISMOVABLE[tm] || (stT === ST.ENERGY && MOVE[tm] !== MV.NONE)) {
+          const f = 30 + 900 / (d + 3);
+          vx[t] = clamp(Math.round(vx[t] - dx / d * f + dy / d * f * 0.25), -100, 100);
+          vy[t] = clamp(Math.round(vy[t] - dy / d * f - dx / d * f * 0.25), -100, 100);
+          wakeI(t);
+        }
       }
       return;
     }
@@ -4278,14 +4355,19 @@ function pullToward(cl, R, solids) {
     if (t < 0) continue;
     const tm = mat[t]; if (!tm || tm === M.star || tm === M.black_hole || tm === M.bedrock || tm === M.wall || tm === M.light) continue;
     const dx = tx - cx, dy = ty - cy, d = Math.hypot(dx, dy) || 1;
+    const close = 1 - d / (R + 1), sx = Math.round(-dx / d), sy = Math.round(-dy / d), st = idx(tx + sx, ty + sy);
+    const canEnter = st >= 0 && (mat[st] === 0 || STATE[mat[st]] === ST.GAS);
     if (ISMOVABLE[tm] || (STATE[tm] === ST.ENERGY && MOVE[tm] !== MV.NONE)) {
-      const f = 14 + 420 / (d + 4) * (1 - d / (R + 1));
+      const f = 14 + 420 / (d + 4) * close;
       vx[t] = clamp(Math.round(vx[t] - dx / d * f + dy / d * f * 0.2), -100, 100);
       vy[t] = clamp(Math.round(vy[t] - dy / d * f - dx / d * f * 0.2), -100, 100);
       wakeI(t);
-    } else if (solids && (STATE[tm] === ST.SOLID || STATE[tm] === ST.MACHINE) && !UNBREAKABLE[tm] && rnd() < 0.35) {
-      const st = idx(tx - Math.sign(Math.round(dx / d)), ty - Math.sign(Math.round(dy / d)));
-      if (st >= 0 && (mat[st] === 0 || STATE[mat[st]] === ST.GAS)) { if (mat[st]) swapCells(t, st); else moveCell(t, st); wakeI(st); }
+      // a firm tug straight toward the centre too, so piles and pools really get sucked up instead of just jiggling
+      if (canEnter && rnd() < 0.2 + 0.6 * close) { if (mat[st]) swapCells(t, st); else moveCell(t, st); wakeI(st); }
+      else if (solids && st >= 0 && ISMOVABLE[mat[st]] && rnd() < 0.5 * close) { swapCells(t, st); wakeI(st); }
+    } else if (solids && (STATE[tm] === ST.SOLID || STATE[tm] === ST.MACHINE || STATE[tm] === ST.POWDER) && !UNBREAKABLE[tm] && rnd() < 0.15 + 0.5 * close) {
+      // solid ground gets torn loose and dragged in
+      if (canEnter) { if (mat[st]) swapCells(t, st); else moveCell(t, st); wakeI(st); }
     } else if (solids && STATE[tm] === ST.CREATURE && rnd() < 0.3) {
       const c = creatureAtIndex(t); if (c && !c.frozen && t === c.segs[0]) tryMoveCreature(c, tx - Math.sign(dx), ty - Math.sign(dy), true, true);
     }
@@ -4381,7 +4463,7 @@ function moveRigid(mc, sx, sy) {
 function gravityPass() {
   if (frameNo & 1) return;
   for (const cl of getClusters(M.star)) pullToward(cl, reachOf(cl), false);
-  for (const cl of getClusters(M.black_hole)) pullToward(cl, reachOf(cl), true);
+  // black holes use their own whole-world pull (see gadgetUpdate)
 }
 
 // ---------- light flashes (acid eating, etc.) for the lighting engine ----------
@@ -4438,6 +4520,7 @@ function plantBoost() {
   for (let k = 0; k < 40; k++) { const i = plantFront[rint(plantFront.length)]; if (mat[i] === P && rnd() < 0.5) RT[P](i, i % W, (i / W) | 0, P); }
 }
 function overhaulPass() {
+  sweepBanned();
   gravityPass();
   if ((frameNo & 1) === 0) magnetPass();
   flashTick();
@@ -4453,6 +4536,33 @@ function buildMagMap() {
   magMap.fill(0);
   const mags = getClusters(M.magnet); if (!mags.length) return;
   for (let y = 0; y < MH; y++) for (let x = 0; x < MAGW; x++) magMap[y * MAGW + x] = magnetField(x * 2 + 1, y * 2 + 1);
+}
+
+// sweep up any non-palette material that slipped in some other way (a few special features keep theirs)
+const SWEEP_KEEP = new Set(); 
+function sweepBanned() {
+  if (!BANNED || !remapOn() || frameNo % 60 !== 17) return;
+  if (!SWEEP_KEEP.size) for (const k of ['marble', 'obsidian', 'brick', 'ceramic', 'dried_paint', 'kelp']) if (M[k] !== undefined) SWEEP_KEEP.add(M[k]);
+  for (let i = 0; i < N; i++) { const m = mat[i]; if (m && BANNED[m] && !SWEEP_KEEP.has(m)) { const t = KEEPMAP[m]; if (t) { mat[i] = t; life[i] = lifeFor(t); aux[i] = 0; wakeI(i); } else clearCell(i); } }
+}
+
+// each separate lump of uranium gets a number, so radiation knows which lump it came from
+let uLabel = new Int32Array(1), uLabelAt = -999;
+function refreshUraniumLabels() {
+  if (frameNo - uLabelAt < 10 && uLabel.length === N) return;
+  uLabelAt = frameNo;
+  if (uLabel.length !== N) uLabel = new Int32Array(N);
+  uLabel.fill(-1);
+  const U = M.uranium, q = []; let n = 0;
+  for (let s = 0; s < N; s++) {
+    if (mat[s] !== U || uLabel[s] >= 0) continue;
+    q.length = 0; q.push(s); uLabel[s] = n;
+    for (let h = 0; h < q.length; h++) {
+      const c = q[h], x = c % W, y = (c / W) | 0;
+      for (let k = 0; k < 8; k++) { const nx = x + NB8[k][0], ny = y + NB8[k][1]; if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue; const j = ny * W + nx; if (mat[j] === U && uLabel[j] < 0) { uLabel[j] = n; q.push(j); } }
+    }
+    n = (n + 1) % 65000;
+  }
 }
 
 // ======================= EXPLOSIONS, LIGHTNING, FX, AUDIO =======================
@@ -5013,25 +5123,30 @@ const WORLD_KEEP_GENS = ['starter', 'flat', 'beach', 'desert', 'mountains', 'cav
 for (let k = GENERATORS.length - 1; k >= 0; k--) if (!WORLD_KEEP_GENS.includes(GENERATORS[k].key)) GENERATORS.splice(k, 1);
 let KEEPMAP = null;
 function buildKeepMap() {
-  KEEPMAP = new Uint16Array(NM);
-  const to = (list, k) => { for (const n of list) if (M[n] !== undefined) KEEPMAP[M[n]] = M[k]; };
+  KEEPMAP = new Uint16Array(NM); BANNED = new Uint8Array(NM);
+  const to = (list, k) => { for (const n of list) if (M[n] !== undefined && BANNED[M[n]]) KEEPMAP[M[n]] = k ? M[k] : 0; };
+  const extra = new Set(['molten_glass', 'radiation', 'hot_air', 'rain_cloud', 'storm_cloud', 'egg', 'larva'].map(k => M[k]));
   for (let m = 0; m < NM; m++) {
-    if (!m || placeable(m) || STATE[m] === ST.CREATURE || m === M.egg || m === M.larva) { KEEPMAP[m] = m; continue; }
+    if (!m || PALCAT[m] !== undefined || STATE[m] === ST.CREATURE || extra.has(m)) { KEEPMAP[m] = m; continue; }
+    BANNED[m] = 1;
     const s = STATE[m];
     KEEPMAP[m] = s === ST.SOLID || s === ST.MACHINE ? M.stone : s === ST.POWDER ? M.dirt : s === ST.LIQUID ? M.water : 0;
   }
   to(['grass', 'leaves', 'flower', 'vine', 'moss', 'bamboo', 'mushroom', 'cactus', 'seeds', 'sapling'], 'plant');
-  to(['roots'], 'dirt');
-  to(['kelp', 'algae', 'coral', 'reeds', 'lily'], 'water');
-  to(['planks', 'trunk', 'log', 'bark', 'sawdust', 'paper', 'cardboard'], 'wood');
-  to(['nutrient_soil', 'mud', 'gravel', 'ash', 'frozen_soil', 'clay', 'compost', 'soil'], 'dirt');
-  to(['salt', 'red_sand', 'black_sand', 'sandstone_powder'], 'sand');
-  to(['salt_water', 'brine', 'muddy_water', 'hot_spring', 'swamp_water'], 'water');
+  to(['roots', 'organic', 'flesh', 'rotting', 'nutrient_soil', 'mud', 'gravel', 'frozen_soil', 'clay', 'compost', 'soil', 'sawdust'], 'dirt');
+  to(['kelp', 'algae', 'coral', 'reeds', 'lily', 'salt_water', 'brine', 'muddy_water', 'hot_spring', 'swamp_water'], 'water');
+  to(['planks', 'trunk', 'log', 'bark', 'paper', 'cardboard'], 'wood');
+  to(['charcoal', 'coal', 'burning_coal', 'soot', 'cinders'], 'ash');
+  to(['salt', 'red_sand', 'black_sand', 'sandstone_powder', 'wet_sand', 'glass_shards'], 'sand');
   to(['magma'], 'lava');
   to(['ice_powder', 'packed_snow'], 'snow');
-  to(['permafrost', 'blue_ice'], 'ice');
-  to(['iron', 'steel', 'copper_ore', 'iron_ore'], 'stone');
+  to(['permafrost', 'blue_ice', 'frost'], 'ice');
+  to(['iron', 'steel', 'copper_ore', 'iron_ore', 'obsidian', 'marble', 'bone', 'basalt', 'granite'], 'stone');
+  to(['rust', 'iron_filings'], 'metal_powder');
+  to(['molten_metal', 'molten_iron', 'molten_copper', 'molten_gold', 'mercury'], 'liquid_metal');
+  to(['liquid_nitrogen'], 'liquid_air');
   to(['crystal_seed', 'amethyst', 'diamond', 'quartz'], 'crystal');
+  to(['ember', 'plasma'], 'fire');
   to(['wall'], 'bedrock');
 }
 function keepOnlyListed() {
@@ -6268,7 +6383,9 @@ function spawnLittleEye(x, y, size) {
   const e = { x, y, r, px: 0, py: 0, blink: 0, nextBlink: 100 + rint(400), small: true };
   // only open where there's room
   for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { if (dx * dx + (dy * 1.6) ** 2 > r * r) continue; const i = idx(x + dx, y + dy); if (i < 0) return false; if (mat[i] && STATE[mat[i]] !== ST.GAS) return false; }
+  rawPlace = true;
   for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) { if (dx * dx + (dy * 1.6) ** 2 > r * r) continue; const i = idx(x + dx, y + dy); setCell(i, M.marble); tmp[i] = settings.ambient; }
+  rawPlace = false;
   littleEyes.push(e); drawEye(true, e);
   discoverX('A little eye opens');
   return true;
@@ -6299,7 +6416,8 @@ function seedFlowerTick() {
     sproutEyeFlower(x, y);
   }
 }
-function sproutEyeFlower(x, y) {
+function sproutEyeFlower(x, y) { rawPlace = true; try { sproutEyeFlowerRaw(x, y); } finally { rawPlace = false; } }
+function sproutEyeFlowerRaw(x, y) {
   const h = 3 + rint(4), cy = y - h - 2; // head centre
   clearCell(idx(x, y));
   for (let k = 0; k <= h; k++) { const i = idx(x, y - k); if (i < 0 || (mat[i] && STATE[mat[i]] !== ST.GAS)) return; setCell(i, M.kelp); life[i] = 0; tmp[i] = settings.ambient; }
@@ -7006,8 +7124,10 @@ function buildOptics() {
     if (!clear) { OPT_TR[m] = OPT_TG[m] = OPT_TB[m] = 0; continue; }
     if (m === 0 || m === M.void || m === M.portal_in || m === M.portal_out) { OPT_TR[m] = OPT_TG[m] = OPT_TB[m] = 1; continue; }
     // light that passes through takes on the substance's colour
-    const t = Math.min(1, TRANS[m] < 0.3 ? 0.85 : TRANS[m]), mix = st === ST.GAS ? 0.12 : st === ST.ENERGY ? 0 : 0.35;
-    CLEARL[m] = Math.max(CLEARL[m], 0.97);
+    // per world cell: clear things let almost all light through, slowly tinting it toward their own colour
+    const gas = st === ST.GAS, en = st === ST.ENERGY, al = ALPHA[m];
+    const t = gas ? 0.97 + 0.028 * (1 - al) : en ? 1 : 0.996 - al * 0.03, mix = gas ? 0.01 : en ? 0 : 0.03 + al * 0.07;
+    CLEARL[m] = gas ? 1 : 0.5; // light shining through water/glass shows up in them (tinted), at half the strength of a solid surface
     OPT_TR[m] = t * (1 - mix + mix * r / mx); OPT_TG[m] = t * (1 - mix + mix * g / mx); OPT_TB[m] = t * (1 - mix + mix * b / mx);
   }
   const E = (k, c, s, range) => { const m = M[k]; if (m === undefined) return; EM_R[m] = c[0] / 255 * s; EM_G[m] = c[1] / 255 * s; EM_B[m] = c[2] / 255 * s; EM_RANGE[m] = range; };
@@ -8287,12 +8407,12 @@ function buildIcons() {
 const CATS = ['Favorites', 'Powders', 'Liquids', 'Gases', 'Solids', 'Energy', 'Misc', 'Light', 'All'];
 // the only materials you can paint (everything else exists only as a by-product or inside secret places)
 const PALCAT = {}, PALORDER = {};
-[['Powders', ['sand', 'dirt', 'snow', 'metal_powder', 'gunpowder']],
+[['Powders', ['sand', 'dirt', 'snow', 'ash', 'metal_powder', 'gunpowder']],
  ['Liquids', ['water', 'oil', 'lava', 'acid', 'slime', 'liquid_metal', 'liquid_air']],
  ['Gases', ['steam', 'smoke', 'methane']],
  ['Solids', ['stone', 'bedrock', 'wood', 'ice', 'metal', 'crystal', 'uranium', 'plant', 'glass']],
- ['Energy', ['fire', 'lightning', 'star', 'antimatter']],
- ['Misc', ['src_water', 'src_lava', 'magnet', 'portal_in', 'portal_out', 'black_hole', 'void', 'glitch', 'liquid_glitch', 'eye', 'eyte']],
+ ['Energy', ['fire', 'plasma', 'lightning', 'star', 'antimatter']],
+ ['Misc', ['source', 'src_water', 'src_lava', 'magnet', 'portal_in', 'portal_out', 'black_hole', 'void', 'glitch', 'liquid_glitch', 'eye', 'eyte']],
  ['Light', ['light', 'liquid_light']]].forEach(([c, ks], ci) => ks.forEach((k, ki) => { const id = M[k]; if (id === undefined) return; PALCAT[id] = c; PALORDER[id] = ci * 100 + ki; MATS[id].cat = c; }));
 const LOCKED = new Set(['glitch', 'liquid_glitch', 'eye', 'eyte'].map(k => M[k]).filter(v => v !== undefined));
 for (const id in PALCAT) if (!LOCKED.has(+id)) MATS[id].hidden = false;
@@ -8452,7 +8572,7 @@ function renderToolOpts() {
   const real = MATS[selMat].placeAs ? M[MATS[selMat].placeAs] : selMat;
   if (['brush', 'line', 'rect', 'frect', 'circle', 'fcircle'].includes(tool)) {
     if (DIRMAT[real]) box.appendChild(seg('Direction', [[0, '→'], [1, '↓'], [2, '←'], [3, '↑']], placeDir, v => placeDir = v));
-    if (real === M.source && !MATS[selMat].placeAux) { const r = el('div', { class: 'opt wide' }, el('span', null, 'Emits'), matSelect(sourceMat, v => sourceMat = v, m => STATE[m] !== ST.MACHINE)); box.appendChild(r); }
+    if (real === M.source && !MATS[selMat].placeAux) { const r = el('div', { class: 'opt wide' }, el('span', null, 'Emits'), matSelect(sourceMat, v => sourceMat = v, m => STATE[m] !== ST.MACHINE && m !== M.lightning && m !== M.eye && m !== M.black_hole && m !== M.void)); box.appendChild(r); }
     if (real === M.sfilter) box.appendChild(el('div', { class: 'opt wide' }, el('span', null, 'Passes only'), matSelect(filterMat, v => filterMat = v, m => ISMOVABLE[m])));
     if (real === M.timer) box.appendChild(slider('Period', 'optPer', 6, 400, 2, timerPeriod, v => v + ' ticks', v => timerPeriod = v));
     if (real === M.dispenser) box.appendChild(el('div', { class: 'opt wide' }, el('span', null, 'Shoots'), matSelect(dispenserMat, v => dispenserMat = v, m => STATE[m] !== ST.MACHINE && STATE[m] !== ST.SOLID)));
@@ -9836,6 +9956,8 @@ function openBlobEditor() {
 }
 function designHabHint(d) { return d.hab === 'water' ? 'it needs ' + BLOB_LIQUIDS.find(l => l[0] === d.liquid)[1].toLowerCase() : d.hab === 'amphib' ? 'it needs open air or ' + BLOB_LIQUIDS.find(l => l[0] === d.liquid)[1].toLowerCase() : d.hab === 'burrow' ? 'it needs soil or open space' : 'it needs open air'; }
 
+// only palette materials may appear in normal worlds
+buildKeepMap();
 // ======================= MAIN =======================
 function wireTopbar() {
   $('bPlay').onclick = () => togglePause();
@@ -9929,6 +10051,7 @@ function init() {
   genParams.w = sw > 1700 ? 560 : sw > 1200 ? 480 : 360; genParams.h = Math.round(genParams.w * 0.62);
   allocWorld(genParams.w, genParams.h);
   setupWorldCanvas();
+  buildKeepMap();
   generateWorld('starter', { seed: 20260 + ((Math.random() * 1000) | 0) });
   fitCamera();
   buildToolbar(); renderCats(); renderPalette(); renderHotbar(); renderRecent(); selectMaterial(M.sand); setTool('brush'); setSpeed(3); syncSettingsUI(); updateUndoButtons();
