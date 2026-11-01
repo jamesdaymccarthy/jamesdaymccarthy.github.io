@@ -416,11 +416,13 @@ const PACKS = [
   { k: 'nothing', name: 'Nothing', req: ['other', 'layers', 'wormory'], sp: ['nullf', 'dataf'], adds: 'The Pipe Eel, the Aquifer, .,<!∅!>,., the hole in the sky, ∅, the Data Whale, and the secret room in the UFO.' },
   { k: 'roboman', name: 'Ro-boman', req: ['other', 'wormory'], sp: ['machine', 'mech'], adds: 'The worms who need your help, their robot statue, and the Mech parts.' },
   { k: 'ocean', name: 'The Ocean', req: ['some'], sp: ['kraken', 'seafrog'], adds: 'A huge sea past the east edge of the Top: Seashell Beach, Rainbow Reef, the Kelp Forest, Turtle Island, a sunken worm ship, the Kraken Trench and the Sunken City of the old sea-frogs. Dolphins, sharks, whales, turtles and more. Plus the mystery of the Lost Wormship.' },
-  { k: 'legends', name: 'The Legends', req: ['more', 'some', 'unreal', 'layers', 'temple', 'wormory', 'other', 'bonus', 'nothing', 'roboman', 'ocean'], sp: ['legend', 'galaxy', 'thunder', 'magma'], adds: 'The five legendary frogs.' },
+  { k: 'grasshopper', name: 'Grasshopper Rebellion', req: ['more'], sp: ['grasshopperfrog'], adds: 'Eat 50 grasshoppers and they all vanish... then a secret Grasshopper House appears in the forest. Dig your way in as the Spadefoot Toad, face the Grasshopper Queen, and survive 2 whole days of rebellion.' },
+  { k: 'legends', name: 'The Legends', req: ['layers', 'temple', 'other', 'bonus'], sp: ['legend', 'galaxy', 'thunder', 'magma'], adds: 'The four legendary frogs: the Galaxy Frog, the Thunder King, the Magma Golem and the Legend Frog (who appears when you have found every frog in the packs you have turned on).' },
 ];
 const BASE_FROGS = ['green', 'bull', 'tree', 'dart'];
 if (!SAVE.packs) { SAVE.packs = {}; const old = (SAVE.unlocks.species || []).length > 4; for (const P of PACKS) SAVE.packs[P.k] = old; }
 if (SAVE.packs.ocean === undefined) SAVE.packs.ocean = !!SAVE.packs.some;
+if (SAVE.packs.grasshopper === undefined) SAVE.packs.grasshopper = !!SAVE.packs.more;
 const packOn = k => !!SAVE.packs[k];
 function speciesPack(sp) { for (const P of PACKS) if (P.sp.includes(sp)) return P; return null; }
 function speciesOn(sp) { if (BASE_FROGS.includes(sp)) return true; const P = speciesPack(sp); return !P || packOn(P.k); }
@@ -3619,7 +3621,7 @@ function updateInsects(dt) {
     if (W.inBurrow && !hasT('goldscarab')) spawnInsect('goldscarab', new V3(3, BURROW_Y + 0.1, -2));
   }
   for (const o of INS.list) {
-    if (!o.alive || o.ctrl || o.stuck) continue;
+    if (!o.alive || o.ctrl || o.stuck || o.rebel) continue;
     o.t += dt;
     const I = INSECT[o.type];
     const dP = o.pos.distanceTo(P);
@@ -6600,7 +6602,7 @@ function travel(lv, place, msgKey, msg) {
     if (lv === 'ug') unlockAch('deepdown');
     if (lv === 'mantle') unlockAch('mantle');
     if (lv === 'sky') unlockAch('skyhigh');
-    banner(LEVEL_NAMES[lv], { sky: 'The highest level: floating islands where the herons nest.', top: 'Back on the surface.', ug: 'The second level down: caves under the whole world.', mantle: 'The deepest level: rivers of lava and black glass.', gut: 'Inside the Great Worm. Squishy!', wormory: 'Where the worms keep their records.', rift: 'A tunnel the laser burned straight through the edge of the world.', other: 'A whole new world. Nobody from home has ever been here.', ufo: 'Something crashed here a very long time ago.', pipes: 'A maze of old pipes under the Big Lake.', glyph: '...', ducts: 'Dusty metal tunnels above the laboratory.', nil: 'The Nothing.', ocean: 'A huge, sparkling sea at the very edge of the Top.' }[lv]);
+    banner(LEVEL_NAMES[lv], { sky: 'The highest level: floating islands where the herons nest.', top: 'Back on the surface.', ug: 'The second level down: caves under the whole world.', mantle: 'The deepest level: rivers of lava and black glass.', gut: 'Inside the Great Worm. Squishy!', wormory: 'Where the worms keep their records.', rift: 'A tunnel the laser burned straight through the edge of the world.', other: 'A whole new world. Nobody from home has ever been here.', ufo: 'Something crashed here a very long time ago.', pipes: 'A maze of old pipes under the Big Lake.', glyph: '...', ducts: 'Dusty metal tunnels above the laboratory.', nil: 'The Nothing.', ocean: 'A huge, sparkling sea at the very edge of the Top.', ghouse: 'The secret headquarters of the grasshoppers.' }[lv]);
     setTimeout(() => { W.ugBusy = false; }, 800);
   });
 }
@@ -8191,7 +8193,7 @@ function revealTick(dt) {
   if (!on && W.revealT === 0 && TYPER.glows) { for (const q of TYPER.glows) { q.g.visible = q.b.visible = false; } }
 }
 // forget species that no longer exist (the Long-tongued Frog) so old saves still load
-(function () { try { if (SAVE && SAVE.unlocks) SAVE.unlocks.species = SAVE.unlocks.species.filter(k => SPECIES[k]); if (SAVE.guide) delete SAVE.guide.longtonguefrog; for (const o of [SAVE.last, SAVE.run]) if (o && o.species && !SPECIES[o.species]) o.species = 'green'; if (SAVE.homes) delete SAVE.homes.longtongue; if (SAVE.ach && (SAVE.ach.chorus || SAVE.ach.complete) && SAVE.unlocks.patterns && !SAVE.unlocks.patterns.includes('golden')) SAVE.unlocks.patterns.push('golden'); } catch (e) {} })();
+setTimeout(function () { try { if (SAVE && SAVE.unlocks) SAVE.unlocks.species = SAVE.unlocks.species.filter(k => SPECIES[k]); if (SAVE.guide) delete SAVE.guide.longtonguefrog; for (const o of [SAVE.last, SAVE.run]) if (o && o.species && !SPECIES[o.species]) o.species = 'green'; if (SAVE.homes) delete SAVE.homes.longtongue; if (SAVE.ach && (SAVE.ach.chorus || SAVE.ach.complete) && SAVE.unlocks.patterns && !SAVE.unlocks.patterns.includes('golden')) SAVE.unlocks.patterns.push('golden'); } catch (e) {} }, 0);
 /* ---------- SIX-SEVEN!!!!! ----------
    The screen flashes rainbow once, a loud glitchy voice shouts SIX-SEVEN,
    and every bug in the world turns into a jumble of 6s and 7s until you
@@ -12372,7 +12374,7 @@ function buildMech() { const R = WORMORY.lab.R; NF2.mechBuild = { t: 0, p: new V
 // Legend: unlock every other frog
 function legendTick() {
   if (SAVE.unlocks.species.includes('legend') || GAME.state !== 'play') return;
-  const all = Object.keys(SPECIES).filter(k => k !== 'legend'); if (!all.every(k => SAVE.unlocks.species.includes(k))) return;
+  const all = Object.keys(SPECIES).filter(k => k !== 'legend' && speciesOn(k)); if (!all.every(k => SAVE.unlocks.species.includes(k))) return;
   unlockFrog('legend', 'THE LEGEND FROG', 'You found every single kind of frog in the world. Every one. All of them. And they all came together in one place, and glowed, and became one giant golden frog with a halo and angel wings. Press G to spread its wings, then jump and hold Space to fly. Press V to type a magic word.');
 }
 { const _fi4 = findInteract; findInteract = function () { _fi4(); if (INTERACT.cur || GAME.state !== 'play' || PL.stage < 3) return; const lv = curLevel(), P = PL.pos;
@@ -13445,7 +13447,7 @@ Object.assign(ACH, { skater: { name: 'Ice Skater', desc: 'Slide across the froze
 { const _ae = applyEnv; applyEnv = function (key) { _ae(key); SEASON.frozen = key === 'winter'; const m = W.waterMat; if (!m) return;
   if (SEASON.frozen) { m.roughness = 0.32; m.opacity = 0.97; m.envMapIntensity = 0.55; } else { m.roughness = 0.06; m.opacity = 0.88; m.envMapIntensity = 1.0; } }; }
 // in winter you can stand on the ice
-{ const _ga = groundAt; groundAt = function (x, z) { const g = _ga.apply(this, arguments); if (!SEASON.frozen || W.offTop || W.inBurrow || x > SEA_EDGE) return g; const wl = waterLevelAt(x, z); return terrainH(x, z) < wl - 0.02 ? Math.max(g, wl + 0.03) : g; }; }
+{ const _ga = groundAt; groundAt = function (x, z) { const g = _ga.apply(this, arguments); if (!SEASON.frozen || W.offTop || W.inBurrow || x > SEA_EDGE) return g; const wl = waterLevelAt(x, z); return terrainH(x, z) < wl - 0.02 && !inMeltHole(x, z) ? Math.max(g, wl + 0.03) : g; }; }
 function buildSeasonFX() {
   const mk = (n, col, size, vc) => { const p = [], c = []; for (let i = 0; i < n; i++) { p.push(0, -9999, 0); if (vc) { const k = vc[i % vc.length]; c.push(k[0], k[1], k[2]); } } const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); if (vc) g.setAttribute('color', new THREE.Float32BufferAttribute(c, 3));
     const pts = new THREE.Points(g, new THREE.PointsMaterial({ color: vc ? 0xffffff : col, vertexColors: !!vc, size, map: TEX.glow, transparent: true, depthWrite: false, opacity: 0.95 })); pts.frustumCulled = false; pts.visible = false; scene.add(pts);
@@ -13470,8 +13472,8 @@ function seasonTick(dt) {
     if (WTYPES[WEATHER.type] && WTYPES[WEATHER.type].rain > 0) WEATHER.type = 'cloudy';
     if (W.offTop || W.inBurrow) { SEASON.prev = null; return; }
     if (PL.needs.hydration < 100) PL.needs.hydration = Math.min(100, PL.needs.hydration + dt * 1.2);
-    const P = PL.pos, wl = waterLevelAt(P.x, P.z), onIce = terrainH(P.x, P.z) < wl - 0.02;
-    if (onIce && PL.inWater) { PL.inWater = false; PL.diving = false; P.y = wl + 0.05; PL.vel.y = 0; PL.onGround = true; }
+    const P = PL.pos, wl = waterLevelAt(P.x, P.z), onIce = terrainH(P.x, P.z) < wl - 0.02 && !inMeltHole(P.x, P.z);
+    if (onIce && PL.inWater) { if (meltSpecies()) { P.y = Math.min(P.y, wl - 0.7); PL.vel.y = Math.min(PL.vel.y, 0); PL.diving = true; } else { PL.inWater = false; PL.diving = false; P.y = wl + 0.05; PL.vel.y = 0; PL.onGround = true; } }
     if (onIce && PL.onGround && SEASON.prev && dt > 0) {
       const mx = (P.x - SEASON.prev.x) / dt, mz = (P.z - SEASON.prev.z) / dt;
       SEASON.iceV.x = lerp(SEASON.iceV.x, mx, 1 - Math.exp(-dt * 1.3)); SEASON.iceV.z = lerp(SEASON.iceV.z, mz, 1 - Math.exp(-dt * 1.3));
@@ -13765,15 +13767,371 @@ function applyWinterLevels(winter) {
 { const _bn2 = buildNewWorldStuff; buildNewWorldStuff = function () { _bn2(); }; }
 { const _bm2 = buildMapImage; buildMapImage = function () { _bm2(); buildWinterExtras(); applyWinterLevels(SEASON.frozen); }; }
 // the frozen Underground lakes are solid too
-{ const _ga2 = groundAt; groundAt = function (x, z) { const g = _ga2.apply(this, arguments); if (!SEASON.frozen || W.inBurrow || W.level !== 'ug') return g; return caveFloorH(x, z) < UG.water - 0.02 ? Math.max(g, UG.water + 0.03) : g; }; }
+{ const _ga2 = groundAt; groundAt = function (x, z) { const g = _ga2.apply(this, arguments); if (!SEASON.frozen || W.inBurrow || W.level !== 'ug') return g; return caveFloorH(x, z) < UG.water - 0.02 && !inMeltHole(x, z) ? Math.max(g, UG.water + 0.03) : g; }; }
 { const _st4 = seasonTick; seasonTick = function (dt) { _st4(dt); if (!SEASON.frozen || GAME.state !== 'play' || W.inBurrow) return; const lv = curLevel();
   if (lv === 'sky' && HER.state !== 'away') { HER.state = 'away'; HER.root.visible = false; }
-  if (lv === 'ug') { const P = PL.pos; if (PL.inWater && caveFloorH(P.x, P.z) < UG.water - 0.02) { PL.inWater = false; PL.diving = false; P.y = UG.water + 0.05; PL.vel.y = 0; PL.onGround = true; } }
+  if (lv === 'ug') { const P = PL.pos; if (PL.inWater && caveFloorH(P.x, P.z) < UG.water - 0.02 && !inMeltHole(P.x, P.z) && meltSpecies()) { P.y = Math.min(P.y, UG.water - 0.7); PL.diving = true; } else if (PL.inWater && caveFloorH(P.x, P.z) < UG.water - 0.02 && !inMeltHole(P.x, P.z)) { PL.inWater = false; PL.diving = false; P.y = UG.water + 0.05; PL.vel.y = 0; PL.onGround = true; } }
   if (lv === 'top' && !SAVE.stats.iceFrogsOut && packOn('bonus') && WINTERX.iceFrogs.some(c => c.root.visible && c.root.position.distanceTo(PL.pos) < 25)) { SAVE.stats.iceFrogsOut = 1; persist(); toast('Ice Frogs! In winter they climb up out of their frozen cave and hop around on the snow.', 'guide'); } }; }
 SEASON_MSG.winter[1] += ' Ice Frogs have come up from their cave to play in the snow, the sky islands are buried in snow, and the whole Underground has turned into one big ice cave!';
 // the sky herons fly south for the winter too
 { const _bm3 = buildMapImage; buildMapImage = function () { _bm3(); for (const c of CREATURES) { if (c.kind !== 'skyheron' || c._winterHook) continue; c._winterHook = true; const orig = c.update;
   c.update = function (dt) { if (SEASON.frozen) { this.root.visible = false; this.gone = true; return; } if (this.gone) { this.gone = false; this.root.visible = true; } return orig.call(this, dt); }; } }; }
+
+/* ---------- Lava and Fire Frogs melt holes in the ice (which slowly freeze over again) ---------- */
+SEASON.holes = [];
+const meltSpecies = () => GAME.species === 'lava' || GAME.species === 'fire' || GAME.species === 'meteor';
+function inMeltHole(x, z) { const lv = W.level || 'top'; for (const h of SEASON.holes) if (h.lv === lv && Math.hypot(x - h.x, z - h.z) < h.r) return true; return false; }
+function meltTick(dt) {
+  const H = SEASON.holes, lv = curLevel(), P = PL.pos, t = GAME.t;
+  // the holes freeze back over
+  for (let i = H.length - 1; i >= 0; i--) { const h = H[i]; h.age += dt; const want = h.age < 40 ? h.max : h.max * (1 - (h.age - 40) / 15); h.r = lerp(h.r, Math.max(0, want), 1 - Math.exp(-dt * 3));
+    h.m.scale.setScalar(Math.max(0.01, h.r)); h.m.visible = (h.lv === lv) && SEASON.frozen; h.rim.scale.setScalar(Math.max(0.01, h.r)); h.rim.visible = h.m.visible;
+    if (!SEASON.frozen || h.age > 55) { // frozen solid again
+      if (h.lv === lv && PL.inWater && Math.hypot(P.x - h.x, P.z - h.z) < h.max + 1 && SEASON.frozen) { const wl = lv === 'ug' ? UG.water : waterLevelAt(P.x, P.z); P.y = wl + 0.05; PL.inWater = false; PL.diving = false; PL.vel.set(0, 0, 0); PL.onGround = true; toast('Crackle... the hole froze over again and pushed you back up onto the ice.', 'quiet'); }
+      (h.parent || scene).remove(h.m); (h.parent || scene).remove(h.rim); H.splice(i, 1); } }
+  if (!SEASON.frozen || GAME.state !== 'play' || W.inBurrow || !meltSpecies() || (lv !== 'top' && lv !== 'ug')) return;
+  const wl = lv === 'ug' ? UG.water : waterLevelAt(P.x, P.z), floor = lv === 'ug' ? caveFloorH(P.x, P.z) : terrainH(P.x, P.z);
+  if (floor > wl - 0.3 || Math.abs(P.y - wl) > 1.2) return; // not on (or in) the ice
+  let h = H.find(q => q.lv === lv && Math.hypot(P.x - q.x, P.z - q.z) < q.r + 0.8);
+  if (!h) { const parent = lv === 'ug' ? UG.group : scene;
+    const m = new THREE.Mesh(new THREE.CircleGeometry(1, 28), new THREE.MeshStandardMaterial({ color: 0x1c5a72, roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.85, normalMap: TEX.waterN, normalScale: new THREE.Vector2(0.4, 0.4) })); m.rotation.x = -Math.PI / 2; m.position.set(P.x, wl + 0.045, P.z); m.renderOrder = 3; parent.add(m);
+    const rim = new THREE.Mesh(new THREE.RingGeometry(0.92, 1.12, 28), new THREE.MeshBasicMaterial({ color: 0xf0fbff, transparent: true, opacity: 0.9 })); rim.rotation.x = -Math.PI / 2; rim.position.set(P.x, wl + 0.05, P.z); parent.add(rim);
+    h = { x: P.x, z: P.z, r: 0.1, max: 0.6, age: 0, lv, m, rim, parent }; H.push(h);
+    if (!SAVE.stats.meltIce) { SAVE.stats.meltIce = 1; persist(); toast('Tssssss! You are so hot that the ice is melting under your feet! Now you can swim down under the ice... but the hole will freeze over again after a while.', 'guide'); } }
+  h.max = Math.min(3.6, h.max + dt * 1.4); h.age = Math.min(h.age, 2);
+  if (Math.random() < dt * 14) { const a = Math.random() * TAU; sparkle(new V3(h.x + Math.cos(a) * h.r, wl + 0.2, h.z + Math.sin(a) * h.r), 1, 0xffffff); }
+  if (Math.random() < dt * 3) noiseHit(3000, 0.4, 0.06, 0.2, P);
+}
+{ const _st5 = seasonTick; seasonTick = function (dt) { meltTick(dt); _st5(dt); }; }
+
+/* =====================================================================
+   METEOR SHOWERS, a fallen meteor, and the Meteor Frog
+   ===================================================================== */
+SPECIES.meteor = { name: 'Meteor Frog', size: 0.9, jump: 1.35, swim: 0.9, speed: 1.1, tongue: 3.4, climb: false, fireproof: true, glowEyes: true, hunger: 1.1, dry: 0.6, armor: 0.85,
+  color: 0x3a302c, belly: 0x6a5244, spot: 0xff7020, eye: 0xffd040, throat: 0xff9040, croak: 'gnorw',
+  desc: 'A frog made of space rock, with glowing orange cracks all over it. It fell out of the sky inside a meteor. It jumps extra high, leaves a trail of sparks, and is so hot it melts ice.', habitat: 'Inside the fallen meteor, in the Underground', ability: 'Super jump with a trail of sparks. Hot enough to melt ice. Fireproof.' };
+SPECIES_UNLOCK.meteor = 'On some nights the sky is full of shooting stars. Once in a while, one of them does not burn up...';
+if (typeof LATE_FROGS !== 'undefined' && !LATE_FROGS.includes('meteor')) LATE_FROGS.push('meteor');
+{ const B = PACKS.find(P => P.k === 'bonus'); if (B && !B.sp.includes('meteor')) B.sp.push('meteor'); }
+SPECIES.meteor.newParts = F => {
+  const rock = mat(0x2a2220, { roughness: 1, flatShading: true }), glow = mat(0xff8030, { emissive: 0xff5010, emissiveIntensity: 1.6, roughness: 0.4 });
+  for (let i = 0; i < 9; i++) { const l = new THREE.Mesh(lumpyGeo(0, 0.35, i * 3 + 1), rock); const s = 0.07 + (i % 3) * 0.025; l.scale.setScalar(s); l.position.set(Math.sin(i * 2.4) * 0.26, 0.5 + Math.cos(i * 1.3) * 0.05, -0.28 + i * 0.07); F.tilt.add(l); }
+  for (let i = 0; i < 7; i++) { const c = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.012, 0.16 + (i % 3) * 0.06), glow); c.position.set(Math.sin(i * 1.9) * 0.3, 0.46 + Math.cos(i) * 0.05, -0.2 + i * 0.06); c.rotation.y = Math.sin(i * 3.1) * 0.9; F.tilt.add(c); }
+  for (const s of [-1, 1]) { const c = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.012, 0.14), glow); c.position.set(s * 0.15, 0.2, 0.12); c.rotation.y = s * 0.5; F.head.add(c); }
+};
+const METEOR = { shower: 0, streaks: [], fall: null, crater: null, chamber: null, lastNight: -1 };
+function meteorOn() { return packOn('bonus') && packOn('layers'); }
+function buildMeteorFX() {
+  for (let i = 0; i < 28; i++) { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, 0], 3)); g.setAttribute('color', new THREE.Float32BufferAttribute([1, 1, 1, 0, 0, 0], 3));
+    const l = new THREE.Line(g, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })); l.frustumCulled = false; l.visible = false; scene.add(l); METEOR.streaks.push({ l, t: 9, life: 1 }); }
+  if (SAVE.stats.meteorCrash) { buildCrater(SAVE.stats.meteorCrash.x, SAVE.stats.meteorCrash.z); buildMeteorChamber(); }
+}
+function buildCrater(x, z) {
+  if (METEOR.crater) return; const h = terrainH(x, z), g = new THREE.Group(); g.position.set(x, h, z); scene.add(g); if (W.mainWorld) W.mainWorld.push(g);
+  const dirt = mat(0x4a3424, { roughness: 1, map: TEX.detail }), rim = new THREE.Mesh(new THREE.TorusGeometry(3.6, 0.9, 8, 28), dirt); rim.rotation.x = Math.PI / 2; rim.scale.z = 0.5; rim.position.y = 0.2; g.add(rim);
+  const pit = new THREE.Mesh(new THREE.CircleGeometry(3.2, 28), new THREE.MeshBasicMaterial({ color: 0x080404 })); pit.rotation.x = -Math.PI / 2; pit.position.y = 0.08; g.add(pit);
+  const glowR = new THREE.Mesh(new THREE.RingGeometry(2.4, 3.2, 28), new THREE.MeshBasicMaterial({ color: 0xff6020, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false })); glowR.rotation.x = -Math.PI / 2; glowR.position.y = 0.1; g.add(glowR);
+  for (let i = 0; i < 14; i++) { const a = i / 14 * TAU, r = new THREE.Mesh(lumpyGeo(0, 0.4, i + 7), mat(0x3a2a20, { flatShading: true })); const s = rr(0.3, 0.8); r.scale.setScalar(s); r.position.set(Math.cos(a) * rr(4.2, 6), s * 0.3, Math.sin(a) * rr(4.2, 6)); g.add(r); }
+  const smoke = []; for (let i = 0; i < 14; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.cloud, color: 0x6a6460, transparent: true, opacity: 0.5, depthWrite: false })); s.scale.setScalar(2); g.add(s); smoke.push(s); }
+  METEOR.crater = { x, z, h, g, glowR, smoke };
+}
+function buildMeteorChamber() {
+  if (METEOR.chamber || !UG.group) return; const C = SAVE.stats.meteorCrash; let best = null;
+  for (let i = 0; i < 6000 && !best; i++) { const a = i * 2.39996, d = Math.sqrt(i) * 1.6, x = C.x + Math.cos(a) * d, z = C.z + Math.sin(a) * d; if (Math.abs(x) > UG.half - 20 || Math.abs(z) > UG.half - 20) continue; if (lr(UG, x, z) > 6 && lf(UG, x, z) > UG.water + 0.5 && lr(UG, x + 9, z) > 3) best = { x, z }; }
+  if (!best) best = { x: UG.hub.x, z: UG.hub.z };
+  const f = lf(UG, best.x, best.z), g = new THREE.Group(); g.position.set(best.x, f, best.z); UG.group.add(g);
+  const tex = (() => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillStyle = '#000'; x.fillRect(0, 0, 256, 256); x.strokeStyle = '#ff7020'; x.lineWidth = 3; for (let k = 0; k < 40; k++) { let px = Math.random() * 256, py = Math.random() * 256; x.beginPath(); x.moveTo(px, py); for (let j = 0; j < 5; j++) { px += (Math.random() - 0.5) * 50; py += (Math.random() - 0.5) * 50; x.lineTo(px, py); } x.stroke(); } return canvasTex(c); })();
+  const rock = new THREE.Mesh(lumpyGeo(2, 0.3, 42), new THREE.MeshStandardMaterial({ color: 0x2a2422, roughness: 0.9, flatShading: true, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 1.2 })); rock.scale.set(4.2, 3.4, 4.2); rock.position.y = 2.2; g.add(rock);
+  // a cracked-open hollow on the front, glowing inside, with the frog sitting in it
+  const hollow = new THREE.Mesh(new THREE.SphereGeometry(1.5, 16, 10), new THREE.MeshStandardMaterial({ color: 0xff7020, emissive: 0xff4010, emissiveIntensity: 1.4, side: THREE.BackSide })); hollow.position.set(3.4, 1.4, 0); hollow.scale.set(0.8, 1, 1); g.add(hollow);
+  const lt = new THREE.PointLight(0xff8030, 2.2, 28, 1.6); lt.position.set(5, 2.5, 0); g.add(lt); glowSprite(g, 3.6, 1.4, 0, 0xffa040, 6, 0.6);
+  const F = makeFrog('meteor', 'classic'); F.root.position.set(3.5, 0.55, 0); F.root.rotation.y = Math.PI / 2; g.add(F.root);
+  // the beam of light coming down from the crater above
+  const ux = best.x + 9, uz = best.z, uf = lf(UG, ux, uz), uc = lc(UG, ux, uz); const beam = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 2.4, Math.max(4, uc - uf + 6), 16, 1, true), new THREE.MeshBasicMaterial({ color: 0xffd0a0, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })); beam.position.set(ux, (uf + uc) / 2 + 2, uz); UG.group.add(beam);
+  UG.obs = UG.obs || []; UG.obs.push({ x: best.x, z: best.z, r: 4.2, top: f + 6 });
+  METEOR.chamber = { x: best.x, z: best.z, f, F, rock, up: { x: ux, z: uz, f: uf }, lt };
+}
+function startShower() { METEOR.shower = 1; toast('Look up! A METEOR SHOWER is lighting up the night sky!', 'guide'); SAVE.stats.showers = (SAVE.stats.showers || 0) + 1; persist();
+  if (!SAVE.stats.meteorCrash && (SAVE.stats.showers === 1 || Math.random() < 0.6)) METEOR.crashAt = GAME.t + mr(12, 25); }
+function crashMeteor() {
+  const P = PL.pos, lim = (W.limitR || WORLD_R) - 20; let spot = null;
+  for (let i = 0; i < 400 && !spot; i++) { const a = Math.random() * TAU, d = mr(40, 90), x = P.x + Math.cos(a) * d, z = P.z + Math.sin(a) * d; if (Math.hypot(x, z) > lim || Math.hypot(x, z) < 50) continue; const h = terrainH(x, z); if (h > waterLevelAt(x, z) + 0.5 && slopeAt(x, z) < 0.5 && !inNewPlace(x, z, 0) || (i > 300 && h > waterLevelAt(x, z) + 0.5)) spot = { x, z }; }
+  if (!spot) return; const h = terrainH(spot.x, spot.z), dir = new V3(mr(-1, 1), 0, mr(-1, 1)).normalize();
+  const fb = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xffa040, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })); fb.scale.setScalar(9); scene.add(fb);
+  const core = new THREE.Mesh(lumpyGeo(1, 0.3, 5), mat(0x3a2a20, { emissive: 0xff5010, emissiveIntensity: 0.8 })); core.scale.setScalar(1.6); scene.add(core);
+  METEOR.fall = { x: spot.x, z: spot.z, h, from: new V3(spot.x - dir.x * 260, h + 220, spot.z - dir.z * 260), t: 0, fb, core };
+  tone('sawtooth', 300, 60, 3.5, 0.08); toast('One of the meteors is getting BIGGER... it is going to hit the ground!', 'guide');
+}
+function meteorTick(dt) {
+  if (!meteorOn()) return; const night = GAME.time > 21 || GAME.time < 4.5, top = curLevel() === 'top' && !W.inBurrow;
+  // one chance each night
+  if (night && GAME.state === 'play' && METEOR.lastNight !== GAME.day) { METEOR.lastNight = GAME.day; if (Math.random() < (SAVE.stats.meteorCrash ? 0.2 : 0.4)) startShower(); }
+  if (!night) METEOR.shower = 0;
+  // shooting stars streaking across the sky
+  const C = camera.position;
+  for (const s of METEOR.streaks) { s.t += dt; if (METEOR.shower && top && s.t > s.life && Math.random() < dt * 2) { s.t = 0; s.life = mr(0.5, 1.2); const a = Math.random() * TAU; s.a = new V3(C.x + Math.cos(a) * mr(80, 250), C.y + mr(120, 220), C.z + Math.sin(a) * mr(80, 250)); s.d = new V3(mr(-1, 1), mr(-0.6, -0.2), mr(-1, 1)).normalize().multiplyScalar(mr(140, 220)); }
+    const on = s.t < s.life && top; s.l.visible = on; if (!on) continue; const head = s.a.clone().addScaledVector(s.d, s.t), tail = head.clone().addScaledVector(s.d, -0.12), p = s.l.geometry.attributes.position; p.setXYZ(0, head.x, head.y, head.z); p.setXYZ(1, tail.x, tail.y, tail.z); p.needsUpdate = true; }
+  if (METEOR.crashAt && GAME.t > METEOR.crashAt && top && !METEOR.fall) { METEOR.crashAt = 0; crashMeteor(); }
+  // the falling meteor
+  const M = METEOR.fall; if (M) { M.t += dt / 3.2; const k = Math.min(1, M.t), pos = M.from.clone().lerp(new V3(M.x, M.h, M.z), k * k); M.fb.position.copy(pos); M.core.position.copy(pos); M.core.rotation.x += dt * 3; if (Math.random() < 0.8) sparkle(pos.clone(), 3, 0xffa040);
+    if (k >= 1) { scene.remove(M.fb); scene.remove(M.core); METEOR.fall = null; SAVE.stats.meteorCrash = { x: M.x, z: M.z }; persist(); buildCrater(M.x, M.z); buildMeteorChamber();
+      CAM.shake = 1.2; noiseHit(120, 2.5, 0.5, 0.5, new V3(M.x, M.h, M.z)); tone('sine', 60, 30, 2.5, 0.15); for (let i = 0; i < 8; i++) setTimeout(() => sparkle(new V3(M.x + mr(-3, 3), M.h + mr(0, 4), M.z + mr(-3, 3)), 20, i % 2 ? 0xff8030 : 0xffe080), i * 90);
+      banner('KABOOM!', 'A meteor crashed into the ground and blasted a deep hole! It is still glowing... look for the smoke. What is down there?'); } }
+  // the crater: glowing, smoking, and you can jump in
+  const K = METEOR.crater; if (K && top) { K.glowR.material.opacity = 0.35 + Math.sin(GAME.t * 2) * 0.15; K.smoke.forEach((s, i) => { const q = (GAME.t * 0.15 + i / K.smoke.length) % 1; s.position.set(Math.sin(i * 2.3) * 1.2, 0.5 + q * 14, Math.cos(i * 1.7) * 1.2); s.material.opacity = (1 - q) * 0.45; s.scale.setScalar(2 + q * 5); });
+    const P = PL.pos; if (GAME.state === 'play' && Math.hypot(P.x - K.x, P.z - K.z) < 2.6 && P.y < K.h + 1.2 && PL.stage >= 1 && METEOR.chamber) { const U = METEOR.chamber.up; travel('ug', () => { placePlayer(U.x, U.z); PL.yaw = -Math.PI / 2; CAM.yaw = -Math.PI / 2; METEOR.chamber.arrT = GAME.t; }, 'meteorHole', 'You jumped into the crater and fell all the way down into the Underground... and the meteor came down here too. It is HUGE!'); } }
+  // the Underground: the meteor glows, and the beam takes you back up
+  const Ch = METEOR.chamber; if (Ch && curLevel() === 'ug' && GAME.state === 'play') { Ch.lt.intensity = 2 + Math.sin(GAME.t * 3) * 0.4; const P = PL.pos, have = SAVE.unlocks.species.includes('meteor'); Ch.F.root.visible = !have && GAME.species !== 'meteor'; if (Ch.F.root.visible) frogAnimate(Ch.F, dt, {});
+    if (Math.hypot(P.x - Ch.up.x, P.z - Ch.up.z) < 1.6 && P.y < Ch.up.f + 1.5 && !W.ugBusy && GAME.t - (Ch.arrT || -99) > 5) { const K2 = METEOR.crater; travel('top', () => { placePlayer(K2.x + 6, K2.z); }); } }
+  // the Meteor Frog leaves a trail of sparks when it jumps
+  if (GAME.species === 'meteor' && PL.F && !PL.onGround && !PL.inWater && GAME.state === 'play' && Math.random() < 0.6) sparkle(PL.pos.clone().add(new V3(mr(-0.2, 0.2), 0.2, mr(-0.2, 0.2))), 1, Math.random() < 0.5 ? 0xff8030 : 0xffd060);
+}
+{ const _fi = findInteract; findInteract = function () { _fi(); if (INTERACT.cur || GAME.state !== 'play' || curLevel() !== 'ug' || !METEOR.chamber) return; const Ch = METEOR.chamber, P = PL.pos;
+  if (Math.hypot(P.x - (Ch.x + 4.6), P.z - Ch.z) < 2.6 && !SAVE.unlocks.species.includes('meteor')) INTERACT.cur = { label: 'Look inside the meteor', act: () => { sayChain(['(Inside the cracked-open meteor, something is glowing... it blinks at you. It is a FROG! A frog made of space rock, with orange cracks of fire all over it.)', '(It must have been riding the meteor all the way from outer space. It hops out and looks at you like it wants to be friends.)'], () => unlockFrog('meteor', 'The Meteor Frog!', 'A frog that fell from outer space inside a meteor! It jumps super high, leaves a trail of sparks, and is so hot it melts ice.'), 'The Meteor'); } }; }; }
+{ const _qm = questMarks; questMarks = function (lv) { const out = _qm(lv); if (lv === 'top' && METEOR.crater) out.push({ x: METEOR.crater.x, z: METEOR.crater.z, col: '#ff7020', ch: '*' }); if (lv === 'ug' && METEOR.chamber && !SAVE.unlocks.species.includes('meteor')) out.push({ x: METEOR.chamber.x, z: METEOR.chamber.z, col: '#ff7020', ch: '!' }); return out; }; }
+{ const _bm4 = buildMapImage; buildMapImage = function () { _bm4(); buildMeteorFX(); }; }
+{ const _st6 = seasonTick; seasonTick = function (dt) { _st6(dt); meteorTick(dt); }; }
+
+/* ---------- a new magic word for the QWERTY Frog: OCEAN ---------- */
+if (typeof QWORDS !== 'undefined' && !QWORDS.includes('OCEAN')) QWORDS.push('OCEAN');
+{ const _tw = typeWord; typeWord = function (w) { const u = String(w || '').toUpperCase().trim(); if (u !== 'OCEAN') return _tw.apply(this, arguments);
+  if (!packOn('ocean')) { toast('OCEAN... nothing happens. (Turn on The Ocean expansion pack.)', 'quiet'); return; }
+  tone('sine', 2490, 2490, 0.5, 0.25); sparkle(PL.pos.clone().add(new V3(0, 0.6, 0)), 16, 0x80b0ff); TYPER.cd = 3; unlockAch('typist'); if (PL.F && PL.F.keys) for (const q of PL.F.keys) q.t = 0.4;
+  if (curLevel() === 'ocean' && !W.inBurrow) { toast('OCEAN! You are already there.'); return; }
+  toast('OCEAN! Splash! Off to the seaside.');
+  if (W.inBurrow) { W.inBurrow = false; W.chamber.visible = false; for (const k in W.interiors) W.interiors[k].visible = false; W.burrowKind = 'wild'; }
+  travel('ocean', () => { placePlayer(OCEAN.hub.x, OCEAN.hub.z); PL.yaw = Math.PI / 2; CAM.yaw = Math.PI / 2; }); }; }
+// give back the Sea Frog and Meteor Frog to anyone who lost them to an old bug
+{ const U = SAVE.unlocks.species; if (SAVE.stats.palaceOpen && SAVE.stats.cityPearls && !U.includes('seafrog')) U.push('seafrog'); if (SAVE.stats.meteorHole && !U.includes('meteor')) U.push('meteor'); }
+/* =====================================================================
+   g25: THE GRASSHOPPER REBELLION (designed by Toadboi32)
+   Eat 50 grasshoppers -> they all vanish -> a Grasshopper House appears in
+   the forest -> the Spadefoot Toad digs an entrance -> the Grasshopper Queen
+   yells ATTACK -> survive 2 days -> she surrenders and you become the
+   Grasshopper Frog.
+   ===================================================================== */
+const GH = { stage: () => SAVE.stats.gh || 0, rebels: [], holes: [], hitCD: 0, spawnT: 0, holeT: 0, lastTime: null, hud: null, house: null };
+const ghOn = () => packOn('grasshopper');
+function ghSet(n) { SAVE.stats.gh = n; persist(); }
+
+/* ---------- the Grasshopper Frog ---------- */
+SPECIES.grasshopperfrog = { name: 'Grasshopper Frog', size: 0.4, jump: 5.9, swim: 0.5, speed: 1.25, tongue: 2.6, climb: false, hunger: 0.7, dry: 0.8, armor: 1,
+  color: 0x6aa02a, belly: 0x9ac850, spot: 0x4a7a1a, eye: 0x6a4a20, throat: 0x9ac850, croak: 'chirp',
+  desc: 'A gift from the Grasshopper Queen. It looks EXACTLY like a grasshopper, just a tiny bit bigger, and it jumps twice as high as the Goliath Frog. It chirps instead of croaking, and grasshoppers think it is their queen.', habitat: 'The Grasshopper House, after the Rebellion', ability: 'Gigantic jumps (and it never hurts itself landing). Grasshoppers bow to it.' };
+SPECIES_UNLOCK.grasshopperfrog = 'What would happen if you ate a LOT of grasshoppers? Like... fifty?';
+if (typeof LATE_FROGS !== 'undefined' && !LATE_FROGS.includes('grasshopperfrog')) LATE_FROGS.push('grasshopperfrog');
+SPECIES.grasshopperfrog.newParts = F => {
+  F.root.traverse(o => { if (o.isMesh || o.isSprite) o.visible = false; });
+  const g = mat(0x6aa02a, { roughness: 0.5 }), dg = mat(0x4a7a1a, { roughness: 0.6 }), wingM = mat(0x8a9a4a, { roughness: 0.7, side: THREE.DoubleSide }), eyeM = mat(0x5a3a18, { roughness: 0.2 });
+  const G2 = new THREE.Group(); G2.position.y = 0.3; F.tilt.add(G2);
+  addTo(G2, G.sph, g, 0, 0.05, -0.15, 0.22, 0.24, 0.62);                  // body
+  addTo(G2, G.sph, dg, 0, 0.02, 0.42, 0.2, 0.24, 0.22);                    // thorax
+  const head = addTo(G2, G.sph, g, 0, 0.12, 0.66, 0.17, 0.22, 0.17);       // head
+  for (const s of [-1, 1]) { addTo(G2, G.sph, eyeM, s * 0.14, 0.2, 0.7, 0.07, 0.09, 0.07);
+    const an = addTo(G2, G.cyl, dg, s * 0.06, 0.48, 0.82, 0.008, 0.55, 0.008); an.rotation.x = 0.7; an.rotation.z = -s * 0.25;
+    const w = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.9), wingM); w.rotation.x = -Math.PI / 2 + 0.08; w.rotation.y = s * 0.08; w.position.set(s * 0.09, 0.27, -0.2); G2.add(w);
+    // big hind legs: a thick thigh pointing up and back, and a thin shin back down
+    const th = addTo(G2, G.sph, g, s * 0.22, 0.2, -0.25, 0.07, 0.07, 0.38); th.rotation.x = -0.5;
+    const sh = addTo(G2, G.cyl, dg, s * 0.25, 0.05, -0.52, 0.025, 0.55, 0.025); sh.rotation.x = 0.9;
+    for (let k = 0; k < 2; k++) { const l = addTo(G2, G.cyl, dg, s * 0.16, -0.08, 0.5 - k * 0.2, 0.015, 0.3, 0.015); l.rotation.z = s * 0.7; } }
+  for (let k = 0; k < 5; k++) addTo(G2, G.cyl, dg, 0, 0.05, -0.55 + k * 0.12, 0.23, 0.012, 0.012).rotation.z = Math.PI / 2;
+};
+{ const _cr = SFX.croak; SFX.croak = function (kind, pos, big) { if (kind === 'chirp') { if (!AU.ok) return; for (let i = 0; i < 6; i++) tone('square', 4200 + (i % 2) * 300, 4000, 0.03, big ? 0.03 : 0.02, pos || null, i * 0.05); return; } return _cr.apply(this, arguments); }; }
+{ const _h = hurt; hurt = function (amount, from, kb) {
+  if (from === 'a long fall' && GAME.species === 'grasshopperfrog') return false;
+  if (GH.stage() === 3 && GAME.state === 'play' && !noDamage() && !(PL.invuln > 0) && PL.needs.health - amount * curSp().armor <= 0) { ghLose(); return true; }
+  return _h.apply(this, arguments); }; }
+
+/* ---------- the Grasshopper House (top world) ---------- */
+function buildGrassHouse() {
+  if (!ghOn() && !SAVE.stats.gh) { /* still build it, so turning the pack on later works */ }
+  let best = null, bs = -1; SEED = 6262;
+  for (let k = 0; k < 3000; k++) { const a = rnd() * TAU, d = rr(110, 210), x = Math.cos(a) * d, z = Math.sin(a) * d, h = terrainH(x, z);
+    if (h < waterLevelAt(x, z) + 0.6 || slopeAt(x, z) > 0.3 || inNewPlace(x, z, 10)) continue;
+    if ([MARSH, MEADOW, LAKE, CAVE].some(P => Math.hypot(x - P.x, z - P.z) < (P.r || 30) + 25) || Math.hypot(x - BURROW_ENT.x, z - BURROW_ENT.z) < 30) continue;
+    let ok = true; for (let i = -9; i <= 9; i += 3) for (let j = -5; j <= 5; j += 5) if (Math.abs(terrainH(x + i, z + j) - h) > 1.6) ok = false; if (!ok) continue;
+    const trees = W.trees.filter(t => Math.hypot(t.x - x, t.z - z) < 22).length; if (W.trees.some(t => Math.hypot(t.x - x, t.z - z) < 9)) continue; if (trees > bs) { bs = trees; best = { x, z, h }; } }
+  if (!best) best = { x: -120, z: -60, h: terrainH(-120, -60) };
+  const g = new THREE.Group(); g.position.set(best.x, best.h, best.z); g.rotation.y = rnd() * TAU; scene.add(g); if (W.mainWorld) W.mainWorld.push(g);
+  const bark = new THREE.MeshStandardMaterial({ color: 0x7a5a3a, roughness: 0.95, map: TEX.bark }), wood = mat(0xb08858, { roughness: 0.9 }), dark = new THREE.MeshBasicMaterial({ color: 0x0c0804 });
+  const log = new THREE.Mesh(new THREE.CylinderGeometry(3, 3.2, 14, 20), bark); log.rotation.z = Math.PI / 2; log.position.y = 2.6; g.add(log);
+  const endB = new THREE.Mesh(new THREE.CircleGeometry(3, 20), wood); endB.rotation.y = -Math.PI / 2; endB.position.set(-7.02, 2.6, 0); g.add(endB);
+  for (let i = 0; i < 8; i++) { const r = new THREE.Mesh(new THREE.TorusGeometry(1.5 + i * 0.18, 0.04, 4, 20), mat(0x8a6a40)); r.rotation.y = Math.PI / 2; r.position.set(-7.03, 2.6, 0); g.add(r); }
+  // mossy bits, mushrooms and a little flag
+  for (let i = 0; i < 10; i++) { const m = new THREE.Mesh(G.sph, mat(0x5a8a3a, { roughness: 1 })); const a = rr(0.3, 2.8); m.scale.set(rr(0.6, 1.2), 0.2, rr(0.6, 1.2)); m.position.set(rr(-6, 6), 2.6 + Math.sin(a) * 3.05, Math.cos(a) * 3.05); g.add(m); }
+  const pole = new THREE.Mesh(G.cyl, wood); pole.scale.set(0.06, 2.4, 0.06); pole.position.set(-3, 6.6, 0); g.add(pole);
+  const flag = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.7), new THREE.MeshBasicMaterial({ map: textTex([['NO FROGS!', 'bold 40px sans-serif', 64]], 256, 128, { bg: '#a02020', col: '#ffffff' }), side: THREE.DoubleSide })); flag.position.set(-2.4, 7.4, 0); g.add(flag);
+  // holes in the sides, with baby grasshoppers popping in and out
+  const holes = [], babies = [];
+  for (let i = 0; i < 8; i++) { const s = i % 2 ? 1 : -1, xx = -5 + (i >> 1) * 3.2 + rr(-0.5, 0.5), a = rr(0.1, 0.9), hp = new V3(xx, 2.6 + Math.sin(a) * 3.12, s * Math.cos(a) * 3.12);
+    const n = new V3(0, hp.y - 2.6, hp.z).normalize(); const hole = new THREE.Mesh(new THREE.CircleGeometry(0.42, 14), dark); hole.position.copy(hp).addScaledVector(n, 0.03); hole.rotation.x = Math.atan2(-n.y, n.z); g.add(hole); holes.push({ p: hp, n });
+    const B = makeInsect('grasshopper'); B.root.scale.setScalar(2.2); g.add(B.root); babies.push({ B, h: holes[holes.length - 1], ph: rr(0, 6), sp: rr(0.5, 0.9) }); }
+  // the entrance: packed dirt at the open end, and the doorway behind it
+  const door = new THREE.Mesh(new THREE.CircleGeometry(2.5, 20), dark); door.rotation.y = Math.PI / 2; door.position.set(7.02, 2.4, 0); g.add(door);
+  const plug = new THREE.Mesh(G.sph, mat(0x5a4028, { roughness: 1, map: TEX.detail })); plug.scale.set(1.4, 2.4, 2.6); plug.position.set(7.4, 1.6, 0); g.add(plug);
+  const pebbles = []; for (let i = 0; i < 9; i++) { const p = new THREE.Mesh(lumpyGeo(0, 0.4, i + 11), mat(0x6a5a48, { flatShading: true })); p.scale.setScalar(rr(0.2, 0.4)); p.position.set(8.2 + rr(-0.5, 0.5), rr(0.2, 2.8), rr(-1.8, 1.8)); g.add(p); pebbles.push(p); }
+  g.updateMatrixWorld(true);
+  const toW = v => v.clone().applyMatrix4(g.matrixWorld); const doorW = toW(new V3(9.4, 0, 0)); g.visible = false;
+  GH.house = { g, x: best.x, z: best.z, h: best.h, babies, plug, pebbles, door: { x: doorW.x, z: doorW.z }, coll: false };
+}
+function ghHouseColl() { const H = GH.house; if (H.coll) return; H.coll = true; for (let i = -6; i <= 4; i += 2) { const p = new V3(i, 0, 0).applyMatrix4(H.g.matrixWorld); addColl(p.x, p.z, 3.1, H.h + 5.6, 'log'); } }
+
+/* ---------- inside: a big hollow log full of tunnels and rooms ---------- */
+const GHOUSE = { key: 'ghouse', custom: true, y0: -1500, water: -999, half: 40, res: 0.5, hub: { x: 19, z: 0 }, doors: [], segs: [], fog: [0.18, 0.12, 0.06, 6, 60],
+  rooms: [{ x: -14, z: 0, r: 8 }, { x: -2, z: 9, r: 5 }, { x: -2, z: -9, r: 5 }, { x: 9, z: 8, r: 4 }],
+  isOpen(x, z) { if (Math.abs(x) < 23 && Math.abs(z) < 4.2) return true; for (const R of this.rooms) if (Math.hypot(x - R.x, z - R.z) < R.r) return true; if (Math.abs(x + 2) < 1.6 && Math.abs(z) < 8) return true; if (Math.abs(x - 9) < 1.6 && z > 0 && z < 7) return true; return false; },
+  sample(x, z) { const o = this.isOpen(x, z); return { o: o ? 1 : 0, H: o ? 6 : 0, floor: this.y0, ceil: this.y0 + (o ? 6 : 0), lake: 0, flood: 0 }; },
+  regionName() { return 'The Grasshopper House'; },
+  mapCol(room) { return room > 0.5 ? [170, 130, 80] : [40, 26, 14]; }
+};
+XLAYERS.ghouse = GHOUSE; LEVEL_NAMES.ghouse = 'The Grasshopper House'; LEVEL_PACK.ghouse = 'grasshopper';
+function buildGrassInside() {
+  const L = GHOUSE, g = layerGroup(L), y0 = L.y0; SEED = 6363;
+  const floorM = mat(0x9a7448, { roughness: 0.95, map: TEX.bark }), wallM = new THREE.MeshStandardMaterial({ color: 0x8a6438, roughness: 0.95, map: TEX.bark, side: THREE.BackSide });
+  const hall = new THREE.Mesh(new THREE.CylinderGeometry(4.6, 4.6, 46, 24, 1, true), wallM); hall.rotation.z = Math.PI / 2; hall.position.set(0, y0 + 2.2, 0); g.add(hall);
+  const fl = new THREE.Mesh(new THREE.PlaneGeometry(90, 90), floorM); fl.rotation.x = -Math.PI / 2; fl.position.y = y0 + 0.01; g.add(fl);
+  for (const R of L.rooms) { const dome = new THREE.Mesh(new THREE.SphereGeometry(R.r + 0.6, 20, 10, 0, TAU, 0, Math.PI / 2), wallM); dome.position.set(R.x, y0, R.z); dome.scale.y = 0.85; g.add(dome); }
+  // the end walls of the log (the bright opening is the way out)
+  const back = new THREE.Mesh(new THREE.CircleGeometry(4.6, 20), mat(0x6a4a28)); back.rotation.y = Math.PI / 2; back.position.set(-23, y0 + 2.2, 0); g.add(back);
+  const out = new THREE.Mesh(new THREE.CircleGeometry(2.6, 20), new THREE.MeshBasicMaterial({ color: 0xfff0c0 })); out.rotation.y = -Math.PI / 2; out.position.set(23.2, y0 + 2.2, 0); g.add(out); glowSprite(g, 22.5, y0 + 2.2, 0, 0xfff0c0, 7, 0.6); L.exit = { x: 22.5, z: 0 };
+  // drawings of frogs with big tongues, crossed out
+  const draw = (i) => { const c = mkCanvas(256, 256), x = c.getContext('2d'); x.fillStyle = '#c8a878'; x.fillRect(0, 0, 256, 256); x.strokeStyle = '#3a2a10'; x.lineWidth = 6; x.fillStyle = '#5a9a3a';
+    x.beginPath(); x.ellipse(128, 150, 70, 50, 0, 0, TAU); x.fill(); x.stroke(); for (const s of [-1, 1]) { x.beginPath(); x.arc(128 + s * 38, 100, 22, 0, TAU); x.fillStyle = '#fff'; x.fill(); x.stroke(); x.fillStyle = '#000'; x.beginPath(); x.arc(128 + s * 38, 102, 8, 0, TAU); x.fill(); }
+    x.strokeStyle = '#e04060'; x.lineWidth = 10; x.beginPath(); x.moveTo(128, 175); x.quadraticCurveTo(200 + i * 5, 210, 240, 120 + i * 10); x.stroke();
+    x.strokeStyle = '#d01010'; x.lineWidth = 22; x.beginPath(); x.moveTo(20, 20); x.lineTo(236, 236); x.moveTo(236, 20); x.lineTo(20, 236); x.stroke(); return canvasTex(c); };
+  for (let i = 0; i < 8; i++) { const x = -18 + i * 5.2, s = i % 2 ? 1 : -1, pic = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: draw(i) })); pic.position.set(x, y0 + 2.6, s * 4.1); pic.rotation.y = s > 0 ? Math.PI : 0; pic.rotation.z = rr(-0.1, 0.1); g.add(pic); }
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(5, 1.4), new THREE.MeshBasicMaterial({ map: textTex([['NO MORE EATING US!!!', 'bold 44px sans-serif', 64]], 512, 128, { bg: '#f0e0b0', col: '#c01010' }) })); sign.position.set(-22.8, y0 + 4.2, 0); sign.rotation.y = Math.PI / 2; g.add(sign);
+  // the Grasshopper Queen on her throne, with a bottle-cap crown
+  const Q = new THREE.Group(); Q.position.set(-15, y0, 0); g.add(Q);
+  const throne = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.8, 1.2, 16), mat(0x7a5a2a, { map: TEX.bark })); throne.position.y = 0.6; Q.add(throne);
+  const QB = makeInsect('grasshopper'); QB.root.scale.setScalar(16); QB.root.position.set(0, 1.4, 0); QB.root.rotation.y = Math.PI / 2; Q.add(QB.root);
+  const cap = new THREE.Group(); cap.position.set(2.3, 3.1, 0); Q.add(cap); const capM = mat(0xd8b040, { metalness: 0.8, roughness: 0.3 }); const top = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.1, 21), capM); cap.add(top);
+  for (let i = 0; i < 21; i++) { const a = i / 21 * TAU, r = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.28, 0.12), capM); r.position.set(Math.cos(a) * 0.56, -0.12, Math.sin(a) * 0.56); r.rotation.y = -a; cap.add(r); }
+  const lbl = new THREE.Mesh(new THREE.CircleGeometry(0.4, 16), mat(0xc02020)); lbl.rotation.x = -Math.PI / 2; lbl.position.y = 0.06; cap.add(lbl);
+  L.obs.push({ x: -15, z: 0, r: 3.4, top: y0 + 5 }); L.queen = { Q, B: QB, cap };
+  // baby grasshoppers everywhere
+  L.kids = []; for (let i = 0; i < 18; i++) { const B = makeInsect('grasshopper'); B.root.scale.setScalar(2.5); g.add(B.root); let x = 0, z = 0; for (let k = 0; k < 50; k++) { x = rr(-22, 20); z = rr(-11, 11); if (L.isOpen(x, z)) break; } L.kids.push({ B, x, z, h: rnd() * TAU, ph: rnd() * 6 }); }
+  g.add(new THREE.HemisphereLight(0xffe0b0, 0x5a3a18, 0.9)); const lt = new THREE.PointLight(0xffc070, 1.4, 50, 1.4); lt.position.set(-5, y0 + 4, 0); g.add(lt);
+  L.light = { position: new V3(), distance: 0, intensity: 0 };
+  buildCaveMap(L);
+}
+
+/* ---------- the story ---------- */
+function ghLeftText() { const h = Math.max(0, SAVE.stats.ghLeft || 0), d = Math.floor(h / 24), hr = Math.floor(h % 24); return (d ? d + (d > 1 ? ' days ' : ' day ') : '') + hr + (hr === 1 ? ' hour' : ' hours'); }
+function ghStartBattle() { if (GH.stage() === 3) return;
+  ghSet(3); SAVE.stats.ghLeft = 48; SAVE.stats.ghAnger = 0; persist(); GH.lastTime = GAME.time; CAM.shake = 0.6;
+  for (let i = 0; i < 4; i++) setTimeout(() => tone('square', 3800, 4200, 0.4, 0.05), i * 150);
+  banner('THE GRASSHOPPER REBELLION!', 'Survive for 2 whole days! The grasshoppers will follow you EVERYWHERE. Your home is the only safe place (but the clock stops while you hide in it).');
+  for (let i = 0; i < 18; i++) ghSpawn(PL.pos.clone().add(new V3(mr(-8, 8), 0, mr(-8, 8))));
+}
+function ghQueenAttack() {
+  sayChain(['HALT! A FROG! In MY house!', 'Do you know how many of my children you have eaten? FIFTY! FIVE-ZERO! We drew pictures of you. We made a SIGN.', 'Well, no more. Grasshoppers of the house... ATTAAAAACK!!!'], ghStartBattle, 'The Grasshopper Queen');
+}
+function ghWin() {
+  ghSet(4); for (const o of GH.rebels) { sparkle(o.pos.clone(), 3, 0x8ad040); removeInsect(o); } GH.rebels.length = 0; if (GH.hud) GH.hud.style.display = 'none'; GH.holes.forEach(h => { h.g.parent && h.g.parent.remove(h.g); }); GH.holes.length = 0;
+  sayChain(['(The grasshoppers stop. They are panting. Some of them lie down on their backs. Then the Grasshopper Queen herself comes hopping up to you, her bottle-cap crown wobbling.)',
+    'You... you are too strong, frog. Two whole days, and you are still standing. We surrender.',
+    'But please... could you eat a little less of us?',
+    'Here. A gift, from one queen to... another. Close your eyes.'],
+    () => unlockFrog('grasshopperfrog', 'The Grasshopper Frog!', 'You opened your eyes and you had antennae, wings and two huge jumping legs! You are the Grasshopper Frog: you look exactly like a grasshopper, you chirp, and you can jump twice as high as the Goliath Frog. Other grasshoppers will think you are their queen.'), 'The Grasshopper Queen');
+}
+function ghLose() {
+  PL.needs.health = 40; PL.invuln = 3; SAVE.stats.ghLeft = 48; SAVE.stats.ghAnger = 0; persist(); for (const o of GH.rebels) removeInsect(o); GH.rebels.length = 0;
+  toast('The grasshoppers have got you! They lift you up over their heads...', 'guide');
+  travel('top', () => { placePlayer(2, 2, WATER - 0.2); PL.inWater = true; PL.onGround = false; PL.vel.set(0, -2, 0); setTimeout(() => { SFX.splash(PL.pos.clone(), 1); toast('...and toss you SPLASH into the Lily Pond! The rebellion starts over: 2 more days to survive.', 'guide'); }, 300); });
+}
+function ghSpawn(p) {
+  const y = groundAt(p.x, p.z, 999, 999); const o = spawnInsect('grasshopper', new V3(p.x, y + 0.08, p.z)); o.rebel = true; o.hop = 0; o.wait = mr(0.2, 1); o.cd = 0; o.from = new V3(); o.to = new V3(); o.root.scale.setScalar(1.6); GH.rebels.push(o); return o;
+}
+function ghHole(x, z) {
+  const h = terrainH(x, z), g = new THREE.Group(); g.position.set(x, h, z); scene.add(g);
+  const m = new THREE.Mesh(G.sph, mat(0x5a4028, { roughness: 1, map: TEX.detail })); m.scale.set(1.3, 0.4, 1.3); g.add(m);
+  const hole = new THREE.Mesh(new THREE.CircleGeometry(0.6, 14), new THREE.MeshBasicMaterial({ color: 0x0c0804 })); hole.rotation.x = -Math.PI / 2; hole.position.y = 0.41; g.add(hole);
+  GH.holes.push({ x, z, h, g }); for (let i = 0; i < 6; i++) sparkle(new V3(x, h + 0.5, z), 1, 0x8a6a40); noiseHit(400, 0.4, 0.2, 0.15, new V3(x, h, z));
+}
+function ghTick(dt) {
+  const st = GH.stage(), lv = curLevel(), P = PL.pos, t = GAME.t, H = GH.house;
+  // the house only appears after the grasshoppers vanish
+  if (H) { const show = ghOn() && st >= 1; if (lv === 'top') H.g.visible = show; else H.g.userData.vu = show; if (show) ghHouseColl();
+    const dug = st >= 2; H.plug.visible = !dug; H.pebbles.forEach(p => p.visible = !dug);
+    if (show && lv === 'top' && Math.hypot(P.x - H.x, P.z - H.z) < 70) for (const b of H.babies) { const k = (t * b.sp + b.ph) % 2, out = k < 1 ? Math.sin(k * Math.PI) : 0; b.B.root.position.copy(b.h.p).addScaledVector(b.h.n, 0.2 + out * 1.6); b.B.root.position.y += out * 0.8; b.B.root.visible = out > 0.05; b.B.root.rotation.y = b.ph; } }
+  if (!ghOn() || GAME.state !== 'play') { if (GH.hud) GH.hud.style.display = 'none'; return; }
+  // stage 1: you found the house
+  if (st >= 1 && st < 3 && H && lv === 'top' && !SAVE.stats.ghHouseSeen && Math.hypot(P.x - H.x, P.z - H.z) < 30) { SAVE.stats.ghHouseSeen = 1; persist(); toast('A huge hollow log... covered in little holes, with baby grasshoppers hopping in and out! The front is packed shut with dirt. Only a really good digger could get in.', 'guide'); }
+  if (st === 2 && H && lv === 'top' && Math.hypot(P.x - H.door.x, P.z - H.door.z) < 2.4) travel('ghouse', () => { placePlayer(GHOUSE.exit.x - 3, 0); PL.yaw = -Math.PI / 2; CAM.yaw = -Math.PI / 2; });
+  if (st >= 3 && H && lv === 'top' && Math.hypot(P.x - H.door.x, P.z - H.door.z) < 2.4) travel('ghouse', () => { placePlayer(GHOUSE.exit.x - 3, 0); PL.yaw = -Math.PI / 2; CAM.yaw = -Math.PI / 2; });
+  // inside the house
+  if (lv === 'ghouse') { const L = GHOUSE; for (const k of L.kids) { k.ph += dt * 3; const nx = k.x + Math.sin(k.h) * dt * 1.5, nz = k.z + Math.cos(k.h) * dt * 1.5; if (L.isOpen(nx, nz)) { k.x = nx; k.z = nz; } else k.h += 2; if (Math.random() < dt * 0.4) k.h += mr(-1, 1); k.B.root.position.set(k.x, L.y0 + Math.abs(Math.sin(k.ph)) * 0.5, k.z); k.B.root.rotation.y = k.h; }
+    const Q = L.queen; Q.B.root.position.y = 1.4 + Math.sin(t * 2) * 0.08; Q.cap.position.y = 3.1 + Math.sin(t * 2) * 0.08;
+    if (st === 2 && !GH.qTalk && !WDLG.open && Math.hypot(P.x - (-15), P.z) < 26) { GH.qTalk = 1; setTimeout(ghQueenAttack, 600); }
+    if (P.x > L.exit.x && !W.ugBusy) travel('top', () => { const D = GH.house.door, a = Math.atan2(D.z - GH.house.z, D.x - GH.house.x); placePlayer(D.x + Math.cos(a) * 3, D.z + Math.sin(a) * 3); }); }
+  // the battle
+  if (st !== 3) { if (GH.hud) GH.hud.style.display = 'none'; return; }
+  if (!GH.hud) { const d = document.createElement('div'); d.style.cssText = 'position:fixed;top:78px;left:50%;transform:translateX(-50%);z-index:30;background:rgba(40,70,10,.85);color:#e8ffc0;border:2px solid #9ad040;border-radius:12px;padding:6px 14px;font:bold 16px Atkinson Hyperlegible,sans-serif;pointer-events:none;text-align:center'; document.body.appendChild(d); GH.hud = d; }
+  const home = W.inBurrow || PL.settled, hidden = $('#hud').classList.contains('hidden');
+  GH.hud.style.display = hidden ? 'none' : 'block'; GH.hud.innerHTML = '🦗 GRASSHOPPER REBELLION 🦗<br><span style="font-size:14px">Survive: ' + ghLeftText() + (home ? ' (paused while you hide at home)' : '') + ' &nbsp;·&nbsp; Anger: ' + (SAVE.stats.ghAnger || 0) + '</span>';
+  { const d = GH.lastTime === null ? 0 : ((GAME.time - GH.lastTime) % 24 + 24) % 24; GH.lastTime = GAME.time; if (!home && d < 3) { SAVE.stats.ghLeft -= d; if (Math.random() < dt * 0.2) persist(); } }
+  if (SAVE.stats.ghLeft <= 0) { ghWin(); return; }
+  if (home) { for (const o of GH.rebels) removeInsect(o); GH.rebels.length = 0; return; }
+  const anger = SAVE.stats.ghAnger || 0, hopSp = Math.min(12, 7 + anger * 0.12), flySp = Math.min(16, 11 + anger * 0.15), want = Math.min(26, 12 + Math.floor(anger / 3));
+  // holes pop open all around you on the Top, and grasshoppers spew out of them
+  if (lv === 'top') { GH.holeT -= dt; if (GH.holeT <= 0) { GH.holeT = mr(10, 16); for (let k = 0; k < 20; k++) { const a = Math.random() * TAU, d = mr(10, 28), x = P.x + Math.cos(a) * d, z = P.z + Math.sin(a) * d; if (terrainH(x, z) > waterLevelAt(x, z) + 0.3 && Math.hypot(x, z) < (W.limitR || WORLD_R) - 5) { ghHole(x, z); break; } } }
+    for (let i = GH.holes.length - 1; i >= 0; i--) if (Math.hypot(GH.holes[i].x - P.x, GH.holes[i].z - P.z) > 90 || GH.holes.length > 10 && i === 0) { scene.remove(GH.holes[i].g); GH.holes.splice(i, 1); } }
+  GH.rebels = GH.rebels.filter(o => o.alive);
+  GH.spawnT -= dt; if (GH.spawnT <= 0 && GH.rebels.length < want) { GH.spawnT = 0.45;
+    const near = GH.holes.filter(h => lv === 'top' && Math.hypot(h.x - P.x, h.z - P.z) < 45); let p;
+    if (near.length) { const h = near[Math.floor(Math.random() * near.length)]; p = new V3(h.x + mr(-0.5, 0.5), 0, h.z + mr(-0.5, 0.5)); } else { const a = Math.random() * TAU, d = mr(10, 20); p = new V3(P.x + Math.cos(a) * d, 0, P.z + Math.sin(a) * d); }
+    const o = ghSpawn(p); o.vel = new V3(mr(-2, 2), 7, mr(-2, 2)); o.mode = 'fly'; }
+  GH.hitCD = Math.max(0, GH.hitCD - dt);
+  const pg = groundAt(P.x, P.z, P.y + 0.5, 999), playerUp = P.y - pg > 1.2 || PL.gliding || PL.climbing;
+  for (const o of GH.rebels) { if (o.caught) continue; if (!o.vel) o.vel = new V3(); const dx = P.x - o.pos.x, dz = P.z - o.pos.z, dy = P.y + 0.25 - o.pos.y, d = Math.hypot(dx, dz), d3 = Math.hypot(d, dy);
+    if (d > 90) { removeInsect(o); continue; }
+    if (o.flee) { o.pos.x -= dx / (d || 1) * dt * 6; o.pos.z -= dz / (d || 1) * dt * 6; o.pos.y = groundAt(o.pos.x, o.pos.z, 999, 999) + 0.08; o.root.position.copy(o.pos); continue; }
+    const g0 = groundAt(o.pos.x, o.pos.z, o.pos.y + 1, 999) + 0.08; const prev = o.pos.clone();
+    // pick what to do: fly after you if you are up in the air or getting away, pounce if you are close, otherwise hop like crazy
+    if (o.mode !== 'lunge') { if (playerUp || d > 9) o.mode = 'fly'; else if (o.mode === 'fly' && o.pos.y - g0 < 0.3) o.mode = 'hop'; else if (o.mode !== 'fly' && o.mode !== 'lunge-ready') o.mode = 'hop'; }
+    if (o.mode === 'fly') { const tx = P.x - o.pos.x, ty = P.y + 0.3 - o.pos.y, tz = P.z - o.pos.z, tl = Math.hypot(tx, ty, tz) || 1;
+      const fs = Math.max(flySp * (tl > 15 ? 1.15 : 1), Math.hypot(PL.vel.x, PL.vel.y, PL.vel.z) * 1.05 + 0.8); o.vel.lerp(new V3(tx / tl * fs, ty / tl * fs + 1.2, tz / tl * fs), 1 - Math.exp(-dt * 5)); o.pos.addScaledVector(o.vel, dt); if (o.pos.y < g0) { o.pos.y = g0; if (!playerUp && d < 9) o.mode = 'hop'; }
+      for (const w of o.wings || []) w.rotation.z = (w.userData.s || 1) * Math.sin(GAME.t * 70 + o.ph) * 0.9; }
+    else if (o.mode === 'lunge') { o.vel.y -= 22 * dt; o.pos.addScaledVector(o.vel, dt); if (o.pos.y <= g0 && o.vel.y < 0) { o.pos.y = g0; o.mode = 'hop'; o.wait = mr(0.05, 0.25); } }
+    else if (o.mode === 'lunge-ready') { o.wait = (o.wait || 0) - dt; o.pos.y = g0; if (o.wait <= 0) { const T = 0.35, tx = P.x + PL.vel.x * T * 0.35, tz = P.z + PL.vel.z * T * 0.35, ty = P.y + 0.3; o.vel.set((tx - o.pos.x) / T, (ty - o.pos.y) / T + 0.5 * 22 * T, (tz - o.pos.z) / T); o.mode = 'lunge'; if (Math.random() < 0.3) tone('square', 4000, 4600, 0.06, 0.02, o.pos); } }
+    else { // fast hops toward you
+      if (o.hop > 0) { o.hop -= dt / 0.3; const k = 1 - Math.max(0, o.hop); o.pos.lerpVectors(o.from, o.to, k); o.pos.y += Math.sin(k * Math.PI) * 1.2; if (o.hop <= 0) { o.wait = mr(0.15, 0.5) / (1 + anger * 0.03); o.pos.y = groundAt(o.pos.x, o.pos.z, 999, 999) + 0.08; if (d < 5 && Math.random() < 0.5) { o.mode = 'lunge-ready'; o.wait = mr(0.3, 0.8); } } }
+      else { o.wait -= dt; if (o.wait <= 0) { const step = Math.min(d, hopSp * 0.3 * mr(0.8, 1.2)), j = mr(-0.25, 0.25), ux = dx / (d || 1), uz = dz / (d || 1); o.from.copy(o.pos); o.to.set(o.pos.x + (ux * Math.cos(j) - uz * Math.sin(j)) * step, 0, o.pos.z + (uz * Math.cos(j) + ux * Math.sin(j)) * step); o.to.y = groundAt(o.to.x, o.to.z, 999, 999) + 0.08; o.hop = 1; } } }
+    o.root.position.copy(o.pos); o.root.rotation.y = Math.atan2(dx, dz);
+    { const seg = o.pos.clone().sub(prev), L2 = seg.lengthSq(), pp = new V3(P.x, P.y + 0.25, P.z); let k = L2 > 1e-6 ? clamp(pp.clone().sub(prev).dot(seg) / L2, 0, 1) : 1; const near = prev.clone().addScaledVector(seg, k).distanceTo(pp); if (near < 1.45 && k < 1) o.pos.copy(prev.clone().addScaledVector(seg, k)); var hitD = Math.min(d3, near); }
+    if (hitD < 1.3 && GH.hitCD <= 0) { GH.hitCD = 1.8; hurt(2, 'The grasshoppers', new V3(dx / (d || 1) * 3, 3.5, dz / (d || 1) * 3)); tone('square', 3600, 3000, 0.08, 0.04, o.pos); o.mode = 'hop'; o.vel.set(0, 0, 0); o.wait = 0.3; } }
+}
+// count the grasshoppers you eat, and make the rebels angrier
+{ const _ei = eatInsect; eatInsect = function (ins) { const r = _ei.apply(this, arguments); if (!ghOn() || !ins) return r;
+  if (ins.rebel === true && GH.stage() === 3) { SAVE.stats.ghAnger = (SAVE.stats.ghAnger || 0) + 1; if (SAVE.stats.ghAnger % 5 === 0) toast('The grasshoppers are getting ANGRIER (and faster)!', 'quiet'); }
+  else if (ins.type === 'grasshopper' && GH.stage() === 0) { SAVE.stats.ghEaten = (SAVE.stats.ghEaten || 0) + 1; persist();
+    if (SAVE.stats.ghEaten === 25) toast('That is 25 grasshoppers. The other grasshoppers are giving you funny looks...', 'quiet');
+    if (SAVE.stats.ghEaten >= 50) { ghSet(1); for (const o of INS.list) if (o.alive && o.type === 'grasshopper' && !o.caught) removeInsect(o); banner('Where did all the grasshoppers go?', 'You ate your 50th grasshopper... and every single grasshopper in the world just VANISHED. Something is going on in the forest.'); } }
+  return r; }; }
+// no grasshoppers anywhere between eating the 50th and the end of the rebellion
+{ const _iw2 = insectWeightsHook; insectWeightsHook = function (w, day) { _iw2(w, day); const st = GH.stage(); if (ghOn() && st >= 1 && st < 4) w.grasshopper = 0; }; }
+// the Spadefoot Toad digs the way in
+{ const _fi = findInteract; findInteract = function () { _fi(); if (GAME.state !== 'play' || !ghOn() || curLevel() !== 'top' || !GH.house || GH.stage() !== 1 || PL.stage < 3) return; const D = GH.house.door;
+  if (Math.hypot(PL.pos.x - D.x, PL.pos.z - D.z) < 4) INTERACT.cur = GAME.species === 'spadefoot' ? { label: 'Dig an entrance into the log', act: () => { ghSet(2); CAM.shake = 0.3; for (let i = 0; i < 6; i++) setTimeout(() => { if (typeof dirtBurst === 'function') dirtBurst(D.x, GH.house.h + 1, D.z); sparkle(new V3(D.x, GH.house.h + 1, D.z), 8, 0x8a6a40); noiseHit(300, 0.25, 0.25, 0.15); }, i * 150); toast('Dig dig dig! The Spadefoot Toad scoops away the packed dirt. There is a dark tunnel into the log, big enough for a frog!', 'guide'); } }
+    : { label: 'Push the packed dirt', act: () => toast('The dirt is packed in hard. You need a frog that is REALLY good at digging. (Hint: the Spadefoot Toad has spades on its feet!)', 'guide') }; }; }
+// grasshoppers bow to the Grasshopper Frog
+function ghBowTick() { if (GAME.species !== 'grasshopperfrog' || GAME.state !== 'play') { for (const o of INS.list) if (o.rebel === 'bow') { o.rebel = false; o.root.rotation.x = 0; } return; }
+  for (const o of INS.list) { if (!o.alive || o.type !== 'grasshopper' || o.rebel === true || o.caught) continue; const d = o.pos.distanceTo(PL.pos);
+    if (d < 6) { if (o.rebel !== 'bow') { o.rebel = 'bow'; o.root.rotation.y = Math.atan2(PL.pos.x - o.pos.x, PL.pos.z - o.pos.z); } o.root.rotation.x = 0.5 + Math.sin(GAME.t * 3 + o.ph) * 0.15; }
+    else if (o.rebel === 'bow') { o.rebel = false; o.root.rotation.x = 0; } } }
+{ const _qm = questMarks; questMarks = function (lv) { const out = _qm(lv); const st = GH.stage(); if (lv === 'top' && ghOn() && GH.house && st >= 1 && st < 4 && SAVE.stats.ghHouseSeen) out.push({ x: GH.house.x, z: GH.house.z, col: '#8ad040', ch: '!' }); return out; }; }
+{ const _bn = buildNewWorldStuff; buildNewWorldStuff = function () { _bn(); const keep = CL; CL = GHOUSE; buildGrassInside(); CL = keep; }; }
+{ const _bm = buildMapImage; buildMapImage = function () { _bm(); buildGrassHouse(); }; }
+{ const _st = seasonTick; seasonTick = function (dt) { _st(dt); ghTick(dt); ghBowTick(); }; }
+// a secret QWERTY word (not listed anywhere): GRASSSSSS skips straight to the Grasshopper House
+{ const _tw = typeWord; typeWord = function (w) { const u = String(w || '').toUpperCase().replace(/[^A-Z]/g, ''); if (u !== 'GRASSSSSS') return _tw.apply(this, arguments);
+  tone('sine', 2490, 2490, 0.5, 0.25); TYPER.cd = 3; unlockAch('typist'); if (PL.F && PL.F.keys) for (const q of PL.F.keys) q.t = 0.4;
+  if (!ghOn()) { toast('GRASSSSSS... the grass rustles, but nothing happens. (Turn on the Grasshopper Rebellion pack.)', 'quiet'); return; }
+  if (GH.stage() >= 1) { toast('GRASSSSSS! The grass whispers: "We already know about you, frog..."', 'quiet'); return; }
+  SAVE.stats.ghEaten = Math.max(50, SAVE.stats.ghEaten || 0); ghSet(1); for (const o of INS.list) if (o.alive && o.type === 'grasshopper' && !o.caught) { sparkle(o.pos.clone(), 4, 0x8ad040); removeInsect(o); }
+  for (let i = 0; i < 5; i++) setTimeout(() => sparkle(PL.pos.clone().add(new V3(mr(-2, 2), mr(0, 2), mr(-2, 2))), 10, 0x8ad040), i * 120);
+  banner('GRASSSSSS!', 'You typed the secret word... and every grasshopper in the world just VANISHED. Something has appeared in the forest, west of the Lily Pond.'); }; }
 /* ============================================================
    Multiplayer servers (claude.ai live rooms)
    lobby presence: { hosting: "1234" } advertises a running server
