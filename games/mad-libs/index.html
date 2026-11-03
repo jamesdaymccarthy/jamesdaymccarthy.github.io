@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8" />
+  <title>Mad Libs</title>
+  <style>
+    body {
+        font-family: Georgia, serif;
+        background: #f4ecd8;
+        color: #3b2f1e;
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+        color: #6b3e1f;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 8px 20px;
+    }
+    li {
+        display: flex;
+        flex-direction: column;
+        font-size: 14px;
+    }
+    input {
+        font-family: Georgia, serif;
+        font-size: 15px;
+        padding: 4px;
+        margin-top: 2px;
+        border: 1px solid #b89b72;
+        border-radius: 4px;
+    }
+    button {
+        font-family: Georgia, serif;
+        font-size: 16px;
+        padding: 6px 14px;
+        margin-right: 6px;
+        background: #6b3e1f;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    select {
+        font-family: Georgia, serif;
+        font-size: 15px;
+        padding: 4px;
+        border: 1px solid #b89b72;
+        border-radius: 4px;
+    }
+    button:hover {
+        background: #8a5530;
+    }
+    #story-box {
+        background: #fffaf0;
+        border: 2px solid #b89b72;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 15px;
+        line-height: 1.6;
+    }
+    .word {
+        font-weight: bold;
+        color: #b0302a;
+    }
+    #warning {
+        color: #b0302a;
+    }
+  </style>
+ </head>
+ <body>
+
+    <h1>Mad Libs</h1>
+
+    <ul>
+      <li>Place: <input type="text" id="Place"></li>
+      <li>Another place: <input type="text" id="place2"></li>
+      <li>Adjective: <input type="text" id="adjective"></li>
+      <li>Adjective: <input type="text" id="adjective2"></li>
+      <li>Adjective: <input type="text" id="adjective3"></li>
+      <li>Adjective: <input type="text" id="adjective4"></li>
+      <li>Someone's Name: <input type="text" id="person"></li>
+      <li>Another person's name: <input type="text" id="friend"></li>
+      <li>Creature (witch, troll etc): <input type="text" id="creature"></li>
+      <li>Animal: <input type="text" id="animal"></li>
+      <li>Job (plumber, wizard etc): <input type="text" id="job"></li>
+      <li>Verb: <input type="text" id="verb"></li>
+      <li>Verb, past tense (jumped, ate etc): <input type="text" id="verb2"></li>
+      <li>Verb ending in -ing: <input type="text" id="verbing"></li>
+      <li>Adverb (ends in -ly): <input type="text" id="adverb"></li>
+      <li>Another adverb: <input type="text" id="adverb2"></li>
+      <li>Object (spoon, sock etc): <input type="text" id="object"></li>
+      <li>Piece of clothing: <input type="text" id="clothing"></li>
+      <li>Vehicle: <input type="text" id="vehicle"></li>
+      <li>Food: <input type="text" id="food"></li>
+      <li>Another food: <input type="text" id="food2"></li>
+      <li>Liquid: <input type="text" id="liquid"></li>
+      <li>Plural noun (rocks, pickles etc): <input type="text" id="plural"></li>
+      <li>Another plural noun: <input type="text" id="plural2"></li>
+      <li>Body part: <input type="text" id="bodypart"></li>
+      <li>Another body part: <input type="text" id="bodypart2"></li>
+      <li>Color: <input type="text" id="color"></li>
+      <li>Another color: <input type="text" id="color2"></li>
+      <li>Number: <input type="text" id="number"></li>
+      <li>Another number: <input type="text" id="number2"></li>
+      <li>Silly sound: <input type="text" id="sound"></li>
+      <li>Another silly sound: <input type="text" id="sound2"></li>
+      <li>Exclamation (wow, yikes etc): <input type="text" id="exclamation"></li>
+      <li>Emotion (grumpy, excited etc): <input type="text" id="emotion"></li>
+      <li>One more adjective: <input type="text" id="adjective5"></li>
+      <li>Insect: <input type="text" id="insect"></li>
+      <li>Silly pet name: <input type="text" id="petname"></li>
+      <li>Musical instrument: <input type="text" id="instrument"></li>
+      <li>Type of music: <input type="text" id="music"></li>
+      <li>Dance move: <input type="text" id="dance"></li>
+      <li>Holiday: <input type="text" id="holiday"></li>
+      <li>Day of the week: <input type="text" id="day"></li>
+      <li>Room in a house: <input type="text" id="room"></li>
+      <li>Shape: <input type="text" id="shape"></li>
+      <li>Smell (burnt toast, feet etc): <input type="text" id="smell"></li>
+      <li>Toy: <input type="text" id="toy"></li>
+      <li>Superpower: <input type="text" id="superpower"></li>
+    </ul>
+
+    <p>
+      Story:
+      <select id="story-pick">
+        <option value="random">Surprise me!</option>
+      </select>
+    </p>
+
+    <button id="lib-button">Lib it!</button>
+    <button id="clear-button">Clear</button>
+    <p id="warning"></p>
+
+    <div id="story-box">
+        <strong id="story-title">Generated story:</strong>
+        <p id="story"></p>
+    </div>
+
+    <script>
+        var libButton = document.getElementById('lib-button');
+        var clearButton = document.getElementById('clear-button');
+
+        // Every input box on the page (new boxes are picked up automatically)
+        var inputs = document.querySelectorAll("ul input");
+
+        // Wraps a word so it shows up bold and red
+        var w = function(text) {
+            return "<span class='word'>" + text + "</span>";
+        };
+
+        // Picks "a" or "an" depending on the first letter
+        var aOrAn = function(text) {
+            var first = text.charAt(0).toLowerCase();
+            if ("aeiou".indexOf(first) !== -1) {
+                return "an";
+            }
+            return "a";
+        };
+
+        // Each story is a function that gets all the words and returns the story.
+        // s.something is the word from the box with id="something".
+        // s.a("something") gives "a word" or "an word" automatically.
+        // "<br><br>" starts a new paragraph.
+        var stories = [
+            function(s) {
+                return "Once upon a time " + s.name + " was going into the " + s.place + ". " +
+                    "Nobody had gone into the " + s.place + " for " + s.number + " years, and everyone in the village said it was " + s.a("adjective3") + " idea. " +
+                    s.name + " packed a bag with some " + s.food + ", " + s.a("clothing") + " for warmth, and " + s.a("object") + ", and set off anyway." +
+                    "<br><br>" +
+                    "In the " + s.place + " " + s.name + " encountered " + s.a("adjective2") + " " + s.creature + " with a " + s.color + " " + s.bodypart + ". " +
+                    "It bellowed \"" + s.exclamation + "!\" and ran straight at " + s.name + ". " +
+                    s.name + " defended themselves with nothing but the " + s.object + ", swinging it " + s.number2 + " times while yelling \"" + s.sound + "!\"" +
+                    "<br><br>" +
+                    "The " + s.creature + " stopped. It sniffed the air " + s.adverb + ". It had smelled the " + s.food + ". " +
+                    "Within minutes the two of them were sitting on a rock sharing lunch, and the " + s.creature + " was explaining, looking a little " + s.emotion + ", " +
+                    "that it only yelled because nobody ever visited." +
+                    "<br><br>" +
+                    s.name + " returned to the village the next morning with a new best friend riding on the roof of " + s.a("vehicle") + ". " +
+                    "The villagers screamed, of course. But the " + s.creature + " just waved its " + s.bodypart2 + " and said \"" + s.sound2 + "\", " +
+                    "and eventually everyone got used to it." +
+                    "<br><br>" +
+                    "Well, almost everyone. " + s.friend + ", the village " + s.job + ", did NOT get used to it. " +
+                    "Every morning " + s.friend + " stood at the fence and shouted that monsters belong in the " + s.place2 + ", not in the village, " +
+                    "and every morning the " + s.creature + " waved back " + s.adverb2 + ", which made " + s.friend + " even angrier." +
+                    "<br><br>" +
+                    "Then one night a storm rolled in. Thunder " + s.verb2 + " across the sky and the river began to rise. " +
+                    "By midnight the streets were knee-deep in " + s.liquid + ", and " + s.friend + "'s house was floating away with " + s.friend + " still inside, " +
+                    "clutching a bag of " + s.plural + "." +
+                    "<br><br>" +
+                    "The " + s.creature + " didn't hesitate. It waded in, started " + s.verbing + " as hard as it could, and grabbed the house with its " + s.color + " " + s.bodypart + ". " +
+                    "It dragged the whole thing back to dry land, one " + s.adjective4 + " step at a time." +
+                    "<br><br>" +
+                    "The next morning, " + s.friend + " walked over carrying a basket of " + s.food2 + ". " +
+                    "\"For the " + s.creature + ",\" " + s.friend + " mumbled, not making eye contact. " +
+                    "The " + s.creature + " said \"" + s.sound + "\", which everyone agreed was monster for \"apology accepted.\"" +
+                    "<br><br>" +
+                    "To celebrate, the village threw a party every " + s.day + ", which they called " + s.holiday + ". " +
+                    "The " + s.creature + " played the " + s.instrument + " (very badly), everyone listened to " + s.music + ", " +
+                    "and " + s.friend + " taught the whole village a dance called the " + s.dance + ". " +
+                    "The " + s.creature + " even got a pet " + s.insect + " named " + s.petname + ", which it kept in a little " + s.shape + "-shaped box in " + s.name + "'s " + s.room + ". " +
+                    "The box smelled faintly of " + s.smell + ". Nobody knew the " + s.creature + " had the power of " + s.superpower + " " +
+                    "until it accidentally used it on " + s.a("toy") + ". It was " + s.a("adjective5") + " day." +
+                    "<br><br>" +
+                    "From then on, the " + s.creature + " was the official guardian of the village. It got a " + s.color2 + " sash, " +
+                    "a little badge shaped like " + s.a("animal") + ", and a weekly payment of " + s.plural2 + ". " +
+                    "Every Saturday the whole village gathers to watch it " + s.verb + ". Nobody knows what it does with the " + s.plural2 + ". The end.";
+            },
+            function(s) {
+                return "<em>BREAKING NEWS from the " + s.place + "!</em>" +
+                    "<br><br>" +
+                    "Local " + s.job + " " + s.name + " has been arrested for teaching " + s.number + " " + s.adjective2 + " " + s.creature + "s how to " + s.verb + ". " +
+                    "Police say the trouble started early this morning, when " + s.name + " was spotted " + s.adverb + " handing out free " + s.food + " " +
+                    "to anyone wearing " + s.a("clothing") + "." +
+                    "<br><br>" +
+                    "Witnesses report hearing a loud \"" + s.sound + "\" just before " + s.a("object") + " exploded, covering the entire block in " + s.color + " goo. " +
+                    "\"I've lived here my whole life,\" said one very " + s.emotion + " neighbor, \"and I have never seen anything so " + s.adjective3 + ".\"" +
+                    "<br><br>" +
+                    "The mayor called an emergency meeting, but it was cancelled after the " + s.creature + "s ate the meeting room and " + s.verb2 + " the mayor's " + s.vehicle + ". " +
+                    "Scientists are now studying the goo, which smells strongly of " + s.food2 + "." +
+                    "<br><br>" +
+                    "When asked for a statement, " + s.name + " simply pointed at their own " + s.bodypart + ", whispered \"" + s.exclamation + "\", and said they regret nothing." +
+                    "<br><br>" +
+                    "<em>UPDATE, 3:00 PM:</em> " + s.name + " has escaped from jail. Guards say the " + s.creature + "s showed up at the window " +
+                    "and started " + s.verbing + " so " + s.adverb2 + " that the bars simply gave up. A trail of " + s.plural + " leads toward the " + s.place2 + "." +
+                    "<br><br>" +
+                    "<em>UPDATE, 5:30 PM:</em> We are now receiving reports that " + s.friend + ", " + s.name + "'s next-door neighbor, has joined them. " +
+                    s.friend + " was last seen riding " + s.a("animal") + " down Main Street, holding a jar of " + s.liquid + " overhead and shouting \"" + s.sound2 + "!\" at passing cars." +
+                    "<br><br>" +
+                    "<em>UPDATE, 8:00 PM:</em> The goo has started to move. Scientists say it is \"probably fine.\" " +
+                    "Residents are advised to stay indoors, keep their " + s.bodypart2 + "s covered, and hide any " + s.plural2 + " they own, " +
+                    "as the " + s.creature + "s appear to be collecting them." +
+                    "<br><br>" +
+                    "<em>UPDATE, 10:45 PM:</em> " + s.name + " has released a video from a secret location in the " + s.place2 + ". " +
+                    "Standing in front of " + s.number2 + " " + s.creature + "s, " + s.name + " announces that it is now an independent country. " +
+                    "Its national color is " + s.color2 + ". Its flag is extremely " + s.adjective4 + ". Its national anthem is just the word \"" + s.sound + "\" over and over." +
+                    "<br><br>" +
+                    "<em>UPDATE, 11:30 PM:</em> Experts warn that the " + s.creature + "s may have the power of " + s.superpower + ". " +
+                    "Residents report a strong smell of " + s.smell + " and the sound of " + s.music + " played on a single " + s.instrument + ". " +
+                    "The " + s.creature + "s are doing a dance called the " + s.dance + " in the town square, around a giant " + s.toy + " shaped like a " + s.shape + ". " +
+                    "Their leader appears to be " + s.a("insect") + " named " + s.petname + ". " +
+                    "City Hall has declared next " + s.day + " an emergency " + s.holiday + ". Schools are closed. Please stay in your " + s.room + ". " +
+                    "Things are getting " + s.adjective5 + "." +
+                    "<br><br>" +
+                    "The mayor responded by declaring war, then immediately un-declared it after the " + s.creature + "s showed up at his house. " +
+                    "Stay tuned. More at eleven.";
+            },
+            function(s) {
+                return "Dear Diary," +
+                    "<br><br>" +
+                    "Today I, " + s.name + ", finally reached the " + s.place + ". It took " + s.number + " days of walking and I only had " + s.food + " to eat the whole way. " +
+                    "My " + s.bodypart + " hurts and my " + s.clothing + " is ruined." +
+                    "<br><br>" +
+                    "The gate was guarded by " + s.number2 + " " + s.adjective2 + " " + s.creature + "s, all wearing tiny " + s.color + " hats. " +
+                    "They only let me in after I managed to " + s.verb + " with " + s.a("object") + " balanced on my " + s.bodypart2 + ". " +
+                    "It took me eleven tries. They watched " + s.adverb + " the entire time and did not help at all." +
+                    "<br><br>" +
+                    "When I finally did it, they all shouted \"" + s.exclamation + "!\" at once, which I think means we're friends now. " +
+                    "They gave me my own hat and showed me where they keep their " + s.plural + ". There are thousands of them. I did not ask why." +
+                    "<br><br>" +
+                    "Tomorrow they say I have to learn to " + s.verb + " " + s.adverb2 + " or I can't stay. Wish me luck." +
+                    "<br><br>" +
+                    "<strong>Day 2.</strong> I practiced all morning. I failed. The " + s.creature + "s sat in a circle and took notes. " +
+                    "One of them drew a picture of me falling into a puddle of " + s.liquid + " and passed it around. Everyone laughed. " +
+                    "I felt very " + s.emotion + " and ate " + s.food2 + " alone." +
+                    "<br><br>" +
+                    "<strong>Day 3.</strong> A new visitor showed up at the gate today: " + s.friend + "! " +
+                    s.friend + ", who works as " + s.a("job") + " back home, heard I'd gone missing and came all the way here on " + s.a("vehicle") + ". " +
+                    "The " + s.creature + "s made " + s.friend + " do the test too. " + s.friend + " did it on the FIRST TRY. " +
+                    "I am not jealous. I am a little jealous." +
+                    "<br><br>" +
+                    "<strong>Day 5.</strong> " + s.friend + " and I have been practicing together every night. " +
+                    s.friend + " says the trick is to pretend you're " + s.a("animal") + " while you do it. It works! " +
+                    "Today I " + s.verb2 + " so hard that three " + s.creature + "s fainted. " +
+                    "The leader gave me a second hat, this one " + s.color2 + ", to wear on top of the first. Apparently this is a huge honor." +
+                    "<br><br>" +
+                    "<strong>Day 7.</strong> Today was " + s.day + ", which here means it's " + s.holiday + ". " +
+                    "Everyone sleeps in a " + s.shape + "-shaped " + s.room + " and wakes up to " + s.music + " played on a giant " + s.instrument + ". " +
+                    "I adopted a pet " + s.insect + " and named it " + s.petname + ". It smells like " + s.smell + ", and it can do the " + s.dance + " better than I can. " +
+                    "Also, I think it has the power of " + s.superpower + "? It used it on my favorite " + s.toy + ". The " + s.toy + " is now very " + s.adjective5 + "." +
+                    "<br><br>" +
+                    "<strong>Day 9.</strong> Big news. The " + s.creature + "s held a ceremony and made " + s.friend + " and me official citizens of the " + s.place + ". " +
+                    "There was singing (just \"" + s.sound + "\" over and over), a feast of " + s.plural2 + ", and a parade where everyone was " + s.verbing + ". " +
+                    "It was the most " + s.adjective3 + " day of my life. I cried a little. " + s.friend + " cried a lot." +
+                    "<br><br>" +
+                    "<strong>Day 10.</strong> We're never going back to the " + s.place2 + ". If anyone finds this diary, tell everyone I said \"" + s.sound2 + ".\" " +
+                    "And that the hats are " + s.adjective4 + "." +
+                    "<br><br>" +
+                    "&mdash; " + s.name + " (and " + s.friend + ")";
+            },
+            function(s) {
+                return "Welcome back to <em>Cooking With " + s.name + "</em>, broadcasting live from the " + s.place + "!" +
+                    "<br><br>" +
+                    "Today's recipe is my famous " + s.adjective2 + " " + s.food + " Surprise. You'll need " + s.number + " pounds of " + s.food + ", " +
+                    "one " + s.object + ", a cup of " + s.liquid + ", a pinch of " + s.plural + ", and, most importantly, one fresh " + s.creature + ". " +
+                    "Ours today is named after my producer, " + s.friend + ". Say hi, little " + s.friend + "! (It said \"" + s.sound + "\". Adorable.)" +
+                    "<br><br>" +
+                    "Step one: preheat your oven to " + s.number2 + " degrees. Step two: stir everything " + s.adverb + " with the " + s.object + ". " +
+                    "Don't stop stirring, or it will turn " + s.color + ". Mine is already turning " + s.color + ". That's fine. That's totally fine." +
+                    "<br><br>" +
+                    "Step three: ask the " + s.creature + " to " + s.verb + " over the bowl. This is what gives the dish its " + s.adjective3 + " flavor. " +
+                    "Little " + s.friend + ", please do the thing. Little " + s.friend + "? ... Folks, little " + s.friend + " has eaten the whole bowl. " +
+                    "And the " + s.object + ". And my " + s.clothing + "." +
+                    "<br><br>" +
+                    "Okay, change of plans. Today we're making " + s.adjective4 + " " + s.food2 + " instead. " +
+                    "Grab a handful of " + s.plural2 + ", rub them on your " + s.bodypart + " for good luck, and toss them in the oven. " +
+                    "Wait. The oven is on fire. The " + s.creature + " is in the oven. Why is the " + s.creature + " in the oven?" +
+                    "<br><br>" +
+                    "\"" + s.exclamation + "!\" It's okay! It climbed out! It's just a little " + s.color2 + " now, and it won't stop " + s.verbing + ". " +
+                    "I think it actually liked it." +
+                    "<br><br>" +
+                    "I'm being told that " + s.a("animal") + " has also gotten into the studio and is chewing on our camera operator's " + s.bodypart2 + ". " +
+                    "Our camera operator is actually " + s.a("job") + " who's just filling in today. They look extremely " + s.emotion + " about the whole thing." +
+                    "<br><br>" +
+                    "While we wait, a viewer question! " + s.petname + " writes in from their " + s.room + ": \"What's your secret ingredient for " + s.holiday + "?\" " +
+                    "Great question. It's one " + s.insect + ", squished into a " + s.shape + ", plus a sprinkle of " + s.toy + " dust. Your whole kitchen will smell like " + s.smell + ". " +
+                    "And now, as we do every " + s.day + ", the studio band will play some " + s.music + " on the " + s.instrument + " while I do the " + s.dance + ". " +
+                    "People say watching me dance gives you the power of " + s.superpower + ". That has never been proven. It is, however, " + s.adjective5 + "." +
+                    "<br><br>" +
+                    "My producer, the real " + s.friend + ", is waving at me. Apparently I " + s.verb2 + " the studio and the whole crew is escaping " +
+                    "in " + s.a("vehicle") + " to the " + s.place2 + ". We'll be right back. Probably. " +
+                    "Until then, remember: in the kitchen, always cook " + s.adverb2 + ". I'm " + s.name + ", and this has been <em>Cooking With " + s.name + "</em>! " +
+                    "(\"" + s.sound2 + "!\")";
+            },
+            function(s) {
+                return "<em>CAPTAIN'S LOG, DAY " + s.number + ".</em>" +
+                    "<br><br>" +
+                    "This is Captain " + s.name + " of the starship <em>The " + s.adjective2 + " " + s.vehicle + "</em>. " +
+                    "We have been traveling toward the " + s.place + " for " + s.number2 + " months. Morale is " + s.adjective3 + ". " +
+                    "We ran out of " + s.food + " weeks ago and have been living on " + s.food2 + " and recycled " + s.liquid + "." +
+                    "<br><br>" +
+                    "Today our scanners detected a " + s.color + " planet covered in " + s.plural + ". " +
+                    "My first officer, " + s.friend + ", went down to explore wearing nothing but a space helmet and " + s.a("clothing") + ". " +
+                    s.friend + " radioed back one word: \"" + s.exclamation + "!\"" +
+                    "<br><br>" +
+                    "I beamed down immediately. The planet is home to a race of " + s.creature + "s, each with three " + s.bodypart + "s and a long " + s.color2 + " " + s.bodypart2 + ". " +
+                    "They talk entirely by saying \"" + s.sound + "\" at different speeds. Our translator says this means either \"welcome\" or \"we will " + s.verb + " you.\" " +
+                    "We are hoping for welcome." +
+                    "<br><br>" +
+                    "<em>LOG, LATER:</em> It was welcome. The " + s.creature + "s threw us a feast. " +
+                    "Their leader, who is also the planet's only " + s.job + ", " + s.verb2 + " " + s.adverb + " in our honor for nearly an hour. " +
+                    s.friend + " cried. I also cried. It was extremely " + s.adjective4 + "." +
+                    "<br><br>" +
+                    "<em>LOG, EVEN LATER:</em> Small problem. While we were at the feast, " + s.a("animal") + " snuck onto the ship and is now " + s.verbing + " in the engine room. " +
+                    "It will not leave. It has eaten the steering wheel and is threatening us with " + s.a("object") + ". " + s.friend + " is feeling very " + s.emotion + " about this." +
+                    "<br><br>" +
+                    "<em>LOG, THE NEXT " + s.day + ":</em> Today the " + s.creature + "s celebrated their biggest holiday, " + s.holiday + ". " +
+                    "They decorated our " + s.room + " with " + s.shape + "s and played " + s.music + " on something that looks a lot like " + s.a("instrument") + ". " +
+                    "Everyone did a dance called the " + s.dance + ". Their oldest elder, " + s.a("insect") + " named " + s.petname + ", gave each of us " + s.a("toy") + " that smells like " + s.smell + ". " +
+                    "I touched mine and briefly gained the power of " + s.superpower + ". Space is " + s.adjective5 + "." +
+                    "<br><br>" +
+                    "<em>FINAL LOG:</em> We have decided to stay on the planet. The " + s.animal + " can have the ship. " +
+                    "We are learning the language " + s.adverb2 + ", and I can already say \"" + s.sound2 + "\", which means \"please pass the " + s.plural2 + ".\" " +
+                    "If anyone from the " + s.place2 + " is reading this: don't come looking for us. We're fine. Captain " + s.name + ", signing off.";
+            },
+            function(s) {
+                return "Good evening, and welcome to the championship game of professional " + s.verbing + ", live from the " + s.place + "! " +
+                    "I'm " + s.name + ", and with me as always is former champion " + s.friend + "." +
+                    "<br><br>" +
+                    "\"Thanks, " + s.name + ". What a crowd tonight. I'd say " + s.number + " fans, and every single one of them is wearing a " + s.color + " " + s.clothing + ". " +
+                    "The energy is " + s.adjective2 + "!\"" +
+                    "<br><br>" +
+                    "It certainly is. On one side, the defending champions, the " + s.place2 + " " + s.creature + "s. " +
+                    "On the other, the underdogs, the " + s.adjective3 + " " + s.animal + "s. These two teams hate each other, " + s.friend + "." +
+                    "<br><br>" +
+                    "\"They really do. Last year a player got hit in the " + s.bodypart + " with " + s.a("object") + ", and nobody has forgiven anybody.\"" +
+                    "<br><br>" +
+                    "And they're off! The " + s.creature + "s open fast, charging " + s.adverb + " down the field. Number seven tries to " + s.verb + " — is that even legal? " +
+                    "The referee is blowing the whistle! The referee, by the way, is a part-time " + s.job + "." +
+                    "<br><br>" +
+                    "\"" + s.exclamation + "! Did you see that? Number nine just " + s.verb2 + " right over the goalie!\" " +
+                    "The crowd goes wild. Somebody has thrown " + s.food + " onto the field. Now somebody has thrown a bucket of " + s.liquid + ". Security looks " + s.emotion + "." +
+                    "<br><br>" +
+                    "Halftime score: " + s.creature + "s " + s.number2 + ", " + s.animal + "s zero. " +
+                    "During the break, the mascot will eat " + s.food2 + " off the hood of " + s.a("vehicle") + ", as part of a tradition nobody can explain." +
+                    "<br><br>" +
+                    "Second half, and the " + s.animal + "s are back with a new strategy. Their captain is just standing there going \"" + s.sound + "\" over and over. " +
+                    "The " + s.creature + "s look confused. They're dropping their " + s.plural + "! The " + s.animal + "s are scoring! And again! And again!" +
+                    "<br><br>" +
+                    "\"Hold on, " + s.name + ", we've got someone on the field! It's " + s.a("insect") + " carrying a sign that says '" + s.petname + " FOREVER.'\" " +
+                    "Security is chasing it, but it has the power of " + s.superpower + ", so this could take a while. It's hiding in the team " + s.room + " now. " +
+                    "Meanwhile, the band is playing " + s.music + " on a single " + s.instrument + " and the whole stadium is doing the " + s.dance + ". " +
+                    "Somebody has released a giant inflatable " + s.toy + " shaped like a " + s.shape + ". It smells like " + s.smell + " in here now. " +
+                    "Folks, this is the most " + s.adjective5 + " " + s.day + " in the history of " + s.holiday + " Weekend." +
+                    "<br><br>" +
+                    "Final whistle! The " + s.animal + "s win it! They're lifting the trophy, a giant " + s.color2 + " " + s.bodypart2 + ", high into the air, " +
+                    "and the crowd is chanting \"" + s.sound2 + "!\" " + s.friend + ", any final thoughts?" +
+                    "<br><br>" +
+                    "\"Just that this was the most " + s.adjective4 + " night of my life, " + s.name + ". I'm crying " + s.adverb2 + ".\" " +
+                    "Everybody gets free " + s.plural2 + " on the way out. Goodnight!";
+            },
+            function(s) {
+                return "To the Manager of the " + s.adjective2 + " Hotel, " + s.place + ":" +
+                    "<br><br>" +
+                    "My name is " + s.name + ", and I am writing to complain about my stay at your hotel last week. I have never been so " + s.emotion + " in my life." +
+                    "<br><br>" +
+                    "First, when I arrived, the front desk was being run by " + s.a("creature") + ". It did not have a name tag. " +
+                    "When I asked for my room key, it said \"" + s.sound + "\" and handed me " + s.a("object") + " instead. I still don't know which door it opens." +
+                    "<br><br>" +
+                    "My room was supposed to have an ocean view. Instead, the window looked straight into another room, where " + s.a("animal") + " was " + s.verbing + " " + s.adverb + " all night. " +
+                    "The bed was " + s.adjective3 + ". The pillows were stuffed with " + s.plural + ". The shower only produced " + s.liquid + ", and it was " + s.color + "." +
+                    "<br><br>" +
+                    "Breakfast was advertised as \"all-you-can-eat " + s.food + ".\" There was no " + s.food + ". There was only one plate of " + s.food2 + ", " +
+                    "and the " + s.creature + " from the front desk was guarding it. When I reached for it, it " + s.verb2 + " my " + s.bodypart + ". " +
+                    "I have attached a drawing of the bite mark." +
+                    "<br><br>" +
+                    "On my second night, my friend " + s.friend + " came to visit. The valet, who told us he was actually a " + s.job + ", parked " + s.friend + "'s " + s.vehicle + " on the roof. " +
+                    "We still don't know how. " + s.friend + " had to climb up and " + s.verb + " to get it down, wearing " + s.a("clothing") + ", in the rain." +
+                    "<br><br>" +
+                    "I also spent " + s.number + " hours stuck in the elevator, which only went to floor " + s.number2 + " and played the same song over and over. " +
+                    "The song was just someone yelling \"" + s.exclamation + "!\"" +
+                    "<br><br>" +
+                    "Then there was the so-called \"" + s.holiday + " Party\" on " + s.day + " night. Guests were forced to do the " + s.dance + " in the " + s.room + " " +
+                    "while a man played " + s.music + " on " + s.a("instrument") + ". The room smelled overwhelmingly of " + s.smell + ". " +
+                    "Every decoration was a " + s.shape + ". The door prize was a used " + s.toy + ". " +
+                    "When I tried to leave, " + s.a("insect") + " named " + s.petname + " (according to its name tag) blocked the door and claimed to have the power of " + s.superpower + ". " +
+                    "It did not. It was just very " + s.adjective5 + "." +
+                    "<br><br>" +
+                    "I demand a full refund, plus a lifetime supply of " + s.plural2 + " for my trouble. Otherwise, I will tell everyone in the " + s.place2 + " that your hotel is " + s.adjective4 + "." +
+                    "<br><br>" +
+                    "I am " + s.adverb2 + " waiting for your reply." +
+                    "<br><br>" +
+                    "Sincerely,<br>" + s.name +
+                    "<br><br>" +
+                    "P.S. Please tell the " + s.creature + " I said \"" + s.sound2 + ".\" We left on good terms. Also, my " + s.bodypart2 + " is still " + s.color2 + ".";
+            },
+            function(s) {
+                return "Gather round, everyone, and welcome to the most haunted house in the " + s.place + "! " +
+                    "My name is " + s.name + ", and I'll be your tour guide tonight. Please keep your " + s.bodypart + "s inside the tour at all times." +
+                    "<br><br>" +
+                    "This house was built " + s.number + " years ago by " + s.a("adjective2") + " " + s.job + " named " + s.friend + ". " +
+                    s.friend + " lived here alone with a pet " + s.animal + " and spent every night " + s.verbing + " in the attic. " +
+                    "Then one night, " + s.friend + " vanished. All that was left was " + s.a("clothing") + ", " + s.a("object") + ", and a single bowl of " + s.food + "." +
+                    "<br><br>" +
+                    "Here on your left is the kitchen. Legend says that at midnight the faucet runs with " + s.color + " " + s.liquid + ", " +
+                    "and you can hear a voice whisper \"" + s.sound + ".\" Don't drink it. A man drank it in 1987, and now he's " + s.a("creature") + "." +
+                    "<br><br>" +
+                    "Up these stairs is the " + s.adjective3 + " bedroom. If you look closely at the mirror, you might see a ghost that " + s.verb2 + " " + s.adverb + " in the reflection. " +
+                    "Please do not try to " + s.verb + " with the ghost. It gets upset." +
+                    "<br><br>" +
+                    "And this is the attic. Careful, the floor is covered in " + s.plural + ". Over there is " + s.friend + "'s old " + s.vehicle + ". " +
+                    "Nobody knows how it got up here. Some say the ghost pushes it around at night, going \"" + s.sound2 + "\" the whole time." +
+                    "<br><br>" +
+                    "Through this door is the " + s.room + ". Every " + s.day + " night, people hear " + s.music + " played on " + s.a("instrument") + " in here, even though nobody owns one. " +
+                    "In the corner is " + s.friend + "'s favorite " + s.toy + ". It's shaped like a " + s.shape + " and it always smells of " + s.smell + ". " +
+                    "Some say holding it gives you the power of " + s.superpower + ". Please don't hold it. " +
+                    "And if you look up, you'll see " + s.a("insect") + " named " + s.petname + ". It has lived here even longer than the ghost. " +
+                    "Every " + s.holiday + " it does the " + s.dance + ". It's honestly kind of " + s.adjective5 + "." +
+                    "<br><br>" +
+                    "Wait... did everyone hear that? It sounded like someone yelling \"" + s.exclamation + "!\" Okay. Nobody panic. " +
+                    "Just walk " + s.adverb2 + " toward the stairs. Hold on to your " + s.food2 + ". Do NOT look at the " + s.color2 + " thing in the corner." +
+                    "<br><br>" +
+                    "...Folks, I have some news. The ghost is right behind us, and it turns out it isn't a ghost at all. " +
+                    "It's just " + s.friend + ", who has been living up here for " + s.number2 + " years because the rent is free. " +
+                    s.friend + " looks a little " + s.emotion + ". " + s.friend + " would like everyone to leave." +
+                    "<br><br>" +
+                    "So that concludes our tour! The gift shop sells " + s.plural2 + " and ghost-shaped " + s.bodypart2 + " warmers. " +
+                    "Thank you for visiting the most " + s.adjective4 + " house in the " + s.place2 + ". Mind the " + s.animal + " on your way out.";
+            }
+        ];
+
+        // Names for each story, in the same order as the list above
+        var titles = ["The Adventure", "Breaking News", "Dear Diary", "Cooking Show",
+                      "Captain's Log", "The Big Game", "Complaint Letter", "Haunted House Tour"];
+
+        // Fill the story menu
+        var picker = document.getElementById("story-pick");
+        for (var t = 0; t < titles.length; t++) {
+            var option = document.createElement("option");
+            option.value = t;
+            option.textContent = titles[t];
+            picker.appendChild(option);
+        }
+
+        var lastPick = -1;
+
+        var libIt = function() {
+            var warning = document.getElementById("warning");
+            var raw = {};
+            var s = {};
+
+            // Make sure every box is filled in, and collect the words
+            for (var i = 0; i < inputs.length; i++) {
+                var value = inputs[i].value.trim();
+                if (value === "") {
+                    warning.innerHTML = "Fill in every box first!";
+                    inputs[i].focus();
+                    return;
+                }
+                raw[inputs[i].id] = value;
+                s[inputs[i].id] = w(value);
+            }
+            warning.innerHTML = "";
+
+            // A few handy extras
+            s.name = s.person;
+            s.place = w(raw.adjective + " " + raw.Place);
+            s.a = function(id) {
+                return aOrAn(raw[id]) + " " + s[id];
+            };
+
+            // Use the chosen story, or a random one (never the same twice in a row)
+            var pick;
+            if (picker.value === "random") {
+                do {
+                    pick = Math.floor(Math.random() * stories.length);
+                } while (pick === lastPick && stories.length > 1);
+            } else {
+                pick = parseInt(picker.value, 10);
+            }
+            lastPick = pick;
+
+            document.getElementById("story-title").innerHTML = titles[pick];
+            document.getElementById("story").innerHTML = stories[pick](s);
+        };
+
+        var clearIt = function() {
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].value = "";
+            }
+            document.getElementById("story").innerHTML = "";
+            document.getElementById("story-title").innerHTML = "Generated story:";
+            document.getElementById("warning").innerHTML = "";
+        };
+
+        libButton.addEventListener('click', libIt);
+        clearButton.addEventListener('click', clearIt);
+    </script>
+
+ </body>
+</html>
