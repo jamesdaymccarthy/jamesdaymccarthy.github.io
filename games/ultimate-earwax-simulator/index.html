@@ -642,8 +642,8 @@ function primCyl(rt,rb,h,seg=16,caps=true){
   return s;
 }
 function primSphere(r=1,ws=16,hs=12,thetaStart=0,thetaLen=Math.PI){const pr=[];for(let k=0;k<=hs;k++){const th=thetaStart+thetaLen*(1-k/hs);pr.push([Math.sin(th)*r,Math.cos(th)*r]);}
-  const s=primLathe(pr,ws);for(let k=0;k<s.p.length;k+=3){const l=Math.hypot(s.p[k],s.p[k+1],s.p[k+2])||1;s.n[k]=s.p[k]/l;s.n[k+1]=s.p[k+1]/l;s.n[k+2]=s.p[k+2]/l;}return s;}
-function primCapsule(r,len,seg=12){const pr=[];const n=6;for(let k=0;k<=n;k++){const a=-Math.PI/2+k/n*Math.PI/2;pr.push([Math.cos(a)*r,-len/2+Math.sin(a)*r]);}for(let k=0;k<=n;k++){const a=k/n*Math.PI/2;pr.push([Math.cos(a)*r,len/2+Math.sin(a)*r]);}pr[0][0]=0;pr[pr.length-1][0]=0;return primLathe(pr,seg);}
+  const s=primLathe(pr,ws);s.round=true;for(let k=0;k<s.p.length;k+=3){const l=Math.hypot(s.p[k],s.p[k+1],s.p[k+2])||1;s.n[k]=s.p[k]/l;s.n[k+1]=s.p[k+1]/l;s.n[k+2]=s.p[k+2]/l;}return s;}
+function primCapsule(r,len,seg=12){const pr=[];const n=6;for(let k=0;k<=n;k++){const a=-Math.PI/2+k/n*Math.PI/2;pr.push([Math.cos(a)*r,-len/2+Math.sin(a)*r]);}for(let k=0;k<=n;k++){const a=k/n*Math.PI/2;pr.push([Math.cos(a)*r,len/2+Math.sin(a)*r]);}pr[0][0]=0;pr[pr.length-1][0]=0;const s=primLathe(pr,seg);s.round=true;return s;}
 function primTorus(R,r,rs=24,ts=10,arc=TAU){const P=[],N=[],I=[];for(let i=0;i<=rs;i++){const u=i/rs*arc,cu=Math.cos(u),su=Math.sin(u);for(let j=0;j<=ts;j++){const v=j/ts*TAU,cv=Math.cos(v),sv=Math.sin(v);P.push((R+r*cv)*cu,r*sv,(R+r*cv)*su);N.push(cv*cu,sv,cv*su);}}
   for(let i=0;i<rs;i++)for(let j=0;j<ts;j++){const a=i*(ts+1)+j,b=a+ts+1;I.push(a,a+1,b,b,a+1,b+1);}return{p:P,n:N,i:I};}
 function primExtrude(shape,depth){// convex 2D polygon in XY, extruded along Z (centred)
@@ -654,17 +654,31 @@ function primExtrude(shape,depth){// convex 2D polygon in XY, extruded along Z (
   return{p:P,n:N,i:I};
 }
 function primPlane(w,d){return{p:[-w/2,0,-d/2,w/2,0,-d/2,w/2,0,d/2,-w/2,0,d/2],n:[0,1,0,0,1,0,0,1,0,0,1,0],i:[0,2,1,0,3,2]};}
-function primRock(r,detail=1,seed=1,rough=.35){const{verts,faces}=icosphere(detail);const nz=makeNoise(seed);const P=[],N=[],I=[];for(const v of verts){const k=1+rough*nz.fbm(v[0]*1.8+seed,v[1]*1.8,v[2]*1.8,3);P.push(v[0]*r*k,v[1]*r*k,v[2]*r*k);N.push(v[0],v[1],v[2]);}for(const f of faces)I.push(f[0],f[1],f[2]);const s={p:P,n:N,i:I};recomputeNormals(s);return s;}
+function primRock(r,detail=1,seed=1,rough=.35){const{verts,faces}=icosphere(detail);const nz=makeNoise(seed);const P=[],N=[],I=[];for(const v of verts){const k=1+rough*nz.fbm(v[0]*1.8+seed,v[1]*1.8,v[2]*1.8,3);P.push(v[0]*r*k,v[1]*r*k,v[2]*r*k);N.push(v[0],v[1],v[2]);}for(const f of faces)I.push(f[0],f[1],f[2]);const s={p:P,n:N,i:I,round:true};recomputeNormals(s);return s;}
 function recomputeNormals(s){const P=s.p,I=s.i,N=new Array(P.length).fill(0);for(let k=0;k<I.length;k+=3){const a=I[k]*3,b=I[k+1]*3,c=I[k+2]*3;const ux=P[b]-P[a],uy=P[b+1]-P[a+1],uz=P[b+2]-P[a+2],vx=P[c]-P[a],vy=P[c+1]-P[a+1],vz=P[c+2]-P[a+2];const nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;for(const q of[a,b,c]){N[q]+=nx;N[q+1]+=ny;N[q+2]+=nz;}}for(let k=0;k<N.length;k+=3){const l=Math.hypot(N[k],N[k+1],N[k+2])||1;N[k]/=l;N[k+1]/=l;N[k+2]/=l;}s.n=N;return s;}
 const SURF={matte:{r:.85},paint:{r:.6},plastic:{r:.38},glossy:{r:.14},metal:{r:.32,m:1},chrome:{r:.07,m:1},rubber:{r:.9},glass:{r:.04,m:.2},wood:{r:.55,pat:1,f:.08},woodM:{r:.55,pat:1,f:2},fabric:{r:.95,pat:2,f:.6},fabricM:{r:.95,pat:2,f:12},speck:{r:.7,pat:3,f:2},speckM:{r:.7,pat:3,f:20},grass:{r:.95,pat:4,f:.8},brick:{r:.9,pat:5,f:4},windows:{r:.7,pat:6,f:.28},shingle:{r:.9,pat:7,f:1.2},bark:{r:.95,pat:8,f:3},leaf:{r:.8,pat:9,f:2},carpet:{r:1,pat:10,f:.7},planks:{r:.45,pat:11,f:.07},asphalt:{r:.92,pat:12,f:.6},slab:{r:.85,pat:13,f:.67},tile:{r:.2,pat:14,f:.07},skin:{r:.55,pat:15,f:1.5},brushed:{r:.35,m:.9,pat:16,f:.5},light:{r:.4,e:1.4},glowS:{r:.4,e:.6},screen:{r:.1,e:1}};
 function rotXYZ(x,y,z,rx,ry,rz,out){let c=Math.cos(rx),s=Math.sin(rx);let y1=y*c-z*s,z1=y*s+z*c;y=y1;z=z1;c=Math.cos(ry);s=Math.sin(ry);let x1=x*c+z*s;z1=-x*s+z*c;x=x1;z=z1;c=Math.cos(rz);s=Math.sin(rz);x1=x*c-y*s;y1=x*s+y*c;out[0]=x1;out[1]=y1;out[2]=z;return out;}
 function hexLin(hex){return[lin(((hex>>16)&255)/255),lin(((hex>>8)&255)/255),lin((hex&255)/255)];}
+// oriented-box hitboxes: every primitive added to a Kit also records a box, so objects collide by their real parts
+function primBB(prim){if(!prim._bb){let a=[1e30,1e30,1e30],b=[-1e30,-1e30,-1e30];const P=prim.p;for(let k=0;k<P.length;k+=3)for(let j=0;j<3;j++){if(P[k+j]<a[j])a[j]=P[k+j];if(P[k+j]>b[j])b[j]=P[k+j];}prim._bb=[a,b];}return prim._bb;}
+function qMul(a,b){return[a[3]*b[0]+a[0]*b[3]+a[1]*b[2]-a[2]*b[1],a[3]*b[1]-a[0]*b[2]+a[1]*b[3]+a[2]*b[0],a[3]*b[2]+a[0]*b[1]-a[1]*b[0]+a[2]*b[3],a[3]*b[3]-a[0]*b[0]-a[1]*b[1]-a[2]*b[2]];}
+function qAxis(ax,ang){const s=Math.sin(ang/2),c=Math.cos(ang/2);return ax===0?[s,0,0,c]:ax===1?[0,s,0,c]:[0,0,s,c];}
+function qRot(q,v){const[qx,qy,qz,qw]=q,[x,y,z]=v;const ix=qw*x+qy*z-qz*y,iy=qw*y+qz*x-qx*z,iz=qw*z+qx*y-qy*x,iw=-qx*x-qy*y-qz*z;return[ix*qw+iw*-qx+iy*-qz-iz*-qy,iy*qw+iw*-qy+iz*-qx-ix*-qz,iz*qw+iw*-qz+ix*-qy-iy*-qx];}
 class Kit{
-  constructor(){this.P=[];this.N=[];this.C=[];this.S=[];this.F=[];this.I=[];this.stack=[];}
+  constructor(){this.P=[];this.N=[];this.C=[];this.S=[];this.F=[];this.I=[];this.stack=[];this.B=[];this.noBox=0;}
+  box(prim,pos,q,scl){
+    if(this.noBox)return;const[a,b]=primBB(prim);const sh=prim.round?.8:1;
+    let c=[(a[0]+b[0])/2*scl[0],(a[1]+b[1])/2*scl[1],(a[2]+b[2])/2*scl[2]],h=[Math.abs((b[0]-a[0])/2*scl[0])*sh,Math.abs((b[1]-a[1])/2*scl[1])*sh,Math.abs((b[2]-a[2])/2*scl[2])*sh];
+    if(Math.max(h[0],h[1],h[2])<=0)return;
+    c=qRot(q,c);c=[c[0]+pos[0],c[1]+pos[1],c[2]+pos[2]];
+    for(let si=this.stack.length-1;si>=0;si--){const st=this.stack[si];const o=[0,0,0];rotXYZ(c[0]*st.s,c[1]*st.s,c[2]*st.s,0,st.ry,0,o);c=[o[0]+st.pos[0],o[1]+st.pos[1],o[2]+st.pos[2]];q=qMul(qAxis(1,st.ry),q);h=h.map(v=>v*st.s);}
+    this.B.push({c,h,q});
+  }
   push(pos,ry=0,s=1){this.stack.push({pos,ry,s});return this;}
   pop(){this.stack.pop();return this;}
   add(prim,col,surf=SURF.matte,pos=[0,0,0],rot=[0,0,0],scl=[1,1,1]){
     if(typeof scl==='number')scl=[scl,scl,scl];
+    this.box(prim,pos,qMul(qAxis(2,rot[2]),qMul(qAxis(1,rot[1]),qAxis(0,rot[0]))),scl);
     const c=Array.isArray(col)?col:hexLin(col),base=this.P.length/3,o=[0,0,0],sf=surf||SURF.matte;
     const P=prim.p,N=prim.n;
     for(let k=0;k<P.length;k+=3){
@@ -680,6 +694,7 @@ class Kit{
   // add a primitive rotated by quaternion q=[x,y,z,w] (applied after scale), then the group stack
   addQ(prim,col,surf,pos,q,scl=[1,1,1]){
     if(typeof scl==='number')scl=[scl,scl,scl];
+    this.box(prim,pos,q,scl);
     const c=Array.isArray(col)?col:hexLin(col),base=this.P.length/3,o=[0,0,0],sf=surf||SURF.matte,[qx,qy,qz,qw]=q;
     const rot=(x,y,z)=>{const ix=qw*x+qy*z-qz*y,iy=qw*y+qz*x-qx*z,iz=qw*z+qx*y-qy*x,iw=-qx*x-qy*y-qz*z;return[ix*qw+iw*-qx+iy*-qz-iz*-qy,iy*qw+iw*-qy+iz*-qx-ix*-qz,iz*qw+iw*-qz+ix*-qy-iy*-qx];};
     const P=prim.p,N=prim.n;
@@ -698,7 +713,12 @@ class Kit{
     g.setAttribute('position',new THREE.Float32BufferAttribute(this.P,3));g.setAttribute('normal',new THREE.Float32BufferAttribute(this.N,3));
     g.setAttribute('color',new THREE.Float32BufferAttribute(this.C,3));g.setAttribute('aSurf',new THREE.Float32BufferAttribute(this.S,4));g.setAttribute('aFreq',new THREE.Float32BufferAttribute(this.F,1));
     g.setIndex(this.P.length/3>65535?new THREE.Uint32BufferAttribute(this.I,1):new THREE.Uint16BufferAttribute(this.I,1));
-    g.computeBoundingSphere();g.computeBoundingBox();return g;
+    g.computeBoundingSphere();g.computeBoundingBox();
+    // keep the biggest parts as hitboxes (tiny details like buttons and pips don't block you)
+    let B=this.B.map(x=>Object.assign(x,{v:x.h[0]*x.h[1]*x.h[2]+1e-30*(x.h[0]+x.h[1]+x.h[2])}));const big=Math.max(...B.map(x=>Math.max(...x.h)),0);
+    B=B.filter(x=>Math.max(...x.h)>big*.04).sort((a,b)=>b.v-a.v).slice(0,48);
+    g.userData.boxes=B.map(x=>({c:new THREE.Vector3(...x.c),h:new THREE.Vector3(...x.h),q:new THREE.Quaternion(...x.q)}));
+    return g;
   }
 }
 function makeKitMat(extra={}){
@@ -847,13 +867,16 @@ class SoftBlob{
   }
   /* ---------- physics ---------- */
   gather(radC){
-    const st=this.stage,cs=this.contacts;cs.length=0;st.collide(this.pos,radC,cs,this);
+    const st=this.stage,cs=this.contacts;cs.length=0;st.collide(this.pos,radC,cs,this);if(this.ghostT>0)this.dropObj(cs);
     let prim=null;
     if(this.sticky||this.forceStick>0)for(const c of cs)if(c.kind==='hair'&&(!prim||c.pen>prim.pen))prim=c;
     if(!prim)for(const c of cs)if(!prim||c.pen>prim.pen)prim=c;
     this.primary=prim;this.grounded=!!prim;
     this.stuck=!!(prim&&(this.sticky||this.forceStick>0)&&this.detachCD<=0);
   }
+  dropObj(cs){let j=0;for(let i=0;i<cs.length;i++)if(cs[i].kind!=='obj')cs[j++]=cs[i];cs.length=j;}
+  // how far the wax may sink into a solid thing before it pushes back: soft wax squashes, holding squeeze squashes more
+  squishAllow(c){if(!this.isPlayer||c.kind!=='obj')return 0;const up=this.stage.upAt?this.stage.upAt(this.pos):UP;const support=c.n.dot(up)>.7;return this.R*(support?.05:(.24+.3*this.squeeze));}
   detach(reason){
     const prim=this.primary;this.detachCD=reason==='jump'?.35:1.1;this.stuck=false;
     if(prim&&prim.point){this.strandA=prim.point.clone();this.strandS=1;}
@@ -862,11 +885,11 @@ class SoftBlob{
   step(dt,inp){
     const st=this.stage,flight=st.mode==='flight',inv=st.scaleInvariant;
     const k=inv?this.R/.3:1;
-    if(this.detachCD>0)this.detachCD-=dt;if(this.forceStick>0)this.forceStick-=dt;if(this.wiggleT>0)this.wiggleT-=dt;
+    if(this.detachCD>0)this.detachCD-=dt;if(this.forceStick>0)this.forceStick-=dt;if(this.wiggleT>0)this.wiggleT-=dt;if(this.ghostT>0)this.ghostT-=dt;
     this.R+=(this.Rt-this.R)*(1-Math.exp(-dt*5));
     const rad=this.R;
-    this.squeeze=lerp(this.squeeze,(inp.down&&!flight)||this.wiggleT>0?1:0,1-Math.exp(-dt*4));
-    const radC=rad*(1-.4*this.squeeze*(st.allowSqueeze?1:0));this.radC=radC;
+    this.squeeze=lerp(this.squeeze,(inp.down&&!flight)||this.wiggleT>0||this.ghostT>0?1:0,1-Math.exp(-dt*4));
+    const radC=rad*(1-.4*this.squeeze*(st.allowSqueeze||st.mode!=='ear'?1:0));this.radC=radC;
     this.gather(radC);
     const prim=this.primary;
     const g=st.gravity(this.pos,rad,this._t8),gl=g.length();
@@ -913,18 +936,26 @@ class SoftBlob{
       if(this.isPlayer&&st.mode==='ear'){if(prim&&inp.wishLen>.3&&this.vel.length()<.3)this.pushT=(this.pushT||0)+dt;else this.pushT=Math.max(0,(this.pushT||0)-dt*2);
         if(this.pushT>1.8&&prim){this.pushT=0;this.vel.addScaledVector(prim.n,3.2).addScaledVector(inp.wish,1.5);this.detachCD=.35;this.wiggleT=.5;this.jolt(1.6);audio.squelch(.7);}}
     }
+    if(this.isPlayer&&st.mode!=='ear'){
+      const blocked=this.contacts.some(c=>c.kind==='obj'&&c.pen>-rad*.02);const vAlong=this.realV||0;
+      if(blocked&&inp.wishLen>.3&&vAlong<rad*(flight?1.2:.9)/(st.scaleInvariant?.3:1)*.3)this.pinT=(this.pinT||0)+dt;else this.pinT=Math.max(0,(this.pinT||0)-dt*1.5);
+      if(this.pinT>1&&!(this.ghostT>0)){this.pinT=0;this.ghostT=1.1;this.jolt(1.8);this.excite=1.2;audio.squelch(.8);if(this.onSquish)this.onSquish();}
+      if(this.ghostT>0&&this.ghostT<.15){const cs=[];st.collide(this.pos,rad*.6,cs,this);if(cs.some(c=>c.kind==='obj'&&c.pen>rad*.15)&&(this.ghostTotal=(this.ghostTotal||0)+dt)<4)this.ghostT=.15;else this.ghostTotal=0;}
+    }
     const cap=flight?(st.flySpeed||12)*rad*2.6*cyc:14*k*cyc;
     const sp=this.vel.length();if(sp>cap&&cap>0)this.vel.multiplyScalar(cap/sp);
+    const _pp=this._pp||(this._pp=new V3());_pp.copy(this.pos);
     this.pos.addScaledVector(this.vel,dt);
     this.resolve(radC,dt);
+    this.realV=inp.wishLen>.01&&dt>0?_pp.subVectors(this.pos,_pp).dot(inp.wish)/inp.wishLen/dt:0;
     // feedback
     const vt=prim?this._t2.copy(this.vel).addScaledVector(prim.n,-this.vel.dot(prim.n)).length():0;this.slideSpeed=this.moving?0:vt/Math.max(k,1e-9);
     if(this.isPlayer&&this.moving&&prim&&st.mode==='ear'){this.squelchT-=dt*(.6+vt);if(this.squelchT<=0){this.squelchT=.55;audio.squelch(clamp(vt*.25,.08,.4));}}
   }
   resolve(radC,dt){
     const st=this.stage,cs=this.contacts;
-    for(let it=0;it<2;it++){cs.length=0;st.collide(this.pos,radC,cs,this);let any=false;
-      for(const c of cs){if(c.pen<=0)continue;any=true;const n=c.n;this.pos.addScaledVector(n,c.pen*(c.kind==='hair'?.8:1));const vn=this.vel.dot(n);
+    for(let it=0;it<2;it++){cs.length=0;st.collide(this.pos,radC,cs,this);if(this.ghostT>0)this.dropObj(cs);let any=false;
+      for(const c of cs){const pen=c.pen-this.squishAllow(c);if(pen<=0)continue;any=true;const n=c.n;this.pos.addScaledVector(n,pen*(c.kind==='hair'?.8:1));const vn=this.vel.dot(n);
         if(vn<0){if(it===0)this.onImpact(-vn,n,c);const e=-vn>1.4*(st.scaleInvariant?this.R/.3:1)?.25:0;this.vel.addScaledVector(n,-vn*(1+e));}
         if(c.kind==='hair'&&c.hair)c.hair.vel.addScaledVector(c.n,-c.pen*Math.min(1.5,this.vol*25+.25)*14*c.h);}
       if(!any)break;}
@@ -991,7 +1022,7 @@ class SoftBlob{
 
 /* ============================== eatable objects ============================== */
 const EAT_K=.9;            // you can swallow anything whose radius is up to 90% of yours
-const _qi2=new THREE.Quaternion(),_lp=new V3(),_cl=new V3(),_dd=new V3();
+const _qi2=new THREE.Quaternion(),_lp=new V3(),_cl=new V3(),_dd=new V3(),_bc2=new V3(),_bh2=new V3(),_bq2=new THREE.Quaternion();
 class EatSet{
   constructor(stage){this.stage=stage;this.list=[];this.swarms=[];this.totalW=0;this.eatenW=0;this.bossUnlocked=false;this.engulfing=null;this.suckT=0;}
   // obj: Object3D already parented inside stage.root. Size info comes from geometry bounds unless given.
@@ -1001,6 +1032,7 @@ class EatSet{
       bb=bb||box;lc=lc||box.getCenter(new V3());lr=lr||box.getSize(new V3()).length()/2;}
     const e={obj,name:o.name||'something',lc:lc.clone(),lr,bb:bb.clone(),eaten:false,boss:!!o.boss,solid:o.solid!==false,weight:o.boss?0:(o.weight??1),
       vol:o.vol,dyn:o.dyn||null,unique:!!o.unique,collider:o.collider||'box',eatScale:o.eatScale||1,pull:0,from:null,onEat:o.onEat||null,tag:o.tag||'',center:new V3(),r:0,h:new V3(),q:new THREE.Quaternion()};
+    e.boxes=(e.collider==='box'&&obj.isMesh&&obj.geometry&&obj.geometry.userData.boxes&&obj.geometry.userData.boxes.length)?obj.geometry.userData.boxes:null;
     obj.userData.center=lc.clone();if(o.unique)obj.userData.unique=true;
     this.refresh(e);
     if(e.vol==null){const s=bb.getSize(_v);e.vol=Math.max(1e-30,s.x*s.y*s.z*Math.pow(obj.scale.x,3)*(o.fill??.45));}
@@ -1018,6 +1050,7 @@ class EatSet{
     for(const e of this.list){if(e.eaten||!e.solid||e.pull>0)continue;if(e.dyn)this.refresh(e);if(this.eatable(e,R))continue;
       const dx=p.x-e.center.x,dy=p.y-e.center.y,dz=p.z-e.center.z,lim=R+e.r;if(dx*dx+dy*dy+dz*dz>lim*lim)continue;
       if(e.collider==='sphere'){const d=Math.sqrt(dx*dx+dy*dy+dz*dz)||1e-9,rs=e.r*.9;const pen=R+rs-d;if(pen>-R*.05){const n=new V3(dx/d,dy/d,dz/d);out.push({kind:'obj',obj:e,n,pen,point:e.center.clone().addScaledVector(n,rs)});}continue;}
+      if(e.boxes){const s=e.obj.scale.x,op=e.obj.position;for(const b of e.boxes){_bc2.copy(b.c).multiplyScalar(s).applyQuaternion(e.q).add(op);_bh2.copy(b.h).multiplyScalar(s);_bq2.copy(e.q).multiply(b.q);const n0=out.length;collideBox(p,R,_bc2,_bh2,_bq2,out,'obj');for(let k=n0;k<out.length;k++)out[k].obj=e;}continue;}
       _qi2.copy(e.q).invert();_lp.set(dx,dy,dz).applyQuaternion(_qi2);
       _cl.set(clamp(_lp.x,-e.h.x,e.h.x),clamp(_lp.y,-e.h.y,e.h.y),clamp(_lp.z,-e.h.z,e.h.z));
       _dd.subVectors(_lp,_cl);let dist=_dd.length(),n,pen;
@@ -2720,7 +2753,8 @@ function placePlayer(st,R,opts={}){
   let p=G.player;
   if(!p){p=G.player=new SoftBlob(st,{player:true,pos:new V3(),R,detail:Q().blobDetail});}
   p.stage=st;p.Rt=p.R=R;p.vel.set(0,0,0);p.hint=-1;p._wc=null;p.sticky=false;p.anchor=null;p.stretch=0;p.strandS=0;p.strandA=null;p.tightT=0;p.contacts.length=0;p.primary=null;
-  p.pos.copy(opts.pos||st.startPos(R));p.setParent(WR);
+  p.pos.copy(opts.pos||st.startPos(R));p.setParent(WR);p.ghostT=st.mode==='ear'?0:1.6;p.pinT=0;
+  p.onSquish=()=>{if(!G.squishTold){G.squishTold=true;toast('Squish! Push against anything long enough and you squeeze through it.','',4500);}};
   if(st.mode==='ear')st.spawnNPCs(p);
   G.yaw=opts.yaw??st.startYaw();G.pitch=-.3;G.camInit=false;G.zoom=1;
   return p;
@@ -3027,7 +3061,7 @@ function menuPause(T,B){
     <p class="section-t">The path</p>
     <div class="path">${[...path,'white'].map(k=>`<span class="${k===st.key?'now':s.visited[k]?'on':''}">${esc(STAGE_DEFS[k].name.replace(/^The /,''))}</span>`).join('')}</div>
     <p class="section-t">How to play</p>
-    <p class="note" style="margin-top:0">${K('forward')}${K('left')}${K('back')}${K('right')} roll · mouse to look · ${K('jump')} jump · ${K('stick')} sticky grip to climb walls and furniture · hold ${K('stretch')} to stretch toward a surface and release to slingshot · ${K('down')} squeeze through tight spots · ${K('camera')} camera · ${K('hide')} hide the interface. Out in space, ${K('jump')} and ${K('down')} fly up and down. Roll into anything smaller than you to swallow it. When something tasty is hard to find, an arrow points the way.</p>
+    <p class="note" style="margin-top:0">${K('forward')}${K('left')}${K('back')}${K('right')} roll · mouse to look · ${K('jump')} jump · ${K('stick')} sticky grip to climb walls and furniture · hold ${K('stretch')} to stretch toward a surface and release to slingshot · hold ${K('down')} to squash flatter and squeeze into gaps · if you are pinned against something too big to eat, keep pushing and you will squish through it · ${K('camera')} camera · ${K('hide')} hide the interface. Out in space, ${K('jump')} and ${K('down')} fly up and down. Roll into anything smaller than you to swallow it. When something tasty is hard to find, an arrow points the way.</p>
   </div></div>`;
   B.querySelectorAll('[data-a]').forEach(b=>b.addEventListener('click',()=>{const a=b.dataset.a;if(a==='resume')resume();else if(a==='quit')quitToTitle();else openMenu(a,'pause');}));
 }
