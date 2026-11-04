@@ -280,13 +280,14 @@ function compareTo(m){let best=COMPARE[0],bd=1e9;for(const c of COMPARE){const d
 
 /* ============================== save data ============================== */
 const SAVE_KEY='earwax-enlightenment-v1';
-const DEFAULT_BINDS={forward:'KeyW',back:'KeyS',left:'KeyA',right:'KeyD',jump:'Space',down:'ControlLeft',fast:'ShiftLeft',stick:'KeyF',stretch:'KeyQ',camera:'KeyC',viz:'KeyV',hide:'KeyH'};
+const DEFAULT_BINDS={forward:'KeyW',back:'KeyS',left:'KeyA',right:'KeyD',jump:'Space',down:'KeyE',fast:'ShiftLeft',stick:'KeyF',stretch:'KeyQ',camera:'KeyC',viz:'KeyV',hide:'KeyH'};
 const BIND_LABELS={forward:'Roll forward',back:'Roll back',left:'Roll left',right:'Roll right',jump:'Jump · fly up · continue dialogue',down:'Squeeze · fly down',fast:'Move faster',stick:'Toggle sticky grip',stretch:'Stretch forward (hold, release to slingshot)',camera:'Change camera',viz:'Show sound waves (in the ear)',hide:'Hide interface'};
 const DEFAULT_SETTINGS={quality:'medium',master:.8,ambience:.6,effects:.8,sens:1,invertY:false,fov:62,hints:true};
 function loadSave(){try{return JSON.parse(localStorage.getItem(SAVE_KEY))||{};}catch(e){return{};}}
 const SAVE=loadSave();
 SAVE.settings=Object.assign({},DEFAULT_SETTINGS,SAVE.settings||{});
 SAVE.binds=Object.assign({},DEFAULT_BINDS,SAVE.binds||{});
+if(!SAVE.ctrlMoved){SAVE.ctrlMoved=1;if(SAVE.binds.down==='ControlLeft'||SAVE.binds.down==='ControlRight')SAVE.binds.down='KeyE';}
 SAVE.slots=Array.isArray(SAVE.slots)?SAVE.slots:[null,null,null];while(SAVE.slots.length<3)SAVE.slots.push(null);
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(SAVE));return true;}catch(e){return false;}}
 function newSlot(){return{created:Date.now(),played:0,cycles:0,tier:0,arr:0,justTrans:false,endStep:0,won:false,visited:{ear:1},highest:'ear',run:null};}
@@ -3088,7 +3089,7 @@ function menuControls(T,B){
   T.textContent='Controls';
   B.innerHTML=`<div class="binds">${Object.keys(DEFAULT_BINDS).map(a=>`<div class="bindrow"><span>${BIND_LABELS[a]}</span><button type="button" data-b="${a}" class="${rebinding===a?'listening':''}">${rebinding===a?'Press a key…':keyLabel(SAVE.binds[a])}</button></div>`).join('')}</div>
     <div class="title-actions" style="margin-top:14px"><button class="btn" type="button" id="bReset">Reset to defaults</button></div>
-    <p class="note">Click a binding, then press the new key (Esc cancels). Mouse looks around: click the view to capture it. Scroll zooms the camera. Esc pauses. Some browsers reserve Ctrl shortcuts, so rebind squeeze if Ctrl misbehaves.</p>`;
+    <p class="note">Click a binding, then press the new key (Esc cancels). Mouse looks around: click the view to capture it. Scroll zooms the camera. Esc pauses.</p>`;
   B.querySelectorAll('[data-b]').forEach(b=>b.addEventListener('click',()=>{rebinding=b.dataset.b;menuControls(T,B);}));
   $('#bReset').addEventListener('click',()=>{SAVE.binds=Object.assign({},DEFAULT_BINDS);persist();menuControls(T,B);});
 }
