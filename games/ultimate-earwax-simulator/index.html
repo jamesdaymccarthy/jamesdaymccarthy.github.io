@@ -1750,7 +1750,7 @@ class RoomStage extends Stage{
 class BedroomStage extends RoomStage{
   constructor(ctx){
     super('bedroom',ctx);this.hx=200;this.hz=225;this.H=260;this.start=new V3(62,0,-38);this.spread=26;this.nearD=1.5;this.bossName='the boy';this.exitLabel='The door is open. Roll out of the bedroom';
-    this.feet=[];const r=this.rng,E=(...a)=>this.put(...a);
+    this.feet=[];this.gainBoost=2.2;const r=this.rng,E=(...a)=>this.put(...a);
     this.roomShell({floor:SURF.carpet,floorCol:0x8a8f9c,wall:SURF.paint,wallCol:0xd9e4ea,holes:[{side:'S',a:-70,b:70,y0:90,y1:210},{side:'W',a:110,b:200,y0:0,y1:205}]});
     this.windowFrame('S',-70,70,90,210);
     // rug
@@ -1792,7 +1792,7 @@ class BedroomStage extends RoomStage{
     // ------- loose stuff on the floor, smallest nearest the start -------
     const spot=(sz,bias)=>this.floorSpot(r,sz,bias);
     const scatter=(key,n,size,o={})=>{for(let i=0;i<n;i++){const s=size*(.8+r()*.4),geoR=o.geoR||size;const p=spot(geoR*s/size,o.bias||1);if(!p)continue;this.put(key,p.x,o.y||0,p.z,r()*TAU,s/size,Object.assign({},o,{variant:o.colors?pick(o.colors,r):o.variant}));}};
-    scatter('crumb',30,.18,{name:'cracker crumb',bias:1.6});scatter('popcorn',12,.45,{name:'popcorn kernel'});scatter('lint',10,.4,{name:'lint ball'});scatter('cereal',12,.6,{name:'cereal loop'});
+    scatter('crumb',110,.18,{name:'cracker crumb',bias:1.6});scatter('crumb',60,.5,{name:'cookie crumb',bias:1.2});scatter('crumb',30,1.1,{name:'chunk of cookie'});scatter('chip',10,2.5,{name:'potato chip'});scatter('popcorn',12,.45,{name:'popcorn kernel'});scatter('lint',10,.4,{name:'lint ball'});scatter('cereal',12,.6,{name:'cereal loop'});
     scatter('hair',6,2,{name:'a hair',geoR:2});scatter('lego1',16,.65,{name:'LEGO piece',colors:PALETTE.lego,fac:FAC.lego1});scatter('button',8,1,{name:'button',colors:PALETTE.plastic,fac:FAC.button});
     scatter('pushpin',6,.75,{name:'push pin',colors:PALETTE.plastic,fac:FAC.pushpin});scatter('coin',8,1,{name:'coin',colors:[0xc9c9c9,0xb87333,0xd8c27a],fac:FAC.coin});scatter('marble',10,1,{name:'marble',colors:PALETTE.plastic,fac:FAC.marble});
     scatter('die',6,1.4,{name:'die'});scatter('eraser',4,2.3,{name:'eraser'});scatter('lego2x4',14,2,{name:'LEGO brick',colors:PALETTE.lego,fac:FAC.lego2x4});scatter('bottlecap',6,1.6,{name:'bottle cap',colors:[0xc0392b,0x2c7be5,0x27ae60],fac:FAC.bottlecap});
@@ -1809,7 +1809,7 @@ class BedroomStage extends RoomStage{
     this.swarm('speck',null,Math.round(420*sq),{rmin:.005,rmax:.022,name:'dust speck',where:W,weight:6});
     this.swarm('flakeS',null,Math.round(200*sq),{rmin:.012,rmax:.045,name:'skin flake',where:W,flat:true,lift:.1,weight:5});
     this.swarm('crystal',null,Math.round(140*sq),{rmin:.012,rmax:.035,name:'sugar crystal',where:W,weight:4});
-    this.swarm('crumb',null,Math.round(260*sq),{rmin:.03,rmax:.13,name:'crumb',where:W,weight:6});
+    this.swarm('crumb',null,Math.round(1100*sq),{rmin:.03,rmax:.13,name:'crumb',where:W,weight:10});const Wn=(sz,r)=>{const d=.05+Math.pow(r(),.9)*(sz*260+1.5),a=r()*TAU;return new V3(this.start.x+Math.cos(a)*d,0,this.start.z+Math.sin(a)*d);};this.swarm('crumb',null,Math.round(900*sq),{rmin:.004,rmax:.026,name:'tiny crumb',where:Wn,weight:6});this.swarm('crystal',null,Math.round(300*sq),{rmin:.004,rmax:.02,name:'sugar grain',where:Wn,weight:3});
     this.swarm('glitter',null,Math.round(110*sq),{rmin:.035,rmax:.08,name:'glitter',where:W,flat:true,lift:.1,weight:4});
     this.swarm('sand',null,Math.round(140*sq),{rmin:.02,rmax:.06,name:'sand grain',where:W,weight:4});
     this.roomLights({sunDir:new V3(.25,.75,.75).normalize(),hemi:.55,sun:1.15,ceil:.42});
@@ -2739,7 +2739,7 @@ async function goToStage(key,opts={}){
   else if(prevR!=null&&prevUnit&&def.unit){R=clamp(prevR*prevUnit/def.unit,def.start,def.end*1.5);keepAttach=true;}
   if(G.player){if(keepAttach){const k=prevUnit/def.unit;for(const a of G.player.attached){a.sc*=k;a.r*=k;}}else G.player.clearAttached();}
   const p=placePlayer(st,R,opts);
-  if(key!=='ear'&&key!=='white'){const tgt=Math.max(def.end,R*1.5);st.softCap=tgt*1.4;st.gain=st.eats.calibrate(R,tgt)*cycBoost(G.slot.cycles).gain;}
+  if(key!=='ear'&&key!=='white'){const tgt=Math.max(def.end,R*1.5);st.softCap=tgt*1.4;st.gain=st.eats.calibrate(R,tgt)*cycBoost(G.slot.cycles).gain*(st.gainBoost||1);}
   else st.gain=cycBoost(G.slot.cycles).gain;
   if(opts.restore)restoreRun(st,opts.restore);
   G.slot.visited[key]=1;if(ORDER.indexOf(key)>ORDER.indexOf(G.slot.highest||'ear')&&key!=='white')G.slot.highest=key;
