@@ -1082,8 +1082,8 @@ class EatSet{
       for(const it of sw.items){if(it.eaten)continue;const dx=p.x-it.pos.x,dy=p.y-it.pos.y,dz=p.z-it.pos.z,d2=dx*dx+dy*dy+dz*dz;
         const lim=it.r>R*(this.stage.suckSize||.07)?R+it.r*.5:R*(this.stage.suck||2.3);if(d2>lim*lim)continue;if(it.r>EAT_K*R)continue;
         it.eaten=true;sw.left--;sw.mesh.setMatrixAt(it.i,ZERO_M);sw.mesh.instanceMatrix.needsUpdate=true;
-        this.eatenW+=sw.w/sw.items.length;{const cap=this.stage.softCap,over=cap&&blob.Rt>cap?Math.pow(cap/blob.Rt,3):1;blob.addVolume(it.vol*(this.stage.gain||1)*over);}
-        if(it.r>R*.08){audio.eat(it.r/R);hooks.feed&&hooks.feed(sw.names?sw.names[it.i%sw.names.length]:sw.name,it.r);}
+        this.eatenW+=sw.w/sw.items.length;{const cap=this.stage.softCap,over=cap&&blob.Rt>cap?Math.pow(cap/blob.Rt,3):1;blob.addVolume(it.vol*(sw.fixedK?sw.fixedK*(this.stage.cycK||1):(this.stage.gain||1))*over);}
+        if(it.r>R*.08){audio.eat(it.r/R);hooks.feed&&hooks.feed(it.name||(sw.names?sw.names[it.i%sw.names.length]:sw.name),it.r);}
         else if(Math.random()<.25)audio.eat(.02);
       }void mr;}
   }
@@ -1773,6 +1773,9 @@ class RoomStage extends Stage{
   outsideView(){
     const sky=skyDome({top:0x4f86d1,horizon:0xcfe2f2,bottom:0x8aa070,sun:new V3(.3,.7,.6).normalize(),haze:.5});this.bg.add(sky);
   }
+  // keep the blob smaller than the room, and once the way out is open, reaching the doorway (at any size) takes you through
+  roomRules(ctx){const p=ctx.player,cap=this.H*.48;if(p.Rt>cap)p.Rt=cap;if(p.R>cap)p.R=cap;
+    if(this.exitOpen){const t=this.exitTarget();if(Math.hypot(p.pos.x-t.x,p.pos.z-t.z)<p.R+70)return'exit';}return null;}
   constrainCamera(c,R){if(c.y<R*.3)c.y=R*.3;const m=R*.25;c.x=clamp(c.x,-this.hx+m,this.hx-m);c.z=clamp(c.z,-this.hz+m,this.hz-m);c.y=Math.min(c.y,this.H-m);}
   progressInfo(){const e=this.eats,p=e.progress,th=this.threshold;
     if(this.exitOpen)return{frac:1,label:this.exitLabel};
@@ -1891,7 +1894,7 @@ class BedroomStage extends RoomStage{
     if(!this.eats.bossUnlocked&&this.eats.progress>=this.threshold){this.eats.bossUnlocked=true;ctx.notify&&ctx.notify('You are big enough now. Swallow the boy!');ctx.markBoss&&ctx.markBoss(this.boyE);}
     if(!this.exitOpen&&this.boyE.eaten){this.exitOpen=true;ctx.exitOpened&&ctx.exitOpened('The bedroom door swings open.');const i=this.walls.indexOf(this.doorWall);if(i>=0)this.walls.splice(i,1);}
     if(this.exitOpen)this.door.rotation.y=lerp(this.door.rotation.y,-1.5,1-Math.exp(-dt*2));
-    if(this.exitOpen&&p.pos.x<-this.hx+p.R*1.1&&p.pos.z>100-p.R*.5)return'exit';
+    if(this.roomRules(ctx)==='exit')return'exit';
     return null;
   }
   exitTarget(){return new V3(-this.hx,60,155);}
@@ -1984,7 +1987,7 @@ class LivingStage extends RoomStage{
     this.t+=dt;const p=ctx.player;this.fire.intensity=.3+.1*Math.sin(this.t*11)*Math.sin(this.t*4.3);
     if(!this.exitOpen&&this.eats.progress>=this.threshold){this.exitOpen=true;ctx.exitOpened&&ctx.exitOpened('The front door is open!');const i=this.walls.indexOf(this.doorWall);if(i>=0)this.walls.splice(i,1);}
     if(this.exitOpen)this.door.rotation.y=lerp(this.door.rotation.y,1.6,1-Math.exp(-dt*2));
-    if(this.exitOpen&&p.pos.z>this.hz-p.R*1.1&&Math.abs(p.pos.x)<60+p.R)return'exit';
+    if(this.roomRules(ctx)==='exit')return'exit';
     return null;
   }
   exitTarget(){return new V3(0,80,this.hz);}
@@ -2268,9 +2271,21 @@ class CosmicStage extends Stage{
     this.envTex=envFromPainter((g,w,h)=>{g.fillStyle='#04050a';g.fillRect(0,0,w,h);for(let i=0;i<300;i++){g.fillStyle=`rgba(255,255,255,${Math.random()*.8})`;g.fillRect(Math.random()*w,Math.random()*h,1,1);}g.fillStyle='#fff4dc';g.beginPath();g.arc(w*.25,h*.4,6,0,TAU);g.fill();});}
   starBackground(o={}){this.bg.add(starDome(Q().stars,{band:o.band??.35,seed:o.seed||9,tilt:.9}));if(o.milky!==false)this.bg.add(milkyBand());}
   spot3(r,sz,o){const s=o.spread||this.spread;for(let t=0;t<30;t++){const d=(o.near||0)+Math.pow(r(),o.pw||.8)*(sz*s+(o.add||0));const v=randUnit(new V3(),r);if(o.flat)v.y*=o.flat;v.normalize().multiplyScalar(d).add(this.start);if(this.avoid&&this.avoid(v,sz))continue;return v;}return null;}
-  progressInfo(){const e=this.eats,p=e.progress,th=this.threshold;if(this.exitOpen)return{frac:1,label:this.exitLabel||'Onward'};if(this.bossName&&e.bossUnlocked)return{frac:1,label:`Now swallow ${this.bossName}`};return{frac:clamp(p/th,0,1),label:`${Math.round(p*100)}% of ${this.whatLabel} devoured`};}
-  bossCheck(ctx){if(this.bossE&&!this.eats.bossUnlocked&&this.eats.progress>=this.threshold){this.eats.bossUnlocked=true;ctx.notify&&ctx.notify(`You can swallow ${this.bossName} now!`);ctx.markBoss&&ctx.markBoss(this.bossE);}
-    if(!this.exitOpen&&((this.bossE&&this.bossE.eaten)||(!this.bossE&&this.eats.progress>=this.threshold))){this.exitOpen=true;this.exitT=this.exitDelay??2.4;ctx.exitOpened&&ctx.exitOpened(this.exitMsg);}}
+  // growth-based progress for the vast space areas: the bar fills as you grow, so it never sits at 0%
+  growFrac(){const p=G.player,g=this.growRange;return p&&g?clamp(Math.log(p.Rt/g[0])/Math.log(g[1]/g[0]),0,1):0;}
+  frac(){return Math.max(this.eats.progress/this.threshold,this.growFrac());}
+  // a continuous spread of things at every size, nearest the smallest, so there is always food your size close by
+  addContinuum(n,rmin,rmax,reach,o){const r=this.rng,per=o.meshes||1;const k=Math.ceil(n/per);
+    for(let mi=0;mi<per;mi++){const im=o.mesh(mi,k);im.frustumCulled=false;this.root.add(im);const items=[];
+      for(let j=0;j<k;j++){const sz=rmin*Math.pow(rmax/rmin,r());const d=o.minD+Math.pow(r(),.7)*sz*reach;const v=randUnit(new V3(),r);if(o.flat)v.y*=o.flat;v.normalize().multiplyScalar(d).add(this.start);
+        const it={pos:v,r:sz,s:sz*(o.vis||1),q:new THREE.Quaternion().setFromEuler(new THREE.Euler(r()*6,r()*6,r()*6)),vol:Math.pow(sz,3)*.5,name:o.nameOf?o.nameOf(sz,r):o.name};items.push(it);
+        if(o.color&&im.setColorAt){_c.setRGB(...o.color(sz,r));im.setColorAt(j,_c);}}
+      if(im.instanceColor)im.instanceColor.needsUpdate=true;const sw=this.eats.addSwarm(im,items,{name:o.name||'something',weight:o.weight??2});sw.fixedK=o.k||6;}}
+  progressInfo(){if(this.growRange){if(this.exitOpen)return{frac:1,label:this.exitLabel||'Onward'};if(this.bossName&&this.eats.bossUnlocked)return{frac:1,label:`Now swallow ${this.bossName}`};const f=clamp(this.frac(),0,1);return{frac:f,label:`${Math.round(f*100)}% of ${this.whatLabel} devoured`};}
+    const e=this.eats,p=e.progress,th=this.threshold;if(this.exitOpen)return{frac:1,label:this.exitLabel||'Onward'};if(this.bossName&&e.bossUnlocked)return{frac:1,label:`Now swallow ${this.bossName}`};return{frac:clamp(p/th,0,1),label:`${Math.round(p*100)}% of ${this.whatLabel} devoured`};}
+  bossCheck(ctx){const done=this.growRange?this.frac()>=1:this.eats.progress>=this.threshold;
+    if(this.bossE&&!this.eats.bossUnlocked&&done){this.eats.bossUnlocked=true;ctx.notify&&ctx.notify(`You can swallow ${this.bossName} now!`);ctx.markBoss&&ctx.markBoss(this.bossE);}
+    if(!this.exitOpen&&((this.bossE&&this.bossE.eaten)||(!this.bossE&&done))){this.exitOpen=true;this.exitT=this.exitDelay??2.4;ctx.exitOpened&&ctx.exitOpened(this.exitMsg);}}
   update(dt,ctx){this.t+=dt;for(const a of this.anims)a(dt,this.t);this.bossCheck(ctx);if(this.exitOpen&&!this.manualExit){this.exitT-=dt;if(this.exitT<=0)return'exit';}return null;}
   startPos(R){return this.start.clone();}
   startYaw(){return this.yaw0||0;}
@@ -2436,6 +2451,12 @@ class StarsStage extends CosmicStage{
     const cluster=(n,rmin,rmax,name,stars)=>{for(let i=0;i<n;i++){const sz=rmin*Math.pow(rmax/rmin,r());const p=this.spot3(r,sz,{spread:14,add:sz,near:sz});if(!p)continue;const N=stars,pos=new Float32Array(N*3),col=new Float32Array(N*3),siz=new Float32Array(N);for(let k=0;k<N;k++){const v=randUnit(new V3(),r).multiplyScalar(Math.pow(r(),name.includes('globular')?2:1));pos[k*3]=v.x;pos[k*3+1]=v.y;pos[k*3+2]=v.z;const cc=pick([STAR_COLS.blue,STAR_COLS.white,STAR_COLS.yellow,STAR_COLS.orange],r);col.set(cc,k*3);siz[k]=.02+r()*.05;}
       const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('aCol',new THREE.BufferAttribute(col,3));g.setAttribute('aSize',new THREE.BufferAttribute(siz,1));const pts=new THREE.Points(g,shaderMat('points',{uScale:{value:innerHeight*.8},uMin:{value:1.2},uOpacity:{value:1}},{transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));pts.frustumCulled=false;
       const grp=new THREE.Group();grp.add(pts);grp.add(glowSprite(1.4,[.25,.27,.35],{opacity:.7}));grp.position.copy(p);grp.scale.setScalar(sz);this.root.add(grp);this.eats.add(grp,{name,unique:true,lc:new V3(),lr:1,bb:new THREE.Box3(new V3(-1,-1,-1),new V3(1,1,1)),collider:'sphere',solid:false,fill:.002});}};
+    // every size of star, from dwarfs right next to you to giants far away
+    this.suck=4.5;this.suckSize=.25;this.gainBoost=.55;this.flySpeed=15;this.cycGainCap=1.5;this.growRange=[8.5e-8,40];
+    const starGeo=new THREE.IcosahedronGeometry(1,1);this.starGeo=starGeo;const starMat=new THREE.MeshBasicMaterial({color:0xffffff,toneMapped:false});this.starMat=starMat;
+    const sCols=[STAR_COLS.red,STAR_COLS.orange,STAR_COLS.yellow,STAR_COLS.white,STAR_COLS.blue];
+    const starName=(sz,rr)=>sz<1e-7?pick(['a red dwarf','a brown dwarf','an orange dwarf'],rr):sz<1e-6?pick(['a sun-like star','an orange star','a white star'],rr):sz<1e-4?pick(['a blue giant','a red giant'],rr):sz<.01?pick(['a red supergiant','a hypergiant star'],rr):sz<.5?pick(['a cloud of comets','a little nebula','a dusty disk'],rr):pick(['a nebula','a star cluster','a dust cloud'],rr);
+    this.addContinuum(2600,6e-9,30,32,{minD:2.5e-7,mesh:(mi,k)=>new THREE.InstancedMesh(starGeo,starMat,k),color:(sz,rr)=>{const c=sz<1e-7?STAR_COLS.red:sz<1e-6?pick(sCols,rr):sz<1e-4?pick([STAR_COLS.blue,STAR_COLS.orange],rr):pick([[.8,.5,.7],[.5,.6,.9],[.7,.7,.75]],rr);return c.map(x=>x*1.3);},nameOf:starName,weight:4,k:18});
     cluster(10,3,15,'an open star cluster',220);cluster(6,25,60,'a globular cluster',900);neb(6,40,90,'a molecular cloud',[[.5,.3,.45],[.35,.3,.5]],{spread:8});
   }
 }
@@ -2466,6 +2487,9 @@ class GalaxyStage extends CosmicStage{
       if(o.cluster){const N=400,pp=new Float32Array(N*3),cc=new Float32Array(N*3),ss=new Float32Array(N);for(let k=0;k<N;k++){const v=randUnit(new V3(),r).multiplyScalar(Math.pow(r(),2));pp.set([v.x,v.y,v.z],k*3);cc.set(pick([STAR_COLS.white,STAR_COLS.yellow,STAR_COLS.orange],r),k*3);ss[k]=.04+r()*.05;}const gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.BufferAttribute(pp,3));gg.setAttribute('aCol',new THREE.BufferAttribute(cc,3));gg.setAttribute('aSize',new THREE.BufferAttribute(ss,1));const pts=new THREE.Points(gg,shaderMat('points',{uScale:{value:innerHeight*.8},uMin:{value:1.2},uOpacity:{value:1}},{transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));pts.frustumCulled=false;const grp=new THREE.Group();grp.add(pts);grp.position.copy(p);grp.scale.setScalar(sz);this.root.add(grp);this.eats.add(grp,{name,unique:true,lc:new V3(),lr:1,bb:new THREE.Box3(new V3(-1,-1,-1),new V3(1,1,1)),collider:'sphere',solid:false,fill:.003});continue;}
       const puffs=[];const c=pick(cols,r);for(let k=0;k<9;k++)puffs.push({pos:randUnit(new V3(),r).multiplyScalar(r()*.6),size:.5+r()*.6,col:c.map(x=>x*(.6+r()*.5)),seed:r()});const m=glowField(puffs,{nebula:true,opacity:.9});m.position.copy(p);m.scale.setScalar(sz);this.root.add(m);this.eats.add(m,{name,unique:true,lc:new V3(),lr:1,bb:new THREE.Box3(new V3(-1,-1,-1),new V3(1,1,1)),collider:'sphere',solid:false,fill:.003});}};
     near(16,20,80,'a nebula',[[1,.35,.5],[.4,.6,1],[1,.5,.3]]);near(14,15,60,'a star cluster',null,{cluster:true});near(12,60,200,'a giant molecular cloud',[[.5,.3,.45],[.35,.3,.5]],{spread:20});near(10,150,500,'a star-forming complex',[[1,.4,.6],[.5,.6,1]],{spread:14});near(8,400,1000,'a stellar stream',[[.4,.45,.6]],{spread:10});
+    this.suck=2.6;this.suckSize=.08;this.gainBoost=.6;this.flySpeed=15;this.cycGainCap=1.5;this.growRange=[90,3200];
+    const cGeo=new THREE.IcosahedronGeometry(1,1);this.cGeo=cGeo;const cMat=new THREE.MeshBasicMaterial({color:0xffffff,toneMapped:false,transparent:true,opacity:.75,blending:THREE.AdditiveBlending,depthWrite:false});this.cMat=cMat;
+    this.addContinuum(900,8,1600,95,{minD:60,flat:.25,mesh:(mi,k)=>new THREE.InstancedMesh(cGeo,cMat,k),color:(sz,rr)=>pick([[.55,.65,1],[1,.55,.75],[1,.85,.6],[.6,.9,.85]],rr),nameOf:(sz,rr)=>sz<40?pick(['a star cluster','a nebula','a clump of stars'],rr):sz<300?pick(['a stellar nursery','a globular cluster','a molecular cloud'],rr):pick(['a star-forming complex','a stellar stream','a superbubble'],rr),weight:4});
     // the boss: the core, with a supermassive black hole
     const cg=new THREE.Group();const bh=new THREE.Mesh(new THREE.SphereGeometry(.08,32,16),new THREE.MeshBasicMaterial({color:0x000000}));cg.add(bh);
     const disk=new THREE.Mesh(new THREE.PlaneGeometry(1,1,1,1),shaderMat('disk',{uTime:CU.uTime,uInner:{value:.11},uOuter:{value:.5}},{transparent:true,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending}));disk.rotation.x=-Math.PI/2+.25;cg.add(disk);
@@ -2487,7 +2511,7 @@ class UniverseStage extends CosmicStage{
     galaxy(new V3(.03,0,.01),.05,'the rest of the Milky Way',0);galaxy(new V3(.16,.02,.05),.007,'the Small Magellanic Cloud',4);galaxy(new V3(.15,-.03,-.06),.014,'the Large Magellanic Cloud',4);
     galaxy(new V3(2.5,.4,-.6),.11,'Andromeda',0);galaxy(new V3(2.7,-.5,.6),.03,'Triangulum',1);
     const many=(n,rmin,rmax,name,spread,add)=>{for(let i=0;i<n;i++){const sz=rmin*Math.pow(rmax/rmin,r());const p=this.spot3(r,sz,{spread,add,near:sz*2});if(p)galaxy(p,sz,name);}};
-    this.suck=2.6;this.suckSize=.08;this.gainBoost=.55;this.flySpeed=15;this.cycGainCap=1.5;
+    this.suck=2.6;this.suckSize=.08;this.gainBoost=.55;this.flySpeed=15;this.cycGainCap=1.5;this.growRange=[.0055,25];this.exitLabel='The universe is cracking...';
     many(70,.001,.006,'a dwarf galaxy',30,.012);many(60,.008,.05,'a galaxy',22,.08);many(30,.05,.25,'a giant galaxy',16,.4);
     // clouds of tiny galaxies and star clusters all around you (eaten by just flying near them)
     const swarmOf=(n,rmin,rmax,name,reach)=>{for(let ti=0;ti<mats.length;ti++){const k=Math.ceil(n/mats.length),im=new THREE.InstancedMesh(quad,mats[ti],k);im.frustumCulled=false;this.root.add(im);const items=[];
@@ -2506,10 +2530,6 @@ class UniverseStage extends CosmicStage{
       const grp=new THREE.Group();grp.add(pts);grp.position.copy(p);grp.rotation.set(r()*6,r()*6,r()*6);grp.scale.setScalar(sz);this.root.add(grp);this.eats.add(grp,{name,unique:true,lc:new V3(),lr:1,bb:new THREE.Box3(new V3(-1,-1,-1),new V3(1,1,1)),collider:'sphere',solid:false,fill:.0003});}};
     web(12,30,150,'a supercluster',1400,14,'blob');web(10,100,500,'a cosmic filament',1800,10,'fil');web(6,400,1200,'a Great Wall',2400,7,'wall');web(4,1000,3000,'a cosmic web strand',3000,5,'fil');
   }
-  growFrac(){const p=G.player;return p?clamp(Math.log(p.Rt/.0055)/Math.log(25/.0055),0,1):0;}
-  frac(){return Math.max(this.eats.progress/this.threshold,this.growFrac());}
-  progressInfo(){if(this.exitOpen)return{frac:1,label:'The universe is cracking...'};const f=clamp(this.frac(),0,1);return{frac:f,label:`${Math.round(f*100)}% of the universe devoured`};}
-  bossCheck(ctx){if(!this.exitOpen&&this.frac()>=1){this.exitOpen=true;this.exitT=this.exitDelay;ctx.exitOpened&&ctx.exitOpened(this.exitMsg);}}
   dispose(){super.dispose();for(const t of this.texs)t.dispose();for(const m of this.mats)m.dispose();this.quad.dispose();}
 }
 
@@ -2677,7 +2697,7 @@ const ORDER=[...BASE_PATH,...COSMIC,'white'];
 const STAGE_DEFS={
   ear:{name:'The Ear',unit:2.9e-4,start:.3,end:1},
   bedroom:{name:'The Bedroom',unit:.01,start:.029,end:100},
-  living:{name:'The Living Room',unit:.01,start:110,end:170},
+  living:{name:'The Living Room',unit:.01,start:110,end:132},
   yard:{name:'The Front Yard',unit:1,start:1.4,end:7.5},
   suburb:{name:'The Suburbs',unit:1,start:9,end:55},
   city:{name:'The City',unit:1,start:70,end:330},
@@ -2695,7 +2715,7 @@ const STAGE_DEFS={
 };
 const STAGE_CLASS={ear:EarStage,bedroom:BedroomStage,living:LivingStage,yard:YardStage,suburb:SuburbStage,city:CityStage,planet:PlanetStage,space:SpaceStage,solar:SolarStage,stars:StarsStage,galaxy:GalaxyStage,universe:UniverseStage,multiverse:MultiverseStage,hyperverse:HyperverseStage,omniverse:OmniverseStage,lotus:LotusStage,white:WhiteStage};
 const pathFor=slot=>[...BASE_PATH,...COSMIC.slice(0,slot.tier)];
-const cycBoost=c=>{c=Math.min(c,10);return{gain:1+.9*c,speed:1+.12*c,threshold:Math.max(.42,.78-.06*c)};};
+const cycBoost=c=>{if(c>=5)return{gain:1,speed:1,threshold:.78};return{gain:1+.9*c,speed:1+.12*c,threshold:Math.max(.42,.78-.06*c)};};
 function sizeText(key,R){const d=STAGE_DEFS[key];if(!d)return['',''];
   if(key==='white')return['∞','beyond measuring'];
   if(d.unit){const m=2*R*d.unit;return[fmtLen(m),'about the size of '+compareTo(m)];}
@@ -2787,7 +2807,7 @@ async function goToStage(key,opts={}){
   else if(prevR!=null&&prevUnit&&def.unit){R=clamp(prevR*prevUnit/def.unit,def.start,def.end*1.5);keepAttach=true;}
   if(G.player){if(keepAttach){const k=prevUnit/def.unit;for(const a of G.player.attached){a.sc*=k;a.r*=k;}}else G.player.clearAttached();}
   const p=placePlayer(st,R,opts);
-  if(key!=='ear'&&key!=='white'){const tgt=Math.max(def.end,R*1.5);st.softCap=tgt*1.4;st.gain=st.eats.calibrate(R,tgt)*Math.min(cycBoost(G.slot.cycles).gain,st.cycGainCap||1e9)*(st.gainBoost||1);}
+  if(key!=='ear'&&key!=='white'){const tgt=Math.max(def.end,R*1.5);st.softCap=tgt*1.4;st.cycK=Math.min(cycBoost(G.slot.cycles).gain,st.cycGainCap||1e9);st.gain=st.eats.calibrate(R,tgt)*st.cycK*(st.gainBoost||1);}
   else st.gain=cycBoost(G.slot.cycles).gain;
   if(opts.restore)restoreRun(st,opts.restore);
   G.slot.visited[key]=1;if(ORDER.indexOf(key)>ORDER.indexOf(G.slot.highest||'ear')&&key!=='white')G.slot.highest=key;
