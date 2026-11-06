@@ -1075,12 +1075,12 @@ class EatSet{
       if(this.eatable(e,R)){
         const reach=R+e.r*.55;
         if(d2<reach*reach){if(e.boss){e.pull=.001;e.from=e.center.clone();e.sc0=e.obj.scale.x;hooks.bossEngulf&&hooks.bossEngulf(e);audio.rumble(2.6,1.8);}else this.swallow(blob,e,hooks);n++;if(n>8)break;}
-        else if(e.r<R*.07&&d2<R*R*5.5){e.pull=.001;e.from=e.center.clone();}
+        else if(e.r<R*(this.stage.suckSize||.07)&&d2<R*R*Math.pow(this.stage.suck||2.35,2)){e.pull=.001;e.from=e.center.clone();}
       }
     }
     for(const sw of this.swarms){if(!sw.left)continue;const mr=sw.maxR;
       for(const it of sw.items){if(it.eaten)continue;const dx=p.x-it.pos.x,dy=p.y-it.pos.y,dz=p.z-it.pos.z,d2=dx*dx+dy*dy+dz*dz;
-        const lim=it.r>R*.07?R+it.r*.5:R*2.3;if(d2>lim*lim)continue;if(it.r>EAT_K*R)continue;
+        const lim=it.r>R*(this.stage.suckSize||.07)?R+it.r*.5:R*(this.stage.suck||2.3);if(d2>lim*lim)continue;if(it.r>EAT_K*R)continue;
         it.eaten=true;sw.left--;sw.mesh.setMatrixAt(it.i,ZERO_M);sw.mesh.instanceMatrix.needsUpdate=true;
         this.eatenW+=sw.w/sw.items.length;{const cap=this.stage.softCap,over=cap&&blob.Rt>cap?Math.pow(cap/blob.Rt,3):1;blob.addVolume(it.vol*(this.stage.gain||1)*over);}
         if(it.r>R*.08){audio.eat(it.r/R);hooks.feed&&hooks.feed(sw.names?sw.names[it.i%sw.names.length]:sw.name,it.r);}
@@ -2487,7 +2487,16 @@ class UniverseStage extends CosmicStage{
     galaxy(new V3(.03,0,.01),.05,'the rest of the Milky Way',0);galaxy(new V3(.16,.02,.05),.007,'the Small Magellanic Cloud',4);galaxy(new V3(.15,-.03,-.06),.014,'the Large Magellanic Cloud',4);
     galaxy(new V3(2.5,.4,-.6),.11,'Andromeda',0);galaxy(new V3(2.7,-.5,.6),.03,'Triangulum',1);
     const many=(n,rmin,rmax,name,spread,add)=>{for(let i=0;i<n;i++){const sz=rmin*Math.pow(rmax/rmin,r());const p=this.spot3(r,sz,{spread,add,near:sz*2});if(p)galaxy(p,sz,name);}};
-    many(30,.001,.006,'a dwarf galaxy',60,.03);many(30,.01,.06,'a galaxy',70,.5);many(16,.06,.25,'a giant galaxy',40,2);
+    this.suck=2.6;this.suckSize=.08;this.gainBoost=.55;this.flySpeed=15;this.cycGainCap=1.5;
+    many(70,.001,.006,'a dwarf galaxy',30,.012);many(60,.008,.05,'a galaxy',22,.08);many(30,.05,.25,'a giant galaxy',16,.4);
+    // clouds of tiny galaxies and star clusters all around you (eaten by just flying near them)
+    const swarmOf=(n,rmin,rmax,name,reach)=>{for(let ti=0;ti<mats.length;ti++){const k=Math.ceil(n/mats.length),im=new THREE.InstancedMesh(quad,mats[ti],k);im.frustumCulled=false;this.root.add(im);const items=[];
+      for(let j=0;j<k;j++){const sz=rmin*Math.pow(rmax/rmin,Math.pow(r(),1.6));const d=.006+Math.pow(r(),.8)*(sz*reach+.01);const v=randUnit(new V3(),r).multiplyScalar(d);items.push({pos:v,r:sz,s:sz,q:new THREE.Quaternion().setFromEuler(new THREE.Euler(r()*6,r()*6,r()*6)),vol:Math.pow(sz,3)*.5});}
+      this.eats.addSwarm(im,items,{name,weight:6});}};
+    const swarmCont=(n,rmin,rmax,reach)=>{for(let ti=0;ti<mats.length;ti++){const k=Math.ceil(n/mats.length),im=new THREE.InstancedMesh(quad,mats[ti],k);im.frustumCulled=false;this.root.add(im);const items=[];
+      for(let j=0;j<k;j++){const sz=rmin*Math.pow(rmax/rmin,r());const d=.004+Math.pow(r(),.7)*sz*reach;const v=randUnit(new V3(),r).multiplyScalar(d);items.push({pos:v,r:sz,s:sz,q:new THREE.Quaternion().setFromEuler(new THREE.Euler(r()*6,r()*6,r()*6)),vol:Math.pow(sz,3)*.5});}
+      this.eats.addSwarm(im,items,{name:'a galaxy',names:['a tiny galaxy','a dwarf galaxy','a little galaxy','a galaxy'],weight:2});}};
+    swarmCont(650,.0006,.09,110);
     const group=(n,rmin,rmax,name,count,spread)=>{for(let i=0;i<n;i++){const sz=rmin*Math.pow(rmax/rmin,r());const p=this.spot3(r,sz,{spread,add:sz,near:sz*1.5});if(!p)continue;const grp=new THREE.Group();for(let ti=0;ti<mats.length;ti++){const k=Math.ceil(count/mats.length);const im=new THREE.InstancedMesh(quad,mats[ti],k);for(let j=0;j<k;j++){const v=randUnit(new V3(),r).multiplyScalar(Math.pow(r(),1.5));_q.setFromEuler(new THREE.Euler(r()*6,r()*6,r()*6));_m.compose(v,_q,_s.setScalar(.03+r()*.06));im.setMatrixAt(j,_m);}im.frustumCulled=false;grp.add(im);}
       grp.add(glowSprite(1.2,[.2,.2,.28],{opacity:.6}));grp.position.copy(p);grp.scale.setScalar(sz);this.root.add(grp);this.eats.add(grp,{name,unique:true,lc:new V3(),lr:1,bb:new THREE.Box3(new V3(-1,-1,-1),new V3(1,1,1)),collider:'sphere',solid:false,fill:.0005});}};
     group(14,.4,2,'a galaxy group',12,40);group(12,2,12,'a galaxy cluster',40,25);
@@ -2497,6 +2506,10 @@ class UniverseStage extends CosmicStage{
       const grp=new THREE.Group();grp.add(pts);grp.position.copy(p);grp.rotation.set(r()*6,r()*6,r()*6);grp.scale.setScalar(sz);this.root.add(grp);this.eats.add(grp,{name,unique:true,lc:new V3(),lr:1,bb:new THREE.Box3(new V3(-1,-1,-1),new V3(1,1,1)),collider:'sphere',solid:false,fill:.0003});}};
     web(12,30,150,'a supercluster',1400,14,'blob');web(10,100,500,'a cosmic filament',1800,10,'fil');web(6,400,1200,'a Great Wall',2400,7,'wall');web(4,1000,3000,'a cosmic web strand',3000,5,'fil');
   }
+  growFrac(){const p=G.player;return p?clamp(Math.log(p.Rt/.0055)/Math.log(25/.0055),0,1):0;}
+  frac(){return Math.max(this.eats.progress/this.threshold,this.growFrac());}
+  progressInfo(){if(this.exitOpen)return{frac:1,label:'The universe is cracking...'};const f=clamp(this.frac(),0,1);return{frac:f,label:`${Math.round(f*100)}% of the universe devoured`};}
+  bossCheck(ctx){if(!this.exitOpen&&this.frac()>=1){this.exitOpen=true;this.exitT=this.exitDelay;ctx.exitOpened&&ctx.exitOpened(this.exitMsg);}}
   dispose(){super.dispose();for(const t of this.texs)t.dispose();for(const m of this.mats)m.dispose();this.quad.dispose();}
 }
 
@@ -2774,7 +2787,7 @@ async function goToStage(key,opts={}){
   else if(prevR!=null&&prevUnit&&def.unit){R=clamp(prevR*prevUnit/def.unit,def.start,def.end*1.5);keepAttach=true;}
   if(G.player){if(keepAttach){const k=prevUnit/def.unit;for(const a of G.player.attached){a.sc*=k;a.r*=k;}}else G.player.clearAttached();}
   const p=placePlayer(st,R,opts);
-  if(key!=='ear'&&key!=='white'){const tgt=Math.max(def.end,R*1.5);st.softCap=tgt*1.4;st.gain=st.eats.calibrate(R,tgt)*cycBoost(G.slot.cycles).gain*(st.gainBoost||1);}
+  if(key!=='ear'&&key!=='white'){const tgt=Math.max(def.end,R*1.5);st.softCap=tgt*1.4;st.gain=st.eats.calibrate(R,tgt)*Math.min(cycBoost(G.slot.cycles).gain,st.cycGainCap||1e9)*(st.gainBoost||1);}
   else st.gain=cycBoost(G.slot.cycles).gain;
   if(opts.restore)restoreRun(st,opts.restore);
   G.slot.visited[key]=1;if(ORDER.indexOf(key)>ORDER.indexOf(G.slot.highest||'ear')&&key!=='white')G.slot.highest=key;
@@ -3027,11 +3040,11 @@ function updateArrow(){
   if(st.exitOpen&&st.exitTarget){target=st.exitTarget();label='way out';}
   else if(G.bossTarget&&!G.bossTarget.eaten){target=G.bossTarget.center;label=G.bossTarget.name;}
   else if(st.key==='white'&&!st.holdEar&&st.earTarget){target=st.earTarget;label='';}
-  else if(st.eats&&st.key!=='white'&&st.mode!=='ear'&&G.runT-G.lastEat>22){const e=st.eats.nearestTarget(p.pos,p.R);if(e){target=e.center;label='something tasty';}}
+  else if(st.eats&&st.key!=='white'&&st.mode!=='ear'&&G.runT-G.lastEat>(st.mode==='flight'?8:22)){const e=st.eats.nearestTarget(p.pos,p.R);if(e){target=e.center;label='something tasty';}}
   if(!target){arrowEl.style.display='none';return;}
   toRender(target,_v);_v.project(camera);let x=_v.x,y=_v.y;const behind=_v.z>1;if(behind){x=-x;y=-y;}
   const on=!behind&&Math.abs(x)<.85&&Math.abs(y)<.8;
-  if(on&&label!=='way out'&&label!==''&&G.runT-G.lastEat<=22){arrowEl.style.display='none';return;}
+  if(on&&label!=='way out'&&label!==''&&G.runT-G.lastEat<=(st.mode==='flight'?8:22)){arrowEl.style.display='none';return;}
   const m=Math.max(Math.abs(x)/.9,Math.abs(y)/.82,1);if(!on){x/=m;y/=m;}
   const sx=(x*.5+.5)*innerWidth,sy=(-y*.5+.5)*innerHeight;arrowEl.style.display='block';arrowEl.style.left=sx+'px';arrowEl.style.top=sy+'px';
   const ang=on?Math.PI:Math.atan2(x,y);arrowEl.querySelector('svg').style.transform=`rotate(${ang}rad)`;arrowEl.querySelector('span').textContent=label;
