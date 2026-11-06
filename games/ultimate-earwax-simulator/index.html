@@ -2715,7 +2715,7 @@ const STAGE_DEFS={
 };
 const STAGE_CLASS={ear:EarStage,bedroom:BedroomStage,living:LivingStage,yard:YardStage,suburb:SuburbStage,city:CityStage,planet:PlanetStage,space:SpaceStage,solar:SolarStage,stars:StarsStage,galaxy:GalaxyStage,universe:UniverseStage,multiverse:MultiverseStage,hyperverse:HyperverseStage,omniverse:OmniverseStage,lotus:LotusStage,white:WhiteStage};
 const pathFor=slot=>[...BASE_PATH,...COSMIC.slice(0,slot.tier)];
-const cycBoost=c=>{if(c>=5)return{gain:1,speed:1,threshold:.78};return{gain:1+.9*c,speed:1+.12*c,threshold:Math.max(.42,.78-.06*c)};};
+const cycBoost=c=>{c=Math.min(c,4);return{gain:1+.9*c,speed:1+.12*c,threshold:Math.max(.42,.78-.06*c)};};
 function sizeText(key,R){const d=STAGE_DEFS[key];if(!d)return['',''];
   if(key==='white')return['∞','beyond measuring'];
   if(d.unit){const m=2*R*d.unit;return[fmtLen(m),'about the size of '+compareTo(m)];}
