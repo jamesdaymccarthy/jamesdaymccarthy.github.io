@@ -1099,7 +1099,7 @@ class EatSet{
   nearestTarget(p,R,bossOnly){let best=null,bd=1e300;for(const e of this.list){if(e.eaten||e.pull>0)continue;if(bossOnly&&!e.boss)continue;if(!bossOnly&&(e.boss||!this.eatable(e,R)))continue;const d=e.center.distanceToSquared(p);if(d<bd){bd=d;best=e;}}return best;}
   // choose the growth rate so that eating (nearly) everything lands you at targetR, and progress never stalls
   calibrate(startR,targetR){
-    const all=[];for(const e of this.list)if(!e.boss)all.push([e.gate,e.vol]);for(const sw of this.swarms)for(const it of sw.items)all.push([it.r,it.vol]);
+    const all=[];for(const e of this.list)if(!e.boss)all.push([e.gate,e.vol]);for(const sw of this.swarms)if(!sw.fixedK)for(const it of sw.items)all.push([it.r,it.vol]);
     all.sort((a,b)=>a[0]-b[0]);const sumV=all.reduce((s,a)=>s+a[1],0)||1e-30;
     const sim=g=>{let v=startR*startR*startR,i=0;while(i<all.length){const R=Math.cbrt(v);if(all[i][0]>EAT_K*R)return i/all.length;v+=all[i][1]*g;i++;}return 1;};
     let lo=1e-6,hi=1e9;for(let k=0;k<70;k++){const mid=Math.sqrt(lo*hi);if(sim(mid)>=.999)hi=mid;else lo=mid;}
@@ -1132,6 +1132,8 @@ class Stage{
   constrainCamera(c,R,target){if(this.ground!==null&&c.y<this.ground+R*.25)c.y=this.ground+R*.25;}
   place(obj,x,y,z,ry=0,s=1,rx=0){obj.position.set(x,y,z);obj.rotation.set(rx,ry,0);obj.scale.setScalar(s);this.root.add(obj);return obj;}
   mesh(geo,mat=KIT_MAT){const m=new THREE.Mesh(geo,mat);m.castShadow=true;m.receiveShadow=true;return m;}
+  // big enough for this area: unlock the boss / exit even if a few scraps remain
+  bigEnough(ctx){const p=ctx&&ctx.player,e=this.def&&this.def.end;return!!(p&&e&&this.key!=='ear'&&p.Rt>=e*.8);}
   setupView(){}
   update(dt){this.t+=dt;}
   dispose(){disposeTree(this.root);WR.remove(this.root);disposeTree(this.lights);scene.remove(this.lights);disposeTree(this.bg);bgScene.remove(this.bg);if(this.envTex){this.envTex.dispose();}scene.environment=null;scene.fog=null;}
@@ -1891,7 +1893,7 @@ class BedroomStage extends RoomStage{
     if(this.boy&&!this.boyE.eaten){const b=this.boy,head=b.userData.head;b.userData.body.scale.y=1+.006*Math.sin(this.t*2.2);
       const big=p.R>22;let yaw=0,pitch=0;if(big){const d=_v.subVectors(p.pos,b.position);yaw=clamp(Math.atan2(-d.x,-d.z),-1.2,1.2);pitch=clamp(Math.atan2(d.y-60,Math.hypot(d.x,d.z))*.6,-.5,.3);}
       head.rotation.y=lerp(head.rotation.y,big?-yaw:Math.sin(this.t*.4)*.06,1-Math.exp(-dt*3))+(this.eats.bossUnlocked?Math.sin(this.t*30)*.02:0);head.rotation.x=lerp(head.rotation.x,-pitch,1-Math.exp(-dt*3));}
-    if(!this.eats.bossUnlocked&&this.eats.progress>=this.threshold){this.eats.bossUnlocked=true;ctx.notify&&ctx.notify('You are big enough now. Swallow the boy!');ctx.markBoss&&ctx.markBoss(this.boyE);}
+    if(!this.eats.bossUnlocked&&(this.eats.progress>=this.threshold||this.bigEnough(ctx))){this.eats.bossUnlocked=true;ctx.notify&&ctx.notify('You are big enough now. Swallow the boy!');ctx.markBoss&&ctx.markBoss(this.boyE);}
     if(!this.exitOpen&&this.boyE.eaten){this.exitOpen=true;ctx.exitOpened&&ctx.exitOpened('The bedroom door swings open.');const i=this.walls.indexOf(this.doorWall);if(i>=0)this.walls.splice(i,1);}
     if(this.exitOpen)this.door.rotation.y=lerp(this.door.rotation.y,-1.5,1-Math.exp(-dt*2));
     if(this.roomRules(ctx)==='exit')return'exit';
@@ -1985,7 +1987,7 @@ class LivingStage extends RoomStage{
   startYaw(){return Math.PI/2+.3;}
   update(dt,ctx){
     this.t+=dt;const p=ctx.player;this.fire.intensity=.3+.1*Math.sin(this.t*11)*Math.sin(this.t*4.3);
-    if(!this.exitOpen&&this.eats.progress>=this.threshold){this.exitOpen=true;ctx.exitOpened&&ctx.exitOpened('The front door is open!');const i=this.walls.indexOf(this.doorWall);if(i>=0)this.walls.splice(i,1);}
+    if(!this.exitOpen&&(this.eats.progress>=this.threshold||this.bigEnough(ctx))){this.exitOpen=true;ctx.exitOpened&&ctx.exitOpened('The front door is open!');const i=this.walls.indexOf(this.doorWall);if(i>=0)this.walls.splice(i,1);}
     if(this.exitOpen)this.door.rotation.y=lerp(this.door.rotation.y,1.6,1-Math.exp(-dt*2));
     if(this.roomRules(ctx)==='exit')return'exit';
     return null;
@@ -2096,8 +2098,8 @@ class OutdoorStage extends Stage{
   spot(r,sz,o={}){const b=this.bounds;for(let t=0;t<40;t++){const d=(o.near||0)+Math.pow(r(),o.pw||.8)*(sz*(o.spread||this.spread)+(o.add||20));const a=r()*TAU;const x=this.start.x+Math.cos(a)*d,z=this.start.z+Math.sin(a)*d;if(b&&(x<b[0]+sz||x>b[1]-sz||z<b[2]+sz||z>b[3]-sz))continue;if(this.blocked(x,z,sz))continue;return new V3(x,0,z);}return null;}
   blocked(x,z,m){for(const f of this.feet)if(Math.abs(x-f[0])<f[2]+m&&Math.abs(z-f[1])<f[3]+m)return true;return false;}
   progressInfo(){const e=this.eats,p=e.progress,th=this.threshold;if(this.exitOpen)return{frac:1,label:this.exitLabel||'Onward'};if(this.bossName&&e.bossUnlocked)return{frac:1,label:`Now swallow ${this.bossName}`};return{frac:clamp(p/th,0,1),label:`${Math.round(p*100)}% of ${this.whatLabel} devoured`};}
-  bossCheck(ctx){if(this.bossE&&!this.eats.bossUnlocked&&this.eats.progress>=this.threshold){this.eats.bossUnlocked=true;ctx.notify&&ctx.notify(`You can swallow ${this.bossName} now!`);ctx.markBoss&&ctx.markBoss(this.bossE);}
-    if(!this.exitOpen&&((this.bossE&&this.bossE.eaten)||(!this.bossE&&this.eats.progress>=this.threshold))){this.exitOpen=true;this.exitT=2.2;ctx.exitOpened&&ctx.exitOpened(this.exitMsg);}}
+  bossCheck(ctx){const done=this.eats.progress>=this.threshold||this.bigEnough(ctx);if(this.bossE&&!this.eats.bossUnlocked&&done){this.eats.bossUnlocked=true;ctx.notify&&ctx.notify(`You can swallow ${this.bossName} now!`);ctx.markBoss&&ctx.markBoss(this.bossE);}
+    if(!this.exitOpen&&((this.bossE&&this.bossE.eaten)||(!this.bossE&&done))){this.exitOpen=true;this.exitT=2.2;ctx.exitOpened&&ctx.exitOpened(this.exitMsg);}}
   update(dt,ctx){this.t+=dt;this.frameFog();this.bossCheck(ctx);if(this.exitOpen){this.exitT-=dt;if(this.exitT<=0)return'exit';}return null;}
   startPos(R){return new V3(this.start.x,R,this.start.z);}
   startYaw(){return this.yaw0||0;}
@@ -2283,7 +2285,7 @@ class CosmicStage extends Stage{
       if(im.instanceColor)im.instanceColor.needsUpdate=true;const sw=this.eats.addSwarm(im,items,{name:o.name||'something',weight:o.weight??2});sw.fixedK=o.k||6;}}
   progressInfo(){if(this.growRange){if(this.exitOpen)return{frac:1,label:this.exitLabel||'Onward'};if(this.bossName&&this.eats.bossUnlocked)return{frac:1,label:`Now swallow ${this.bossName}`};const f=clamp(this.frac(),0,1);return{frac:f,label:`${Math.round(f*100)}% of ${this.whatLabel} devoured`};}
     const e=this.eats,p=e.progress,th=this.threshold;if(this.exitOpen)return{frac:1,label:this.exitLabel||'Onward'};if(this.bossName&&e.bossUnlocked)return{frac:1,label:`Now swallow ${this.bossName}`};return{frac:clamp(p/th,0,1),label:`${Math.round(p*100)}% of ${this.whatLabel} devoured`};}
-  bossCheck(ctx){const done=this.growRange?this.frac()>=1:this.eats.progress>=this.threshold;
+  bossCheck(ctx){const done=(this.growRange?this.frac()>=1:this.eats.progress>=this.threshold)||this.bigEnough(ctx);
     if(this.bossE&&!this.eats.bossUnlocked&&done){this.eats.bossUnlocked=true;ctx.notify&&ctx.notify(`You can swallow ${this.bossName} now!`);ctx.markBoss&&ctx.markBoss(this.bossE);}
     if(!this.exitOpen&&((this.bossE&&this.bossE.eaten)||(!this.bossE&&done))){this.exitOpen=true;this.exitT=this.exitDelay??2.4;ctx.exitOpened&&ctx.exitOpened(this.exitMsg);}}
   update(dt,ctx){this.t+=dt;for(const a of this.anims)a(dt,this.t);this.bossCheck(ctx);if(this.exitOpen&&!this.manualExit){this.exitT-=dt;if(this.exitT<=0)return'exit';}return null;}
@@ -2811,6 +2813,7 @@ async function goToStage(key,opts={}){
   else st.gain=cycBoost(G.slot.cycles).gain;
   if(opts.restore)restoreRun(st,opts.restore);
   G.slot.visited[key]=1;if(ORDER.indexOf(key)>ORDER.indexOf(G.slot.highest||'ear')&&key!=='white')G.slot.highest=key;
+  G.entry={key,R:p.Rt,ctx:opts.ctx};
   G.slot.run={stage:key,seed:st.seed,R:p.Rt,pos:p.pos.toArray()};if(key==='white')G.slot.run.evt=G.whiteEvt;persist();
   G.lastEat=G.runT;G.state='playing';$('#hud').hidden=false;$('#touch').hidden=!G.touch;$('#cycles').hidden=!(G.slot.cycles>0);$('#cycles').textContent=`Cycles ${G.slot.cycles}`;
   setLoading('');
@@ -3088,6 +3091,7 @@ function menuPause(T,B){
     <button class="btn primary" data-a="resume">Resume</button>
     <button class="btn" data-a="settings">Settings</button>
     <button class="btn" data-a="controls">Controls</button>
+    ${st.key!=='white'?'<button class="btn" data-a="restartArea">Restart this area</button>':''}
     <button class="btn danger" data-a="quit">Save and quit to title</button>
   </div><div>
     <p class="section-t">This journey</p>
@@ -3097,7 +3101,7 @@ function menuPause(T,B){
     <p class="section-t">How to play</p>
     <p class="note" style="margin-top:0">${K('forward')}${K('left')}${K('back')}${K('right')} roll · mouse to look · ${K('jump')} jump · ${K('stick')} sticky grip to climb walls and furniture · hold ${K('stretch')} to stretch toward a surface and release to slingshot · hold ${K('down')} to squash flatter and squeeze into gaps · if you are pinned against something too big to eat, keep pushing and you will squish through it · ${K('camera')} camera · ${K('hide')} hide the interface. Out in space, ${K('jump')} and ${K('down')} fly up and down. Roll into anything smaller than you to swallow it. When something tasty is hard to find, an arrow points the way.</p>
   </div></div>`;
-  B.querySelectorAll('[data-a]').forEach(b=>b.addEventListener('click',()=>{const a=b.dataset.a;if(a==='resume')resume();else if(a==='quit')quitToTitle();else openMenu(a,'pause');}));
+  B.querySelectorAll('[data-a]').forEach(b=>b.addEventListener('click',()=>{const a=b.dataset.a;if(a==='resume')resume();else if(a==='quit')quitToTitle();else if(a==='restartArea')restartArea();else openMenu(a,'pause');}));
 }
 function menuSettings(T,B){
   const S=SAVE.settings;T.textContent='Settings';
@@ -3194,6 +3198,7 @@ async function startSlot(i){
   }
   await goToStage('ear',{R:STAGE_DEFS.ear.start,force:true});
 }
+async function restartArea(){const e=G.entry&&G.stage&&G.entry.key===G.stage.key?G.entry:{key:G.stage.key,R:STAGE_DEFS[G.stage.key].start};$('#menu').hidden=true;G.menu=null;G.menuParent=null;if(G.player)G.player.clearAttached();G.slot.run=null;await goToStage(e.key,{R:e.R,force:true,ctx:e.ctx});toast('Area restarted.');resume();}
 function quitToTitle(){saveRun();$('#menu').hidden=true;G.menu=null;G.menuParent=null;hideDialog();G.win=null;showTitle();}
 $('#winTitle').addEventListener('click',()=>{$('#winCard').hidden=true;G.win=null;titleSel=G.slotI;showTitle();});
 
