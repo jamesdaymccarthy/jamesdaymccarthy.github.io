@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Blorp</title>
+<style>
+  /* Single dark look: one-screen chat column, slide-in drawer for saved chats */
+  :root{
+    --bg:#0f1117; --fg:#e8e8f0; --muted:#8a8fa3; --line:#262a38;
+    --field:#171a24; --panel:#141722; --bot:#1c2340; --bot-fg:#cfdcff; --me:#262a38;
+    --avatar:#2b3a67; --avatar-fg:#9fb8ff; --accent:#5b7cff; --on-accent:#ffffff;
+    --danger:#ff7a8a; --scrim:rgba(5,6,10,.6); --canvas:#ffffff;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  img{max-width:100%;}
+  html,body{height:100%;}
+  body{margin:0;display:flex;flex-direction:column;background:var(--bg);color:var(--fg);font-family:system-ui,sans-serif;}
+  button{font:inherit;}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--avatar-fg);outline-offset:2px;}
+  .pad{padding-left:max(18px, env(safe-area-inset-left, 0px));padding-right:max(18px, env(safe-area-inset-right, 0px));}
+  header{padding-block:12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;}
+  .avatar{width:36px;height:36px;border-radius:50%;background:var(--avatar);display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--avatar-fg);flex:none;}
+  .who{flex:1;min-width:0;}
+  header h1{margin:0;font-size:16px;}
+  header p{margin:0;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ghost{background:transparent;color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:7px 11px;font-size:13px;cursor:pointer;}
+  .ghost:hover{border-color:var(--accent);}
+  #log{flex:1;overflow-y:auto;padding-block:16px;display:flex;flex-direction:column;gap:10px;min-height:0;}
+  .msg{max-width:80%;padding:9px 13px;border-radius:12px;line-height:1.45;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;display:flex;flex-direction:column;gap:8px;}
+  .bot{background:var(--bot);color:var(--bot-fg);align-self:flex-start;}
+  .me{background:var(--me);align-self:flex-end;}
+  .sys{align-self:center;color:var(--muted);font-size:12px;text-align:center;}
+  .dim{color:var(--muted);}
+  .pic{display:flex;flex-direction:column;gap:6px;align-items:flex-start;white-space:normal;}
+  .pic img{width:min(360px,100%);aspect-ratio:1;max-width:100%;object-fit:contain;background:var(--canvas);border-radius:8px;display:block;cursor:zoom-in;}
+  .pic img.big{width:min(720px,100%);cursor:zoom-out;}
+  .msg.bot:has(img.big){max-width:100%;}
+  .pic button{background:transparent;color:var(--bot-fg);border:1px solid var(--avatar);border-radius:6px;padding:4px 9px;font-size:12px;cursor:pointer;}
+  .drawing{width:min(360px,100%);text-align:center;padding:12px;aspect-ratio:1;border-radius:8px;border:1px dashed var(--avatar);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;}
+  #row{display:flex;flex-wrap:wrap;gap:8px;padding-block:14px;border-top:1px solid var(--line);}
+  #attachBtn{background:var(--field);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:0 12px;font-size:18px;cursor:pointer;flex:none;}
+  #attachBtn:hover{border-color:var(--accent);}
+  #attachBtn:disabled{opacity:.4;cursor:default;}
+  #tray{flex-basis:100%;display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{display:flex;align-items:center;gap:6px;background:var(--field);border:1px solid var(--line);border-radius:8px;padding:4px 6px 4px 4px;font-size:12px;max-width:100%;}
+  .chip img{width:32px;height:32px;object-fit:cover;border-radius:5px;flex:none;}
+  .chip .fi{width:32px;height:32px;border-radius:5px;background:var(--avatar);color:var(--avatar-fg);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;flex:none;text-transform:uppercase;}
+  .chip span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  .chip button{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px 4px;}
+  .chip button:hover{color:var(--danger);}
+  .att{display:flex;flex-wrap:wrap;gap:6px;white-space:normal;}
+  .att img{max-width:min(220px,100%);max-height:220px;border-radius:8px;display:block;}
+  .att .tag{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:3px 7px;}
+  body.dragging #log{outline:2px dashed var(--accent);outline-offset:-8px;}
+  #input{flex:1;min-width:0;background:var(--field);border:1px solid var(--line);color:var(--fg);padding:10px 12px;border-radius:8px;font-size:14px;}
+  #input:focus{outline:none;border-color:var(--accent);}
+  #send{background:var(--accent);color:var(--on-accent);border:none;padding:0 18px;border-radius:8px;font-weight:bold;cursor:pointer;}
+  #send:disabled{opacity:.4;cursor:default;}
+
+  #scrim{position:fixed;inset:0;background:var(--scrim);z-index:20;}
+  #drawer{position:fixed;top:0;bottom:0;left:0;width:min(300px,85vw);background:var(--panel);border-right:1px solid var(--line);z-index:21;display:flex;flex-direction:column;
+    padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);}
+  .dhead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 14px 10px;}
+  .dhead h2{margin:0;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);}
+  #chatList{flex:1;overflow-y:auto;padding:0 8px 12px;display:flex;flex-direction:column;gap:2px;min-height:0;}
+  .item{display:flex;align-items:center;gap:4px;border-radius:8px;}
+  .item.on{background:var(--bot);}
+  .item .open{flex:1;min-width:0;text-align:left;background:transparent;border:none;color:var(--fg);padding:9px 10px;cursor:pointer;border-radius:8px;}
+  .item .open:hover{background:var(--me);}
+  .item .t{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .item .d{display:block;font-size:11px;color:var(--muted);}
+  .item .del{background:transparent;border:none;color:var(--muted);cursor:pointer;padding:6px 8px;border-radius:6px;font-size:12px;flex:none;}
+  .item .del:hover{color:var(--danger);}
+  .item .del.arm{color:var(--danger);font-weight:bold;}
+  #listNote{padding:8px 14px;font-size:12px;color:var(--muted);}
+  @media (prefers-reduced-motion:no-preference){ #drawer{animation:slide .18s ease-out;} @keyframes slide{from{transform:translateX(-12px);opacity:.6}} }
+</style>
+</head>
+<body>
+
+<header class="pad">
+  <button class="ghost" id="chatsBtn" type="button" aria-label="Saved chats">Chats</button>
+  <div class="avatar">B</div>
+  <div class="who"><h1>Blorp</h1><p id="sub">AI · can draw pictures</p></div>
+  <button class="ghost" id="newBtn" type="button">New chat</button>
+</header>
+<div id="log" class="pad" aria-live="polite"></div>
+<form id="row" class="pad">
+  <div id="tray" hidden></div>
+  <button id="attachBtn" type="button" aria-label="Attach files" title="Attach images or text files">+</button>
+  <input id="fileInput" type="file" multiple hidden>
+  <input id="input" type="text" placeholder="Talk to Blorp, ask for a drawing, or attach a file..." autocomplete="off" aria-label="Message">
+  <button id="send" type="submit">Send</button>
+</form>
+
+<div id="scrim" hidden></div>
+<aside id="drawer" hidden aria-label="Saved chats">
+  <div class="dhead"><h2>Saved chats</h2><button class="ghost" id="closeBtn" type="button">Close</button></div>
+  <div id="listNote">Loading your chats…</div>
+  <div id="chatList"></div>
+</aside>
+
+<script>
+// ===== SETUP: paste your Cloudflare Worker's address here (see worker.js) =====
+const BLORP_SERVER = "https://blorp.YOUR-NAME.workers.dev";
+// Blorp's personality and drawing rules live in worker.js, so visitors can't change them.
+
+// Words that mean "make it detailed", in a few languages
+const DETAIL_WORDS = /\b(detail(ed|s)?|realistic|realism|intricate|elaborate|complex|hi-?res|high[- ](res|resolution|quality|detail)|hd|4k|8k|ultra|masterpiece|fancy|super ?nice|really (good|nice|cool)|very (good|nice|cool)|best you can|lifelike|photo-?realistic|detallad[oa]|realista|détaillée?|réaliste|detailliert|realistisch|dettagliat[oa]|detalhad[oa])\b/i;
+
+const $ = id => document.getElementById(id);
+const log = $('log'), input = $('input'), sendBtn = $('send'), form = $('row');
+const drawer = $('drawer'), scrim = $('scrim'), chatList = $('chatList'), listNote = $('listNote');
+
+let ready = false, dead = false, busy = false;
+let history = [];            // [{role, content, display?, files?}]
+let chatId = null;           // id of the current saved chat
+let chats = [];              // saved chats, newest first
+let drawingNote = 'Drawing…';
+let ctl = null;
+
+/* ---------- picture parsing ---------- */
+function splitReply(text){
+  const fence = text.search(/```\s*svg/i);
+  const raw = text.search(/<svg[\s>]/i);
+  const start = fence >= 0 ? fence : raw;
+  if(start < 0) return { before: text.trim(), svg: null, after: '', partial: false };
+  const rest = text.slice(start);
+  const m = rest.match(/<svg[\s\S]*?<\/svg>/i);
+  const before = text.slice(0, start).trim();
+  if(!m) return { before, svg: null, after: '', partial: true };
+  let afterIdx = start + rest.indexOf(m[0]) + m[0].length;
+  let after = text.slice(afterIdx).replace(/^\s*```/, '').trim();
+  return { before, svg: cleanSvg(m[0]), after, partial: false };
+}
+function cleanSvg(svg){
+  svg = svg.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/\son\w+\s*=\s*("[^"]*"|'[^']*')/gi, '');
+  if(!/xmlns=/.test(svg)) svg = svg.replace(/<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+  return svg;
+}
+function closeSvg(text){
+  const start = text.search(/<svg[\s>]/i);
+  if(start < 0) return null;
+  let s = text.slice(start);
+  const end = s.lastIndexOf('>');
+  if(end < 0) return null;
+  s = s.slice(0, end + 1);
+  const stack = [], re = /<(\/?)([a-zA-Z][\w:.-]*)(?:"[^"]*"|'[^']*'|[^'">])*?(\/?)>/g;
+  let m;
+  while((m = re.exec(s))){
+    if(m[3]) continue;
+    if(m[1]){ const i = stack.lastIndexOf(m[2]); if(i >= 0) stack.length = i; }
+    else stack.push(m[2]);
+  }
+  return cleanSvg(s + stack.reverse().map(n => `</${n}>`).join(''));
+}
+const svgUrl = svg => 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+
+/* ---------- rendering ---------- */
+function scrollDown(){ log.scrollTop = log.scrollHeight; }
+function add(text, cls){
+  const div = document.createElement('div');
+  div.className = 'msg ' + cls;
+  div.textContent = text;
+  log.appendChild(div); scrollDown();
+  return div;
+}
+function fillBot(div, text, streaming){
+  div.replaceChildren();
+  const p = splitReply(text);
+  if(p.before){ const s = document.createElement('div'); s.textContent = p.before; div.appendChild(s); }
+  if(p.partial){
+    const shapes = (text.slice(text.search(/<svg[\s>]/i)).match(/<(path|rect|circle|ellipse|polygon|polyline|line|use|text)\b/gi) || []).length;
+    const live = shapes ? closeSvg(text) : null;
+    if(!live){
+      const d = document.createElement('div'); d.className = 'drawing'; d.textContent = drawingNote; div.appendChild(d);
+    } else {
+      let box = div._live;
+      if(!box){
+        box = div._live = document.createElement('div'); box.className = 'pic';
+        box._img = document.createElement('img'); box._img.alt = 'Blorp is drawing';
+        box._note = document.createElement('span'); box._note.className = 'dim'; box._note.style.fontSize = '12px';
+        box.append(box._img, box._note);
+      }
+      box._note.textContent = `${drawingNote} ${shapes} shapes so far`;
+      const url = svgUrl(live);
+      if(url !== box._url){
+        box._url = url;
+        const pre = new Image(); pre.src = url;
+        pre.decode().then(() => { if(box._url === url) box._img.src = url; }).catch(() => {});
+      }
+      div.appendChild(box);
+    }
+  } else if(p.svg){
+    div._live = null;
+    const box = document.createElement('div'); box.className = 'pic';
+    const img = document.createElement('img'); img.alt = 'A picture Blorp drew'; img.src = svgUrl(p.svg);
+    img.title = 'Click to enlarge'; img.onclick = () => img.classList.toggle('big');
+    box.appendChild(img);
+    {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Save image';
+      b.onclick = () => saveImage(p.svg, b);
+      box.appendChild(b);
+    }
+    div.appendChild(box);
+  }
+  if(p.after){ const s = document.createElement('div'); s.textContent = p.after; div.appendChild(s); }
+  if(!div.childNodes.length){ div.textContent = '...'; div.classList.add('dim'); } else div.classList.remove('dim');
+  scrollDown();
+}
+function renderAll(){
+  log.replaceChildren();
+  add("Hi! I'm Blorp. Talk to me about anything, in any language. I can draw pictures too. Say \"detailed\" and I'll go all out!", 'bot');
+  for(const m of history){
+    if(m.role === 'user') userBubble(m, null);
+    else fillBot(add('', 'bot'), m.content, false);
+  }
+}
+
+async function saveImage(svg, btn){
+  const old = btn.textContent;
+  let blob = new Blob([svg], { type: 'image/svg+xml' }), filename = 'blorp-drawing.svg';
+  try{
+    const img = new Image(); img.src = svgUrl(svg);
+    await img.decode();
+    const c = document.createElement('canvas'); c.width = c.height = 1024;
+    c.getContext('2d').drawImage(img, 0, 0, 1024, 1024);
+    blob = await new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(), 'image/png'));
+    filename = 'blorp-drawing.png';
+  }catch(e){ /* keep SVG */ }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  btn.textContent = 'Saved';
+  setTimeout(() => { btn.textContent = old; }, 2000);
+}
+
+/* ---------- chat ---------- */
+const ERR = {
+  rate_limited: "(Blorp needs a breather — too many messages. Try again in a few minutes.)",
+  too_large: "(That was too much for Blorp at once. Try a smaller file or start a new chat.)",
+  overloaded: "(Blorp's brain is busy right now. Try again in a moment.)",
+  blocked: "(Blorp isn't allowed to chat from this website. Add it to ALLOWED_ORIGINS in worker.js.)",
+  server: "(Blorp's server had a problem. Try again.)",
+  empty: "(Blorp went quiet. Try rephrasing.)"
+};
+
+function disableChat(msg){
+  dead = true; sendBtn.disabled = true; input.disabled = true; attachBtn.disabled = true;
+  input.placeholder = 'Blorp is unavailable here';
+  add(msg, 'sys');
+}
+function contextTurns(){
+  let turns = history.slice(-30);
+  while(turns.length && turns[0].role !== 'user') turns.shift();
+  while(JSON.stringify(turns).length > 180000 && turns.length > 1){
+    turns = turns.slice(1);
+    while(turns.length && turns[0].role !== 'user') turns.shift();
+  }
+  return turns.map(m => ({ role: m.role, content: m.content }));
+}
+
+/* ---------- attachments ---------- */
+const TEXT_EXT = /\.(txt|md|markdown|csv|tsv|json|js|mjs|ts|jsx|tsx|html|htm|css|py|java|c|cpp|h|cs|go|rs|rb|php|sh|xml|yaml|yml|toml|ini|log|sql|svg|lua|swift|kt)$/i;
+const MAX_TEXT = 40000;
+let imgLimits = { maxCount: 4, maxInputBytes: 20 * 1024 * 1024 };
+let pending = [];            // [{file, kind:'image'|'text', url?, text?}]
+const tray = $('tray'), fileInput = $('fileInput'), attachBtn = $('attachBtn');
+
+function renderTray(){
+  tray.replaceChildren();
+  tray.hidden = !pending.length;
+  pending.forEach((p, i) => {
+    const c = document.createElement('div'); c.className = 'chip';
+    if(p.kind === 'image'){ const im = document.createElement('img'); im.src = p.url; im.alt = ''; c.appendChild(im); }
+    else { const f = document.createElement('div'); f.className = 'fi'; f.textContent = (p.file.name.split('.').pop() || 'txt').slice(0,4); c.appendChild(f); }
+    const n = document.createElement('span'); n.textContent = p.file.name; c.appendChild(n);
+    const x = document.createElement('button'); x.type = 'button'; x.textContent = '×'; x.setAttribute('aria-label', 'Remove ' + p.file.name);
+    x.onclick = () => { if(p.url) URL.revokeObjectURL(p.url); pending.splice(i, 1); renderTray(); };
+    c.appendChild(x); tray.appendChild(c);
+  });
+}
+async function addFiles(list){
+  for(const file of Array.from(list || [])){
+    const isImg = /^image\/(jpeg|png|webp|gif)$/.test(file.type);
+    if(isImg){
+      if(!imgLimits){ add(`(Blorp can't look at images in this view, so ${file.name} was skipped.)`, 'sys'); continue; }
+      if(file.size > imgLimits.maxInputBytes){ add(`(${file.name} is too big for Blorp to look at.)`, 'sys'); continue; }
+      if(pending.filter(p => p.kind === 'image').length >= imgLimits.maxCount){ add(`(Blorp can look at ${imgLimits.maxCount} images per message.)`, 'sys'); continue; }
+      pending.push({ file, kind: 'image', url: URL.createObjectURL(file) });
+    } else if(file.type.startsWith('text/') || file.type === 'application/json' || TEXT_EXT.test(file.name)){
+      let text = await file.text();
+      if(text.length > MAX_TEXT) text = text.slice(0, MAX_TEXT) + '\n[...file cut off here...]';
+      pending.push({ file, kind: 'text', text });
+    } else {
+      add(`(Blorp can read images and text files, but not ${file.name}.)`, 'sys');
+    }
+  }
+  renderTray();
+}
+attachBtn.onclick = () => fileInput.click();
+fileInput.onchange = () => { addFiles(fileInput.files); fileInput.value = ''; };
+input.addEventListener('paste', e => { if(e.clipboardData && e.clipboardData.files.length){ e.preventDefault(); addFiles(e.clipboardData.files); } });
+document.addEventListener('dragover', e => { if(e.dataTransfer && [...e.dataTransfer.types].includes('Files')){ e.preventDefault(); document.body.classList.add('dragging'); } });
+document.addEventListener('dragleave', e => { if(!e.relatedTarget) document.body.classList.remove('dragging'); });
+document.addEventListener('drop', e => { if(e.dataTransfer && e.dataTransfer.files.length){ e.preventDefault(); document.body.classList.remove('dragging'); addFiles(e.dataTransfer.files); } });
+
+function userBubble(m, liveUrls){
+  const div = add('', 'me');
+  if(m.files && m.files.length){
+    const a = document.createElement('div'); a.className = 'att';
+    m.files.forEach((f, i) => {
+      const url = liveUrls && liveUrls[i];
+      if(url){ const im = document.createElement('img'); im.src = url; im.alt = f.name; a.appendChild(im); }
+      else { const t = document.createElement('span'); t.className = 'tag'; t.textContent = (f.kind === 'image' ? 'Image: ' : 'File: ') + f.name; a.appendChild(t); }
+    });
+    div.appendChild(a);
+  }
+  const shown = m.display != null ? m.display : m.content;
+  if(shown){ const s = document.createElement('div'); s.textContent = shown; div.appendChild(s); }
+  scrollDown();
+}
+
+function finishSvg(t){
+  const sp = splitReply(t);
+  if(!sp.partial) return t;
+  const done = closeSvg(t);
+  return sp.before + (done ? '\n```svg\n' + done + '\n```' : '');
+}
+
+async function imageBlock(file){
+  const bmp = await createImageBitmap(file);
+  const scale = Math.min(1, 1568 / Math.max(bmp.width, bmp.height));
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(bmp.width * scale));
+  c.height = Math.max(1, Math.round(bmp.height * scale));
+  const g = c.getContext('2d');
+  g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+  g.drawImage(bmp, 0, 0, c.width, c.height);
+  const url = c.toDataURL('image/jpeg', 0.85);
+  return { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: url.slice(url.indexOf(',') + 1) } };
+}
+
+// Sends the chat to the worker and streams Blorp's reply back.
+async function askBlorp(messages, detailed, signal, onText){
+  let text = '', truncated = false, last = 0, timer = null;
+  const flush = () => { timer = null; last = Date.now(); onText(text); };
+  const push = () => { if(!timer) timer = setTimeout(flush, Math.max(0, 120 - (Date.now() - last))); };
+  try{
+    const res = await fetch(BLORP_SERVER, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages, detailed }),
+      signal
+    });
+    if(!res.ok){
+      let info = {};
+      try{ info = await res.json(); }catch(e){}
+      throw { code: info.code || (res.status === 429 ? 'rate_limited' : res.status === 413 ? 'too_large' : res.status === 403 ? 'blocked' : 'server') };
+    }
+    const reader = res.body.getReader(), dec = new TextDecoder();
+    let buf = '';
+    for(;;){
+      const { done, value } = await reader.read();
+      if(done) break;
+      buf += dec.decode(value, { stream: true }).replace(/\r/g, '');
+      let i;
+      while((i = buf.indexOf('\n\n')) >= 0){
+        const evt = buf.slice(0, i); buf = buf.slice(i + 2);
+        const data = evt.split('\n').filter(l => l.startsWith('data:')).map(l => l.slice(5).trim()).join('');
+        if(!data) continue;
+        let d; try{ d = JSON.parse(data); }catch(e){ continue; }
+        if(d.type === 'content_block_delta' && d.delta && d.delta.type === 'text_delta'){ text += d.delta.text; push(); }
+        else if(d.type === 'message_delta' && d.delta && d.delta.stop_reason === 'max_tokens') truncated = true;
+        else if(d.type === 'error') throw { code: d.error && d.error.type === 'overloaded_error' ? 'overloaded' : 'server' };
+      }
+    }
+  }catch(e){
+    if(timer){ clearTimeout(timer); timer = null; }
+    const code = e && e.name === 'AbortError' ? 'cancelled' : (e && e.code) || 'network';
+    throw { code, text: text.trim() ? text : undefined };
+  }
+  if(timer) clearTimeout(timer);
+  if(!text.trim()) throw { code: 'empty' };
+  return { text, truncated };
+}
+
+async function send(){
+  const text = input.value.trim();
+  if((!text && !pending.length) || !ready || dead || busy) return;
+  busy = true; input.value = '';
+  ctl = new AbortController();
+  sendBtn.textContent = 'Stop';
+  const files = pending; pending = []; renderTray();
+  const images = files.filter(p => p.kind === 'image');
+  let content = text;
+  for(const p of files){
+    if(p.kind === 'image') content += `\n[The user attached an image: ${p.file.name}]`;
+    else content += `\n\n[The user attached a file: ${p.file.name}]\n----- start of ${p.file.name} -----\n${p.text}\n----- end of ${p.file.name} -----`;
+  }
+  content = content.trim();
+  const msg = { role: 'user', content, display: text, files: files.map(p => ({ name: p.file.name, kind: p.kind })) };
+  userBubble(msg, files.map(p => p.url || null));
+  history.push(msg);
+  const detailed = DETAIL_WORDS.test(text);
+  drawingNote = detailed ? 'Drawing a detailed picture…' : 'Drawing…';
+  const bubble = add('...', 'bot dim');
+
+  try{
+    const messages = contextTurns();
+    if(images.length){
+      const blocks = [];
+      for(const p of images){
+        try{ blocks.push(await imageBlock(p.file)); }
+        catch(e){ add(`(Blorp couldn't open ${p.file.name}.)`, 'sys'); }
+      }
+      const lastTurn = messages[messages.length - 1];
+      lastTurn.content = [...blocks, { type: 'text', text: lastTurn.content }];
+    }
+    const { text: reply, truncated } = await askBlorp(messages, detailed, ctl.signal, t => fillBot(bubble, t, true));
+    const kept = finishSvg(reply);
+    fillBot(bubble, kept, false);
+    history.push({ role: 'assistant', content: kept });
+    saveChat();
+    if(truncated) add('(Blorp ran out of room and stopped early.)', 'sys');
+  }catch(err){
+    const code = err && err.code;
+    if(err && err.text){
+      const kept = finishSvg(err.text);
+      fillBot(bubble, kept, false);
+      history.push({ role: 'assistant', content: kept });
+      saveChat();
+    } else { bubble.remove(); history.pop(); }
+    if(code !== 'cancelled') add(ERR[code] || '(Blorp lost connection — try again)', 'sys');
+  }
+  busy = false; ctl = null; sendBtn.textContent = 'Send';
+  if(!dead){ sendBtn.disabled = false; input.focus(); }
+}
+
+/* ---------- saved chats (kept in this browser) ---------- */
+const STORE = 'blorp-chats-v1';
+let warnedSave = false;
+function titleOf(msgs){
+  const first = msgs.find(m => m.role === 'user');
+  const t = first ? (first.display || first.content).replace(/\s+/g, ' ').trim() : 'New chat';
+  return t.length > 48 ? t.slice(0, 47) + '…' : t;
+}
+function loadChats(){
+  try{
+    const a = JSON.parse(localStorage.getItem(STORE) || '[]');
+    return Array.isArray(a) ? a.filter(c => c && c.id && Array.isArray(c.messages)).sort((x, y) => (y.updated || 0) - (x.updated || 0)) : [];
+  }catch(e){ return []; }
+}
+// Writes the list; if storage is full, drops the oldest chats until it fits.
+function writeChats(list){
+  list.sort((a, b) => (b.updated || 0) - (a.updated || 0));
+  let dropped = 0;
+  for(;;){
+    try{ localStorage.setItem(STORE, JSON.stringify(list)); return { ok: true, dropped }; }
+    catch(e){ if(list.length <= 1) return { ok: false, dropped }; list.pop(); dropped++; }
+  }
+}
+function saveChat(){
+  if(!history.length) return;
+  if(!chatId) chatId = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const list = loadChats().filter(c => c.id !== chatId);
+  list.push({ id: chatId, title: titleOf(history), updated: Date.now(), messages: history.slice() });
+  const r = writeChats(list);
+  if(!r.ok){
+    if(!warnedSave){ warnedSave = true; add("(This browser won't let Blorp save chats. Chatting still works, but this chat won't be kept.)", 'sys'); }
+  } else if(r.dropped){
+    add(`(Storage was full, so Blorp deleted your ${r.dropped} oldest saved chat${r.dropped > 1 ? 's' : ''}.)`, 'sys');
+  }
+  chats = loadChats(); renderList();
+}
+function newChat(){
+  if(busy) return;
+  history = []; chatId = null;
+  renderAll(); markActive(); closeDrawer(); input.focus();
+}
+function openChat(id){
+  if(busy) return;
+  const c = chats.find(x => x.id === id);
+  if(!c) return;
+  history = c.messages.filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string');
+  chatId = id;
+  renderAll(); markActive(); closeDrawer();
+}
+function fmtDate(ms){
+  if(!ms) return '';
+  const d = new Date(ms), now = new Date();
+  return d.toDateString() === now.toDateString()
+    ? d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+    : d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+function markActive(){
+  for(const el of chatList.children) el.classList.toggle('on', !!chatId && el.dataset.id === chatId);
+}
+function renderList(){
+  chatList.replaceChildren();
+  listNote.hidden = chats.length > 0;
+  if(!chats.length) listNote.textContent = 'No saved chats yet. Every chat saves itself in this browser after Blorp replies.';
+  for(const c of chats){
+    const row = document.createElement('div'); row.className = 'item'; row.dataset.id = c.id;
+    const open = document.createElement('button'); open.type = 'button'; open.className = 'open';
+    const t = document.createElement('span'); t.className = 't'; t.textContent = c.title || 'Untitled chat';
+    const dt = document.createElement('span'); dt.className = 'd'; dt.textContent = fmtDate(c.updated);
+    open.append(t, dt); open.onclick = () => openChat(c.id);
+    const del = document.createElement('button'); del.type = 'button'; del.className = 'del'; del.textContent = 'Delete';
+    del.setAttribute('aria-label', 'Delete chat: ' + (c.title || 'Untitled chat'));
+    del.onclick = () => {
+      if(!del.classList.contains('arm')){
+        del.classList.add('arm'); del.textContent = 'Sure?';
+        setTimeout(() => { del.classList.remove('arm'); del.textContent = 'Delete'; }, 3000);
+        return;
+      }
+      writeChats(loadChats().filter(x => x.id !== c.id));
+      chats = loadChats();
+      if(chatId === c.id) newChat();
+      renderList();
+    };
+    row.append(open, del);
+    chatList.appendChild(row);
+  }
+  markActive();
+}
+function openDrawer(){ drawer.hidden = false; scrim.hidden = false; $('closeBtn').focus(); }
+function closeDrawer(){ drawer.hidden = true; scrim.hidden = true; }
+$('chatsBtn').onclick = openDrawer;
+$('closeBtn').onclick = closeDrawer;
+scrim.onclick = closeDrawer;
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && !drawer.hidden) closeDrawer(); });
+$('newBtn').onclick = newChat;
+
+form.addEventListener('submit', e => { e.preventDefault(); if(busy && ctl) ctl.abort(); else send(); });
+chats = loadChats(); renderList();
+renderAll();
+if(!BLORP_SERVER || BLORP_SERVER.includes('YOUR-NAME')){
+  disableChat("(Blorp isn't connected yet. Put your worker's address in BLORP_SERVER at the top of the script.)");
+} else {
+  ready = true; sendBtn.disabled = false;
+}
+</script>
+</body>
+</html>
