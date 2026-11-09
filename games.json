@@ -26,5 +26,5 @@
   {"title": "The ZIT Realm", "folder": "zit-realm", "blurb": "My Fictional Universe -- ZIT", "fave": true, "date": "2026-11-03"},
   {"title": "Ultimate Earwax Simulator", "folder": "ultimate-earwax-simulator", "blurb": "Be inside of an ear, and also be what is made in an ear!", "fave": true, "date": "2026-11-06"},
   {"title": "Cube in Ds", "folder": "cube-in-ds", "blurb": "everyone knows that a 2d cube is a square and a 3d cube is a cube, but what does a 0d cube look like? a 10d cube? a -1d cube?", "fave": false, "date": "2026-11-07"},
-  {"title": "Blorp", "folder": "blorp", "blurb": "an AI. Blorp and not functional", "fave": true, "date": "2026-11-09"}
+  {"title": "Blorp", "folder": "blorp", "blurb": "an AI. Blorp", "fave": true, "date": "2026-11-09"}
 ]
