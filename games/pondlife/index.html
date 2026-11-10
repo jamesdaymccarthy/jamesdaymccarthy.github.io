@@ -2858,7 +2858,7 @@ function resolveWalls(nx, nz, y, r) {
     const a = Math.atan2(dz, dx);
     if (Math.abs(angDiff(a, CAVE_OPEN)) > 0.33) { const inside = PL._insideCave; const target = inside ? CAVE_WALL - r - 0.8 : CAVE_WALL + r + 0.8; if ((inside && d > target) || (!inside && d < target)) { nx = CAVE.x + dx / d * target; nz = CAVE.z + dz / d * target; } }
   }
-  if (W.inBurrow) { const bd = Math.hypot(nx, nz), lim = BURROW_R - 1.2; if (bd > lim) { nx = nx / bd * lim; nz = nz / bd * lim; } }
+  if (W.inBurrow) { if (hobTunnelOn() && Math.abs(nx) < 0.85 && nz < -4.5) { nx = clamp(nx, -0.62, 0.62); nz = Math.max(nz, -17.0); } else { const bd = Math.hypot(nx, nz), lim = BURROW_R - 1.2; if (bd > lim) { nx = nx / bd * lim; nz = nz / bd * lim; } } }
   else if (nx > SEA_EDGE) { /* the sea wraps around forever; see seaTick */ }
   else { const LR = W.limitR || WORLD_R, R = Math.hypot(nx, nz); if (R > LR) { nx *= LR / R; nz *= LR / R; } }
   return { x: nx, z: nz, hit };
@@ -4459,11 +4459,13 @@ function denTick(dt) {
    ============================================================ */
 const FLAT_DENS = new Set(['treehouse', 'pad', 'leaf', 'brom', 'hide']);
 const ROOM_CEIL = { treehouse: 5.6, pad: 4.4, leaf: 4.2, brom: 6.5, hide: 4.4 };
+function hobTunnelOn() { return false; } // the hobbit hole tunnel was removed
 function denGround(x, z) {
+  if (hobTunnelOn() && Math.abs(x) < 1.0 && z < -5.6) return BURROW_Y;
   if (FLAT_DENS.has(W.denKind)) return BURROW_Y + smooth(5.9, 6.6, Math.hypot(x, z)) * 0.6;
   return burrowFloor(x, z);
 }
-function denCeil(x, z) { return FLAT_DENS.has(W.denKind) ? BURROW_Y + (ROOM_CEIL[W.denKind] || 4) - 0.4 : burrowCeil(x, z); }
+function denCeil(x, z) { if (hobTunnelOn() && Math.abs(x) < 1.1 && z < -6.3) return BURROW_Y + 2.15; return FLAT_DENS.has(W.denKind) ? BURROW_Y + (ROOM_CEIL[W.denKind] || 4) - 0.4 : burrowCeil(x, z); }
 const RY = BURROW_Y;
 function rmMesh(g, geo, mat, x, y, z, sx, sy, sz) { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); if (sx !== undefined) m.scale.set(sx, sy === undefined ? sx : sy, sz === undefined ? sx : sz); m.castShadow = true; m.receiveShadow = true; g.add(m); return m; }
 function rmAt(a, r) { return [Math.sin(a) * r, Math.cos(a) * r]; } // a = 0 points at the door (+z)
@@ -5276,7 +5278,7 @@ function decoSpot(t) {
 function placePickup(pk) {
   const sp = decoSpot(pk.t); if (!sp) { pk.mesh.visible = false; pk.respawn = 30; return; }
   const y = groundAt(sp[0], sp[1], 99, 300);
-  pk.mesh.position.set(sp[0], y, sp[1]); pk.mesh.visible = true; pk.respawn = 0;
+  pk.mesh.position.set(sp[0], y, sp[1]); pk.mesh.visible = decoOn(); pk.respawn = 0;
 }
 function buildPickups() {
   const counts = { mushroom: 6, flower: 6, pebble: 5, feather: 5, acorn: 5, pinecone: 4, shell: 5, berries: 9, crystal: 4, moss: 4, fern: 6, lantern: 3 };
@@ -16219,8 +16221,7 @@ SPECIES.hobbit.newParts = F => { const hair = mat(0x5a3a1a, { roughness: 1 }); f
 SPECIES.hobbit.vLabel = 'Snack'; SPECIES.hobbit.vPow = () => { if (!nfCool(30, 'Second breakfast')) return; PL.needs.hunger = clamp(PL.needs.hunger + 35, 0, 100); PL.needs.energy = clamp(PL.needs.energy + 15, 0, 100); sparkle(PL.pos.clone().add(new V3(0, 0.6, 0)), 12, 0xe8c070); toast('Second breakfast! (Then elevenses, then luncheon...)', 'quiet'); };
 function buildHobbitRoom() { SEED = 4141;
   // A proper hobbit hole: low and cosy, wood everywhere, a round green door, round windows set
-  // deep in thick earthy walls, a long round tunnel going deeper into the hill with more round
-  // doors, roots poking through the ceiling, and food, books, pipes and clutter on every surface.
+  // deep in thick earthy walls, and roots poking through the ceiling, and food, books, pipes and clutter on every surface.
   const g = new THREE.Group(); scene.add(g); W.interiors.hobbithole = g; const R0 = 6.9, WH = 1.9, VH = 1.3, Y = RY;
   const M = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.85 }, o || {}));
   const B = () => new THREE.BoxGeometry(1, 1, 1);
@@ -16239,15 +16240,14 @@ function buildHobbitRoom() { SEED = 4141;
   const rug = (x, z, rx, rz, cols, ry) => { for (let i = 0; i < cols.length; i++) { const k = 1 - i / cols.length; const m = put(new THREE.CircleGeometry(1, 40), M(cols[i], { roughness: 1 }), x, 0.012 + i * 0.002, z, rx * k, rz * k, 1, ry || 0, -Math.PI / 2); m.scale.set(rx * k, rz * k, 1); } };
   rug(0, 0.6, 2.4, 1.6, [0x6a3a1a, 0x8a5a2a, 0x4a6a2a, 0x9a6a30, 0x6a4a1a, 0xa07a40]); rug(-3.6, 0.6, 1.2, 0.9, [0x7a2a1a, 0xb06a30, 0x7a2a1a, 0xc08a40]); rug(0, 5.0, 1.1, 0.6, [0x4a5a2a, 0x7a6a3a, 0x4a5a2a]);
   // ---- walls: wood panelling below, warm plaster above, posts all the way round ----
-  const GAP = 2 * Math.asin(1.08 / R0), TS = Math.PI + GAP / 2, TL = TAU - GAP; // a gap in the back wall for the tunnel
+  const GAP = 0, TS = Math.PI + GAP / 2, TL = TAU - GAP; // a gap in the back wall for the tunnel
   put(new THREE.CylinderGeometry(R0, R0, WH, 56, 1, true, TS, TL), M(0xffffff, { map: plaster, side: THREE.BackSide }), 0, WH / 2, 0);
   put(new THREE.CylinderGeometry(R0 - 0.04, R0 - 0.04, 1.05, 56, 1, true, TS, TL), M(0xffffff, { map: panelT, side: THREE.BackSide }), 0, 0.525, 0);
   { const tg2 = new THREE.TorusGeometry(R0 - 0.08, 0.06, 6, 56, TL); tg2.rotateZ(-Math.PI / 2 + GAP / 2); put(tg2, dark, 0, 1.05, 0, 1, 1, 1, 0, Math.PI / 2); }
-  { const sh = new THREE.Shape(); sh.moveTo(-1.6, 0); sh.lineTo(1.6, 0); sh.lineTo(1.6, WH + 0.05); sh.lineTo(-1.6, WH + 0.05); sh.lineTo(-1.6, 0); const hl = new THREE.Path(); hl.moveTo(-1.0, 0); hl.lineTo(1.0, 0); hl.lineTo(1.0, 0.9); hl.absarc(0, 0.9, 1.0, 0, Math.PI, false); hl.lineTo(-1.0, 0); sh.holes.push(hl); put(new THREE.ShapeGeometry(sh, 24), M(0xffffff, { map: plaster }), 0, 0, -(R0 - 0.22)); } put(new THREE.TorusGeometry(R0 - 0.1, 0.12, 6, 56), wood, 0, WH, 0, 1, 1, 1, 0, Math.PI / 2); put(new THREE.TorusGeometry(R0 - 0.06, 0.05, 6, 56), dark, 0, 0.05, 0, 1, 1, 1, 0, Math.PI / 2);
   // ---- a low wooden ceiling, boards and beams ----
   put(new THREE.SphereGeometry(R0, 48, 12, 0, TAU, 0, Math.PI / 2), M(0xffffff, { map: boards, side: THREE.BackSide }), 0, WH, 0, 1, VH / R0, 1);
   for (let i = 0; i < 16; i++) { const a = i / 16 * TAU, pts = []; for (let k = 0; k <= 10; k++) { const r = (R0 - 0.12) * (1 - k / 10); pts.push(new V3(Math.sin(a) * r, Y + roofAt(r) - 0.1, Math.cos(a) * r)); }
-    g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 16, 0.12, 6), wood)); const p = wallAt(a, R0 - 0.12); if (Math.abs(Math.sin(a)) > 0.3) put(B(), wood, p.x, WH / 2, p.z, 0.26, WH, 0.2, p.ry); }
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 16, 0.12, 6), wood)); const p = wallAt(a, R0 - 0.12); if (Math.cos(a) < 0.95) put(B(), wood, p.x, WH / 2, p.z, 0.26, WH, 0.2, p.ry); }
   put(new THREE.CylinderGeometry(0.6, 0.6, 0.2, 16), wood, 0, WH + VH - 0.15, 0);
   // tree roots poking through the ceiling
   for (let i = 0; i < 9; i++) { const a = rnd() * TAU, r = mr(1.5, 5.8), x = Math.sin(a) * r, z = Math.cos(a) * r, y0 = roofAt(r) - 0.05, pts = []; let px = x, pz = z; for (let k = 0; k < 5; k++) { pts.push(new V3(px, Y + y0 - k * 0.14, pz)); px += mr(-0.12, 0.12); pz += mr(-0.12, 0.12); } g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 10, 0.04 - i * 0.002, 5), M(0x5a3a1e, { roughness: 1 }))); }
@@ -16273,16 +16273,17 @@ function buildHobbitRoom() { SEED = 4141;
     addTo(win, new THREE.TorusGeometry(0.62, 0.08, 8, 28), wood, 0, 0, 0, 1); for (const r of [0, Math.PI / 2, Math.PI / 4, -Math.PI / 4]) { const m = addTo(win, B(), dark, 0, 0, -0.44, 0.03, 1.2, 0.03); m.rotation.z = r; } addTo(win, new THREE.TorusGeometry(0.3, 0.02, 6, 20), dark, 0, 0, -0.44, 1);
     put(B(), M(0x8a5a2a), q.x, 0.62, q.z, 1.2, 0.22, 0.32, p.ry); for (let i = 0; i < 6; i++) { const o = (i - 2.5) * 0.18, fx = q.x + Math.cos(a) * o, fz = q.z - Math.sin(a) * o; put(G.sph, M([0xff6080, 0xffe040, 0xffffff, 0xff9030][i % 4]), fx, 0.84, fz, 0.07); put(G.sph, M(0x3a8a30), fx, 0.77, fz, 0.09, 0.06, 0.09); }
     glowSprite(g, q.x * 0.8, Y + 1.3, q.z * 0.8, 0xfff0c0, 2.6, 0.22); }
-  // ---- a long round tunnel going deeper into the hill, with more round doors along it ----
-  { const z0 = -(R0 - 0.24), len = 11, tg = new THREE.Group(); tg.position.set(0, Y, z0); g.add(tg);
-    put(new THREE.TorusGeometry(1.02, 0.16, 8, 30, Math.PI), wood, 0, 0.9, -(R0 - 0.26), 1, 1, 1, 0); for (const s of [-1, 1]) put(B(), wood, s * 1.02, 0.45, -(R0 - 0.26), 0.3, 0.9, 0.3);
-    const tun = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, len, 24, 1, true, Math.PI / 2, Math.PI), M(0xffffff, { map: plaster, side: THREE.BackSide })); tun.rotation.x = Math.PI / 2; tun.position.set(0, 0.9, -len / 2); tg.add(tun);
-    const wl = new THREE.Mesh(new THREE.PlaneGeometry(2.0, len), M(0xffffff, { map: tiles })); wl.rotation.x = -Math.PI / 2; wl.position.set(0, 0.01, -len / 2); tg.add(wl);
-    const lowL = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.9, len), M(0xffffff, { map: panelT, side: THREE.BackSide })); lowL.position.set(0, 0.45, -len / 2); tg.add(lowL);
-    for (let i = 0; i < 5; i++) { const zz = -1.4 - i * 2.2; addTo(tg, new THREE.TorusGeometry(0.96, 0.07, 6, 20, Math.PI), wood, 0, 0.9, zz, 1); for (const s of [-1, 1]) addTo(tg, B(), wood, s * 0.96, 0.45, zz, 0.12, 0.9, 0.12); }
-    for (let i = 0; i < 4; i++) { const zz = -2.3 - i * 2.2, s = i % 2 ? 1 : -1, col = [0x8a3a1a, 0x2a5a8a, 0xd8a030, 0x5a2a5a][i]; const d = addTo(tg, new THREE.CircleGeometry(0.36, 24), M(col), s * 0.97, 0.5, zz, 1); d.rotation.y = -s * Math.PI / 2; const fr = addTo(tg, new THREE.TorusGeometry(0.38, 0.05, 6, 24), wood, s * 0.96, 0.5, zz, 1); fr.rotation.y = -s * Math.PI / 2; addTo(tg, G.sphM, brass, s * 0.93, 0.5, zz, 0.04); }
-    for (let i = 0; i < 3; i++) glowSprite(tg, 0, 1.6, -2 - i * 3.3, 0xffa040, 1.6 - i * 0.3, 0.6 - i * 0.15);
-    addTo(tg, new THREE.CircleGeometry(1.0, 24, 0, Math.PI), M(0x120a04), 0, 0.9, -len + 0.05, 1); addTo(tg, new THREE.PlaneGeometry(2.0, 0.9), M(0x120a04), 0, 0.45, -len + 0.06, 1); }
+  // ---- the larder at the back: a whole forest of meat hanging from the ceiling on hooks ----
+  { const ham = M(0xb0503a, { roughness: 0.6 }), ham2 = M(0x9a3a28, { roughness: 0.6 }), bone = M(0xf0e8d0), saus = M(0xa0402a, { roughness: 0.5 }), sal = M(0x7a2a22, { roughness: 0.7 }), rope = M(0xb09060, { roughness: 1 });
+    for (const bz of [-4.4, -5.4]) { const half = Math.sqrt(Math.max(0, (R0 - 0.3) * (R0 - 0.3) - bz * bz)) * 0.62, by = roofAt(Math.abs(bz)) - 0.12; put(B(), wood, 0, by, bz, half * 2, 0.16, 0.18);
+      for (let i = 0; i < 9; i++) { const x = -half + 0.3 + i * (half * 2 - 0.6) / 8, kind = (i + (bz < -5 ? 1 : 0)) % 4, drop = mr(0.35, 0.75); put(G.cyl, rope, x, by - drop / 2, bz, 0.012, drop, 0.012); put(new THREE.TorusGeometry(0.05, 0.012, 4, 10), iron, x, by - drop - 0.03, bz, 1); const y0 = by - drop - 0.08;
+        if (kind === 0) { put(G.sph, i % 2 ? ham : ham2, x, y0 - 0.3, bz, 0.22, 0.34, 0.2); put(G.cyl, bone, x, y0 - 0.02, bz, 0.035, 0.16, 0.035); put(G.sph, bone, x, y0 + 0.06, bz, 0.05); }
+        else if (kind === 1) { for (let k = 0; k < 6; k++) { const a2 = (k - 2.5) * 0.12; const sg = put(G.cyl, saus, x + Math.sin(a2) * k * 0.04, y0 - 0.08 - k * 0.13, bz, 0.04, 0.14, 0.04); sg.rotation.z = Math.sin(k * 1.7) * 0.4; } }
+        else if (kind === 2) { put(G.cyl, sal, x, y0 - 0.32, bz, 0.075, 0.6, 0.075); put(G.sph, sal, x, y0 - 0.62, bz, 0.075); put(G.cyl, rope, x, y0 - 0.32, bz, 0.08, 0.04, 0.08); put(G.cyl, rope, x, y0 - 0.15, bz, 0.08, 0.04, 0.08); }
+        else { for (const s2 of [-1, 1]) { put(G.sph, ham, x + s2 * 0.08, y0 - 0.2, bz, 0.11, 0.17, 0.11); put(G.cyl, bone, x + s2 * 0.08, y0 - 0.02, bz, 0.025, 0.12, 0.025); } } } }
+    // a chopping block and a little sign
+    put(G.cyl, M(0x8a6a40), -1.9, 0.25, -5.1, 0.38, 0.5, 0.38); put(G.cyl, M(0xb08a5a), -1.9, 0.505, -5.1, 0.37, 0.01, 0.37); put(B(), M(0xc0c0c8, { metalness: 0.7, roughness: 0.3 }), -1.85, 0.56, -5.1, 0.32, 0.02, 0.14, 0.4); put(B(), wood, -2.05, 0.56, -5.0, 0.18, 0.04, 0.05, 0.4);
+    const sg = put(new THREE.PlaneGeometry(1.1, 0.36), new THREE.MeshBasicMaterial({ map: textTex([['THE LARDER', 'bold 30px Georgia,serif', 38]], 256, 80, { bg: '#5a3a1a', col: '#ffe0a0' }) }), -1.0, 1.5, -(R0 - 0.15), 1, 1, 1, 0.15); }
   // ---- the fireplace, with a kettle, a mantel clock and pipes ----
   { const a = -Math.PI / 2, p = wallAt(a, R0 - 0.45), st = M(0x8a7a68, { flatShading: true }); put(B(), st, p.x, 0.95, p.z, 2.4, 1.9, 0.9, p.ry); put(B(), wood, p.x + 0.35, 1.5, p.z, 2.8, 0.14, 1.05, p.ry);
     for (let i = 0; i < 9; i++) put(B(), M(0x7a6a58, { flatShading: true }), p.x + 0.46, 0.15 + (i % 3) * 0.5, p.z - 1.0 + Math.floor(i / 3) * 1.0, 0.04, 0.42, 0.5 + (i % 2) * 0.2, p.ry);
@@ -17309,15 +17310,15 @@ function bbQuakeTick(dt) { const P = PL.pos; BB.qT -= dt; CAM.shake = Math.max(C
     if (R.t > 14) { scene.remove(R.m); BB.rocks.splice(i, 1); } } }
 
 /* ---------------------------- tornado ---------------------------- */
-function bbTornadoTick(dt) { const T = BB.tor, P = PL.pos, t = GAME.t; if (!T) return; const tgt = Math.atan2(P.x - T.pos.x, P.z - T.pos.z); let dd = tgt - T.dir; while (dd > Math.PI) dd -= TAU; while (dd < -Math.PI) dd += TAU; T.dir += clamp(dd, -0.3, 0.3) * dt * 0.25 + Math.sin(t * 0.3) * dt * 0.2; T.pos.x += Math.sin(T.dir) * 5.5 * dt; T.pos.z += Math.cos(T.dir) * 5.5 * dt; T.pos.y = terrainH(T.pos.x, T.pos.z);
+function bbTornadoTick(dt) { const T = BB.tor, P = PL.pos, t = GAME.t; if (!T) return; const TS = W.megaK === 'thundernado' ? 2.6 : 1; T.g.scale.setScalar(TS); const tgt = Math.atan2(P.x - T.pos.x, P.z - T.pos.z); let dd = tgt - T.dir; while (dd > Math.PI) dd -= TAU; while (dd < -Math.PI) dd += TAU; T.dir += clamp(dd, -0.3, 0.3) * dt * 0.25 + Math.sin(t * 0.3) * dt * 0.2; T.pos.x += Math.sin(T.dir) * 5.5 * (TS > 1 ? 1.5 : 1) * dt; T.pos.z += Math.cos(T.dir) * 5.5 * (TS > 1 ? 1.5 : 1) * dt; T.pos.y = terrainH(T.pos.x, T.pos.z);
   if (Math.hypot(T.pos.x, T.pos.z) > WORLD_R - 30) T.dir += Math.PI * dt; T.g.position.copy(T.pos); T.rings.forEach((r, i) => { r.rotation.y += dt * (4 - i * 0.12); r.position.x = Math.sin(t * 2 + i * 0.4) * i * 0.12; r.position.z = Math.cos(t * 1.7 + i * 0.4) * i * 0.12; });
   for (const d of T.deb) { d.a += dt * d.sp; d.h = (d.h + dt * 4) % 30; const rr2 = d.r * (0.4 + d.h / 30); d.m.position.set(Math.cos(d.a) * rr2, d.h, Math.sin(d.a) * rr2); d.m.rotation.x += dt * 5; d.m.rotation.y += dt * 3; }
-  const d = Math.hypot(P.x - T.pos.x, P.z - T.pos.z); WEATHER.cur.wind = Math.max(WEATHER.cur.wind, 1.2 + clamp(1 - d / 60, 0, 1) * 2.5); if (d < 40) CAM.shake = Math.max(CAM.shake || 0, (1 - d / 40) * 0.3);
-  for (const ins of INS.list) { if (!ins.alive || ins.caught) continue; const dx = T.pos.x - ins.pos.x, dz = T.pos.z - ins.pos.z, di = Math.hypot(dx, dz); if (di < 25) { const k = (1 - di / 25) * 8 * dt; ins.pos.x += (dx / di) * k * 0.7 + (-dz / di) * k; ins.pos.z += (dz / di) * k * 0.7 + (dx / di) * k; ins.pos.y += k * 0.4; if (ins.root) ins.root.position.copy(ins.pos); } }
-  T.cool -= dt; if (T.carry > 0) { T.carry -= dt; T.ca += dt * 4; const k = 1 - T.carry / 3; P.set(T.pos.x + Math.cos(T.ca) * (3 - k), T.pos.y + 2 + k * 18, T.pos.z + Math.sin(T.ca) * (3 - k)); PL.vel.set(0, 0, 0); PL.onGround = false;
+  const d = Math.hypot(P.x - T.pos.x, P.z - T.pos.z); WEATHER.cur.wind = Math.max(WEATHER.cur.wind, 1.2 + clamp(1 - d / 60, 0, 1) * 2.5); if (d < 40 * TS) CAM.shake = Math.max(CAM.shake || 0, (1 - d / (40 * TS)) * 0.3);
+  for (const ins of INS.list) { if (!ins.alive || ins.caught) continue; const dx = T.pos.x - ins.pos.x, dz = T.pos.z - ins.pos.z, di = Math.hypot(dx, dz); if (di < 25 * TS) { const k = (1 - di / (25 * TS)) * 8 * dt; ins.pos.x += (dx / di) * k * 0.7 + (-dz / di) * k; ins.pos.z += (dz / di) * k * 0.7 + (dx / di) * k; ins.pos.y += k * 0.4; if (ins.root) ins.root.position.copy(ins.pos); } }
+  T.cool -= dt; if (T.carry > 0) { T.carry -= dt; T.ca += dt * 4; const k = 1 - T.carry / 3; P.set(T.pos.x + Math.cos(T.ca) * (3 - k) * TS, T.pos.y + 2 + k * 18 * TS, T.pos.z + Math.sin(T.ca) * (3 - k) * TS); PL.vel.set(0, 0, 0); PL.onGround = false;
     if (T.carry <= 0) { const a = rnd() * TAU, far = mr(35, 60); const tx = clamp(T.pos.x + Math.cos(a) * far, -WORLD_R + 30, WORLD_R - 30), tz = clamp(T.pos.z + Math.sin(a) * far, -WORLD_R + 30, WORLD_R - 30); placePlayer(tx, tz); PL.vel.set(0, 4, 0); T.cool = 10; hurt(6, 'the tornado', new V3(0, 2, 0)); CAM.shake = 0.6; toast('WHOOOOOSH! The tornado spun you around and threw you far away!', 'guide'); } }
-  else if (d < 6.5 && T.cool <= 0 && GAME.state === 'play' && !W.inBurrow) { T.carry = 3; T.ca = Math.atan2(P.z - T.pos.z, P.x - T.pos.x); toast('AAAAAH! The tornado picked you up!!!', 'guide'); tone('sawtooth', 300, 900, 2.5, 0.06); }
-  else if (d < 16 && !PL.diving) { const k = (1 - d / 16) * 3.5 * dt; P.x += (T.pos.x - P.x) / d * k; P.z += (T.pos.z - P.z) / d * k; } }
+  else if (d < 6.5 * TS && T.cool <= 0 && GAME.state === 'play' && !W.inBurrow) { T.carry = 3; T.ca = Math.atan2(P.z - T.pos.z, P.x - T.pos.x); toast('AAAAAH! The tornado picked you up!!!', 'guide'); tone('sawtooth', 300, 900, 2.5, 0.06); }
+  else if (d < 16 * TS && !PL.diving) { const k = (1 - d / (16 * TS)) * 3.5 * TS * dt; P.x += (T.pos.x - P.x) / d * k; P.z += (T.pos.z - P.z) / d * k; } }
 
 /* ---------------------------- hailstorm ---------------------------- */
 function bbHailTick(dt) { const P = PL.pos; if (WEATHER.lock === 'auto' && WEATHER.type !== 'storm') { WEATHER.type = 'storm'; WEATHER.timer = 60; } if (!BB.hailM) { BB.hailM = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.1, 0), new THREE.MeshStandardMaterial({ color: 0xf0f8ff, roughness: 0.2, metalness: 0.1 }), 160); BB.hailM.frustumCulled = false; scene.add(BB.hailM); for (let i = 0; i < 160; i++) BB.hail.push({ x: 0, y: -9999, z: 0, vy: 0, life: 0, rest: 0 }); }
@@ -17331,8 +17332,8 @@ function bbHailTick(dt) { const P = PL.pos; if (WEATHER.lock === 'auto' && WEATH
 /* ---------------------------- blizzard ---------------------------- */
 function bbBlizzardTick(dt) { const P = PL.pos, t = GAME.t; if (!BB.snow) { const n = 2200, pos = new Float32Array(n * 3); for (let i = 0; i < n; i++) { pos[i * 3] = mr(-18, 18); pos[i * 3 + 1] = mr(0, 12); pos[i * 3 + 2] = mr(-18, 18); } const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); BB.snow = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.14, transparent: true, opacity: 0.95 })); BB.snow.frustumCulled = false; scene.add(BB.snow); }
   BB.snow.visible = !W.inBurrow; BB.snow.position.set(P.x, P.y - 3, P.z); const sp = BB.snow.geometry.attributes.position; for (let i = 0; i < sp.count; i++) { let x = sp.getX(i) + dt * 14, y = sp.getY(i) - dt * 5; if (x > 18) x -= 36; if (y < 0) y += 12; sp.setX(i, x); sp.setY(i, y); } sp.needsUpdate = true;
-  bbOverlay('rgba(235,242,255,A)', W.inBurrow ? 0 : 0.42 + Math.sin(t * 0.7) * 0.12); WEATHER.cur.wind = Math.max(WEATHER.cur.wind, 2.2); WEATHER.cur.fog = Math.max(WEATHER.cur.fog, 0.9);
-  const n = PL.needs; if (!W.inBurrow && !(SPECIES[GAME.species] || {}).cold && !easyMode()) { n.temp = Math.max(0, n.temp - dt * 0.6); if (n.temp < 15 && !BB.coldTip) { BB.coldTip = 1; toast('You are FREEZING! Get to your burrow to warm up!', 'guide'); } } }
+  const TN = W.megaK === 'thundernado' || iceSight(); if (iceSight() && !BB.iceTip) { BB.iceTip = 1; toast(GAME.species === 'ice' ? '❄️ Your ice-frog eyes see right through the blizzard! No whiteout for you.' : '❄️ ICE VISION is on! You can see right through the blizzard.', 'quiet'); } if (TN) bbOverlay('', 0); if (!TN) { bbOverlay('rgba(235,242,255,A)', W.inBurrow ? 0 : (W.megaK === 'kelvin' ? 0.62 : 0.42) + Math.sin(t * 0.7) * 0.12); WEATHER.cur.fog = Math.max(WEATHER.cur.fog, 0.9); } WEATHER.cur.wind = Math.max(WEATHER.cur.wind, 2.2);
+  const n = PL.needs; if (!W.inBurrow && !(SPECIES[GAME.species] || {}).cold && !easyMode()) { n.temp = Math.max(0, n.temp - dt * (W.megaK === 'kelvin' ? 1.4 : 0.6)); if (n.temp < 15 && !BB.coldTip) { BB.coldTip = 1; toast('You are FREEZING! Get to your burrow to warm up!', 'guide'); } } }
 
 /* ---------------------------- wildfire ---------------------------- */
 function bbFireStart() { if (BB.fire.on) return; const P = PL.pos; let o = null; for (let i = 0; i < 60 && !o; i++) { const a = rnd() * TAU, d = mr(35, 70), x = P.x + Math.cos(a) * d, z = P.z + Math.sin(a) * d; if (terrainH(x, z) > waterLevelAt(x, z) + 0.4 && (W.trees || []).some(t => Math.abs(t.x - x) < 15 && Math.abs(t.z - z) < 15)) o = { x, z }; }
@@ -17346,7 +17347,7 @@ function bbFireTick(dt) { const F = BB.fire, P = PL.pos, t = GAME.t, top = curLe
   if (!F.on) { if (F.flames) { F.flames.forEach(s => s.visible = false); F.smoke.forEach(s => s.visible = false); F.light.intensity = 0; } return; }
   F.t += dt / 60 / 2.5; if (WEATHER.lock === 'auto' && BWX.kind !== 'flood') { WEATHER.type = 'sunny'; WEATHER.timer = Math.max(WEATHER.timer, 30); } const raining = WEATHER.cur.rain > 0.5 && WEATHER.lock !== 'auto';
   if (F.t > F.dur || raining || BWX.kind === 'flood') { F.on = false; bbOverlay('', 0); toast(raining ? 'The rain puts out the wildfire! ' + BWX_INFO.wildfire.end : BWX_INFO.wildfire.end, 'guide'); return; }
-  F.spreadT -= dt; if (F.spreadT <= 0 && F.cells.length && F.cells.length < 450) { F.spreadT = 0.07; for (let k = 0; k < 2; k++) { let src = F.cells[Math.floor(Math.random() * F.cells.length)]; if (src.t > 25) src = F.cells[F.cells.length - 1 - Math.floor(Math.random() * Math.min(F.cells.length, 40))]; const a = rnd() * TAU, d = mr(2, 4.5), x = src.x + Math.cos(a) * d, z = src.z + Math.sin(a) * d, y = terrainH(x, z); if (y > waterLevelAt(x, z) + 0.1 && Math.hypot(x - F.cx, z - F.cz) < 120) F.cells.push({ x, z, y, t: 0 }); } }
+  const MG = !!F.mega; F.spreadT -= dt; if (F.spreadT <= 0 && F.cells.length && F.cells.length < (MG ? 1400 : 450)) { F.spreadT = MG ? 0.025 : 0.07; for (let k = 0; k < (MG ? 5 : 2); k++) { let src = F.cells[Math.floor(Math.random() * F.cells.length)]; if (src.t > 25) src = F.cells[F.cells.length - 1 - Math.floor(Math.random() * Math.min(F.cells.length, 40))]; const a = rnd() * TAU, d = mr(2, 4.5), x = src.x + Math.cos(a) * d, z = src.z + Math.sin(a) * d, y = terrainH(x, z); if (y > waterLevelAt(x, z) + 0.1 && Math.hypot(x - F.cx, z - F.cz) < (MG ? 300 : 120)) F.cells.push({ x, z, y, t: 0 }); } }
   let fi = 0, si = 0; const near = Math.hypot(P.x - F.cx, P.z - F.cz);
   for (let i = F.cells.length - 1; i >= 0; i--) { const c = F.cells[i]; c.t += dt; if (c.t > 45) { const m = new THREE.Mesh(new THREE.CircleGeometry(mr(1.6, 2.4), 10), new THREE.MeshBasicMaterial({ color: 0x141010, transparent: true, opacity: 0.85, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 })); m.rotation.x = -Math.PI / 2; m.position.set(c.x, c.y + 0.05, c.z); scene.add(m); if (W.mainWorld) W.mainWorld.push(m); F.burnt.push({ m, x: c.x, z: c.z, y: c.y, r: 2, day: GAME.day }); F.cells.splice(i, 1); continue; }
     if (!top) continue; const dp = Math.hypot(P.x - c.x, P.z - c.z); if (dp < 70) { for (let k = 0; k < 2 && fi < F.flames.length; k++) { const s = F.flames[fi++]; s.visible = true; const ph = c.t * 3 + k * 2 + i; s.position.set(c.x + Math.sin(ph) * 0.4, c.y + 0.6 + ((t * 1.5 + k * 0.5 + i * 0.13) % 1) * 3.6, c.z + Math.cos(ph) * 0.4); const sc = (1 - ((t * 1.5 + k * 0.5 + i * 0.13) % 1)) * 3.4 + 0.8; s.scale.setScalar(sc); s.material.color.setHex(k ? 0xffc040 : 0xff5a10); }
@@ -17366,9 +17367,9 @@ function bbVolcanoTick(dt) { const V = BB.vol, P = PL.pos, t = GAME.t; if (!V) r
   BB.plume.forEach((s, i) => { const q = (t * 0.06 + i / BB.plume.length) % 1; s.visible = top; s.position.set(V.x + q * 30 + Math.sin(i) * 3, V.y + 3 + q * 70, V.z + q * 10 + Math.cos(i) * 3); s.scale.setScalar(6 + q * 28); s.material.opacity = 0.55 * (1 - q); });
   BB.volLight.position.set(V.x, V.y + 6, V.z); BB.volLight.intensity = top ? 3 + Math.random() : 0; BB.glowS.visible = top; BB.glowS.position.set(V.x, V.y + 3, V.z); BB.glowS.scale.setScalar(26 + Math.sin(t * 3) * 3);
   if (Math.random() < dt * 0.15) { CAM.shake = Math.max(CAM.shake || 0, 0.25); noiseHit(70, 0.4, 1.2, 0.15); }
-  for (const L of BB.lava) { L.n = Math.min(L.pts.length, L.n + dt * 1.6); L.m.count = Math.floor(L.n); } BB.lavaMat.emissiveIntensity = 1.0 + Math.sin(t * 2) * 0.25;
+  for (const L of BB.lava) { L.n = Math.min(L.pts.length, L.n + dt * (W.megaK === 'cinaclov' ? 5 : 1.6)); L.m.count = Math.floor(L.n); } BB.lavaMat.emissiveIntensity = 1.0 + Math.sin(t * 2) * 0.25;
   // lava burns!
-  if (top && GAME.state === 'play' && !(SPECIES[GAME.species] || {}).lavaSwim) { for (const L of BB.lava) { for (let i = 0; i < L.m.count; i += 2) { const p = L.pts[i]; if (Math.abs(P.x - p.x) < 2 && Math.abs(P.z - p.z) < 2 && Math.abs(P.y - p.y) < 1.6) { hurt(15, 'the lava', new V3(mr(-3, 3), 5, mr(-3, 3))); if (!BB.lavaTip) { BB.lavaTip = 1; toast('OW OW OW! LAVA! Get away from it!', 'guide'); } break; } } } }
+  if (top && GAME.state === 'play' && !(SPECIES[GAME.species] || {}).lavaSwim) { for (const L of BB.lava) { for (let i = 0; i < L.m.count; i += 2) { const p = L.pts[i]; const LW = W.megaK === 'cinaclov' ? 4.5 : 2; if (Math.abs(P.x - p.x) < LW && Math.abs(P.z - p.z) < LW && Math.abs(P.y - p.y) < 1.6) { hurt(15, 'the lava', new V3(mr(-3, 3), 5, mr(-3, 3))); if (!BB.lavaTip) { BB.lavaTip = 1; toast('OW OW OW! LAVA! Get away from it!', 'guide'); } break; } } } }
   // ash falling like grey snow
   if (!BB.ash) { const n = 900, pos = new Float32Array(n * 3); for (let i = 0; i < n; i++) { pos[i * 3] = mr(-16, 16); pos[i * 3 + 1] = mr(0, 10); pos[i * 3 + 2] = mr(-16, 16); } const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); BB.ash = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0x8a8684, size: 0.1, transparent: true, opacity: 0.85 })); BB.ash.frustumCulled = false; scene.add(BB.ash); }
   BB.ash.visible = top && !W.inBurrow; BB.ash.position.set(P.x, P.y - 2, P.z); const ap = BB.ash.geometry.attributes.position; for (let i = 0; i < ap.count; i++) { let y = ap.getY(i) - dt * 1.2, x = ap.getX(i) + Math.sin(t + i) * dt * 0.3; if (y < 0) y += 10; ap.setY(i, y); ap.setX(i, x); } ap.needsUpdate = true; if (top) bbOverlay('rgba(110,90,80,A)', 0.18); }
@@ -17397,10 +17398,10 @@ function bbMudTick(dt) { const P = PL.pos; for (let i = BB.mud.length - 1; i >= 
 function bbTsunamiTick(dt) { const T = BB.ts; BB.tsFlood = Math.max(0, (BB.tsFlood || 0) - dt * 0.05); if (!T || curLevel() !== 'ocean' || !OCEAN.group) { if (BB.wave) BB.wave.visible = false; return; } const P = PL.pos;
   if (!BB.wave) { const g = new THREE.Group(); const body = new THREE.Mesh(new THREE.CylinderGeometry(9, 9, 400, 24, 1, false, 0, Math.PI), new THREE.MeshStandardMaterial({ color: 0x2a6ab0, transparent: true, opacity: 0.88, roughness: 0.15, side: THREE.DoubleSide })); body.rotation.x = Math.PI / 2; body.rotation.y = Math.PI / 2; g.add(body); const foam = new THREE.Mesh(new THREE.BoxGeometry(3, 1.2, 400), new THREE.MeshStandardMaterial({ color: 0xf4fbff, roughness: 0.8 })); foam.position.set(-2, 8.6, 0); g.add(foam); BB.wave = g; OCEAN.group.add(g); }
   if (T.state === 'wait') { T.t += dt; if (T.t > 6) { T.state = 'come'; T.x = 260; toast('LOOK! A GIANT WAVE is coming from the east! It is HUGE!', 'guide'); tone('sawtooth', 80, 60, 3, 0.08); } BB.wave.visible = false; return; }
-  if (T.state === 'come') { BB.wave.visible = true; T.x -= dt * 16; BB.wave.position.set(T.x, OCEAN.y0 + 0.5, P.z); CAM.shake = Math.max(CAM.shake || 0, clamp(1 - Math.abs(P.x - T.x) / 80, 0, 1) * 0.5); WEATHER.cur.wind = Math.max(WEATHER.cur.wind, 2);
+  if (T.state === 'come') { BB.wave.visible = true; BB.wave.scale.set(1, W.megaK === 'humongi' ? 2.6 : 1, 1); T.x -= dt * 16; BB.wave.position.set(T.x, OCEAN.y0 + 0.5, P.z); CAM.shake = Math.max(CAM.shake || 0, clamp(1 - Math.abs(P.x - T.x) / 80, 0, 1) * 0.5); WEATHER.cur.wind = Math.max(WEATHER.cur.wind, 2);
     if (Math.abs(P.x - T.x) < 6 && !T.hit) { T.hit = 1; T.carry = 2.5; toast('THE WAVE HITS!!! You are swept towards the beach!', 'guide'); noiseHit(200, 0.5, 2, 0.3); hurt(6, 'the tsunami', new V3(-8, 6, 0)); }
     if (T.carry > 0) { T.carry -= dt; P.x -= dt * 16; P.y = Math.max(P.y, OCEAN.y0 + 3 + Math.sin(T.carry * 2) * 2); PL.vel.set(-4, 0, 0); }
-    if (T.x < -300) { T.state = 'flood'; BB.tsFlood = 2.5; BB.wave.visible = false; toast('The wave crashed onto Seashell Beach and flooded it! The water will slowly go back down.', 'guide'); } } }
+    if (T.x < -300) { T.state = 'flood'; BB.tsFlood = W.megaK === 'humongi' ? 7 : 2.5; BB.wave.visible = false; toast('The wave crashed onto Seashell Beach and flooded it! The water will slowly go back down.', 'guide'); } } }
 
 /* ---------------------------- lightning storm ---------------------------- */
 function bbLightningTick(dt) { const P = PL.pos; if (WEATHER.lock === 'auto') { WEATHER.type = 'storm'; WEATHER.timer = Math.max(WEATHER.timer, 30); } BB.ltT = (BB.ltT == null ? 4 : BB.ltT) - dt; if (BB.ltT > 0 || curLevel() !== 'top' || W.inBurrow) return; BB.ltT = mr(8, 16);
@@ -17420,7 +17421,7 @@ function bbStruckTick(dt) { const t = GAME.t, P = PL.pos, top = curLevel() === '
 function bbTick(dt) { const k = BWX.kind, play = GAME.state === 'play', top = curLevel() === 'top' && !W.inBurrow;
   // old cracks and puddles fade after a day
   for (let i = BB.pools.length - 1; i >= 0; i--) if (GAME.day - BB.pools[i].day >= 2) { scene.remove(BB.pools[i].m); BB.pools.splice(i, 1); } for (let i = BB.cracks.length - 1; i >= 0; i--) if (GAME.day - BB.cracks[i].day >= 2) { scene.remove(BB.cracks[i].m); BB.cracks.splice(i, 1); }
-  if (BB.hailM && k !== 'hail') BB.hailM.visible = false; if (BB.snow && k !== 'blizzard') BB.snow.visible = false;
+  if (BB.hailM && k !== 'hail') BB.hailM.visible = false; if (BB.snow && k !== 'blizzard' && W.megaK !== 'thundernado') BB.snow.visible = false;
   if (BB.cracks.length && top && play && PL.onGround && !PL.inWater && GAME.t > (BB.crackCool || 0) && !(SPECIES[GAME.species] || {}).glide && PL.stage >= 3) { const C = bbCrackAt(PL.pos.x, PL.pos.z); if (C && Math.abs(PL.pos.y - C.y) < 1.5) bbFallIn(C); }
   bbFireTick(dt); bbStruckTick(dt); bbLavaCoolTick(dt); bbRegrowTick(dt); bbMudTick(dt); bbTsunamiTick(dt);
   if (!bbOn()) return;
@@ -17429,7 +17430,7 @@ function bbTick(dt) { const k = BWX.kind, play = GAME.state === 'play', top = cu
   if (!k || !play) return;
   if (k === 'tsunami') return;
   if (!top) { if (BB.ov && k !== 'blizzard') bbOverlay('', 0); return; }
-  if (k === 'quake') bbQuakeTick(dt); else if (k === 'tornado') bbTornadoTick(dt); else if (k === 'hail') bbHailTick(dt); else if (k === 'blizzard') bbBlizzardTick(dt); else if (k === 'volcano') bbVolcanoTick(dt); else if (k === 'locusts') bbSwarmTick(dt); else if (k === 'lightning') bbLightningTick(dt); }
+  if (k === 'quake') bbQuakeTick(dt); else if (k === 'tornado') { bbTornadoTick(dt); if (W.megaK === 'thundernado') { bbLightningTick(dt); bbBlizzardTick(dt); } } else if (k === 'hail') bbHailTick(dt); else if (k === 'blizzard') bbBlizzardTick(dt); else if (k === 'volcano') bbVolcanoTick(dt); else if (k === 'locusts') bbSwarmTick(dt); else if (k === 'lightning') bbLightningTick(dt); }
 { const _st = seasonTick; seasonTick = function (dt) { _st(dt); try { bbTick(dt); } catch (e) { console.warn('bigbads', e); } }; }
 // a saved disaster comes back after a reload
 { const _bt = bigWxTick; bigWxTick = function (dt) { const was = BWX.loaded; _bt.apply(this, arguments); if (!was && BWX.kind && BWX_INFO[BWX.kind] && BWX_INFO[BWX.kind].bb) bbSetup(BWX.kind); }; }
@@ -17438,7 +17439,8 @@ function bbTick(dt) { const k = BWX.kind, play = GAME.state === 'play', top = cu
 // a blizzard piles snow on everything (ground, trees, bushes, rocks). Later the sun comes out and it
 // melts. If the snow got deep enough, all that meltwater floods the pond!
 const SNOWC = { d: 0, peak: 0, melt: null, flooded: 0, lastD: -1, uWl: { value: 0 }, uOff: { value: 0 } };
-const snowDepth = () => SNOWC.d * 0.6; // how thick the snow really is, in world units
+const snowDepth = () => SNOWC.d * 0.6096; // SNOWC.d = half the depth in feet (1 = 2 feet, 10 = 20 feet); this is in world units (metres)
+const snowFeet = () => { const ft = SNOWC.d * 2; return ft < 1 ? Math.round(ft * 12) + ' inches of snow' : (Math.round(ft * 10) / 10) + ' feet of snow'; };
 const SNOW_FLOOD = 0.6;   // how deep (0..1.3) the snow has to get to cause a flood
 const SNOW_WHITE = new THREE.Color(0xf4f8ff);
 function snowCoverBuild() { if (SNOWC.g || !W.terrains) return; const g = new THREE.Group(); scene.add(g); if (W.mainWorld) W.mainWorld.push(g); SNOWC.g = g;
@@ -17469,7 +17471,7 @@ function snowThawWater(on) { const m = W.waterMat; if (!m || !SEASON.frozen) ret
 function snowTick(dt) { const h = GAME.time, dh = ((h - (SNOWC.lastH == null ? h : SNOWC.lastH)) + 24) % 24; SNOWC.lastH = h; const hrs = dh < 2 ? dh : 0;
   if (!SNOWC.loaded) { SNOWC.loaded = 1; const S = SAVE.stats.snowCover; if (S) { SNOWC.d = S.d || 0; SNOWC.peak = S.peak || 0; SNOWC.melt = S.melt == null ? null : S.melt; SNOWC.flooded = S.flooded || 0; } }
   const winter = typeof SEASON !== 'undefined' && SEASON.frozen, off = (SAVE.settings.bigWx || 'auto') === 'off', play = GAME.state === 'play', top = curLevel() === 'top' && !W.inBurrow;
-  if (BWX.kind === 'blizzard') { if (play) { SNOWC.d = Math.min(1.3, SNOWC.d + hrs / 4.5); SNOWC.peak = Math.max(SNOWC.peak, SNOWC.d); } SNOWC.melt = null; SNOWC.flooded = 0; SNOWC.meltMsg = 0; }
+  if (BWX.kind === 'blizzard' || W.megaK === 'thundernado') { if (play) { const KV = W.megaK === 'kelvin'; SNOWC.d = Math.min(KV ? 10 : 1.0, SNOWC.d + hrs / (KV ? 0.6 : 4.5) + (KV ? dt * 0.03 : 0)); SNOWC.peak = Math.max(SNOWC.peak, SNOWC.d); } SNOWC.melt = null; SNOWC.flooded = 0; SNOWC.meltMsg = 0; }
   else if (SNOWC.d > 0) { if (SNOWC.melt == null) SNOWC.melt = 0;
     if (!off || !winter) SNOWC.melt += hrs; // "Never" pauses the melting (unless it's not winter any more)
     if ((SNOWC.melt > 1 || !winter) && (!off || !winter)) { if (!SNOWC.meltMsg && play) { SNOWC.meltMsg = 1; toast(SNOWC.peak >= SNOW_FLOOD && !SNOWC.flooded ? 'The sun is out and the snow is MELTING! Drip, drip, drip... there is SO much snow. All that water has to go somewhere...' : 'The sun is out and the snow is melting. Drip, drip, drip...', 'guide'); }
@@ -17487,7 +17489,7 @@ function snowTick(dt) { const h = GAME.time, dh = ((h - (SNOWC.lastH == null ? h
 // deep snow is hard to hop through
 { const _sf = speedFactor; speedFactor = function () { const s = _sf.apply(this, arguments); if (SNOWC.d < 0.15 || curLevel() !== 'top' || W.inBurrow || PL.inWater || (SPECIES[GAME.species] || {}).cold) return s; return s * (1 - 0.35 * Math.min(SNOWC.d, 1)); }; }
 // the badge shows how deep the snow is
-{ const _b = bigWxBadge; bigWxBadge = function () { _b.apply(this, arguments); const B = BWX.badge; if (!B || SNOWC.d < 0.02) return; const cm = Math.round(SNOWC.d * 60) + ' cm of snow', on = curLevel() === 'top' && !W.inBurrow && GAME.state === 'play';
+{ const _b = bigWxBadge; bigWxBadge = function () { _b.apply(this, arguments); const B = BWX.badge; if (!B || SNOWC.d < 0.02) return; const cm = snowFeet(), on = curLevel() === 'top' && !W.inBurrow && GAME.state === 'play';
   if (BWX.kind === 'blizzard') { B.textContent = B.textContent.replace(/ · \d+ cm of snow.*$/, '') + ' · ' + cm + (SNOWC.d >= SNOW_FLOOD ? ' (deep!)' : ''); }
   else if (!BWX.kind && !(BB.fire && BB.fire.on)) { B.style.display = on ? 'block' : 'none'; B.style.background = 'rgba(120,150,190,.9)'; B.textContent = '❄️ ' + cm + (SNOWC.melt != null && SNOWC.melt > 1 ? ' · melting' + (SNOWC.peak >= SNOW_FLOOD && !SNOWC.flooded ? ' (flood coming!)' : '') : ''); } }; }
 
@@ -17553,26 +17555,26 @@ function volBuild() { if (VOLC.built) return; VOLC.built = true; let b = 0, n = 
 bbVolcanoBuild = function () { if (!VOLC.built) volBuild(); const px = VOLC.x, pz = VOLC.z, py = VOLC.top; BB.vol = { x: px, z: pz, y: py, t: 0 }; BB.lavaCool = 0;
   for (const L of BB.lava) scene.remove(L.m); BB.lava.length = 0;
   const lm = new THREE.MeshStandardMaterial({ color: 0xff5a10, emissive: 0xff3a00, emissiveIntensity: 1.2, roughness: 0.6 }); BB.lavaMat = lm;
-  for (let f = 0; f < 4; f++) { const a0 = f / 4 * TAU + mr(-0.5, 0.5); let x = px + Math.cos(a0) * (VOLC.cr + 0.5), z = pz + Math.sin(a0) * (VOLC.cr + 0.5); const pts = [];
+  const NF2 = W.megaK === 'cinaclov' ? 0 : 4; for (let f = 0; f < NF2; f++) { const a0 = f / NF2 * TAU + mr(-0.5, 0.5); let x = px + Math.cos(a0) * (VOLC.cr + 0.5), z = pz + Math.sin(a0) * (VOLC.cr + 0.5); const pts = [];
     for (let i = 0; i < 200; i++) { const e = 1.2, gx = volGround(x + e, z) - volGround(x - e, z), gz = volGround(x, z + e) - volGround(x, z - e), gl = Math.hypot(gx, gz) || 0.001; const out = Math.hypot(x - px, z - pz) < VOLC.cr + 2; x += out ? Math.cos(a0) * 1.6 : -(gx / gl * 1.6) + mr(-0.4, 0.4); z += out ? Math.sin(a0) * 1.6 : -(gz / gl * 1.6) + mr(-0.4, 0.4); const y = volGround(x, z); if (y < waterLevelAt(x, z) + 0.1) break; pts.push({ x, z, y }); if (i > 50 && gl < 0.05) break; }
-    const im = new THREE.InstancedMesh(lumpyGeo(1, 0.25, f + 2), lm, Math.max(1, pts.length)), o = new THREE.Object3D(); pts.forEach((p, i) => { o.position.set(p.x, p.y + 0.15, p.z); o.scale.set(mr(2.4, 3.6), 0.5, mr(2.4, 3.6)); o.rotation.y = rnd() * TAU; o.updateMatrix(); im.setMatrixAt(i, o.matrix); }); im.count = 0; scene.add(im); if (W.mainWorld) W.mainWorld.push(im); BB.lava.push({ m: im, pts, n: 0 }); }
+    const im = new THREE.InstancedMesh(lumpyGeo(1, 0.25, f + 2), lm, Math.max(1, pts.length)), o = new THREE.Object3D(); pts.forEach((p, i) => { const RS = W.megaK === 'cinaclov' ? 2.3 : 1; o.position.set(p.x, p.y + 0.15, p.z); o.scale.set(mr(2.4, 3.6) * RS, 0.5 * (RS > 1 ? 1.6 : 1), mr(2.4, 3.6) * RS); o.rotation.y = rnd() * TAU; o.updateMatrix(); im.setMatrixAt(i, o.matrix); }); im.count = 0; scene.add(im); if (W.mainWorld) W.mainWorld.push(im); BB.lava.push({ m: im, pts, n: 0 }); }
   if (!BB.plume) { BB.plume = bbSprites(60, 0x4a4440, 0.6, false); BB.plume.forEach(s => s.material.fog = false); BB.volLight = new THREE.PointLight(0xff4010, 0, 200, 1.2); scene.add(BB.volLight); BB.glowS = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xff6020, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending })); scene.add(BB.glowS); } };
 BWX_INFO.volcano.start = 'THE VOLCANO IS ERUPTING!!! Lava is pouring down its sides, and LAVA BOMBS and ROCKS are flying out all over the map! Watch for the red circles on the ground and get out of the way!';
 
 /* ------------------------- lava bombs and flying rocks ------------------------- */
 const VO_GEO = { ring: new THREE.RingGeometry(0.75, 1, 32) };
-function voLaunch(from, to, kind, opts = {}) { if (VO.bombs.length > 70) return; const lava = kind === 'lava', s = opts.s || (lava ? mr(0.5, 1.0) : mr(0.6, 1.3));
+function voLaunch(from, to, kind, opts = {}) { if (VO.bombs.length > (W.megaK === 'cinaclov' ? 220 : 70)) return; const lava = kind === 'lava', MG = W.megaK === 'cinaclov' && !opts.friendly && !opts.noRing, s = (opts.s || (lava ? mr(0.5, 1.0) : mr(0.6, 1.3))) * (MG ? 2.3 : 1);
   const m = new THREE.Mesh(lava ? G.sphM : lumpyGeo(0, 0.35, Math.floor(rnd() * 50)), lava ? new THREE.MeshBasicMaterial({ color: 0xff7a20 }) : mat(0x3a302a, { flatShading: true })); m.scale.setScalar(s); scene.add(m);
   if (lava) glowSprite(m, 0, 0, 0, 0xff6010, 5, 0.8); else { const tr = glowSprite(m, 0, 0, 0, 0xff8030, 2.2, 0.5); tr.material.opacity = 0.4; }
-  let ring = null; if (!opts.friendly) { ring = new THREE.Mesh(VO_GEO.ring, new THREE.MeshBasicMaterial({ color: 0xff2010, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.position.set(to.x, to.y + 0.12, to.z); ring.scale.setScalar(2.4 * (lava ? 1 : 0.8)); scene.add(ring); }
-  const dist = Math.hypot(to.x - from.x, to.z - from.z); VO.bombs.push({ m, ring, from: from.clone(), to: to.clone(), s: 0, T: opts.T || (1.8 + dist / 85), arc: opts.arc || (12 + dist * 0.32), kind, friendly: !!opts.friendly, lv: curLevel(), spin: new V3(mr(-4, 4), mr(-4, 4), mr(-4, 4)) }); }
+  let ring = null; if (!opts.friendly && !opts.noRing) { ring = new THREE.Mesh(VO_GEO.ring, new THREE.MeshBasicMaterial({ color: 0xff2010, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false })); ring.rotation.x = -Math.PI / 2; ring.position.set(to.x, to.y + 0.12, to.z); ring.scale.setScalar(2.4 * (lava ? 1 : 0.8) * (MG ? 1.9 : 1)); scene.add(ring); }
+  const dist = Math.hypot(to.x - from.x, to.z - from.z); VO.bombs.push({ m, ring, from: from.clone(), to: to.clone(), s: 0, T: opts.T || (1.8 + dist / 85), arc: opts.arc || (12 + dist * 0.32), kind, friendly: !!opts.friendly, big: MG ? 1.9 : 1, noSplat: opts.noRing && Math.random() < 0.8, lv: curLevel(), spin: new V3(mr(-4, 4), mr(-4, 4), mr(-4, 4)) }); }
 function voImpact(B) { const P = PL.pos, p = B.to, lava = B.kind === 'lava', here = curLevel() === B.lv; scene.remove(B.m); if (B.ring) scene.remove(B.ring);
   if (!here) return; const dpl = Math.hypot(P.x - p.x, P.z - p.z);
   sparkle(p.clone().add(new V3(0, 0.5, 0)), lava ? 14 : 8, lava ? 0xff6a10 : 0x6a5a4a); if (dpl < 60) { noiseHit(lava ? 200 : 120, 0.6, 0.4, clamp(0.25 - dpl * 0.004, 0.02, 0.25), p.clone()); if (dpl < 14) CAM.shake = Math.max(CAM.shake || 0, 0.35 * (1 - dpl / 14)); }
   if (B.friendly) { for (const { c } of predatorsNear(p, 5)) zapCreature(c); }
-  else if (GAME.state === 'play' && dpl < (lava ? 2.6 : 2.2) && Math.abs(P.y - p.y) < 3 && !W.inBurrow && !(lava && (SPECIES[GAME.species] || {}).lavaSwim)) { hurt(lava ? 14 : 10, lava ? 'a lava bomb' : 'a flying rock', new V3(P.x - p.x, 4, P.z - p.z)); if (!VO.hitTip) { VO.hitTip = 1; toast(lava ? 'OUCH! A LAVA BOMB hit you! Watch for the red circles on the ground, that is where they land!' : 'BONK! A rock from the volcano hit you! Watch for the red circles!', 'guide'); } }
+  else if (GAME.state === 'play' && dpl < (lava ? 2.6 : 2.2) * (B.big || 1) && Math.abs(P.y - p.y) < 3 && !W.inBurrow && !(lava && (SPECIES[GAME.species] || {}).lavaSwim)) { hurt(lava ? 14 : 10, lava ? 'a lava bomb' : 'a flying rock', new V3(P.x - p.x, 4, P.z - p.z)); if (!VO.hitTip) { VO.hitTip = 1; toast(lava ? 'OUCH! A LAVA BOMB hit you! Watch for the red circles on the ground, that is where they land!' : 'BONK! A rock from the volcano hit you! Watch for the red circles!', 'guide'); } }
   // lava bombs leave a puddle of lava that burns for a while; rocks stay where they land
-  if (lava && B.lv === 'top' && p.y > waterLevelAt(p.x, p.z) + 0.05) { const sm = new THREE.Mesh(lumpyGeo(1, 0.3, Math.floor(rnd() * 40)), new THREE.MeshStandardMaterial({ color: 0xff5a10, emissive: 0xff3000, emissiveIntensity: 1.2, roughness: 0.6 })); sm.scale.set(mr(1.2, 1.8), 0.25, mr(1.2, 1.8)); sm.position.set(p.x, p.y + 0.05, p.z); scene.add(sm); VO.splats.push({ m: sm, x: p.x, z: p.z, y: p.y, life: 30, r: 1.5 }); }
+  if (B.noSplat) { } else if (lava && B.lv === 'top' && p.y > waterLevelAt(p.x, p.z) + 0.05) { const sm = new THREE.Mesh(lumpyGeo(1, 0.3, Math.floor(rnd() * 40)), new THREE.MeshStandardMaterial({ color: 0xff5a10, emissive: 0xff3000, emissiveIntensity: 1.2, roughness: 0.6 })); const bg = B.big || 1; sm.scale.set(mr(1.2, 1.8) * bg, 0.25, mr(1.2, 1.8) * bg); sm.position.set(p.x, p.y + 0.05, p.z); scene.add(sm); VO.splats.push({ m: sm, x: p.x, z: p.z, y: p.y, life: 30, r: 1.5 * bg }); }
   else if (!lava && B.lv === 'top') { const rk = new THREE.Mesh(B.m.geometry, B.m.material); rk.scale.copy(B.m.scale); rk.position.set(p.x, p.y + B.m.scale.y * 0.4, p.z); rk.rotation.set(rnd() * 3, rnd() * 3, 0); scene.add(rk); VO.splats.push({ m: rk, x: p.x, z: p.z, y: p.y, life: 90, rock: 1 }); } }
 function voBombTick(dt) { const P = PL.pos, lv = curLevel(); for (let i = VO.bombs.length - 1; i >= 0; i--) { const B = VO.bombs[i]; B.s += dt / B.T; const s = Math.min(1, B.s), vis = lv === B.lv;
     B.m.visible = vis; B.m.position.lerpVectors(B.from, B.to, s); B.m.position.y += 4 * B.arc * s * (1 - s); B.m.rotation.x += B.spin.x * dt; B.m.rotation.y += B.spin.y * dt;
@@ -17604,7 +17606,7 @@ function voTopTick(dt) { if (!VOLC.built) return; const t = GAME.t, top = curLev
 const VCH = { key: 'vchamber', custom: true, y0: -4600, water: -999, half: 70, res: 1, hub: { x: 0, z: 47 }, doors: [], segs: [], fog: [0.16, 0.04, 0.01, 30, 150],
   lake: 38, base: 1.5, vent: 3.5, fill: 0, isl: { x: -15, z: -17, r: 5.5 },
   stones: [],
-  waveAmp() { return voErupting() ? 1.1 : 0.4; },
+  waveAmp() { return voErupting() ? (W.megaK === 'cinaclov' ? 3.2 : 1.1) : 0.4; },
   lavaH(x, z) { const t = GAME.t, d = Math.hypot(x, z), A = this.waveAmp() * this.fill; return this.y0 - 2.5 + this.fill * (this.base + 2.5) + A * (Math.sin(d * 0.45 - t * 2.2) * 0.65 + Math.sin(x * 0.27 + t * 1.3) * 0.2 + Math.sin(z * 0.33 - t * 1.7) * 0.15); },
   bowl(x, z) { const d = Math.hypot(x, z), y0 = this.y0; if (d < this.vent) return y0 - 14; let h = y0 - 0.8 + 4.0 * Math.pow(Math.min(1, (d - this.vent) / (this.lake - this.vent)), 1.4) + 0.3 * vnoise(x * 0.3, z * 0.3) * smooth(this.vent, this.vent + 3, d); const I = this.isl, di = Math.hypot(x - I.x, z - I.z); if (di < I.r) h = Math.max(h, y0 + 3.4 + smooth(I.r, I.r - 2, di) * 0.4 + smooth(2.2, 0.5, di) * 1.0); return h; },
   stoneAt(x, z) { for (const S of this.stones) if (Math.abs(x - S.x) < S.r && Math.abs(z - S.z) < S.r && Math.hypot(x - S.x, z - S.z) < S.r) return S; return null; },
@@ -17685,7 +17687,7 @@ function buildHotspot() { const L = HSP, g = layerGroup(L), y0 = L.y0, FA = (x, 
   // the tunnel back up to the volcano
   { const tz = 82, tx = 0, ty = FA(tx, tz); const tn = new THREE.Group(); tn.position.set(tx, ty, tz); tn.rotation.y = Math.PI; g.add(tn); tn.add(new THREE.Mesh(new THREE.TorusGeometry(3.2, 0.9, 8, 20, Math.PI), mat(0x3a2820, { flatShading: true }))); addTo(tn, new THREE.CircleGeometry(3.1, 20, 0, Math.PI), new THREE.MeshBasicMaterial({ color: 0x0a0302 }), 0, 0, -0.3, 1); addTo(tn, new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ map: textTex([['UP TO THE VOLCANO', 'bold 26px Georgia,serif', 34]], 256, 64, { bg: '#3a1408', col: '#ffb070' }) }), 0, 4.6, 0.3, 2.8, 0.7, 0.06); L.tunnel = { x: 0, z: 80.5 }; }
   // falling lava blobs (for the eruption fountain)
-  L.blobs = []; for (let i = 0; i < 60; i++) { const s = new THREE.Mesh(G.sphM, voGlow(0xff8a20)); s.visible = false; g.add(s); L.blobs.push({ m: s, on: false, p: new V3(), v: new V3() }); }
+  L.blobs = []; for (let i = 0; i < 160; i++) { const s = new THREE.Mesh(G.sphM, voGlow(0xff8a20)); s.visible = false; g.add(s); L.blobs.push({ m: s, on: false, p: new V3(), v: new V3() }); }
   buildCaveMap(L); }
 { const _bnV = buildNewWorldStuff; buildNewWorldStuff = function () { _bnV(); const keep = CL; try { CL = VCH; buildVChamber(); } catch (e) { console.warn('vchamber', e); } try { CL = HSP; buildHotspot(); } catch (e) { console.warn('hotspot', e); } CL = keep; }; }
 
@@ -17724,7 +17726,7 @@ function voHotspotTick(dt) { const L = HSP; if (curLevel() !== 'hotspot' || !L.g
   VO.burpT = Math.max(0, (VO.burpT || 0) - dt); const jh = er ? (L.y0 + 64 - L.lavaH(0, 0)) : VO.burpT > 0 ? Math.sin((1 - VO.burpT / 1.6) * Math.PI) * 10 : 0;
   L.ceilSplash.material.opacity = er ? 0.85 + Math.sin(t * 8) * 0.1 : 0; L.jet.visible = jh > 0.3; if (L.jet.visible) { const w = er ? 1.9 + Math.sin(t * 11) * 0.15 : 1; L.jet.scale.set(w, jh, w); L.jet.position.set(0, L.lavaH(0, 0) + jh / 2, 0); } L.jetGlow.material.opacity = er ? 0.8 : clamp(jh / 10, 0, 0.6); L.jetGlow.position.y = L.y0 + jh * 0.5;
   // lava blobs fly out of the fountain and rain down
-  for (const B of L.blobs) { if (!B.on) { if ((er && Math.random() < dt * 4) || (jh > 4 && Math.random() < dt * 0.6)) { B.on = true; B.p.set(mr(-1.5, 1.5), L.lavaH(0, 0) + Math.min(jh, 48) * mr(0.3, 0.98), mr(-1.5, 1.5)); const a = rnd() * TAU, sp = mr(4, er ? 16 : 7); B.v.set(Math.cos(a) * sp, mr(4, 14), Math.sin(a) * sp); B.m.scale.setScalar(mr(0.3, 0.8)); B.m.visible = true; } continue; }
+  for (const B of L.blobs) { if (!B.on) { const CN = W.megaK === 'cinaclov'; if ((er && Math.random() < dt * (CN ? 16 : 4)) || (jh > 4 && Math.random() < dt * 0.6)) { B.on = true; B.p.set(mr(-1.5, 1.5), L.lavaH(0, 0) + Math.min(jh, 48) * mr(0.3, 0.98), mr(-1.5, 1.5)); const a = rnd() * TAU, sp = mr(4, er ? (CN ? 34 : 16) : 7); B.v.set(Math.cos(a) * sp, mr(4, 14), Math.sin(a) * sp); B.m.scale.setScalar(mr(0.3, 0.8)); B.m.visible = true; } continue; }
     B.v.y -= 22 * dt; B.p.addScaledVector(B.v, dt); B.m.position.copy(B.p); const fl = L.floorAt(B.p.x, B.p.z);
     if (B.p.y < fl) { B.on = false; B.m.visible = false; if (Math.hypot(B.p.x - P.x, B.p.z - P.z) < 6) sparkle(B.p.clone(), 6, 0xff6010); }
     else if (play && B.p.distanceTo(P) < 1.2 + PL.size * 0.4 && !(SPECIES[GAME.species] || {}).lavaSwim && GAME.t - (VO.blobT || -9) > 0.6) { VO.blobT = GAME.t; hurt(8, 'a blob of magma', new V3(B.v.x, 3, B.v.z)); B.on = false; B.m.visible = false; } }
@@ -17944,6 +17946,336 @@ function homeKeepOut() { if (W.offTop) return; const hp = homePos(); if (!hp || 
   if (typeof NF !== 'undefined' && NF.turtle && NF.turtle.T && Math.hypot(NF.turtle.x - hp.x, NF.turtle.z - hp.z) < r + 1.4) { const a = Math.atan2(NF.turtle.x - hp.x, NF.turtle.z - hp.z) || 0, nx = hp.x + Math.sin(a) * (r + 2), nz = hp.z + Math.cos(a) * (r + 2); NF.turtle.x = nx; NF.turtle.z = nz; NF.turtle.T.root.position.x = nx; NF.turtle.T.root.position.z = nz; if (NF.turtle.mark) { NF.turtle.mark.position.x = nx; NF.turtle.mark.position.z = nz; } } }
 function homeInsideClean() { if (!W.inBurrow) return; for (const c of CREATURES) { if (!c.root || c.burrow || c === undefined) continue; const p = c.root.getWorldPosition ? c.root.position : null; if (p && Math.abs(p.y - BURROW_Y) < 12 && Math.hypot(p.x, p.z) < BURROW_R + 2) c.root.visible = false; } }
 { const _st = seasonTick; seasonTick = function (dt) { _st(dt); try { homeKeepOut(); homeInsideClean(); } catch (e) { console.warn('keepout', e); } }; }
+
+/* ---- the tunnel at the back of the hobbit hole: walk down it and knock on the doors ---- */
+const HOB_DOORS = [
+  { z: -6.66 - 2.3, x: -0.95, col: 'red', say: ['*knock knock*', 'You peek inside... it\'s the SITTING ROOM! Squishy armchairs, a crackling fire, and about forty cushions.', 'A tiny voice says: "Wipe your feet!"'] },
+  { z: -6.66 - 4.5, x: 0.95, col: 'blue', say: ['*knock knock*', 'You peek inside... it\'s the BATHROOM! A big round copper bathtub, full to the top with bubbles. A rubber duck is floating in it.'] },
+  { z: -6.66 - 6.7, x: -0.95, col: 'yellow', say: ['*knock knock*', 'You peek inside... it\'s the CELLAR! Barrels of apple juice, jars of honey, and wheels of cheese stacked all the way to the ceiling.', 'You take ONE little cheese. Nobody will notice. Probably.'], food: 1 },
+  { z: -6.66 - 8.9, x: 0.95, col: 'purple', say: ['*knock knock*', 'You peek inside... it\'s the MAP ROOM! Old maps of the whole pond cover every wall. One of them has an X marked on it, right where the big old oak is...'] } ];
+{ const _fiT = findInteract; findInteract = function () { _fiT(); if ((INTERACT.cur && !INTERACT.cur.hold) || GAME.state !== 'play' || !hobTunnelOn()) return; const P = PL.pos;
+  if (P.z < -5.6 && !HOBV.tunTip) { HOBV.tunTip = 1; toast('You walk into the long round tunnel. It goes deep into the hill, with little round doors on both sides!', 'quiet'); }
+  for (const D of HOB_DOORS) if (Math.abs(P.z - D.z) < 0.9 && P.z < -5.6) { INTERACT.cur = { label: 'Knock on the ' + D.col + ' door', act: () => { noiseHit(180, 1, 0.08, 0.2); setTimeout(() => noiseHit(180, 1, 0.08, 0.2), 260); sayChain(D.say, () => { if (D.food) PL.needs.hunger = clamp(PL.needs.hunger + 15, 0, 100); }, 'The Hobbit Hole'); } }; return; }
+  if (P.z < -16.2) { INTERACT.cur = { label: 'Try the little door at the end', act: () => sayChain(['The little round door at the very end of the tunnel is locked.', 'There is a note pinned to it: "SECOND PANTRY. Emergency snacks only. That means YOU, hobbit."'], null, 'The Hobbit Hole') }; return; } }; }
+/* ================================================================================
+   g46: FROG SHORTCUT KEYS. In the Frog & pond tab you can set keys that turn you straight into
+   a frog (like U = QWERTY Frog), plus one key that switches back to the last frog you were.
+   ================================================================================ */
+const HK = { prev: null, cur: null };
+function hkSettings() { const S = SAVE.settings; if (!S.frogKeys) { S.frogKeys = [{ key: 'U', sp: 'qwerty' }, { key: 'L', sp: '' }]; S.lastFrogKey = 'X'; } if (S.lastFrogKey === undefined) S.lastFrogKey = 'X'; return S; }
+const HK_USED = { C: 'first-person camera', F: 'dive', R: 'croak', E: 'use / interact', X: 'rest', H: 'hide the HUD', T: 'rocket (machine frogs)', V: 'special power', Z: 'unstick', P: 'pause', L: 'lore book', U: 'mech stomp (Mech Frog)', O: 'mech overdrive (Mech Frog)', W: 'move', A: 'move', S: 'move', D: 'move', Q: '', M: '' };
+function hkCode(k) { k = (k || '').toUpperCase(); if (/^[A-Z]$/.test(k)) return 'Key' + k; if (/^[0-9]$/.test(k)) return 'Digit' + k; return null; }
+function hkBecome(k, why) { if (!k || k === GAME.species) return; if (!SPECIES[k] || !SAVE.unlocks.species.includes(k) || (typeof speciesOn === 'function' && !speciesOn(k))) { toast('You haven\'t found the ' + (SPECIES[k] ? SPECIES[k].name : 'that frog') + ' yet!', 'quiet'); return; }
+  GAME.species = k; SAVE.last.species = k; swapFrog(); persist(); sparkle(PL.pos.clone().add(new V3(0, 0.5, 0)), 14, 0xa0ffa0); tone('sine', 700, 1200, 0.12, 0.05); toast((why || 'Poof!') + ' You are now a ' + SPECIES[k].name + '.', 'quiet'); }
+// remember the last frog you were, however you changed
+function hkTrack() { if (HK.cur === null) HK.cur = GAME.species; if (GAME.species !== HK.cur) { HK.prev = HK.cur; HK.cur = GAME.species; SAVE.stats.prevSpecies = HK.prev; } if (HK.prev === null && SAVE.stats.prevSpecies) HK.prev = SAVE.stats.prevSpecies; }
+{ const _st = seasonTick; seasonTick = function (dt) { _st(dt); try { hkTrack(); } catch (e) { } }; }
+addEventListener('keydown', e => { if (e.repeat || GAME.state !== 'play' || GAME.paused || (typeof WDLG !== 'undefined' && WDLG.open)) return; const tg = e.target; if (tg && (tg.tagName === 'INPUT' || tg.tagName === 'TEXTAREA' || tg.isContentEditable)) return;
+  const S = hkSettings(); hkTrack();
+  if (S.lastFrogKey && e.code === hkCode(S.lastFrogKey)) { e.preventDefault(); e.stopImmediatePropagation(); if (HK.prev && HK.prev !== GAME.species) hkBecome(HK.prev, 'Back again!'); else toast('You haven\'t been any other frog yet!', 'quiet'); return; }
+  for (const b of S.frogKeys) if (b.sp && e.code === hkCode(b.key)) { e.preventDefault(); e.stopImmediatePropagation(); hkBecome(b.sp); return; } }, true);
+// ---- the settings, in the Frog & pond tab ----
+function hkHTML() { const S = hkSettings(), mine = Object.keys(SPECIES).filter(k => SAVE.unlocks.species.includes(k) && (typeof speciesOn !== 'function' || speciesOn(k))).sort((a, b) => SPECIES[a].name.localeCompare(SPECIES[b].name));
+  const warn = k => { k = (k || '').toUpperCase(); return HK_USED[k] ? ' <small style="color:#e8b060">(this key normally does: ' + HK_USED[k] + ')</small>' : ''; };
+  const inp = (v, attr) => '<input ' + attr + ' value="' + (v || '') + '" maxlength="1" style="width:2.6em;text-align:center;font:bold 16px monospace;text-transform:uppercase;padding:4px;border-radius:8px;border:2px solid #6a8a4a;background:#1a2a14;color:#fff">';
+  let h = '<div class="sect">Frog shortcut keys <small>press a key in the game to turn into that frog</small></div>';
+  S.frogKeys.forEach((b, i) => { h += '<div style="display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap">' + inp(b.key, 'data-hkkey="' + i + '"') + ' makes me <select data-hksp="' + i + '" style="padding:4px 6px;border-radius:8px;background:#1a2a14;color:#fff;border:2px solid #6a8a4a"><option value="">(pick a frog)</option>' + mine.map(k => '<option value="' + k + '"' + (b.sp === k ? ' selected' : '') + '>' + SPECIES[k].name + '</option>').join('') + '</select> <button class="chip" data-hkdel="' + i + '">✕</button>' + warn(b.key) + '</div>'; });
+  h += '<div style="display:flex;gap:8px;align-items:center;margin:6px 0;flex-wrap:wrap">' + inp(S.lastFrogKey, 'data-hklast="1"') + ' makes me <b>the last frog I was</b>' + (HK.prev ? ' <small>(right now: ' + SPECIES[HK.prev].name + ')</small>' : '') + warn(S.lastFrogKey) + '</div>';
+  h += '<button class="chip" data-hkadd="1"><b>+ Add another shortcut</b></button>';
+  return h; }
+{ const _rm = renderMenu; renderMenu = function () { _rm.apply(this, arguments); try { if (menuTab !== 'home') return; const B = $('#menuBody'), note = B.querySelector('p.note'); const d = document.createElement('div'); d.id = 'hkBox'; d.innerHTML = hkHTML(); if (note) B.insertBefore(d, note); else B.appendChild(d); } catch (e) { console.warn('hotkeys', e); } }; }
+{ const fix = () => { const S = hkSettings(); persist(); }; const box = () => $('#menuBody');
+  document.addEventListener('input', e => { const t = e.target; if (!t.closest || !t.closest('#hkBox')) return; const S = hkSettings(); if (t.dataset.hkkey !== undefined) { t.value = t.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); S.frogKeys[+t.dataset.hkkey].key = t.value; fix(); } if (t.dataset.hklast) { t.value = t.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); S.lastFrogKey = t.value; fix(); } });
+  document.addEventListener('change', e => { const t = e.target; if (!t.closest || !t.closest('#hkBox')) return; const S = hkSettings(); if (t.dataset.hksp !== undefined) { S.frogKeys[+t.dataset.hksp].sp = t.value; fix(); } if (t.dataset.hkkey !== undefined || t.dataset.hklast) renderMenu(); });
+  document.addEventListener('click', e => { const t = e.target.closest && e.target.closest('#hkBox [data-hkadd], #hkBox [data-hkdel]'); if (!t) return; const S = hkSettings(); if (t.dataset.hkadd) S.frogKeys.push({ key: '', sp: '' }); else S.frogKeys.splice(+t.dataset.hkdel, 1); fix(); renderMenu(); }); }
+// typing in the shortcut boxes shouldn't move your frog or close the menu
+document.addEventListener('keydown', e => { const t = e.target; if (t && t.closest && t.closest('#hkBox') && t.tagName === 'INPUT') { e.stopPropagation(); } }, true);
+
+/* ---- ICE VISION: the Ice Frog (or a QWERTY Frog who types ICE VISION) can see through whiteouts ---- */
+function iceSight() { return GAME.species === 'ice' || (GAME.species === 'qwerty' && !!SAVE.stats.iceVision); }
+{ const _tw = typeWord; typeWord = function (w) { const u = String(w || '').toUpperCase().replace(/[^A-Z]/g, ''); if (u !== 'ICEVISION') return _tw.apply(this, arguments);
+  if (typeof TYPER !== 'undefined') TYPER.cd = 2; SAVE.stats.iceVision = !SAVE.stats.iceVision; persist(); tone('sine', SAVE.stats.iceVision ? 1800 : 900, SAVE.stats.iceVision ? 2600 : 500, 0.4, 0.06); sparkle(PL.pos.clone().add(new V3(0, 0.6, 0)), 20, 0xa0e0ff);
+  toast(SAVE.stats.iceVision ? '❄️ ICE VISION ON! Your eyes glow icy blue. Now you can see right through blizzards and whiteouts. (Type ICE VISION again to switch it off.)' : 'Ice vision off. Your eyes are back to normal.', 'guide'); }; }
+if (typeof QWORDS !== 'undefined' && !QWORDS.includes('ICE VISION')) QWORDS.push('ICE VISION');
+/* ================================================================================
+   g47: THE MEGADISASTERS PACK. Experience every kind of natural disaster (the 4 big weathers
+   and all 10 Big Bads) and you unlock it. Then turn it on to get the MEGA versions:
+   Tidal Flood, WILD Wildfire, Dead Drought, Thundernado, Cinaclov Eruption, Humongi Tsunami
+   and Kelvin Blizzard.
+   ================================================================================ */
+W.megaK = null;
+const MEGA_ALL = ['drought', 'flood', 'heat', 'wind', 'quake', 'tornado', 'hail', 'blizzard', 'volcano', 'locusts', 'lightning', 'mudslide', 'tsunami', 'wildfire'];
+const MEGA_INFO = {
+  tidal: { base: 'flood', icon: '🌊', name: 'TIDAL FLOOD', lvl: 4.4, durX: 2.2, col: 'rgba(10,50,140,.95)', start: 'TIDAL FLOOD!!! This is no normal flood. The water is going to rise almost to the TOP of the big old oak! The whole land will be underwater, and it will stay for a LONG time. Swim for it!', end: 'The tidal flood is finally going down. What a mess!' },
+  bigflood: { base: 'flood', bb: 1, icon: '🌊', name: 'BIG FLOOD', lvl: 4.4, durX: 2.2, col: 'rgba(20,70,150,.92)', start: 'A BIG FLOOD!!! This is way worse than a normal flood. The water is going to rise really high and cover almost all the land, and it will stay for a long time. Get to high ground, or start swimming!' },
+  wild: { base: 'wildfire', icon: '🔥', name: 'WILD WILDFIRE', col: 'rgba(230,50,0,.95)', start: 'WILD WILDFIRE!!! A fire that spreads SUPER fast and gets ENORMOUS! The whole forest is in danger. Get in the water NOW!', end: 'The wild wildfire has finally burned itself out.' },
+  dead: { base: 'drought', icon: '💀', name: 'DEAD DROUGHT', lvl: -3.9, durX: 1.9, col: 'rgba(120,70,20,.95)', start: 'DEAD DROUGHT!!! The worst drought ever. The ponds are shrinking to almost nothing, and it is going to last for days and days. Find water while you still can!', end: 'Rain at LAST! The dead drought is over. The ponds will slowly come back to life.' },
+  thundernado: { base: 'tornado', icon: '🌪️⚡', name: 'THUNDERNADO', col: 'rgba(40,30,90,.95)', start: 'THUNDERNADO!!! A GIANT tornado full of lightning, pouring rain AND a blizzard all at once! It is HUGE! RUN!', end: 'The thundernado finally spins itself out. The sky goes quiet.' },
+  cinaclov: { base: 'volcano', icon: '🌋', name: 'CINACLOV ERUPTION', col: 'rgba(220,20,0,.95)', start: 'CINACLOV ERUPTION!!! The volcano is going CRAZY! Giant lava bombs, streams of lava shooting out, and HUGE rivers of lava pouring down the mountain! Inside the volcano the lava waves are enormous, and down in the Hotspot... fire demons are coming out!', end: 'The Cinaclov Eruption is over. The whole mountain is smoking, and rivers of lava are cooling into black rock.' },
+  humongi: { base: 'tsunami', icon: '🌊', name: 'HUMONGI TSUNAMI', durX: 1.5, col: 'rgba(0,40,120,.95)', start: 'HUMONGI TSUNAMI WARNING!!! The biggest wave EVER is coming from the sea. It is so big it will go right over the beach and onto the land! Get somewhere high!', end: 'The humongi tsunami is over. The water is draining back to the sea.' },
+  kelvin: { base: 'blizzard', icon: '🥶', name: 'KELVIN BLIZZARD', durX: 1.3, col: 'rgba(140,180,240,.95)', start: 'KELVIN BLIZZARD!!! The coldest, snowiest blizzard there has ever been! The snow is piling up SUPER fast. Get inside before you freeze into a frog-sicle!', end: 'The Kelvin Blizzard is over. The snow is up to everyone\'s ears!' } };
+const megaUnlocked = () => !!SAVE.stats.megaUnlocked;
+const megaSeen = () => SAVE.stats.wxSeen || (SAVE.stats.wxSeen = []);
+{ const bi = PACKS.findIndex(p => p.k === 'bigbads'); PACKS.splice(bi < 0 ? PACKS.length : bi + 1, 0, { k: 'mega', name: 'Megadisasters', req: ['bigbads'], sp: [], adds: 'MEGA versions of the disasters: Tidal Flood, WILD Wildfire, Dead Drought, Thundernado, Cinaclov Eruption, Humongi Tsunami and Kelvin Blizzard. (Unlocked by experiencing every natural disaster.)' }); }
+if (SAVE.packs && !megaUnlocked()) SAVE.packs.mega = false;
+function megaNote(k) { const S = megaSeen(); if (S.includes(k) || !MEGA_ALL.includes(k)) return; S.push(k); persist();
+  const left = MEGA_ALL.filter(x => !S.includes(x)).length; if (!left && !megaUnlocked()) { SAVE.stats.megaUnlocked = 1; persist(); setTimeout(() => { banner('💥 MEGADISASTERS UNLOCKED!', 'You have experienced EVERY natural disaster!'); toast('You have experienced every single disaster! You unlocked the MEGADISASTERS pack. Turn it on in Expansion Packs (on the title screen) for Tidal Floods, Thundernados, Cinaclov Eruptions and more!', 'guide'); try { renderPacks(); } catch (e) { } }, 2500); }
+  else if (left && left <= 4) toast('Disaster checklist: only ' + left + ' more kind' + (left > 1 ? 's' : '') + ' of disaster to experience before something MEGA unlocks...', 'quiet'); }
+// start a mega one: it's the normal disaster, made way bigger
+{ const _s = bigWxStart; bigWxStart = function (kind, now) { const M = MEGA_INFO[kind];
+  if (!M) { const r = _s.apply(this, arguments); if (BWX.kind === kind || (kind === 'wildfire' && BB.fire.on)) megaNote(kind); if (!MEGA_INFO[W.megaK] || MEGA_INFO[W.megaK].base !== BWX.kind) W.megaK = null; return r; }
+  if (M.bb) { if (!bbOn()) { toast('Turn on the Big Bads pack (in Expansion Packs) to get big floods!', 'guide'); return; } } else {
+  if (!megaUnlocked()) { toast('Megadisasters are locked! Experience every kind of natural disaster first. (' + megaSeen().filter(k => MEGA_ALL.includes(k)).length + ' of ' + MEGA_ALL.length + ' so far)', 'guide'); return; }
+  if (!packOn('mega')) { toast('Turn on the Megadisasters pack (in Expansion Packs) first!', 'guide'); return; } }
+  if (M.base === 'wildfire') { if (BB.fire.on) { BB.fire.on = false; } _s.call(this, 'wildfire', now); if (BB.fire.on) { BB.fire.mega = true; BB.fire.dur *= 1.6; megaBanner(kind); } return; }
+  if (BWX.kind) bigWxEnd(true); W.megaK = kind; _s.call(this, M.base, now); if (BWX.kind !== M.base) { W.megaK = null; return; } W.megaK = kind;
+  if (kind === 'tidal') M.lvl = megaOakTop() - 1.5 - WATER;
+  if (M.lvl != null) BWX.target = M.lvl; if (M.durX) BWX.dur *= M.durX; if (SAVE.stats.bigWx) { SAVE.stats.bigWx.mega = kind; SAVE.stats.bigWx.dur = BWX.dur; } persist();
+  if (kind === 'cinaclov') bbVolcanoBuild(); if (kind === 'humongi') HUMO.state = 'wait', HUMO.t = 0; megaBanner(kind); }; }
+// the top of the big old oak (the tidal flood comes up to just below it)
+function megaOakTop() { if (MEGA_INFO._oak) return MEGA_INFO._oak; const t = (W.trees || [])[0]; let top = 50; if (t && W.foliage) { top = terrainH(t.x, t.z) + t.H; const m = new THREE.Matrix4(); for (let i = 0; i < Math.min(40, W.foliage.count); i++) { W.foliage.getMatrixAt(i, m); const e = m.elements; if (Math.hypot(e[12] - t.x, e[14] - t.z) < 20) top = Math.max(top, e[13] + Math.hypot(e[4], e[5], e[6])); } } return (MEGA_INFO._oak = top); }
+function megaBanner(k) { const M = MEGA_INFO[k]; setTimeout(() => { banner((M.bb ? '' : '💥 ') + M.icon + ' ' + M.name + '!', M.bb ? 'BIG BAD' : 'MEGADISASTER'); toast(M.start, 'guide'); tone('sawtooth', 60, 40, 2.5, 0.09); CAM.shake = Math.max(CAM.shake || 0, 0.5); }, 300); }
+{ const _e = bigWxEnd; bigWxEnd = function (quiet) { const mk = W.megaK; _e.apply(this, arguments); if (mk && !quiet) setTimeout(() => toast(MEGA_INFO[mk].end, 'guide'), 400); W.megaK = null; if (HUMO.wave) HUMO.wave.visible = false; HUMO.state = null; }; }
+{ const _fs = bbFireStart; bbFireStart = function () { _fs.apply(this, arguments); if (BB.fire.on) megaNote('wildfire'); }; }
+// wild wildfire ends: forget it was mega
+{ const _ft = bbFireTick; bbFireTick = function (dt) { _ft.apply(this, arguments); if (!BB.fire.on) BB.fire.mega = false; }; }
+// the badge says the mega name
+{ const _b = bigWxBadge; bigWxBadge = function () { _b.apply(this, arguments); const B = BWX.badge; if (!B) return;
+  if (W.megaK && BWX.kind) { const M = MEGA_INFO[W.megaK], I = BWX_INFO[BWX.kind]; B.textContent = B.textContent.replace(I.icon + ' ' + I.name, (M.bb ? '' : '💥 ') + M.icon + ' ' + M.name); B.style.background = M.col; if (W.megaK === 'humongi') B.style.display = GAME.state === 'play' && !W.inBurrow ? 'block' : 'none'; }
+  else if (!BWX.kind && BB.fire.on && BB.fire.mega) { B.textContent = B.textContent.replace('🔥 WILDFIRE', '💥🔥 WILD WILDFIRE'); B.style.background = MEGA_INFO.wild.col; } }; }
+
+/* ---- the Humongi Tsunami comes right over the beach and onto the land ---- */
+const HUMO = { state: null, t: 0, x: 0 };
+function humongiTick(dt) { if (W.megaK !== 'humongi' || !BWX.kind) return; const P = PL.pos, top = curLevel() === 'top' && !W.inBurrow;
+  if (!HUMO.wave) { const g = new THREE.Group(); const body = new THREE.Mesh(new THREE.CylinderGeometry(22, 22, 1400, 32, 1, false, 0, Math.PI), new THREE.MeshStandardMaterial({ color: 0x1a5aa8, transparent: true, opacity: 0.9, roughness: 0.12, side: THREE.DoubleSide })); body.rotation.x = Math.PI / 2; body.rotation.y = Math.PI / 2; g.add(body);
+    const foam = new THREE.Mesh(new THREE.BoxGeometry(6, 2.5, 1400), new THREE.MeshStandardMaterial({ color: 0xf4fbff, roughness: 0.8 })); foam.position.set(-5, 21, 0); g.add(foam); for (let i = 0; i < 40; i++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: 0xffffff, transparent: true, opacity: 0.6, depthWrite: false })); s.position.set(-6, 22 + Math.random() * 4, (i - 20) * 32); s.scale.setScalar(14); g.add(s); }
+    scene.add(g); if (W.mainWorld) W.mainWorld.push(g); HUMO.wave = g; }
+  if (!HUMO.state) { HUMO.state = 'wait'; HUMO.t = 0; }
+  if (HUMO.state === 'wait') { HUMO.t += dt; HUMO.wave.visible = false; if (HUMO.t > 5) { HUMO.state = 'come'; HUMO.x = SEA_EDGE + 60; if (top) toast('HERE IT COMES!!! A wall of water as tall as the trees is rushing in from the sea (from the RIGHT side of the map)!', 'guide'); tone('sawtooth', 70, 50, 4, 0.1); } return; }
+  if (HUMO.state === 'come') { HUMO.x -= dt * 26; HUMO.wave.visible = top; HUMO.wave.position.set(HUMO.x, WATER - 2, P.z); const dx = Math.abs(P.x - HUMO.x); if (top) { CAM.shake = Math.max(CAM.shake || 0, clamp(1 - dx / 150, 0, 1) * 0.6); WEATHER.cur.wind = Math.max(WEATHER.cur.wind, 2.5); if (dx < 120 && Math.random() < dt * 8) noiseHit(120, 0.6, 0.8, 0.12 * (1 - dx / 120)); }
+    // once it is over the beach, the whole land floods
+    if (HUMO.x < SEA_EDGE - 80) BWX.target = 3.4;
+    if (top && GAME.state === 'play' && !HUMO.hit && P.x > HUMO.x - 4 && P.x < HUMO.x + 10 && P.y < WATER + 30) { HUMO.hit = 1; HUMO.carry = 2.5; hurt(10, 'the humongi tsunami', new V3(-10, 8, 0)); noiseHit(150, 0.6, 2.5, 0.35); toast('THE HUMONGI TSUNAMI HIT YOU!!! You are being swept away!', 'guide'); }
+    if (HUMO.carry > 0) { HUMO.carry -= dt; P.x -= dt * 26; P.y = Math.max(P.y, waterLevelAt(P.x, P.z) + 1 + Math.sin(HUMO.carry * 3)); PL.vel.set(-6, 0, 0); PL.onGround = false; }
+    if (HUMO.x < -WORLD_R - 60) { HUMO.state = 'gone'; HUMO.wave.visible = false; if (top) toast('The humongi tsunami swept right across the whole land! Everything is flooded. The water will slowly drain back to the sea...', 'guide'); } }
+  // the flood water rushes in fast
+  if (BWX.target > 0 && BWX.lvl < BWX.target) { BWX.lvl = Math.min(BWX.target, BWX.lvl + dt * 0.5); bigWxWater(); } }
+
+/* ---- the Cinaclov Eruption: streams of lava shooting out, and fire demons in the Hotspot ---- */
+const CIN = { streams: [], demons: [], dT: 0 };
+function cinaclovTick(dt) { const on = W.megaK === 'cinaclov' && BWX.kind === 'volcano', lv = curLevel(), P = PL.pos;
+  if (on && lv === 'top' && !W.inBurrow && GAME.state === 'play' && VOLC.built) { for (let k = 0; k < 6 && CIN.streams.filter(S => !S.dead).length < 3; k++) cinStream(); }
+  cinStreamTick(dt); cinRiverTick(dt);
+  // fire demons leap out of the magma pool in the Hotspot
+  for (let i = CIN.demons.length - 1; i >= 0; i--) { const D = CIN.demons[i]; D.g.visible = lv === 'hotspot'; D.life -= dt; const t = GAME.t;
+    if (D.state === 'leap') { D.s += dt / 1.4; const s = Math.min(1, D.s); D.g.position.lerpVectors(D.from, D.to, s); D.g.position.y += 14 * s * (1 - s) * 4 / 4 * 3; if (s >= 1) D.state = 'chase'; }
+    else { const dx = P.x - D.g.position.x, dz = P.z - D.g.position.z, d = Math.hypot(dx, dz) || 1; if (lv === 'hotspot' && d < 40) { D.g.position.x += dx / d * 5.5 * dt; D.g.position.z += dz / d * 5.5 * dt; } D.g.position.y = HSP.floorAt(D.g.position.x, D.g.position.z) + Math.abs(Math.sin(t * 8 + i)) * 0.4; D.g.rotation.y = Math.atan2(dx, dz);
+      if (lv === 'hotspot' && GAME.state === 'play' && d < 1.6 && GAME.t - (CIN.hitT || -9) > 1 && !(SPECIES[GAME.species] || {}).heatproof) { CIN.hitT = GAME.t; hurt(10, 'a fire demon', new V3(dx, 4, dz)); toast('A FIRE DEMON got you! RUN!', 'quiet'); } }
+    D.fl.forEach((f, k) => { const q = (t * 2 + k / D.fl.length) % 1; f.position.set(Math.sin(k * 2.1 + t * 3) * 0.4, 0.6 + q * 2.4, Math.cos(k * 2.1 + t * 3) * 0.4); f.scale.setScalar((1 - q) * 1.6 + 0.4); });
+    if (D.life <= 0 || !on) { if (lv === 'hotspot') sparkle(D.g.position.clone().add(new V3(0, 1, 0)), 16, 0xff6010); scene.remove(D.g); CIN.demons.splice(i, 1); } }
+  if (on && lv === 'hotspot' && GAME.state === 'play' && HSP.group) { CIN.dT -= dt; if (CIN.dT <= 0 && CIN.demons.length < 5) { CIN.dT = mr(2.5, 5); cinDemon(); if (!CIN.tip) { CIN.tip = 1; toast('Something just leapt out of the magma pool... a FIRE DEMON! It is coming for you! RUN!', 'guide'); } } } }
+function cinDemon() { const g = new THREE.Group(), body = new THREE.MeshStandardMaterial({ color: 0x8a1004, emissive: 0xff2a00, emissiveIntensity: 0.9, roughness: 0.6, flatShading: true }), dark = new THREE.MeshStandardMaterial({ color: 0x1a0402, roughness: 0.8 });
+  addTo(g, G.sphM, body, 0, 1.0, 0, 0.55, 0.75, 0.45); addTo(g, G.sphM, body, 0, 1.9, 0.05, 0.38); for (const s of [-1, 1]) { const h = addTo(g, new THREE.ConeGeometry(0.1, 0.45, 6), dark, s * 0.22, 2.3, 0, 1); h.rotation.z = -s * 0.5; addTo(g, G.sphM, new THREE.MeshBasicMaterial({ color: 0xffee40 }), s * 0.14, 1.95, 0.34, 0.08); const arm = addTo(g, G.sphM, body, s * 0.62, 1.1, 0.1, 0.16, 0.45, 0.16); arm.rotation.z = s * 0.6; addTo(g, G.sphM, body, s * 0.25, 0.3, 0, 0.18, 0.35, 0.18); }
+  const fl = []; for (let k = 0; k < 8; k++) { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: TEX.glow, color: k % 2 ? 0xffb030 : 0xff4a10, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })); g.add(s); fl.push(s); }
+  scene.add(g); const P = PL.pos, a = rnd() * TAU, d = mr(4, 14), to = new V3(P.x + Math.cos(a) * d, 0, P.z + Math.sin(a) * d); if (Math.hypot(to.x, to.z) < HSP.pool + 3) to.multiplyScalar((HSP.pool + 4) / (Math.hypot(to.x, to.z) || 1)); to.y = HSP.floorAt(to.x, to.z);
+  CIN.demons.push({ g, fl, state: 'leap', s: 0, from: new V3(mr(-3, 3), HSP.lavaH(0, 0), mr(-3, 3)), to, life: 14 }); tone('sawtooth', 120, 400, 0.5, 0.08); }
+
+/* ---- mega disasters sometimes happen on their own, and survive a reload ---- */
+// megadisasters NEVER happen on their own — you can only start them yourself in Settings → Big weather
+Object.keys(MEGA_INFO).forEach(k => { BWX_INFO[k] = BWX_INFO[k] || { icon: MEGA_INFO[k].icon, name: MEGA_INFO[k].name, dur: [1, 1], lvl: 0, start: '', end: '', mega: 1 }; });
+// (BWX_INFO has the mega names only so the auto-weather can pick them; starting one goes through the code above)
+function megaTick(dt) { const S = SAVE.stats.bigWx; if (S && S.mega && BWX.kind && !W.megaK && MEGA_INFO[S.mega] && MEGA_INFO[S.mega].base === BWX.kind) W.megaK = S.mega;
+  if (W.megaK && MEGA_INFO[W.megaK].lvl != null && BWX.kind) BWX.target = MEGA_INFO[W.megaK].lvl;
+  if (W.megaK === 'tidal' && BWX.kind === 'flood') { MEGA_INFO.tidal.lvl = megaOakTop() - 1.5 - WATER; if (BWX.lvl < BWX.target) { BWX.lvl = Math.min(BWX.target, BWX.lvl + dt * 0.35); bigWxWater(); } }
+  if (W.megaK === 'dead' && BWX.kind === 'drought' && BWX.lvl > BWX.target) { BWX.lvl = Math.max(BWX.target, BWX.lvl - dt * 0.04); bigWxWater(); }
+  humongiTick(dt); cinaclovTick(dt); }
+{ const _st = seasonTick; seasonTick = function (dt) { _st(dt); try { megaTick(dt); } catch (e) { console.warn('mega', e); } }; }
+
+/* ---- the pack card is locked until you've seen every disaster ---- */
+{ const _ps = packSet; packSet = function (fn) { _ps.call(this, D => { fn(D); if (!megaUnlocked()) D.mega = false; }); }; }
+{ const _rp = renderPacks; renderPacks = function () { _rp.apply(this, arguments); try { if (megaUnlocked()) return; const el = document.getElementById('packList'); if (!el) return; const card = [...el.querySelectorAll('button.card')].find(b => /Megadisasters/.test(b.textContent)); if (!card) return; const S = megaSeen(), miss = MEGA_ALL.filter(k => !S.includes(k));
+  card.onclick = e => { e.preventDefault(); toast('🔒 Megadisasters is locked! Experience every kind of natural disaster to unlock it.', 'guide'); }; card.style.opacity = '0.7';
+  card.innerHTML = '<b>🔒 Megadisasters (LOCKED)</b><p>Experience EVERY kind of natural disaster to unlock MEGA versions of them! (As soon as a disaster starts, it counts.)</p><p>Disasters experienced: <b>' + (MEGA_ALL.length - miss.length) + ' of ' + MEGA_ALL.length + '</b></p><p style="opacity:.8">Still to go: ' + miss.map(k => (BWX_INFO[k] || {}).name ? BWX_INFO[k].name.toLowerCase() : k).join(', ') + '</p>'; } catch (e) { } }; try { renderPacks(); } catch (e) { } }
+
+/* ---- the settings list: "start a mega one now" ---- */
+setInterval(() => { try { const sel = document.getElementById('sBigWx'); if (!sel || sel.dataset.mega === (megaUnlocked() ? '1' : '0')) return; sel.dataset.mega = megaUnlocked() ? '1' : '0'; if (!megaUnlocked()) return; for (const [k, t] of [['tidal', 'MEGA: tidal flood now'], ['wild', 'MEGA: WILD wildfire now'], ['dead', 'MEGA: dead drought now'], ['thundernado', 'MEGA: thundernado now'], ['cinaclov', 'MEGA: cinaclov eruption now'], ['humongi', 'MEGA: humongi tsunami now'], ['kelvin', 'MEGA: kelvin blizzard now (winter)']]) { const o = document.createElement('option'); o.value = k; o.textContent = t; sel.appendChild(o); } } catch (e) { } }, 800);
+
+/* ---- Cinaclov: real flowing lava (a moving lava texture on a smooth stream / a wide river) ---- */
+function cinLavaTex() { if (CIN.tex) return CIN.tex; const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); x.fillStyle = '#c22a00'; x.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 260; i++) { const px = Math.random() * 128, py = Math.random() * 128, r = 3 + Math.random() * 12, g = x.createRadialGradient(px, py, 0, px, py, r); const hot = Math.random() < 0.6; g.addColorStop(0, hot ? 'rgba(255,220,80,.9)' : 'rgba(40,10,4,.7)'); g.addColorStop(1, hot ? 'rgba(255,120,20,0)' : 'rgba(60,14,4,0)'); x.fillStyle = g; for (const ox of [-128, 0, 128]) for (const oy of [-128, 0, 128]) { x.beginPath(); x.arc(px + ox, py + oy, r, 0, TAU); x.fill(); } }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; CIN.tex = t; CIN.mat = new THREE.MeshBasicMaterial({ map: t, color: 0xffffff }); CIN.rmat = new THREE.MeshBasicMaterial({ map: t.clone(), color: 0xffffff, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 }); CIN.rmat.map.wrapS = CIN.rmat.map.wrapT = THREE.RepeatWrapping; CIN.rmat.map.needsUpdate = true; return t; }
+// a stream of lava: one smooth arc from the top of the volcano out across the land
+function cinStream() { cinLavaTex(); const P = PL.pos, aim = Math.random() < 0.35, a = aim ? Math.atan2(P.z - VOLC.z, P.x - VOLC.x) + mr(-0.15, 0.15) : rnd() * TAU, d = aim ? clamp(Math.hypot(P.x - VOLC.x, P.z - VOLC.z) + mr(-12, 12), 40, 300) : mr(70, 240);
+  const from = new V3(VOLC.x + Math.cos(a) * 4, VOLC.top + 1, VOLC.z + Math.sin(a) * 4), tx = VOLC.x + Math.cos(a) * d, tz = VOLC.z + Math.sin(a) * d; if (Math.hypot(tx, tz) > WORLD_R - 10) return; const to = new V3(tx, Math.max(volGround(tx, tz), waterLevelAt(tx, tz)), tz), arc = 25 + d * 0.3;
+  const pts = []; for (let i = 0; i <= 48; i++) { const s = i / 48, p = new V3().lerpVectors(from, to, s); p.y += 4 * arc * s * (1 - s); pts.push(p); }
+  const geo = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 96, 1.1, 8, false); const m = new THREE.Mesh(geo, CIN.mat); m.frustumCulled = false; geo.setDrawRange(0, 0); scene.add(m); if (W.mainWorld) W.mainWorld.push(m);
+  const glow = glowSprite(scene, to.x, to.y + 1.5, to.z, 0xff6010, 10, 0); CIN.streams.push({ m, geo, n: geo.index.count, to, t: 0, hold: mr(2.5, 4.5), glow, landed: 0 }); }
+function cinStreamTick(dt) { const P = PL.pos, top = curLevel() === 'top' && !W.inBurrow; if (CIN.tex) CIN.tex.offset.x -= dt * 0.9;
+  for (let i = CIN.streams.length - 1; i >= 0; i--) { const S = CIN.streams[i]; if (!S.m) { CIN.streams.splice(i, 1); continue; } S.t += dt; S.m.visible = top; S.glow.visible = top; const grow = 0.7, stopAt = grow + S.hold, all = Math.floor(S.n / 6 / 8) * 8 * 6;
+    if (S.t < grow) S.geo.setDrawRange(0, Math.floor(S.t / grow * all / 48) * 48); else if (S.t < stopAt) S.geo.setDrawRange(0, all); else { const k = Math.min(1, (S.t - stopAt) / 0.6), st = Math.floor(k * all / 48) * 48; S.geo.setDrawRange(st, all - st); S.dead = 1; }
+    const flowing = S.t > grow * 0.9 && S.t < stopAt + 0.3; S.glow.material.opacity = flowing ? 0.8 : 0;
+    if (flowing && top) { if (Math.random() < dt * 10) sparkle(S.to.clone().add(new V3(mr(-1, 1), 0.5, mr(-1, 1))), 4, 0xff7020); if (!S.landed) { S.landed = 1; const sm = new THREE.Mesh(lumpyGeo(1, 0.3, i), new THREE.MeshStandardMaterial({ color: 0xff5a10, emissive: 0xff3000, emissiveIntensity: 1.2, roughness: 0.6 })); sm.scale.set(4, 0.35, 4); sm.position.set(S.to.x, S.to.y + 0.05, S.to.z); scene.add(sm); VO.splats.push({ m: sm, x: S.to.x, z: S.to.z, y: S.to.y, life: 40, r: 3.6 }); }
+      if (GAME.state === 'play' && Math.hypot(P.x - S.to.x, P.z - S.to.z) < 3.2 && Math.abs(P.y - S.to.y) < 3 && GAME.t - (CIN.sT || -9) > 0.7 && !(SPECIES[GAME.species] || {}).lavaSwim) { CIN.sT = GAME.t; hurt(14, 'a stream of lava', new V3(P.x - S.to.x, 4, P.z - S.to.z)); } }
+    if (S.t > stopAt + 0.7) { scene.remove(S.m); S.geo.dispose(); scene.remove(S.glow); CIN.streams.splice(i, 1); } } }
+// rivers of lava: wide glowing rivers that flow out of the volcano, down the slopes and all across the land, splitting into branches
+function cinRiversBuild() { cinLavaTex(); cinRiversClear(); SEED = 9090 + GAME.day; const rivers = [];
+  const trace = (x, z, h, steps, w0, depth) => { const pts = []; for (let i = 0; i < steps; i++) { const e = 1.5, gx = volGround(x + e, z) - volGround(x - e, z), gz = volGround(x, z + e) - volGround(x, z - e), gl = Math.hypot(gx, gz);
+      if (gl > 0.08) { const dh = Math.atan2(-gx, -gz); let dd = dh - h; while (dd > Math.PI) dd -= TAU; while (dd < -Math.PI) dd += TAU; h += clamp(dd, -0.35, 0.35); } h += mr(-0.18, 0.18);
+      const nx = x + Math.sin(h) * 2.2, nz = z + Math.cos(h) * 2.2; if (Math.hypot(nx, nz) > WORLD_R - 25) { h += Math.PI * 0.5; continue; } x = nx; z = nz; const y = volGround(x, z), wl = waterLevelAt(x, z); if (y < wl - 0.2 && i > 20) { pts.push({ x, z, y: wl, h }); break; } pts.push({ x, z, y: Math.max(y, wl), h });
+      if (depth < 2 && i > 30 && i % 45 === 0 && rnd() < 0.6) rivers.push(trace(x, z, h + (rnd() < 0.5 ? 0.7 : -0.7), Math.floor((steps - i) * 0.7), w0 * 0.75, depth + 1)); }
+    return { pts, w0 }; };
+  for (let f = 0; f < 8; f++) { const a = f / 8 * TAU + mr(-0.3, 0.3); rivers.push(trace(VOLC.x + Math.sin(a) * (VOLC.cr + 1), VOLC.z + Math.cos(a) * (VOLC.cr + 1), a, 340, mr(12, 17), 0)); }
+  for (const R of rivers) { const P2 = R.pts; if (P2.length < 3) continue; const pos = [], uv = [], idx = []; let v = 0;
+    P2.forEach((p, i) => { const q = P2[Math.min(i + 1, P2.length - 1)], o = P2[Math.max(i - 1, 0)], dx = q.x - o.x, dz = q.z - o.z, l = Math.hypot(dx, dz) || 1, px = -dz / l, pz = dx / l, w = R.w0 * (0.75 + 0.35 * Math.sin(i * 0.21) + Math.min(1, i / 40) * 0.4) / 2;
+      for (const s of [-1, 1]) { const ex = p.x + px * w * s, ez = p.z + pz * w * s; pos.push(ex, Math.max(volGround(ex, ez), waterLevelAt(ex, ez)) + (volSurfRaw(ex, ez) != null ? 0.7 : 0.3), ez); uv.push(s < 0 ? 0 : 1, v); } if (i) v += Math.hypot(p.x - P2[i - 1].x, p.z - P2[i - 1].z) / 16; });
+    for (let i = 0; i < P2.length - 1; i++) { const a = i * 2; idx.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setIndex(idx); geo.setDrawRange(0, 0); const m = new THREE.Mesh(geo, CIN.rmat); m.frustumCulled = false; m.renderOrder = 1; scene.add(m); if (W.mainWorld) W.mainWorld.push(m); R.m = m; R.geo = geo; R.n = 0; }
+  CIN.rivers = rivers.filter(R => R.m); CIN.rcool = 0; CIN.rmat.color.setHex(0xffffff); }
+function cinRiversClear() { for (const R of (CIN.rivers || [])) { scene.remove(R.m); R.geo.dispose(); } CIN.rivers = []; }
+function cinRiverTick(dt) { if (!CIN.rivers || !CIN.rivers.length) return; const P = PL.pos, top = curLevel() === 'top' && !W.inBurrow, on = W.megaK === 'cinaclov' && BWX.kind === 'volcano'; CIN.rmat.map.offset.y -= dt * 0.35;
+  if (on) for (const R of CIN.rivers) { R.n = Math.min(R.pts.length, R.n + dt * (R.w0 > 6 ? 9 : 12)); R.geo.setDrawRange(0, Math.max(0, Math.floor(R.n) - 1) * 6); }
+  else { CIN.rcool += dt; const k = clamp(CIN.rcool / 40, 0, 1); CIN.rmat.color.setRGB(lerp(1, 0.12, k), lerp(1, 0.1, k), lerp(1, 0.1, k)); if (CIN.rcool > 300) cinRiversClear(); return; }
+  for (const R of CIN.rivers) R.m.visible = top;
+  if (!top || GAME.state !== 'play' || (SPECIES[GAME.species] || {}).lavaSwim || GAME.t - (CIN.rT || -9) < 0.6) return;
+  for (const R of CIN.rivers) { const n = Math.floor(R.n); for (let i = 0; i < n; i += 2) { const p = R.pts[i]; if (Math.abs(P.x - p.x) < R.w0 * 0.6 && Math.abs(P.z - p.z) < R.w0 * 0.6 && Math.hypot(P.x - p.x, P.z - p.z) < R.w0 * 0.5 && Math.abs(P.y - p.y) < 2) { CIN.rT = GAME.t; hurt(15, 'a river of lava', new V3(mr(-3, 3), 6, mr(-3, 3))); if (!CIN.rTip) { CIN.rTip = 1; toast('OW OW OW! That is a RIVER OF LAVA! Get out of it!', 'guide'); } return; } } } }
+{ const _vb = bbVolcanoBuild; bbVolcanoBuild = function () { _vb.apply(this, arguments); if (W.megaK === 'cinaclov') cinRiversBuild(); }; }
+
+/* ---- floods raise the OCEAN too ---- */
+const oceanFloodLvl = () => (BWX.kind === 'flood' ? Math.max(0, BWX.lvl) : 0);
+{ const wa = OCEAN.waterAt.bind(OCEAN); OCEAN.waterAt = function (x, z) { return wa(x, z) + oceanFloodLvl(); }; }
+function oceanFloodTick() { if (OCEAN.sea) OCEAN.sea.position.y = OCEAN.y0 + oceanFloodLvl() + (BB.tsFlood || 0); if (curLevel() === 'ocean' && oceanFloodLvl() > 1 && !OCEAN.floodTip && GAME.state === 'play') { OCEAN.floodTip = 1; toast('The flood has made the sea rise too! The water is coming right up over Seashell Beach.', 'guide'); } if (!oceanFloodLvl()) OCEAN.floodTip = 0; }
+
+/* ---- in a TIDAL FLOOD the sea creatures (and the deep abyss creatures) swim right onto the land ---- */
+const FLV = { list: [], on: false };
+function flvSpawn() { const P = PL.pos, want = { dolphin: 4, seaturtle: 3, mantaray: 2, seajelly: 5, shark: 2, bluewhale: 1, octopus: 1, seahorse: 2 }; const got = {};
+  for (const c of CREATURES) { if (c.level !== 'ocean' || !c.root || !want[c.guide]) continue; got[c.guide] = (got[c.guide] || 0); if (got[c.guide] >= want[c.guide]) continue; got[c.guide]++; const m = c.root.clone(true); m.visible = true; scene.add(m); FLV.list.push({ m, kind: c.guide, h: rnd() * TAU, ph: rnd() * 6, cd: 0 }); }
+  if (typeof mkAngler === 'function') for (let i = 0; i < 4; i++) { const m = mkAngler(); m.scale.multiplyScalar(1.6); scene.add(m); FLV.list.push({ m, kind: 'angler', h: rnd() * TAU, ph: rnd() * 6, cd: 0 }); }
+  for (const V of FLV.list) flvPlace(V, mr(15, 60)); }
+function flvPlace(V, d) { const P = PL.pos, a = rnd() * TAU; V.x = P.x + Math.cos(a) * d; V.z = P.z + Math.sin(a) * d; const g = terrainH(V.x, V.z), s = waterLevelAt(V.x, V.z); V.y = mr(g + 2, Math.max(g + 2.5, s - 1.5)); }
+function flvTick(dt) { const on = W.megaK === 'tidal' && BWX.kind === 'flood' && BWX.lvl > 6, top = curLevel() === 'top' && !W.inBurrow, P = PL.pos, t = GAME.t;
+  if (!on) { if (FLV.list.length && BWX.kind !== 'flood') { for (const V of FLV.list) scene.remove(V.m); FLV.list.length = 0; FLV.tip = 0; } for (const V of FLV.list) V.m.visible = false; return; }
+  if (!FLV.list.length) flvSpawn(); if (top && GAME.state === 'play' && !FLV.tip) { FLV.tip = 1; toast('WHOA! The tidal flood is so deep that creatures from the OCEAN have swum right onto the land! Dolphins, sea turtles, jellyfish... and watch out for the sharks! (The deep-sea creatures from the Abyss only come up at night.)', 'guide'); }
+  const inW = PL.inWater || P.y < waterLevelAt(P.x, P.z) - 0.3;
+  for (const V of FLV.list) { V.m.visible = top; if (!top) continue; if (V.kind === 'angler' && isDay()) { V.m.visible = false; V.night = 0; continue; } if (V.kind === 'angler' && !V.night) { V.night = 1; flvPlace(V, mr(25, 60)); if (!FLV.nightTip && GAME.state === 'play') { FLV.nightTip = 1; toast('It is dark now... the glowing anglerfish from the deep ABYSS have come up into the flood! They only come out at night. Watch for their little lights!', 'guide'); } } const g = terrainH(V.x, V.z), surf = waterLevelAt(V.x, V.z), d = Math.hypot(P.x - V.x, P.z - V.z); if (d > 130) { flvPlace(V, mr(50, 90)); continue; }
+    const sp = { dolphin: 6.5, seaturtle: 2.2, mantaray: 3.2, seajelly: 0.6, shark: 3.5, bluewhale: 2.5, octopus: 1.5, seahorse: 0.8, angler: 2.5 }[V.kind] || 2; V.cd = Math.max(0, V.cd - dt);
+    let hunt = (V.kind === 'shark' || V.kind === 'angler') && inW && d < (V.kind === 'shark' ? 18 : 10) && V.cd <= 0 && GAME.state === 'play';
+    if (hunt) { const a = Math.atan2(P.x - V.x, P.z - V.z); V.h += clamp(angDiff(V.h, a), -dt * 2.4, dt * 2.4); V.y = lerp(V.y, P.y, 1 - Math.exp(-dt * 2)); }
+    else { V.h += Math.sin(t * 0.3 + V.ph) * dt * 0.6; if (d > 80) V.h += clamp(angDiff(V.h, Math.atan2(P.x - V.x, P.z - V.z)), -dt, dt); V.y += Math.sin(t * 0.5 + V.ph) * dt * 0.5; }
+    const s2 = hunt ? sp * 1.6 : sp; V.x += Math.sin(V.h) * s2 * dt; V.z += Math.cos(V.h) * s2 * dt; V.y = clamp(V.y, g + 1.2, surf - (V.kind === 'bluewhale' ? 3 : 0.8));
+    if (V.kind === 'dolphin' && Math.random() < dt * 0.1 && !V.leap) V.leap = 1.4; if (V.leap) { V.leap -= dt; const k = 1 - V.leap / 1.4; V.y = surf - 0.5 + Math.sin(k * Math.PI) * 3.4; V.m.rotation.x = -Math.cos(k * Math.PI) * 0.9; if (V.leap <= 0) { V.leap = 0; V.m.rotation.x = 0; if (d < 60) splash && splash(V.x, surf, V.z, 6, 0.6); } }
+    V.m.position.set(V.x, V.y, V.z); V.m.rotation.y = V.h; if (V.kind === 'seajelly') V.m.scale.y = 1 + Math.sin(t * 2 + V.ph) * 0.12;
+    // bites and stings
+    const d3 = Math.hypot(d, P.y - V.y); if (GAME.state === 'play' && inW && GAME.t - (FLV.hitT || -9) > 1.2) { if (V.kind === 'shark' && d3 < 2.6) { FLV.hitT = GAME.t; V.cd = 8; hurt(20, 'a shark', new V3(Math.sin(V.h) * 7, 4, Math.cos(V.h) * 7)); toast('CHOMP! A SHARK! On LAND! (Well... underwater land.)', 'quiet'); } else if (V.kind === 'angler' && d3 < 2) { FLV.hitT = GAME.t; V.cd = 6; hurt(12, 'an anglerfish', new V3(Math.sin(V.h) * 5, 3, Math.cos(V.h) * 5)); } else if (V.kind === 'seajelly' && d3 < 1.4) { FLV.hitT = GAME.t; hurt(6, 'a jellyfish sting', new V3(P.x - V.x, 1, P.z - V.z)); } } } }
+{ const _st = seasonTick; seasonTick = function (dt) { _st(dt); try { oceanFloodTick(); flvTick(dt); } catch (e) { console.warn('floodsea', e); } }; }
+
+/* ---- BIG FLOOD (Big Bads): the old, not-quite-so-huge tidal flood ---- */
+{ const _o = bigWxOptions; bigWxOptions = function (winter) { const o = _o.apply(this, arguments); return bbOn() && !winter ? o.concat(['bigflood']) : o; }; }
+setInterval(() => { try { const sel = document.getElementById('sBigWx'); if (!sel || sel.querySelector('option[value=bigflood]')) return; const o = document.createElement('option'); o.value = 'bigflood'; o.textContent = 'Big Bads: BIG flood now'; const after = sel.querySelector('option[value=volcano]'); if (after) after.after(o); else sel.appendChild(o); } catch (e) { } }, 700);
+/* ================================================================================
+   g48: REALISTIC WILDFIRES (replaces the old wildfire).
+   The land is split into little patches. A burning patch sets the patches next to it on fire,
+   faster downwind, uphill, and through dry grass, so the fire spreads out in a ring with a
+   moving fire front, and leaves black burnt ground behind. It can't cross water or ground that
+   has already burned. When the fire reaches a tree, the flames climb up the trunk, the whole
+   treetop catches fire (and throws sparks that start new fires), then the tree burns through
+   and FALLS OVER, leaving a smoking black log. Lava from any volcano eruption sets fires
+   wherever it touches the land. Everything grows back after a couple of days.
+   ================================================================================ */
+const FIRE = { cell: 3.2, burning: new Map(), burnt: new Map(), trees: [], treeState: new Map(), restore: [], wind: 0 };
+const fKey = (i, j) => i + ',' + j;
+function fCellOf(x, z) { return [Math.floor(x / FIRE.cell), Math.floor(z / FIRE.cell)]; }
+function fFuel(x, z) { const h = terrainH(x, z); if (h < waterLevelAt(x, z) + 0.15) return 0; if (W.offTop) return 0; if (typeof VOLC !== 'undefined' && VOLC.built && volSurfRaw(x, z) != null && volSurfRaw(x, z) > h + 3) return 0.25; return 1; }
+// which instances belong to which tree (worked out once)
+function fTreeIndex() { if (FIRE.idx) return; FIRE.idx = 1; const T = W.trees || [], g = new Map(), C = 16; T.forEach((t, i) => { const k = fKey(Math.floor(t.x / C), Math.floor(t.z / C)); if (!g.has(k)) g.set(k, []); g.get(k).push(i); t._fol = []; t._br = []; });
+  const near = (x, z) => { let best = -1, bd = 1e9; const ci = Math.floor(x / C), cj = Math.floor(z / C); for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (const i of (g.get(fKey(ci + a, cj + b)) || [])) { const d = Math.hypot(T[i].x - x, T[i].z - z); if (d < bd) { bd = d; best = i; } } return bd < 14 ? best : -1; };
+  const m4 = new THREE.Matrix4(); for (const [im, key] of [[W.foliage, '_fol'], [W.branches, '_br']]) { if (!im) continue; for (let i = 0; i < im.count; i++) { im.getMatrixAt(i, m4); const e = m4.elements; if (e[0] === 0 && e[5] === 0) continue; const t = near(e[12], e[14]); if (t >= 0) T[t][key].push(i); } }
+  FIRE.tgrid = g; FIRE.tC = C;
+  if (W.trunks && !W.trunks.instanceColor) { W.trunks.material = W.trunks.material.clone(); const c = new THREE.Color(1, 1, 1); for (let i = 0; i < W.trunks.count; i++) W.trunks.setColorAt(i, c); W.trunks.instanceColor.needsUpdate = true; W.trunks.material.needsUpdate = true; } }
+function fTreesNear(x, z, r) { const out = [], C = FIRE.tC, T = W.trees; const ci = Math.floor(x / C), cj = Math.floor(z / C), n = Math.ceil(r / C); for (let a = -n; a <= n; a++) for (let b = -n; b <= n; b++) for (const i of (FIRE.tgrid.get(fKey(ci + a, cj + b)) || [])) if (Math.hypot(T[i].x - x, T[i].z - z) < r) out.push(i); return out; }
+// set a patch on fire
+function fIgnite(x, z, quiet) { if (W.offTop) return false; const [i, j] = fCellOf(x, z), k = fKey(i, j); if (FIRE.burning.has(k) || FIRE.burnt.has(k)) return false; const cx = (i + 0.5) * FIRE.cell + mr(-0.8, 0.8), cz = (j + 0.5) * FIRE.cell + mr(-0.8, 0.8), fu = fFuel(cx, cz); if (!fu) return false;
+  if (FIRE.burning.size > (BB.fire.mega ? 2600 : 1300)) return false; fTreeIndex();
+  const c = { i, j, x: cx, z: cz, y: terrainH(cx, cz), t: 0, life: mr(9, 15) * (BB.fire.mega ? 0.8 : 1), fuel: fu }; FIRE.burning.set(k, c);
+  if (!BB.fire.on) { const F = BB.fire; F.on = true; F.t = 0; F.dur = quiet ? 4 : mr(2, 3) * (F.mega ? 1.6 : 1); F.cx = cx; F.cz = cz; FIRE.wind = rnd() * TAU; }
+  for (const ti of fTreesNear(cx, cz, FIRE.cell * 0.9 + 1.5)) fTreeCatch(ti);
+  return true; }
+function fTreeCatch(ti) { if (FIRE.treeState.has(ti)) return; const t = W.trees[ti]; FIRE.treeState.set(ti, { st: 'climb', t: 0, base: terrainH(t.x, t.z) - 0.3, fall: rnd() * TAU, day: GAME.day }); }
+// start a wildfire (the old function name, so everything that starts a wildfire still works)
+bbFireStart = function () { const P = PL.pos; let o = null; for (let i = 0; i < 60 && !o; i++) { const a = rnd() * TAU, d = mr(35, 70), x = P.x + Math.cos(a) * d, z = P.z + Math.sin(a) * d; if (terrainH(x, z) > waterLevelAt(x, z) + 0.4 && (W.trees || []).some(t => Math.abs(t.x - x) < 15 && Math.abs(t.z - z) < 15)) o = { x, z }; }
+  if (!o) o = bbSafeSpot(P, 30, 60) || { x: P.x + 40, z: P.z }; if (WEATHER.lock === 'auto') { WEATHER.type = 'sunny'; WEATHER.timer = 90; WEATHER.cur.rain = 0; WEATHER.cur.storm = 0; }
+  const F = BB.fire; F.on = false; F.cells.length = 0; for (let k = 0; k < 4; k++) fIgnite(o.x + mr(-3, 3), o.z + mr(-3, 3)); if (!F.on) { F.on = true; F.t = 0; F.dur = mr(2, 3); F.cx = o.x; F.cz = o.z; } F.dur = mr(2, 3) * (F.mega ? 1.6 : 1);
+  const I = BWX_INFO.wildfire; banner(I.icon + ' ' + I.name + '!', ''); toast(I.start, 'guide'); tone('sawtooth', 300, 200, 1, 0.05); if (typeof megaNote === 'function') megaNote('wildfire'); };
+// burnt ground: the land turns black and the grass is gone (it all comes back later)
+function fScorch(c) { if (!FIRE.tOrig) FIRE.tOrig = new Map(); const x = c.x, z = c.z; for (const T of (W.terrains || [])) { const prm = T.geometry.parameters; if (!prm || !prm.width) continue; const Sz = prm.width, N = prm.widthSegments, h = Sz / 2; if (Math.abs(x) > h - 2 || Math.abs(z) > h - 2) continue; if (T !== W.terrains[0] && Math.max(Math.abs(x), Math.abs(z)) < INNER_T - 6) continue; const col = T.geometry.attributes.color, ix = Math.round((x + h) / Sz * N), iz = Math.round((z + h) / Sz * N);
+    for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) { const vi = (iz + b) * (N + 1) + (ix + a); if (vi < 0 || vi >= col.count) continue; const k = T.uuid + ':' + vi; if (!FIRE.tOrig.has(k)) FIRE.tOrig.set(k, { col, vi, r: col.getX(vi), g: col.getY(vi), b: col.getZ(vi), day: GAME.day }); const f = a || b ? 0.45 : 0.8; col.setXYZ(vi, lerp(col.getX(vi), 0.07, f), lerp(col.getY(vi), 0.06, f), lerp(col.getZ(vi), 0.05, f)); } col.needsUpdate = true; break; }
+  if (W.grass) { if (!FIRE.gGrass) FIRE.gGrass = swGrid(W.grass, 4); const a = W.grass.instanceArray || W.grass.instanceMatrix.array, m4 = new THREE.Matrix4(); let ch = 0; for (const i of swNear(FIRE.gGrass, 4, x, z, FIRE.cell * 0.8)) { if (a[i * 16] === 0 && a[i * 16 + 5] === 0) continue; const dx = a[i * 16 + 12] - x, dz = a[i * 16 + 14] - z; if (Math.abs(dx) < FIRE.cell * 0.6 && Math.abs(dz) < FIRE.cell * 0.6) { W.grass.getMatrixAt(i, m4); FIRE.restore.push({ im: W.grass, i, m: m4.clone(), day: GAME.day }); const z0 = new THREE.Matrix4().makeScale(0, 0, 0); z0.setPosition(a[i * 16 + 12], a[i * 16 + 13], a[i * 16 + 14]); W.grass.setMatrixAt(i, z0); ch = 1; } } if (ch) W.grass.instanceMatrix.needsUpdate = true; } }
+const F_M = new THREE.Matrix4(), F_R = new THREE.Matrix4(), F_T = new THREE.Matrix4(), F_V = new V3();
+// a tree's instances, tipped over by `ang` around its base
+function fTreeTip(ti, ang) { const t = W.trees[ti], S = FIRE.treeState.get(ti); if (!S.orig) { S.orig = []; const m4 = new THREE.Matrix4(); const keep = (im, i) => { im.getMatrixAt(i, m4); S.orig.push({ im, i, m: m4.clone() }); }; keep(W.trunks, ti); for (let k = 0; k < 4; k++) if (W.roots) keep(W.roots, ti * 4 + k); for (const i of t._br) keep(W.branches, i); for (const i of t._fol) keep(W.foliage, i); }
+  const ax = new V3(Math.cos(S.fall), 0, Math.sin(S.fall)); F_R.makeRotationAxis(ax, ang); F_T.makeTranslation(t.x, S.base, t.z); const back = new THREE.Matrix4().makeTranslation(-t.x, -S.base, -t.z); const M = new THREE.Matrix4().multiplyMatrices(F_T, F_R).multiply(back); const touched = new Set();
+  for (const O of S.orig) { if (O.im === W.roots) continue; if (O.im === W.foliage && S.leafGone) continue; F_M.multiplyMatrices(M, O.m); O.im.setMatrixAt(O.i, F_M); touched.add(O.im); } touched.forEach(im => im.instanceMatrix.needsUpdate = true); }
+function fTreeLeaves(ti, k) { const t = W.trees[ti], S = FIRE.treeState.get(ti); fTreeTip(ti, 0); const ps = new V3(), q = new THREE.Quaternion(), sc = new V3(); for (const O of S.orig) if (O.im === W.foliage) { O.m.decompose(ps, q, sc); sc.multiplyScalar(Math.max(0.0001, k)); F_M.compose(ps, q, sc); W.foliage.setMatrixAt(O.i, F_M); } W.foliage.instanceMatrix.needsUpdate = true; if (k <= 0.001) S.leafGone = 1; }
+const F_CHAR = new THREE.Color(0.12, 0.09, 0.07), F_WHITE = new THREE.Color(1, 1, 1);
+function fTreeTick(dt, P, top) { const fl = FIRE.tfl, sm = FIRE.tsm; let fi = 0, si = 0; const t0 = GAME.t;
+  for (const [ti, S] of FIRE.treeState) { const t = W.trees[ti]; S.t += dt; const H = t.H, R = t.R || 2, d = Math.hypot(P.x - t.x, P.z - t.z), vis = top && d < 160;
+    if (S.st === 'climb') { const h = Math.min(1, S.t / 5) * H * 0.75; if (vis) for (let k = 0; k < 6 && fi < fl.length; k++) { const s = fl[fi++], q = (t0 * 1.4 + k / 6) % 1; s.visible = true; s.position.set(t.x + Math.sin(k * 2 + t0 * 3) * R * 0.8, S.base + q * h + 0.5, t.z + Math.cos(k * 2 + t0 * 3) * R * 0.8); s.scale.setScalar(2.2 + (1 - q) * 2.5); s.material.color.setHex(k % 2 ? 0xffb040 : 0xff5010); }
+      if (S.t > 5) { S.st = 'crown'; S.t = 0; W.trunks.setColorAt(ti, F_CHAR); W.trunks.instanceColor.needsUpdate = true; } }
+    else if (S.st === 'crown') { const k = clamp(1 - S.t / 12, 0, 1); fTreeLeaves(ti, 0.3 + 0.7 * k); if (vis) for (let n = 0; n < 12 && fi < fl.length; n++) { const s = fl[fi++], q = (t0 * 1.1 + n / 12) % 1, a = n * 2.4 + t0 * 0.7, rr2 = R * 3 + (n % 3) * 1.6; s.visible = true; s.position.set(t.x + Math.cos(a) * rr2 * 0.7, S.base + H * (0.6 + q * 0.5), t.z + Math.sin(a) * rr2 * 0.7); s.scale.setScalar(4 + (1 - q) * 6); s.material.color.setHex(n % 3 ? 0xff7a20 : 0xffd060); }
+      if (vis && si < sm.length) for (let n = 0; n < 3 && si < sm.length; n++) { const s = sm[si++], q = (t0 * 0.18 + n / 3 + ti * 0.13) % 1; s.visible = true; s.position.set(t.x + q * 8, S.base + H + q * 26, t.z + q * 3); s.scale.setScalar(6 + q * 16); s.material.opacity = 0.5 * (1 - q); }
+      // a burning treetop throws sparks: new fires start nearby
+      if (Math.random() < dt * 0.9) { const a = FIRE.wind + mr(-1.2, 1.2), dd = mr(3, 14); fIgnite(t.x + Math.cos(a) * dd, t.z + Math.sin(a) * dd); }
+      if (top && d < R * 3.5 && GAME.state === 'play' && Math.random() < dt * 1.5) hurt(4, 'a burning tree', new V3(P.x - t.x, 2, P.z - t.z));
+      if (S.t > 12) { fTreeLeaves(ti, 0); S.st = 'fall'; S.t = 0; S.fall = Math.atan2(P.z - t.z, P.x - t.x) + (Math.random() < 0.6 ? mr(-1.6, 1.6) + Math.PI : mr(-0.5, 0.5)); for (const C of nearby(t.x, t.z)) if (C.k === 'coll' && C.tag === 'trunk' && Math.hypot(C.x - t.x, C.z - t.z) < 0.5) { S.coll = C; S.collTop = C.top; } if (vis && d < 90) { noiseHit(140, 0.6, 1.5, 0.25 * (1 - d / 90), new V3(t.x, S.base + 5, t.z)); if (d < 60 && !FIRE.fallTip) { FIRE.fallTip = 1; toast('CRRRACK! A burning tree is FALLING! Get out of the way!', 'guide'); } } } }
+    else if (S.st === 'fall') { const k = Math.min(1, S.t / 2.2), ang = k * k * 1.5; fTreeTip(ti, ang); if (vis) for (let n = 0; n < 4 && fi < fl.length; n++) { const s = fl[fi++]; s.visible = true; const hh = (n + 0.5) / 4 * H * 0.7; s.position.set(t.x + Math.cos(S.fall) * Math.sin(ang) * hh, S.base + Math.cos(ang) * hh, t.z + Math.sin(S.fall) * Math.sin(ang) * hh); s.scale.setScalar(3); }
+      if (k >= 1) { S.st = 'down'; S.t = 0; if (S.coll) S.coll.top = -999; CAM.shake = Math.max(CAM.shake || 0, d < 50 ? 0.6 * (1 - d / 50) : 0); if (vis) { noiseHit(80, 0.5, 2, 0.35 * clamp(1 - d / 80, 0, 1), new V3(t.x, S.base, t.z)); sparkle(new V3(t.x + Math.cos(S.fall) * H * 0.4, S.base + 1, t.z + Math.sin(S.fall) * H * 0.4), 24, 0xff6010); }
+        // ...and if you were standing where it fell: OUCH
+        const fx = t.x + Math.cos(S.fall) * H * 0.4, fz = t.z + Math.sin(S.fall) * H * 0.4, along = (P.x - t.x) * Math.cos(S.fall) + (P.z - t.z) * Math.sin(S.fall), side = Math.abs(-(P.x - t.x) * Math.sin(S.fall) + (P.z - t.z) * Math.cos(S.fall)); if (top && GAME.state === 'play' && along > 0 && along < H * 0.75 && side < R + 1.2) { hurt(18, 'a falling tree', new V3(P.x - fx, 6, P.z - fz)); toast('BONK! A burning tree fell right on you!', 'guide'); }
+        // it lights the ground where it lands
+        for (let n = 1; n < 6; n++) fIgnite(t.x + Math.cos(S.fall) * H * 0.14 * n, t.z + Math.sin(S.fall) * H * 0.14 * n); } }
+    else if (S.st === 'down') { if (vis && S.t < 40 && si < sm.length) { const s = sm[si++], q = (t0 * 0.2 + ti * 0.17) % 1; s.visible = true; s.position.set(t.x + Math.cos(S.fall) * H * 0.35 + q * 3, S.base + 1 + q * 10, t.z + Math.sin(S.fall) * H * 0.35); s.scale.setScalar(3 + q * 8); s.material.opacity = 0.4 * (1 - q); }
+      if (vis && S.t < 25 && fi < fl.length && Math.random() < 0.6) { const s = fl[fi++], hh = mr(0.1, 0.7) * H * 0.75; s.visible = true; s.position.set(t.x + Math.cos(S.fall) * hh, S.base + 0.8, t.z + Math.sin(S.fall) * hh); s.scale.setScalar(1.6 + Math.random()); s.material.color.setHex(0xff6a10); }
+      // after a few days, the forest grows back
+      if (GAME.day - S.day >= 3) { for (const O of S.orig) O.im.setMatrixAt(O.i, O.m); new Set(S.orig.map(O => O.im)).forEach(im => im.instanceMatrix.needsUpdate = true); W.trunks.setColorAt(ti, F_WHITE); W.trunks.instanceColor.needsUpdate = true; if (S.coll) S.coll.top = S.collTop; FIRE.treeState.delete(ti); } } }
+  for (; fi < fl.length; fi++) fl[fi].visible = false; for (; si < sm.length; si++) sm[si].visible = false; }
+// the main fire tick
+bbFireTick = function (dt) { const F = BB.fire, P = PL.pos, t = GAME.t, top = curLevel() === 'top' && !W.inBurrow;
+  if (!FIRE.fl) { FIRE.fl = bbSprites(260, 0xff7a20, 0.9, true); FIRE.sm = bbSprites(90, 0x3a3634, 0.5, false); FIRE.tfl = bbSprites(200, 0xff7a20, 0.9, true); FIRE.tsm = bbSprites(60, 0x3a3634, 0.5, false); FIRE.light = new THREE.PointLight(0xff7020, 0, 70, 1.4); scene.add(FIRE.light); for (const s of FIRE.fl.concat(FIRE.sm, FIRE.tfl, FIRE.tsm)) s.visible = false; }
+  if (F.flames) { F.flames.forEach(s => s.visible = false); F.smoke.forEach(s => s.visible = false); if (F.light) F.light.intensity = 0; }
+  // burnt land and grass grow back after a couple of days
+  if (FIRE.tOrig && FIRE.tOrig.size) { let k = 40; const cs = new Set(); for (const [key, O] of FIRE.tOrig) { if (k-- <= 0) break; if (GAME.day - O.day < 2) break; O.col.setXYZ(O.vi, O.r, O.g, O.b); cs.add(O.col); FIRE.tOrig.delete(key); } cs.forEach(c => c.needsUpdate = true); }
+  if (FIRE.restore.length && GAME.day - FIRE.restore[0].day >= 2) { const ims = new Set(); for (let k = 0; k < 200 && FIRE.restore.length && GAME.day - FIRE.restore[0].day >= 2; k++) { const O = FIRE.restore.shift(); O.im.setMatrixAt(O.i, O.m); ims.add(O.im); } ims.forEach(im => im.instanceMatrix.needsUpdate = true); }
+  for (const [k, d] of FIRE.burnt) if (GAME.day - d >= 2) FIRE.burnt.delete(k);
+  if (FIRE.treeState.size) fTreeTick(dt, P, top); else { if (FIRE.tfl) { for (const s of FIRE.tfl) s.visible = false; for (const s of FIRE.tsm) s.visible = false; } }
+  if (!F.on) { if (FIRE.burning.size) { for (const c of FIRE.burning.values()) { FIRE.burnt.set(fKey(c.i, c.j), GAME.day); fScorch(c); } FIRE.burning.clear(); } F.cells.length = 0; F.mega = false; for (const s of FIRE.fl) s.visible = false; for (const s of FIRE.sm) s.visible = false; FIRE.light.intensity = 0; return; }
+  F.t += dt / 60 / 2.5; if (WEATHER.lock === 'auto' && BWX.kind !== 'flood' && BWX.kind !== 'volcano') { WEATHER.type = 'sunny'; WEATHER.timer = Math.max(WEATHER.timer, 30); } const raining = WEATHER.cur.rain > 0.5 && WEATHER.lock !== 'auto';
+  if (raining || BWX.kind === 'flood') { F.on = false; bbOverlay('', 0); toast(raining ? 'The rain puts out the wildfire! ' + BWX_INFO.wildfire.end : BWX_INFO.wildfire.end, 'guide'); return; }
+  const dying = F.t > F.dur && BWX.kind !== 'volcano';
+  // spread: each burning patch can light its neighbours (downwind, uphill and dry grass burn faster)
+  const MG = !!F.mega, base = (MG ? 0.55 : 0.28) * (BWX.kind === 'drought' || BWX.kind === 'heat' ? 1.5 : 1), wdx = Math.cos(FIRE.wind), wdz = Math.sin(FIRE.wind), list = [...FIRE.burning.values()];
+  let nearest = 1e9, sx = 0, sz = 0, sn = 0;
+  for (const c of list) { c.t += dt; const dp = Math.hypot(P.x - c.x, P.z - c.z); if (dp < nearest) nearest = dp; if (dp < 120) { sx += c.x; sz += c.z; sn++; }
+    if (!dying && c.t > 1.5 && c.t < c.life * 0.8) for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) { if (!a && !b) continue; const ln = Math.hypot(a, b), dw = (a * wdx + b * wdz) / ln, nx = c.x + a * FIRE.cell, nz = c.z + b * FIRE.cell, up = clamp((terrainH(nx, nz) - c.y) * 0.6, -0.5, 1), p = base * c.fuel * (1 + dw * 0.9 + up) / ln; if (p > 0 && Math.random() < p * dt) fIgnite(nx, nz); }
+    if (c.t > c.life) { FIRE.burning.delete(fKey(c.i, c.j)); FIRE.burnt.set(fKey(c.i, c.j), GAME.day); fScorch(c); continue; }
+    if (dp < 1.9 && Math.abs(P.y - c.y) < 2 && !PL.inWater && GAME.state === 'play' && Math.random() < dt * 2.5) { hurt(5, 'the wildfire', new V3(P.x - c.x, 2, P.z - c.z)); if (!BB.fireTip) { BB.fireTip = 1; toast('HOT HOT HOT! Get away from the fire! Jump in the water!', 'guide'); } } }
+  F.cells.length = 0; for (const c of FIRE.burning.values()) F.cells.push(c);
+  if (!FIRE.burning.size && !FIRE.lavaT) { F.on = false; toast(BWX_INFO.wildfire.end, 'guide'); return; }
+  // flames on the patches nearest you
+  let fi = 0, si = 0; if (top) { const near = list.filter(c => FIRE.burning.has(fKey(c.i, c.j))).map(c => [Math.hypot(P.x - c.x, P.z - c.z), c]).filter(q => q[0] < 110).sort((a, b) => a[0] - b[0]);
+    for (const [dp, c] of near) { if (fi >= FIRE.fl.length - 1) break; const life = c.t / c.life, hgt = life < 0.2 ? life * 5 : life > 0.75 ? (1 - life) * 4 : 1; for (let k = 0; k < 2; k++) { const s = FIRE.fl[fi++], q = (t * 1.6 + k * 0.5 + c.i * 0.13 + c.j * 0.07) % 1; s.visible = true; s.position.set(c.x + Math.sin(c.i + k * 2 + t * 2) * 0.9, c.y + 0.4 + q * 3.2 * hgt, c.z + Math.cos(c.j + k * 2 + t * 2) * 0.9); s.scale.setScalar(((1 - q) * 3.2 + 0.8) * Math.max(0.3, hgt)); s.material.color.setHex(k ? 0xffc040 : 0xff5a10); }
+      if (si < FIRE.sm.length && (c.i + c.j) % 3 === 0) { const s = FIRE.sm[si++], q = (t * 0.22 + c.i * 0.37) % 1; s.visible = true; s.position.set(c.x + q * 5 * wdx, c.y + 3 + q * 16, c.z + q * 5 * wdz); s.scale.setScalar(3 + q * 10); s.material.opacity = 0.45 * (1 - q); } } }
+  for (; fi < FIRE.fl.length; fi++) FIRE.fl[fi].visible = false; for (; si < FIRE.sm.length; si++) FIRE.sm[si].visible = false;
+  if (sn) { FIRE.light.position.set(sx / sn, terrainH(sx / sn, sz / sn) + 6, sz / sn); F.cx = sx / sn; F.cz = sz / sn; } FIRE.light.intensity = top && sn ? 2.5 + Math.random() * 0.8 : 0;
+  if (top && BWX.kind !== 'volcano') bbOverlay('rgba(150,80,40,A)', clamp(1 - nearest / 140, 0, 1) * 0.35); if (!PL.inWater && nearest < 30) PL.needs.hydration = Math.max(0, PL.needs.hydration - dt * 0.4); };
+// the badge counts burning patches
+// (it already uses BB.fire.cells.length)
+
+/* ---- lava from ANY eruption sets fires where it touches the land ---- */
+function fLavaTick(dt) { FIRE.lavaT = 0; if (BWX.kind !== 'volcano' || curLevel() !== 'top') return; FIRE.lavaT = 1; FIRE.lt = (FIRE.lt || 0) - dt; if (FIRE.lt > 0) return; FIRE.lt = 0.25;
+  const side = (x, z, w) => { const a = rnd() * TAU; fIgnite(x + Math.cos(a) * w, z + Math.sin(a) * w, true); };
+  for (const L of (BB.lava || [])) { const n = Math.floor(L.m.count || 0); if (n < 2) continue; for (let k = 0; k < 2; k++) { const p = L.pts[Math.floor(Math.random() * n)]; side(p.x, p.z, mr(2.5, 4.5)); } }
+  for (const R of (typeof CIN !== 'undefined' && CIN.rivers ? CIN.rivers : [])) { const n = Math.floor(R.n || 0); if (n < 2) continue; if (Math.random() < 0.5) { const p = R.pts[Math.floor(Math.random() * n)]; side(p.x, p.z, R.w0 * 0.55 + mr(0.5, 2.5)); } }
+  for (const S of (typeof VO !== 'undefined' ? VO.splats : [])) if (!S.rock && S.life > 20 && !S.lit) { S.lit = 1; fIgnite(S.x, S.z, true); } }
+{ const _st = seasonTick; seasonTick = function (dt) { _st(dt); try { fLavaTick(dt); } catch (e) { console.warn('lavafire', e); } }; }
 /* ============================================================
    Multiplayer servers (claude.ai live rooms)
    lobby presence: { hosting: "1234" } advertises a running server
@@ -18411,7 +18743,7 @@ function updateCamera(dt) {
         if (want.y > ceil) want.y = ceil;
       }
     } else {
-      const bd = Math.hypot(want.x, want.z), lim = BURROW_R - 1.3; if (bd > lim) { want.x *= lim / bd; want.z *= lim / bd; }
+      if (hobTunnelOn() && PL.pos.z < -4.5) { want.x = clamp(want.x, -0.55, 0.55); want.z = clamp(want.z, -17.0, -1.0); } else { const bd = Math.hypot(want.x, want.z), lim = BURROW_R - 1.3; if (bd > lim) { want.x *= lim / bd; want.z *= lim / bd; } }
       want.y = clamp(want.y, denGround(want.x, want.z) + 0.35, denCeil(want.x, want.z) - 0.45);
     }
     if (CAM.snap || camera.position.distanceTo(want) > 25) { camera.position.copy(want); CAM.snap = false; }
