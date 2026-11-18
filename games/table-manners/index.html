@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Table Manners: The Grand Banquet</title>
+<style>
+:root { --ink: #f4ecd8; --dim: #b9b2c9; --gold: #f2c75c; --bg: #141228; --card: #221d3d; --line: #3a3363; --good: #7fd88f; --bad: #ff8a80; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: radial-gradient(ellipse at top, #2a2350, #0e0c1c 70%); color: var(--ink); font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif; min-height: 100%; }
+#app { display: flex; gap: 12px; padding: 12px; max-width: 1340px; margin: 0 auto; align-items: flex-start; }
+#stage { position: relative; flex: 1 1 auto; min-width: 0; aspect-ratio: 16 / 9; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 40px #0008, 0 0 0 2px #3b3466; background: #1b1838; }
+#cv { display: block; width: 100%; height: 100%; touch-action: none; cursor: default; }
+#panel { flex: 0 0 330px; background: var(--card); border-radius: 14px; box-shadow: 0 0 0 2px var(--line); padding: 12px 12px 10px; display: flex; flex-direction: column; gap: 8px; max-height: calc((100vw - 380px) * 9 / 16); min-height: 420px; overflow: hidden; }
+#hdr { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+#hdr .t { font-size: 17px; font-weight: bold; color: var(--gold); line-height: 1.15; }
+#hdr .c { font-size: 12px; color: var(--dim); white-space: nowrap; }
+#stats { display: flex; justify-content: space-between; font-size: 13px; color: var(--dim); }
+#stats b { color: var(--ink); }
+.row { display: flex; gap: 6px; }
+button { font-family: inherit; font-size: 14px; border: 0; border-radius: 9px; padding: 8px 10px; cursor: pointer; background: #3b3466; color: var(--ink); box-shadow: 0 2px 0 #0006; transition: transform .06s, filter .1s; }
+button:hover { filter: brightness(1.15); }
+button:active { transform: translateY(1px); }
+button:disabled { opacity: .45; cursor: default; filter: none; }
+button.big { background: linear-gradient(#f6d27a, #d9a640); color: #2a1d05; font-weight: bold; font-size: 16px; flex: 1.6; }
+button.ghost { background: transparent; box-shadow: 0 0 0 1px var(--line); }
+.row button { flex: 1; }
+#msg { font-size: 13px; min-height: 34px; color: var(--ink); background: #1a1631; border-radius: 8px; padding: 6px 8px; line-height: 1.3; }
+#fibhelp { font-size: 12px; color: #ffcf8a; background: #3a2a1a; border-radius: 8px; padding: 6px 8px; display: none; line-height: 1.3; }
+#list { flex: 1 1 auto; overflow-y: auto; padding-right: 4px; font-size: 13px; }
+#list::-webkit-scrollbar { width: 6px; } #list::-webkit-scrollbar-thumb { background: #4a427a; border-radius: 3px; }
+.gb { border-radius: 9px; padding: 5px 7px; margin-bottom: 5px; background: #1a1631; border: 1px solid transparent; }
+.gb.hl { border-color: var(--gold); }
+.gb .gn { display: flex; align-items: center; gap: 6px; font-weight: bold; }
+.gb .gn .f { font-size: 16px; }
+.gb .gn .fd { margin-left: auto; font-weight: normal; font-size: 12px; color: var(--dim); }
+.gb ul { list-style: none; margin: 3px 0 0; padding: 0; }
+.gb li { padding: 2px 4px 2px 20px; position: relative; border-radius: 5px; line-height: 1.25; }
+.gb li::before { position: absolute; left: 3px; top: 2px; }
+.gb li.ok { color: var(--good); } .gb li.ok::before { content: '✓'; }
+.gb li.bad { color: var(--bad); } .gb li.bad::before { content: '✗'; }
+.gb li.wait { color: var(--dim); } .gb li.wait::before { content: '·'; }
+.gb li.fib { color: #c9a26b; text-decoration: line-through; } .gb li.fib::before { content: '🤥'; text-decoration: none; left: 0; }
+.gb li.click { cursor: pointer; } .gb li.click:hover { background: #2c2650; }
+.gb li .tag { font-size: 11px; background: #3b3466; border-radius: 4px; padding: 0 4px; margin-right: 4px; color: var(--ink); text-decoration: none; display: inline-block; }
+.gb li .tag.nw { background: #6a4a10; }
+#foot { border-top: 1px solid var(--line); padding-top: 7px; font-size: 12px; color: var(--dim); display: flex; flex-direction: column; gap: 6px; }
+#chprog { display: flex; gap: 4px; flex-wrap: wrap; }
+#chprog span { background: #1a1631; border-radius: 6px; padding: 2px 6px; }
+#foot .row button { font-size: 12px; padding: 6px 6px; }
+#overlay { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; background: #0b0918cc; backdrop-filter: blur(2px); padding: 14px; }
+#overlay.on { display: flex; }
+.card { background: linear-gradient(#2b2450, #1e1938); border-radius: 16px; box-shadow: 0 0 0 2px #5a4f94, 0 20px 50px #000a; padding: 18px 22px; max-width: 640px; width: 100%; max-height: 100%; overflow-y: auto; }
+.card h1 { margin: 0 0 4px; font-size: 34px; color: var(--gold); text-align: center; letter-spacing: .5px; }
+.card h2 { margin: 0 0 10px; font-size: 22px; color: var(--gold); }
+.card .sub { text-align: center; color: var(--dim); margin-bottom: 14px; font-style: italic; }
+.card p.l { margin: 7px 0; line-height: 1.4; font-size: 15px; }
+.card p.l b { color: var(--gold); }
+.card .btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap; }
+.card .stars { font-size: 38px; text-align: center; color: var(--gold); letter-spacing: 6px; margin: 4px 0; }
+.card .stars .off { color: #4a427a; }
+.chap { margin: 10px 0 4px; font-weight: bold; color: var(--gold); }
+.tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); gap: 6px; }
+.tgrid button { font-size: 12px; padding: 6px; text-align: left; line-height: 1.2; }
+.tgrid button .s { color: var(--gold); display: block; }
+.tgrid button.done { background: #3d3a1e; }
+.tgrid button.next { background: #5a4a1a; box-shadow: 0 0 0 2px var(--gold); }
+.endstats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-size: 16px; margin: 10px 0; }
+.endstats div:nth-child(odd) { color: var(--dim); }
+.rank { text-align: center; font-size: 22px; color: var(--gold); margin: 10px 0 2px; }
+label.tog { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+@media (max-width: 900px) {
+  #app { flex-direction: column; padding: 6px; }
+  #stage { width: 100%; }
+  #panel { flex: none; width: 100%; max-height: none; min-height: 0; }
+  #list { max-height: none; overflow: visible; }
+  .card { padding: 12px 14px; } .card h1 { font-size: 24px; } .card p.l { font-size: 13px; margin: 4px 0; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage"><canvas id="cv" width="960" height="540"></canvas><div id="overlay"></div></div>
+  <aside id="panel">
+    <div id="hdr"><div class="t" id="ptitle">Table Manners</div><div class="c" id="pch"></div></div>
+    <div id="stats"><span>Moves <b id="smoves">0</b> / par <b id="spar">0</b></span><span>Hints <b id="shints">0</b></span><span id="sstars">☆☆☆</span></div>
+    <div class="row"><button class="big" id="bServe">🍽️ Serve</button><button id="bUndo" title="Undo (Ctrl+Z)">↶ Undo</button><button id="bClear">Clear</button><button id="bHint">💡 Hint</button></div>
+    <div id="msg">Drag guests from the lobby onto chairs.</div>
+    <div id="fibhelp">🤥 Someone at this table is fibbing. Use the dialogue clue, then <b>click their fake wish</b> below to mark it. Click again to unmark.</div>
+    <div id="list"></div>
+    <div id="foot">
+      <div id="chprog"></div>
+      <div class="row"><button id="bRelax" class="ghost">Relaxed: off</button><button id="bMute" class="ghost">🔊 Sound</button><button id="bStory" class="ghost">📜 Story</button><button id="bMenu" class="ghost">☰ Tables</button></div>
+    </div>
+  </aside>
+</div>
+<script>
+// ===== Table Manners engine: geometry, wishes, solver (shared by game + generator) =====
+(function (root) {
+'use strict';
+const E = {};
+E.rng = function (a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
+
+const SP = 46;
+function isMid(i, k) { return k % 2 ? i === (k - 1) / 2 : (i === k / 2 - 1 || i === k / 2); }
+
+E.buildSeats = function (tables) {
+  const seats = [], T = [];
+  tables.forEach((tb, ti) => {
+    const t = { shape: tb.shape, cx: tb.cx, cy: tb.cy, lazy: !!tb.lazy, ring: true, ids: [], name: tb.name || '' };
+    T.push(t);
+    const add = (x, y, o) => { const s = Object.assign({ id: seats.length, t: ti, x, y, head: false, middle: false, window: false, kitchen: false, ang: 0 }, o || {}); s.ord = t.ids.length; seats.push(s); t.ids.push(s.id); return s; };
+    const ac = {}; // ord -> ord
+    if (tb.shape === 'round') {
+      const n = tb.n, R = Math.max(74, n * SP / (2 * Math.PI)); t.R = R; t.r = R - 23;
+      for (let k = 0; k < n; k++) { const a = -Math.PI / 2 + 2 * Math.PI * k / n, dx = Math.cos(a), dy = Math.sin(a);
+        add(tb.cx + dx * R, tb.cy + dy * R, { head: k === 0, window: dy > 0.75, kitchen: dx > 0.75, ang: a }); }
+      if (n % 2 === 0) for (let k = 0; k < n; k++) ac[k] = (k + n / 2) % n;
+    } else if (tb.shape === 'rect') {
+      const k = tb.k, w = k * SP, h = 62; t.w = w; t.h = h;
+      const x0 = tb.cx - w / 2 + SP / 2;
+      for (let i = 0; i < k; i++) add(x0 + i * SP, tb.cy - h / 2 - 22, { middle: isMid(i, k), ang: -Math.PI / 2 });
+      add(tb.cx + w / 2 + 23, tb.cy, { head: true, kitchen: true, ang: 0 });
+      for (let i = k - 1; i >= 0; i--) add(x0 + i * SP, tb.cy + h / 2 + 22, { middle: isMid(i, k), window: true, ang: Math.PI / 2 });
+      add(tb.cx - w / 2 - 23, tb.cy, { head: true, ang: Math.PI });
+      for (let i = 0; i < k; i++) { const b = k + 1 + (k - 1 - i); ac[i] = b; ac[b] = i; }
+      ac[k] = 2 * k + 1; ac[2 * k + 1] = k;
+    } else if (tb.shape === 'u') {
+      t.ring = false; const a = tb.a, b = tb.b, th = 34;
+      const L = tb.cx - b * SP / 2, Rr = tb.cx + b * SP / 2, H = a * SP + th, yT = tb.cy - H / 2, yB = tb.cy + H / 2;
+      Object.assign(t, { L, R: Rr, yT, yB, th });
+      for (let i = 0; i < a; i++) add(L - 22, yT + SP / 2 + i * SP, { middle: a % 2 === 1 && i === (a - 1) / 2, ang: Math.PI });
+      for (let j = 0; j < b; j++) add(tb.cx + (j - (b - 1) / 2) * SP, yB + 22, { window: true, head: b % 2 === 1 && j === (b - 1) / 2, ang: Math.PI / 2 });
+      for (let i = a - 1; i >= 0; i--) add(Rr + 22, yT + SP / 2 + i * SP, { kitchen: true, middle: a % 2 === 1 && i === (a - 1) / 2, ang: 0 });
+      for (let i = 0; i < a; i++) { const r = a + b + (a - 1 - i); ac[i] = r; ac[r] = i; }
+    }
+    t.across = ac;
+  });
+  const N = seats.length;
+  const D = [], A = [], across = new Array(N).fill(-1), nb = [];
+  for (let i = 0; i < N; i++) { D.push(new Array(N).fill(99)); A.push(new Array(N).fill(false)); nb.push([]); }
+  T.forEach(t => {
+    const n = t.ids.length;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      let d = Math.abs(i - j); if (t.ring) d = Math.min(d, n - d);
+      D[t.ids[i]][t.ids[j]] = d; if (d === 1) { A[t.ids[i]][t.ids[j]] = true; }
+    }
+    for (const o in t.across) across[t.ids[o]] = t.ids[t.across[o]];
+  });
+  for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) if (A[i][j]) nb[i].push(j);
+  return { seats, tables: T, D, A, across, nb, N };
+};
+
+// ---------- wishes ----------
+// ev returns 1 true, 0 false, 2 unknown.  P = {pos, occ, left, fin}
+const UNARY = { head: 1, middle: 1, window: 1, kitchen: 1 };
+const GLOBAL = { empty: 1, food: 1, between: 1, nofam: 1, aura: 1 };
+E.GLOBAL = GLOBAL;
+function ev(w, C, P) {
+  const S = C.S, pos = P.pos, occ = P.occ, fin = P.fin;
+  const sg = pos[w.g];
+  switch (w.k) {
+    case 'head': case 'middle': case 'window': case 'kitchen':
+      if (sg < 0) return fin ? 0 : 2; return S.seats[sg][w.k] ? 1 : 0;
+    case 'next': case 'near': case 'across': case 'same': case 'two': {
+      const sx = pos[w.x]; if (sg < 0 || sx < 0) return fin ? 0 : 2;
+      if (w.k === 'next') return S.A[sg][sx] ? 1 : 0;
+      if (w.k === 'near') return S.D[sg][sx] <= 2 ? 1 : 0;
+      if (w.k === 'across') return S.across[sg] === sx ? 1 : 0;
+      if (w.k === 'same') return S.seats[sg].t === S.seats[sx].t ? 1 : 0;
+      return S.D[sg][sx] === 2 ? 1 : 0;
+    }
+    case 'tbl': if (sg < 0) return fin ? 0 : 2; return S.seats[sg].t === w.t ? 1 : 0;
+    case 'notnext': case 'far': case 'diff': {
+      const sx = pos[w.x]; if (sg < 0) return fin ? 0 : 2; if (sx < 0) return fin ? 1 : 2;
+      if (w.k === 'notnext') return S.A[sg][sx] ? 0 : 1;
+      if (w.k === 'far') return S.D[sg][sx] <= 2 ? 0 : 1;
+      return S.seats[sg].t !== S.seats[sx].t ? 1 : 0;
+    }
+    case 'empty': {
+      if (sg < 0) return fin ? 0 : 2;
+      let anyEmpty = false; for (const n of S.nb[sg]) if (occ[n] < 0) anyEmpty = true;
+      if (!anyEmpty) return 0; if (fin || P.left === 0) return 1; return 2;
+    }
+    case 'between': {
+      if (sg < 0) return fin ? 0 : 2;
+      const nb = S.nb[sg]; if (nb.length < 2) return 0;
+      const sx = pos[w.x], sy = pos[w.y];
+      if (fin) return (sx >= 0 && sy >= 0 && S.A[sg][sx] && S.A[sg][sy]) ? 1 : 0;
+      if (sx >= 0 && !S.A[sg][sx]) return 0; if (sy >= 0 && !S.A[sg][sy]) return 0;
+      for (const n of nb) { const o = occ[n]; if (o >= 0 && o !== w.x && o !== w.y) return 0; }
+      return (sx >= 0 && sy >= 0) ? 1 : 2;
+    }
+    case 'food': {
+      if (sg < 0) return fin ? 0 : 2;
+      const f = C.G[w.g].food; let full = true;
+      for (const n of S.nb[sg]) { const o = occ[n]; if (o < 0) full = false; else if (C.G[o].food === f) return 1; }
+      if (fin || full) return 0;
+      for (let h = 0; h < pos.length; h++) if (h !== w.g && pos[h] < 0 && C.act[h] && C.G[h].food === f) return 2;
+      return 0;
+    }
+    case 'nofam': {
+      const f = w.fam;
+      for (let s = 0; s < S.N; s++) { const o = occ[s]; if (o < 0 || C.G[o].fam !== f) continue;
+        for (const n of S.nb[s]) { const o2 = occ[n]; if (n > s && o2 >= 0 && C.G[o2].fam === f) return 0; } }
+      return (fin || P.left === 0) ? 1 : 2;
+    }
+    case 'aura': {
+      if (sg < 0) return fin ? 1 : 2;
+      for (const n of S.nb[sg]) { const o = occ[n]; if (o >= 0 && !(C.G[o].imm || []).includes(w.t)) return 0; }
+      return (fin || P.left === 0) ? 1 : 2;
+    }
+    case 'mirror': return (fin || P.left === 0) ? 1 : 2; // resolved by mood()
+    case 'ifthen': {
+      const sx = pos[w.x]; if (sx < 0) return fin ? 0 : 2;
+      const sub = S.seats[sx][w.c] ? w.a : w.b;
+      return ev(sub, C, P);
+    }
+  }
+  return 1;
+}
+E.ev = ev;
+function involved(w) {
+  const r = [w.g]; if (w.x != null) r.push(w.x); if (w.y != null) r.push(w.y);
+  if (w.k === 'ifthen') { for (const s of [w.a, w.b]) { if (s.x != null) r.push(s.x); } }
+  return r;
+}
+E.involved = involved;
+function isGlobal(w) { if (GLOBAL[w.k]) return true; if (w.k === 'ifthen') return GLOBAL[w.a.k] || GLOBAL[w.b.k]; return false; }
+
+// ---------- solver ----------
+E.solve = function (C, wishes, limit, opt) {
+  opt = opt || {};
+  const S = C.S, N = S.N, act = C.act, G = act.length, rnd = opt.rnd;
+  const pos = new Array(G).fill(-1), occ = new Array(N).fill(-1);
+  const list = []; for (let g = 0; g < G; g++) if (act[g]) list.push(g);
+  const P = { pos, occ, left: list.length, fin: false };
+  const dep = []; for (let g = 0; g < G; g++) dep.push([]);
+  const glob = [];
+  for (const w of wishes) { if (w.k === 'mirror') continue; if (isGlobal(w)) glob.push(w); else for (const g of new Set(involved(w))) dep[g].push(w); }
+  let seatOrder = []; for (let s = 0; s < N; s++) seatOrder.push(s);
+  if (rnd) for (let i = N - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [seatOrder[i], seatOrder[j]] = [seatOrder[j], seatOrder[i]]; }
+  let gOrder = list.slice(); if (rnd) for (let i = gOrder.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [gOrder[i], gOrder[j]] = [gOrder[j], gOrder[i]]; }
+  const sols = []; let nodes = 0, aborted = false; const maxNodes = opt.maxNodes || 3e6;
+  function ok(g) { for (const w of dep[g]) if (ev(w, C, P) === 0) return false; for (const w of glob) if (ev(w, C, P) === 0) return false; return true; }
+  function rec() {
+    if (P.left === 0) {
+      for (const w of wishes) if (ev(w, C, P) === 0) return false;
+      sols.push(pos.slice()); return sols.length >= limit;
+    }
+    if (++nodes > maxNodes) { aborted = true; return true; }
+    let best = -1, bl = null;
+    for (const g of gOrder) {
+      if (pos[g] >= 0) continue;
+      const l = [];
+      for (const s of seatOrder) { if (occ[s] >= 0) continue; pos[g] = s; occ[s] = g; P.left--; if (ok(g)) l.push(s); pos[g] = -1; occ[s] = -1; P.left++; if (bl && l.length >= bl.length) break; }
+      if (!bl || l.length < bl.length) { best = g; bl = l; if (!l.length) return false; }
+    }
+    for (const s of bl) { pos[best] = s; occ[s] = best; P.left--; const r = rec(); pos[best] = -1; occ[s] = -1; P.left++; if (r) return true; }
+    return false;
+  }
+  rec();
+  return { sols, count: sols.length, aborted, nodes };
+};
+
+// ---------- mood (game-side, final mode) ----------
+// pos: guest->seat (-1 lobby / not arrived). returns per-guest happy and per-wish ok
+E.mood = function (C, pos, wishes, fib) {
+  const S = C.S, G = pos.length, occ = new Array(S.N).fill(-1);
+  for (let g = 0; g < G; g++) if (pos[g] >= 0) occ[pos[g]] = g;
+  const P = { pos, occ, left: 0, fin: true };
+  const ok = wishes.map(w => ev(w, C, P));
+  const happy = [], grump = [];
+  for (let g = 0; g < G; g++) { happy.push(C.act[g] && pos[g] >= 0); grump.push([]); }
+  wishes.forEach((w, i) => {
+    if (w.k === 'aura') { const sa = pos[w.g]; if (sa < 0) return; for (const n of S.nb[sa]) { const o = occ[n]; if (o >= 0 && !(C.G[o].imm || []).includes(w.t)) { grump[o].push(w.g); happy[o] = false; } } return; }
+    if (w.k === 'mirror' || i === fib) return;
+    if (!ok[i]) happy[w.g] = false;
+  });
+  wishes.forEach((w, i) => { if (w.k === 'mirror' && i !== fib) { ok[i] = (happy[w.x] && pos[w.x] >= 0) ? 1 : 0; } });
+  wishes.forEach((w, i) => { if (w.k === 'mirror' && i !== fib && !ok[i]) happy[w.g] = false; });
+  return { happy, ok, grump, occ };
+};
+
+// ---------- text ----------
+E.TNAMES = ['🌙 Moon', '⭐ Star', '☄️ Comet'];
+E.FOOD = { pasta: '🍝 pasta', salad: '🥗 salad', cake: '🍰 cake', fish: '🐟 fish', steak: '🥩 steak', soup: '🍲 soup', tacos: '🌮 tacos' };
+E.wishText = function (w, nm, G) {
+  const X = w.x != null ? nm(w.x) : '', Y = w.y != null ? nm(w.y) : '';
+  switch (w.k) {
+    case 'next': return 'Next to ' + X;
+    case 'notnext': return 'NOT next to ' + X;
+    case 'near': return 'Near ' + X + ' (within 2 seats)';
+    case 'far': return 'Far from ' + X + ' (3+ seats or another table)';
+    case 'across': return 'Directly across from ' + X;
+    case 'head': return 'At the head of a table 👑';
+    case 'middle': return 'In a middle seat ◆';
+    case 'window': return 'Facing the window 🌙';
+    case 'kitchen': return 'Back to the kitchen door 🚪';
+    case 'empty': return 'An empty chair beside them';
+    case 'same': return 'At the same table as ' + X;
+    case 'tbl': return 'At the ' + E.TNAMES[w.t] + ' table';
+    case 'diff': return 'At a different table from ' + X;
+    case 'two': return 'Exactly 2 seats away from ' + X;
+    case 'between': return 'Between ' + X + ' and ' + Y;
+    case 'food': return 'Next to a fellow ' + E.FOOD[G[w.g].food] + ' fan';
+    case 'nofam': return 'No two ' + w.fam + 's side by side!';
+    case 'aura': return w.t === 'smell' ? "Doesn't care where they sit… but neighbours get grumpy 💨 (unless they can't smell)" : "Doesn't care where they sit… but neighbours get grumpy 🎶 (unless they love opera)";
+    case 'mirror': return 'Only happy if ' + X + ' is happy';
+    case 'ifthen': {
+      const c = { head: 'at a head', window: 'facing the window', kitchen: 'back to the kitchen' }[w.c];
+      const lo = s => { const t = E.wishText(s, nm, G); return t.charAt(0).toLowerCase() + t.slice(1); };
+      return 'If ' + X + ' sits ' + c + ': ' + lo(w.a) + '. Otherwise: ' + lo(w.b) + '.';
+    }
+  }
+  return w.k;
+};
+
+if (typeof module !== 'undefined' && module.exports) module.exports = E; else root.TME = E;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+// ===== Table Manners: The Grand Banquet — content =====
+(function (root) {
+const R = {
+  // --- the Smith family & relatives
+  rose:   { name: 'Grandma Rose', sh: 'Rose', col: '#e9b8c9', acc: 'bun', food: 'soup', fam: 'Smith', desc: 'the one who knits during dessert', bio: 'Matriarch. Has opinions about chairs.' },
+  barry:  { name: 'Uncle Barry', sh: 'Barry', col: '#e8a46a', acc: 'cap', food: 'steak', fam: 'Smith', desc: 'the one who brought his own barbecue tongs', bio: 'Will tell you about his grill.' },
+  dot:    { name: 'Aunt Dot', sh: 'Dot', col: '#a7d38b', acc: 'bow', food: 'salad', fam: 'Smith', desc: 'the one with the polka-dot bow', bio: 'Brought a casserole nobody asked for.' },
+  kevin:  { name: 'Cousin Kevin', sh: 'Kevin', col: '#8fb6e8', acc: 'glasses', food: 'tacos', fam: 'Smith', desc: 'the one who just got a job in Sales', bio: 'Recently discovered crypto. Sorry.' },
+  timmy:  { name: 'Little Timmy', sh: 'Timmy', col: '#f3d36b', acc: 'propeller', food: 'cake', fam: 'Smith', desc: 'the one in the propeller hat', bio: 'Age seven. Chaos incarnate.' },
+  gus:    { name: 'Grandpa Gus', sh: 'Gus', col: '#c9b79c', acc: 'mustache', food: 'soup', fam: 'Jones', imm: ['sound'], desc: 'the one with the magnificent moustache', bio: 'Hearing aid permanently "off". Can sleep through opera.' },
+  pam:    { name: 'Auntie Pam', sh: 'Pam', col: '#d59be0', acc: 'bow', food: 'pasta', fam: 'Jones', desc: 'the one who married into all this', bio: 'A Jones. Married a Smith. Regrets nothing (yet).' },
+  whiskers:{ name: 'Mr. Whiskers', sh: 'Whiskers', col: '#a9a9b8', acc: 'cat', food: 'fish', fam: 'Cat', desc: 'the one with whiskers', bio: 'A cat. Allegedly.' },
+  // --- office
+  vlad:   { name: 'Count Vlad (Accounts)', sh: 'Vlad', col: '#d8d4e6', acc: 'fangs', food: 'steak', fam: 'Dracul', imm: ['sound'], desc: 'the one who only works night shifts', bio: 'Loves spreadsheets and opera. Hates garlic bread.' },
+  boo:    { name: 'Boo the Ghost', sh: 'Boo', col: '#f4f4fb', acc: 'ghost', food: 'cake', fam: 'Ghost', imm: ['smell'], desc: 'the one who works remotely (very remotely)', bio: 'Works remotely. Has no nose. Has no legs either.' },
+  unit7:  { name: 'Unit 7 (IT)', sh: 'Unit 7', col: '#9fc7c9', acc: 'antenna', food: 'soup', fam: 'Unit', imm: ['smell'], desc: 'the one who asked if we tried turning it off and on', bio: 'Have you tried turning dinner off and on again? No olfactory sensors.' },
+  brenda: { name: 'Brenda from HR', sh: 'Brenda', col: '#f0a3a3', acc: 'glasses', food: 'salad', fam: 'Okafor', desc: 'the one holding a clipboard', bio: 'Has a form for this.' },
+  gary:   { name: 'Gary the Intern', sh: 'Gary', col: '#bde0a0', acc: 'cap', food: 'tacos', fam: 'Pike', desc: 'the intern', bio: 'Unpaid. Unfazed. Unbelievably hungry.' },
+  pendle: { name: 'Ms. Pendleton (CEO)', sh: 'Pendleton', col: '#b9a3e3', acc: 'pearls', food: 'fish', fam: 'Pendleton', desc: 'the one who owns the company', bio: 'Will "circle back" on dessert.' },
+  dave:   { name: 'Dave from Sales', sh: 'Dave', col: '#f2b880', acc: 'tie', food: 'steak', fam: 'Dunn', desc: 'the one wearing a novelty tie', bio: 'Has a "quick pitch".' },
+  // --- royals
+  marigold:{ name: 'Queen Marigold', sh: 'Marigold', col: '#f5d76e', acc: 'crown', food: 'cake', fam: 'Royal', desc: 'the one who rules a small country', bio: 'Mother of the groom. Fond of decrees.' },
+  percy:  { name: 'Prince Percival', sh: 'Percy', col: '#9cc3f0', acc: 'crown', food: 'pasta', fam: 'Royal', desc: 'the groom', bio: 'The groom. Nervous. Sweats through capes.' },
+  pea:    { name: 'Lady Pea', sh: 'Pea', col: '#b8e6a8', acc: 'tiara', food: 'salad', fam: 'Pod', desc: 'the bride', bio: 'The bride. Can feel a pea through 20 mattresses.' },
+  reggie: { name: 'Sir Reginald', sh: 'Reginald', col: '#c4ccd6', acc: 'helmet', food: 'steak', fam: 'Knight', desc: 'the one in full armour', bio: 'Clanks. Cannot remove helmet. Eats through the visor.' },
+  ember:  { name: 'Ember the Dragon', sh: 'Ember', col: '#ef7b5a', acc: 'horns', food: 'tacos', fam: 'Dragon', desc: 'the one who breathes fire', bio: 'Ring-bearer. Asked to "please not light the cake early".' },
+  jangles:{ name: 'Jangles the Jester', sh: 'Jangles', col: '#f08fc0', acc: 'jester', food: 'cake', fam: 'Jester', desc: 'the one with bells on', bio: 'Jingles when nervous. Always nervous.' },
+  fluff:  { name: 'Duchess Fluffington', sh: 'Fluff', col: '#fbe3ef', acc: 'poodle', food: 'fish', fam: 'Poodle', desc: 'the poodle', bio: 'A poodle with a duchy.' },
+  // --- monsters
+  frank:  { name: 'Frank', sh: 'Frank', col: '#96c79b', acc: 'bolts', food: 'soup', fam: 'Stein', desc: 'the gentle giant with neck bolts', bio: 'Gentle giant. Afraid of candles.' },
+  tut:    { name: 'Mummy Tut', sh: 'Tut', col: '#e6dcc0', acc: 'bandage', food: 'salad', fam: 'Pharaoh', imm: ['smell'], desc: 'the one wrapped in bandages', bio: 'Three thousand years old. Nose fell off in 900 BC.' },
+  steve:  { name: 'Swamp Steve', sh: 'Steve', col: '#7fae8c', acc: 'weed', food: 'fish', fam: 'Bog', imm: ['smell'], desc: 'the one dripping on the carpet', bio: 'Lives in a bog. Smells worse than anyone, notices nothing.' },
+  wendy:  { name: 'Werewolf Wendy', sh: 'Wendy', col: '#b58a6a', acc: 'wolf', food: 'steak', fam: 'Lupin', desc: 'the one who sheds', bio: 'Fine until the moon comes out. The hall is called Moonlight. Hm.' },
+  pepper: { name: 'Pepper the Skunk', sh: 'Pepper', col: '#55505e', acc: 'skunk', food: 'salad', fam: 'Skunk', aura: 'smell', desc: 'the skunk', bio: 'Lovely personality. Unlovely aroma.' },
+  arietta:{ name: 'Madame Arietta', sh: 'Arietta', col: '#e58fa6', acc: 'feather', food: 'pasta', fam: 'Diva', aura: 'sound', desc: 'the opera singer', bio: 'Sings every sentence. At volume.' },
+  gloria: { name: 'Gorgon Gloria', sh: 'Gloria', col: '#9bd17a', acc: 'snakes', food: 'tacos', fam: 'Gorgon', desc: 'the one with snakes for hair', bio: 'Wears sunglasses for everyone else\'s safety.' },
+  pip:    { name: 'Pip the Imp', sh: 'Pip', col: '#e86f6f', acc: 'horns', food: 'cake', fam: 'Imp', desc: 'the small one with a pointy tail', bio: 'Mischief in a waistcoat.' }
+};
+
+const M = 'Maurice'; // the maître d'
+const F = '📨 A Friend';
+
+const CHAPTERS = [
+  { title: 'Family Reunion', icon: '👵', intro: [
+    [M, 'Welcome back, planner! After last season\'s triumph, the Moonlight Banquet Hall is booked solid for a month.'],
+    [M, 'First up: the Smith Family Reunion. Again. They asked for you by name. They also asked for "a chair that doesn\'t wobble". Godspeed.'] ] },
+  { title: 'Office Gala', icon: '💼', intro: [
+    [M, 'Next: the annual Office Gala for Spreadsheet & Sons. Award ceremony, open bar, and two tables. Two!'],
+    [M, 'Guests can now be moved between tables. Some wishes care which table you\'re at.'] ] },
+  { title: 'Royal Wedding', icon: '👑', intro: [
+    [M, 'Prince Percival is marrying Lady Pea, and the Queen has booked the whole hall.'],
+    [M, 'A warning: royals lie. Politely, but constantly. From now on one guest per table may be fibbing about a wish.'],
+    [M, 'Read the dialogue for clues, then click the fake wish in the list to mark it 🤥. You can\'t Serve until the right fib is marked.'] ] },
+  { title: 'Monster Mixer', icon: '🧟', intro: [
+    [M, 'The Monster Mixer! A networking night for the spooky community.'],
+    [M, 'Some guests don\'t care where they sit, but everyone NEXT to them gets grumpy. Pepper the skunk, for instance. Lovely skunk. Truly.'],
+    [M, 'Guests with no sense of smell can sit beside Pepper. Guests who love opera (or can\'t hear) can sit beside Madame Arietta.'] ] },
+  { title: 'The Grand Banquet', icon: '🌕', intro: [
+    [M, 'And now: the Grand Banquet. Every guest from every party this month, invited by... someone.'],
+    [M, 'The invitations are unsigned. They smell faintly of tuna. I\'m sure it\'s nothing.'] ] }
+];
+
+// helpers for table layouts (play area is 960 x ~395, centre y ~215)
+const round = (n, cx, cy, extra) => Object.assign({ shape: 'round', n, cx, cy: cy || 215 }, extra || {});
+const lazy = (n, cx, cy) => ({ shape: 'round', n, cx, cy: cy || 215, lazy: true });
+const rect = (k, cx, cy) => ({ shape: 'rect', k, cx, cy: cy || 215 });
+const ushape = (a, b, cx, cy) => ({ shape: 'u', a, b, cx, cy: cy || 205 });
+
+const T1 = ['next', 'notnext', 'across', 'head', 'window', 'kitchen', 'near', 'far', 'between', 'empty', 'food', 'middle'];
+const T2 = T1.concat(['same', 'diff', 'two']);
+const T3 = T2.concat(['ifthen']);
+
+const PUZZLES = [
+  // ---------------- Chapter 1: Family Reunion
+  { id: '1-1', ch: 0, title: 'Warm-Up Soup', tables: [round(6, 480)], guests: ['rose', 'barry', 'dot', 'gus', 'pam'], types: ['next', 'across', 'head', 'window', 'kitchen', 'notnext'], prune: 0.2,
+    intro: [['Grandma Rose', 'Just a little warm-up, dear. Six chairs, five of us, no drama whatsoever.'], [M, 'Drag guests from the lobby onto chairs. Drop one guest on another to swap them. When every face is smiling, press Serve.'], [M, 'Look at the chairs: a crown 👑 marks the head, a moon 🌙 means facing the window, and a door 🚪 means back to the kitchen.']],
+    outro: [[M, 'Wonderful. Oh, this was taped to the window: "Please seat the family well. More requests to follow. — A Friend."'], [M, 'There\'s a short grey hair on it. Probably nothing.']] },
+  { id: '1-2', ch: 0, title: 'The Long Table', tables: [rect(3, 480)], guests: ['rose', 'barry', 'dot', 'kevin', 'timmy', 'gus', 'pam'], types: T1, prune: 0.3, notes: 1,
+    intro: [['Uncle Barry', 'A long table! Two heads! Finally a seat worthy of my tongs.'], [F, 'A note was slipped under the kitchen door. Its request is on tonight\'s list, marked 📨.']],
+    outro: [[M, 'Another note, still slightly damp. Somebody licked the envelope. Thoroughly.']] },
+  { id: '1-3', ch: 0, title: 'No Two Smiths', tables: [round(10, 480)], guests: ['rose', 'barry', 'dot', 'timmy', 'gus', 'pam', 'whiskers'], late: 'kevin', nofam: 'rose', twist: 'late', types: T1, prune: 0.35,
+    intro: [['Grandma Rose', 'New rule: no two Smiths side by side. Last time Barry and Dot argued about potato salad for four hours.'], ['Aunt Dot', 'It was THREE hours, Mother.']],
+    twistText: 'Cousin Kevin bursts in, an hour late, holding a "crypto opportunity" brochure. He needs a seat, and he has wishes.',
+    outro: [[M, 'Kevin has pitched his coin to the cat. The cat seemed interested. Unsettlingly interested.']] },
+  { id: '1-4', ch: 0, title: 'The Lazy Susan', tables: [lazy(8, 480)], guests: ['rose', 'barry', 'dot', 'kevin', 'timmy', 'gus', 'pam'], types: T1, prune: 0.4, notes: 1,
+    intro: [[M, 'This is the hall\'s pride and joy: the revolving lazy-Susan table. The chairs ride on the turntable.'], [M, 'Careful: every time you press Serve and someone is still grumpy, the whole table rotates one seat clockwise. The window and the door stay where they are.'], [F, 'Another note arrived, delivered by "nobody", via the cat flap.']],
+    outro: [['Grandma Rose', 'Best reunion in years. Whoever is sending those notes has excellent taste.'], [M, 'Chapter complete! The Smiths are leaving. Slowly. Saying goodbye in the doorway for forty minutes.']] },
+
+  // ---------------- Chapter 2: Office Gala
+  { id: '2-1', ch: 1, title: 'The U-Shaped Meeting', tables: [ushape(3, 3, 480)], guests: ['vlad', 'boo', 'unit7', 'brenda', 'gary', 'pendle', 'dave', 'kevin'], types: T2, prune: 0.4,
+    intro: [['Ms. Pendleton', 'A U-shaped table. Like a meeting room, but with gravy. Very synergistic.'], ['Boo the Ghost', 'Can I join on video? ...No? Fine. I\'ll haunt in person.'], [M, 'U-tables have ends. The two arms face each other, so seats can be "across" the gap.']],
+    outro: [[M, 'An anonymous note on the CEO\'s chair: "Fish course first. — A Friend." Ms. Pendleton has approved it in triplicate.']] },
+  { id: '2-2', ch: 1, title: 'Two Tables, One Gala', tables: [round(6, 270), rect(2, 690)], guests: ['vlad', 'boo', 'unit7', 'brenda', 'gary', 'pendle', 'dave', 'kevin', 'barry', 'dot'], types: T2, prune: 0.45,
+    intro: [['Brenda from HR', 'Per policy 7.3, some people must sit at the same table and some at different tables. I have a form.'], ['Uncle Barry', 'I\'m Kevin\'s plus-one. Dot is MY plus-one. It\'s a whole chain.']],
+    outro: [['Gary the Intern', 'I found another note. It was in the fish tank. Why was it in the fish tank?']] },
+  { id: '2-3', ch: 1, title: 'Change of Heart', tables: [rect(4, 480)], guests: ['vlad', 'boo', 'unit7', 'brenda', 'gary', 'pendle', 'dave', 'whiskers', 'timmy'], twist: 'change', types: T2, prune: 0.5, notes: 1,
+    intro: [['Dave from Sales', 'Award night! I\'m definitely winning Top Seller. Seat me somewhere photogenic.'], [F, 'A note fell out of a napkin. The napkin had been... kneaded. Like bread. By paws?']],
+    twistText: 'Halfway through the starters, someone changes their mind about where they want to sit. Check the list for the ✨ new wish.',
+    outro: [[M, 'Dave did not win Top Seller. Mr. Whiskers did. Nobody remembers nominating him.']] },
+  { id: '2-4', ch: 1, title: 'Spin Cycle', tables: [lazy(10, 480)], guests: ['vlad', 'boo', 'unit7', 'brenda', 'gary', 'pendle', 'dave', 'kevin', 'dot'], types: T2, prune: 0.55, notes: 1,
+    intro: [['Unit 7 (IT)', 'The rotating table runs on firmware version 1.0. I recommend not failing. At all.'], [F, 'Tonight\'s note was written in very large letters, as though by someone with no thumbs.']],
+    outro: [['Count Vlad', 'I have audited the notes. The ink is mostly gravy. And there is a paw print in the margin.']] },
+  { id: '2-5', ch: 1, title: 'The Feud at the Gala', tables: [ushape(3, 3, 300), round(6, 730)], guests: ['vlad', 'boo', 'unit7', 'brenda', 'gary', 'pendle', 'dave', 'kevin', 'barry', 'dot', 'pam', 'gus', 'whiskers'], twist: 'feudStart', types: T2, prune: 0.6,
+    intro: [['Ms. Pendleton', 'Final event of the gala: the after-party. Everyone, including your families. HR insisted.'], ['Brenda from HR', 'I did not insist. I filed a complaint.']],
+    twistText: 'Uh oh. Over the cheese course, two guests have started a feud. They now want to be far apart.',
+    outro: [[M, 'Chapter complete! The gala is over. Gary has taken home eleven bread rolls in his pockets.'], [M, 'There\'s an invitation in the morning post: the Royal Wedding wants us. Under it, a note: "Good. — A Friend."']] },
+
+  // ---------------- Chapter 3: Royal Wedding
+  { id: '3-1', ch: 2, title: 'The Royal Rehearsal', tables: [rect(5, 480)], guests: ['marigold', 'percy', 'pea', 'reggie', 'ember', 'jangles', 'fluff', 'rose', 'vlad', 'boo', 'gus'], types: T3, mirror: 1, prune: 0.55,
+    intro: [['Queen Marigold', 'A rehearsal dinner. Some of my guests\' wishes depend on where OTHER guests sit. Conditions, darling. Royalty runs on conditions.'], ['Prince Percival', 'And I\'m only happy if Pea is happy. It\'s in the vows.']],
+    outro: [[M, 'A note was found tucked in the wedding cake. It says "More fish at the reception. — A Friend." The Queen is furious and also hungry.']] },
+  { id: '3-2', ch: 2, title: 'Somebody Is Fibbing', tables: [round(8, 260), round(8, 700)], guests: ['marigold', 'percy', 'pea', 'reggie', 'ember', 'jangles', 'fluff', 'rose', 'barry', 'dot', 'vlad', 'boo', 'pendle', 'dave'], types: T3, liar: true, prune: 0.6,
+    intro: [['Queen Marigold', 'Two round tables for the families. And one of my guests is lying about a seat. I can smell a fib.']],
+    outro: [[M, 'Exposed fibs: one. Ruffled feathers: many. The fibber has been assigned extra trifle as punishment.']] },
+  { id: '3-3', ch: 2, title: 'The Late Bridesmaid', tables: [ushape(3, 5, 480)], guests: ['marigold', 'percy', 'pea', 'reggie', 'ember', 'jangles', 'fluff', 'whiskers', 'kevin', 'timmy'], late: 'gloria', twist: 'late', types: T3, liar: true, prune: 0.6, notes: 1,
+    intro: [['Lady Pea', 'My bridesmaid Gloria is running late. Please don\'t let anyone look her in the eye.'], [F, 'A note on the windowsill, where it\'s warm. It was lying in a sunbeam.']],
+    twistText: 'Gorgon Gloria glides in, sunglasses firmly on. "Sorry! Traffic. Also I turned the taxi driver to stone. He\'s fine. Mostly."',
+    outro: [['Sir Reginald', 'I examined the note with my sword. It is covered in short grey hairs. Like a... no. Surely not.']] },
+  { id: '3-4', ch: 2, title: 'Reconciliation', tables: [rect(5, 320), round(6, 790)], guests: ['marigold', 'percy', 'pea', 'reggie', 'ember', 'jangles', 'fluff', 'rose', 'barry', 'dot', 'gus', 'pam', 'brenda', 'gary', 'unit7'], twist: 'feudEnd', types: T3, prune: 0.65,
+    intro: [['Jangles the Jester', 'Two of our guests have been feuding for YEARS. Keep them apart or there\'ll be pie-throwing. Not the funny kind.']],
+    twistText: 'A toast! The two feuding guests hug it out, sobbing. Now they insist on sitting next to each other.',
+    outro: [[M, 'There\'s not a dry eye in the house. Except Unit 7, who doesn\'t have tear ducts, but says it\'s "processing feelings".']] },
+  { id: '3-5', ch: 2, title: 'The Royal Turntable', tables: [lazy(12, 480)], guests: ['marigold', 'percy', 'pea', 'reggie', 'ember', 'jangles', 'fluff', 'whiskers', 'rose', 'vlad', 'boo'], types: T3, liar: true, prune: 0.65,
+    intro: [['Queen Marigold', 'The reception! Twelve seats on the spinning table. I decree that you do not spin it.'], [M, 'Remember: a failed Serve rotates everyone one seat.']],
+    outro: [[M, 'Chapter complete! They\'re married! Ember lit the cake early. Then the curtains. Then the cake again.'], [M, 'In the gift pile, a can of tuna with a bow on it. The tag says "For me. — A Friend."']] },
+
+  // ---------------- Chapter 4: Monster Mixer
+  { id: '4-1', ch: 3, title: 'Something Smells', tables: [round(10, 480)], guests: ['frank', 'tut', 'steve', 'wendy', 'pepper', 'gloria', 'pip', 'boo', 'unit7'], types: T3, prune: 0.6,
+    intro: [['Pepper the Skunk', 'Hi! I\'m Pepper! I\'m super friendly! People just... don\'t like sitting next to me. No idea why!'], [M, 'Only guests who can\'t smell are happy next to Pepper. Check a guest\'s info by hovering over them.']],
+    outro: [['Frank', 'Frank find note. Note say "Mixer going well. Seat Steve near fish. — A Friend." Frank confused. Steve IS fish?']] },
+  { id: '4-2', ch: 3, title: 'An Aria for Appetizers', tables: [rect(5, 480)], guests: ['frank', 'tut', 'steve', 'wendy', 'pepper', 'arietta', 'gloria', 'pip', 'vlad', 'gus', 'boo'], types: T3, liar: true, prune: 0.65,
+    intro: [['Madame Arietta', '🎶 Seat me ANYWHEEEERE, darlings! 🎶'], [M, 'Her neighbours will need to love opera or be unable to hear it. Vlad loves opera. Gus\'s hearing aid has been "off" since 1987.']],
+    outro: [[M, 'She sang the whole dessert menu. Twice. The cat sat in the window the whole time, looking smug.']] },
+  { id: '4-3', ch: 3, title: 'Three Little Tables', tables: [round(6, 170), round(6, 480), round(6, 790)], guests: ['frank', 'tut', 'steve', 'wendy', 'gloria', 'pip', 'vlad', 'boo', 'unit7', 'ember', 'jangles', 'rose', 'timmy', 'gary', 'fluff'], twist: 'change', types: T3, liar: true, prune: 0.7,
+    intro: [['Werewolf Wendy', 'Three cosy tables for speed-networking. I\'m fine as long as nobody opens the curtains. Full moon tonight.']],
+    twistText: 'The curtains blow open. Moonlight! Someone at the tables is suddenly feeling very different about their seat. Look for the ✨ new wish.',
+    outro: [[M, 'Wendy has eaten the centrepieces. All of them. She apologised beautifully.']] },
+  { id: '4-4', ch: 3, title: 'Monster Feud', tables: [ushape(4, 5, 480)], guests: ['frank', 'tut', 'steve', 'wendy', 'pepper', 'gloria', 'pip', 'boo', 'unit7', 'ember', 'reggie', 'pendle'], twist: 'feudStart', types: T3, liar: true, prune: 0.7,
+    intro: [['Pip the Imp', 'Hee hee. A big U-table. Lots of places to hide whoopee cushions. Not that I would. Hee.']],
+    twistText: 'A whoopee cushion goes off. Two guests blame each other, and a feud begins. Keep them apart!',
+    outro: [[M, 'Pip claims the cushion was planted by "a grey fluffy accomplice". Nobody believes Pip. Pip is, admittedly, a liar.']] },
+  { id: '4-5', ch: 3, title: 'Midnight Spin', tables: [lazy(10, 300), round(6, 750)], guests: ['frank', 'tut', 'steve', 'wendy', 'pepper', 'arietta', 'gloria', 'pip', 'vlad', 'boo', 'unit7', 'gus', 'fluff', 'whiskers'], types: T3, liar: true, prune: 0.7,
+    intro: [['Swamp Steve', 'Gloop. Last mixer dinner. Lazy Susan AND a small table. Gloop gloop.'], [M, 'Steve says that\'s ambitious. I think. It\'s hard to tell with Steve.']],
+    outro: [[M, 'Chapter complete! The monsters left at dawn, as monsters do.'], [M, 'And on the front desk: a final note. "Grand Banquet. Everyone. Tomorrow. I will reveal myself. — A Friend."']] },
+
+  // ---------------- Chapter 5: The Grand Banquet
+  { id: '5-1', ch: 4, title: 'The Arrivals Hall', tables: [rect(6, 480)], guests: ['rose', 'barry', 'vlad', 'boo', 'marigold', 'percy', 'pea', 'frank', 'pepper', 'tut', 'brenda', 'jangles', 'kevin'], nofam: 'rose', types: T3, liar: true, prune: 0.75,
+    intro: [[M, 'The Grand Banquet begins! We\'re seating guests in waves. First wave: fourteen chairs, one table, one skunk.'], ['Grandma Rose', 'And no two Smiths side by side. Some rules are eternal.']],
+    outro: [['Brenda from HR', 'I\'ve cross-referenced every note. They were all delivered at nap times. Specific nap times.']] },
+  { id: '5-2', ch: 4, title: 'The Overflow Room', tables: [ushape(4, 5, 320), round(6, 775)], guests: ['dot', 'timmy', 'gus', 'pam', 'unit7', 'gary', 'pendle', 'dave', 'reggie', 'ember', 'fluff', 'steve', 'wendy', 'gloria', 'arietta'], late: 'pip', twist: 'late', types: T3, liar: true, prune: 0.75,
+    intro: [[M, 'Second wave: the U-table and the little round one. Madame Arietta is warming up her voice. The windows are trembling.']],
+    twistText: 'Pip the Imp sneaks in late through the dumbwaiter, covered in flour. "Did I miss the part where you seat me? Hee."',
+    outro: [['Lady Pea', 'I felt something under my chair cushion. It\'s a note! It says: "Almost time. — A Friend." And it\'s warm.']] },
+  { id: '5-3', ch: 4, title: 'Every Shape at Once', tables: [round(6, 150), rect(3, 470), lazy(8, 800)], guests: ['rose', 'barry', 'dot', 'kevin', 'vlad', 'boo', 'brenda', 'dave', 'marigold', 'percy', 'pea', 'jangles', 'frank', 'tut', 'wendy', 'gloria', 'pepper', 'gus'], twist: 'change', types: T3, liar: true, prune: 0.8,
+    intro: [['Unit 7 (IT)', 'Three tables. Three shapes. One of them spins. Probability of success: calculating... please hold.']],
+    twistText: 'The fish course arrives, and someone suddenly wants to sit somewhere else entirely. Look for the ✨ new wish.',
+    outro: [[M, 'Someone has eaten the fish course. All of it. The plates have been licked clean. There are paw prints on the tablecloth.']] },
+  { id: '5-4', ch: 4, title: 'The Long Goodnight', tables: [rect(7, 480)], guests: ['rose', 'gus', 'pam', 'timmy', 'unit7', 'gary', 'pendle', 'reggie', 'ember', 'fluff', 'steve', 'arietta', 'pip', 'percy', 'boo'], twist: 'feudEnd', types: T3, liar: true, prune: 0.8,
+    intro: [['Grandma Rose', 'Sixteen seats. One table. Two old enemies. One opera singer. This is how I imagined my golden years.']],
+    twistText: 'Arietta sings a ballad so moving that the two feuding guests make up on the spot. They want to sit side by side!',
+    outro: [[M, 'Everyone is seated except... one guest. The guest of honour. Tomorrow night, the Final Banquet. The sender will be there.']] }
+];
+
+const FINAL = { id: 'F', ch: 5, title: 'The Final Banquet', tables: [rect(4, 230), round(8, 545), lazy(6, 815)],
+  guests: ['rose', 'barry', 'dot', 'kevin', 'gus', 'vlad', 'boo', 'unit7', 'brenda', 'pendle', 'marigold', 'percy', 'pea', 'ember', 'frank', 'pepper', 'arietta', 'gloria', 'pip'], late: 'whiskers', twist: 'late', types: T3, liar: true, prune: 0.75, nofam: 'rose',
+  intro: [[M, 'The Final Banquet. Everyone you\'ve ever seated, all at once. Three tables. One skunk. One soprano. One liar.'], [M, 'And one empty chair, reserved for "A Friend". Let\'s get everyone else seated first.']],
+  twistText: 'The doors swing open. A small grey figure pads in, wearing a tiny bow tie. It is MR. WHISKERS. He drops a final note: "It was me. I own the building. Now seat me by the fish. — A Friend."',
+  outro: [[M, 'Mr. Whiskers, it turns out, has owned the Moonlight Banquet Hall since 1997. He bought it with "money from a crypto opportunity" (thanks, Kevin).'], [M, 'Every note, every request, every licked envelope: just a cat who wanted the best seat in the house, and a planner good enough to give it to him.'], ['Mr. Whiskers', 'Mrrp.'], [M, 'He says you\'re promoted. And he\'d like more fish.']] };
+
+const DATA = { ROSTER: R, CHAPTERS, PUZZLES, FINAL };
+if (typeof module !== 'undefined' && module.exports) module.exports = DATA; else root.TMC = DATA;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+// ===== Table Manners puzzle generator (shared: offline build + in-game Rando Level) =====
+(function (root) {
+function makeGenerator(E, ROSTER) {
+const TW = { head: 3, window: 3, kitchen: 3, middle: 2, next: 4, across: 3, between: 3, empty: 1.2, food: 1.5, notnext: 1, near: 1.5, far: 0.6, same: 2, diff: 2, tbl: 1.3, two: 2.5, ifthen: 1.0 };
+const key = w => JSON.stringify([w.k, w.g, w.x, w.y, w.c, w.t, w.a && key(w.a), w.b && key(w.b)]);
+
+function fullP(C, pos) { const occ = new Array(C.S.N).fill(-1); pos.forEach((s, g) => { if (s >= 0) occ[s] = g; }); return { pos, occ, left: 0, fin: false }; }
+function truth(C, pos, w) { return E.ev(w, C, fullP(C, pos)); }
+
+function candidates(C, T, types, banOwners, rnd) {
+  const S = C.S, out = [], G = C.act.length, has = k => types.includes(k);
+  for (let g = 0; g < G; g++) {
+    if (!C.act[g] || banOwners.has(g)) continue;
+    const s = T[g], seat = S.seats[s];
+    for (const a of ['head', 'middle', 'window', 'kitchen']) if (has(a) && seat[a]) out.push({ k: a, g });
+    if (has('same') && S.tables.length > 1) out.push({ k: 'tbl', g, t: seat.t });
+    const P = fullP(C, T);
+    if (has('empty') && E.ev({ k: 'empty', g }, C, P) === 1) out.push({ k: 'empty', g });
+    if (has('food') && E.ev({ k: 'food', g }, C, P) === 1) out.push({ k: 'food', g });
+    if (has('between') && S.nb[s].length === 2) { const [p, q] = S.nb[s].map(n => P.occ[n]); if (p >= 0 && q >= 0) out.push({ k: 'between', g, x: p, y: q }); }
+    for (let x = 0; x < G; x++) {
+      if (x === g || !C.act[x]) continue;
+      const sx = T[x], d = S.D[s][sx], sameT = S.seats[sx].t === seat.t;
+      if (has('next') && d === 1) out.push({ k: 'next', g, x });
+      if (has('notnext') && sameT && d >= 2 && d <= 3) out.push({ k: 'notnext', g, x });
+      if (has('near') && d === 2) out.push({ k: 'near', g, x });
+      if (has('far') && d > 2) out.push({ k: 'far', g, x });
+      if (has('across') && S.across[s] === sx) out.push({ k: 'across', g, x });
+      if (has('two') && d === 2) out.push({ k: 'two', g, x });
+      if (has('same') && sameT && S.tables.length > 1) out.push({ k: 'same', g, x });
+      if (has('diff') && !sameT) out.push({ k: 'diff', g, x });
+      if (has('ifthen') && rnd() < 0.25) {
+        const conds = ['head', 'window', 'kitchen'].filter(c => S.seats.some(z => z[c]));
+        const c = conds[Math.floor(rnd() * conds.length)];
+        const subs = [{ k: 'next', g, x }, { k: 'across', g, x }, { k: 'far', g, x }, { k: 'window', g }, { k: 'kitchen', g }, { k: 'head', g }];
+        const tr = subs.filter(w => truth(C, T, w) === 1), fa = subs.filter(w => truth(C, T, w) === 0);
+        if (tr.length && fa.length) {
+          const t = tr[Math.floor(rnd() * tr.length)], f = fa[Math.floor(rnd() * fa.length)];
+          const cv = S.seats[sx][c];
+          out.push({ k: 'ifthen', g, x, c, a: cv ? t : f, b: cv ? f : t });
+        }
+      }
+    }
+  }
+  return out;
+}
+
+function pickW(cands, cnt, prefer, rnd) {
+  const ws = cands.map(w => (TW[w.k] || 1) / Math.pow(1 + cnt[w.g], 2) * (prefer.has(w.g) ? 6 : 1));
+  let tot = ws.reduce((a, b) => a + b, 0), r = rnd() * tot;
+  for (let i = 0; i < cands.length; i++) { r -= ws[i]; if (r <= 0) return cands[i]; }
+  return cands[cands.length - 1];
+}
+
+function solveN(C, W, n) { const r = E.solve(C, W, n, { maxNodes: 4e6 }); if (r.aborted) throw new Error('solver aborted'); return r; }
+
+// add wishes (true in T) until T is the unique solution
+function build(C, T, base, types, ban, prefer, rnd, tag) {
+  const W = base.slice(), keys = new Set(W.map(key));
+  const cnt = C.act.map(() => 0); W.forEach(w => cnt[w.g]++);
+  const all = candidates(C, T, types, ban, rnd).filter(w => !keys.has(key(w)));
+  for (let it = 0; it < 300; it++) {
+    const r = solveN(C, W, 2);
+    if (r.count === 0) throw new Error('no solution while building');
+    if (r.count === 1) return W;
+    const other = r.sols.find(s => s.some((v, i) => v !== T[i]));
+    let cs = all.filter(w => !keys.has(key(w)) && truth(C, other, w) === 0);
+    if (W.filter(w => w.k === 'ifthen').length >= 2 && cs.some(w => w.k !== 'ifthen')) cs = cs.filter(w => w.k !== 'ifthen');
+    if (!cs.length) throw new Error('no distinguishing candidate');
+    const w = Object.assign({}, pickW(cs, cnt, prefer, rnd)); if (tag) w.nw = 1;
+    W.push(w); keys.add(key(w)); cnt[w.g]++;
+  }
+  throw new Error('build did not converge');
+}
+
+function prune(C, W, fixedN, prob, rnd, keepSet) {
+  const cnt = C.act.map(() => 0); W.forEach(w => cnt[w.g]++);
+  const idx = []; for (let i = fixedN; i < W.length; i++) idx.push(i);
+  for (let i = idx.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [idx[i], idx[j]] = [idx[j], idx[i]]; }
+  const removed = new Set();
+  for (const i of idx) {
+    if (rnd() > prob) continue; const w = W[i];
+    if (keepSet && keepSet.has(w)) continue;
+    if (cnt[w.g] <= 1) continue;
+    const test = W.filter((_, j) => j !== i && !removed.has(j));
+    if (solveN(C, test, 2).count === 1) { removed.add(i); cnt[w.g]--; }
+  }
+  return W.filter((_, j) => !removed.has(j));
+}
+
+function ensureEveryone(C, T, W, types, ban, rnd) {
+  const cnt = C.act.map(() => 0); W.forEach(w => cnt[w.g]++);
+  const keys = new Set(W.map(key));
+  for (let g = 0; g < C.act.length; g++) {
+    if (!C.act[g] || ban.has(g) || cnt[g] > 0) continue;
+    const cs = candidates(C, T, types, ban, rnd).filter(w => w.g === g && !keys.has(key(w)) && w.k !== 'far');
+    const pool = cs.length ? cs : candidates(C, T, types, ban, rnd).filter(w => w.g === g);
+    if (pool.length) { const w = pickW(pool, cnt, new Set(), rnd); W.push(w); keys.add(key(w)); cnt[g]++; }
+  }
+  return W;
+}
+
+function genOne(spec, seed) {
+  const rnd = E.rng(seed);
+  const S = E.buildSeats(spec.tables);
+  const ids = spec.guests.slice(); if (spec.late) ids.push(spec.late);
+  const G = ids.map(id => ROSTER[id]);
+  const n = ids.length, lateIdx = spec.late ? n - 1 : -1;
+  const act1 = ids.map((_, i) => i !== lateIdx), actAll = ids.map(() => true);
+  const C1 = { S, G, act: act1 };
+  if (S.N < act1.filter(Boolean).length + (spec.late ? 1 : 0)) throw new Error('too few seats');
+  const fixed = [];
+  ids.forEach((id, i) => { if (G[i].aura) fixed.push({ k: 'aura', g: i, t: G[i].aura }); });
+  let nofamOwner = -1;
+  if (spec.nofam) { nofamOwner = ids.indexOf(spec.nofam); fixed.push({ k: 'nofam', g: nofamOwner, fam: 'Smith' }); }
+  const ban = new Set(); ids.forEach((id, i) => { if (G[i].aura) ban.add(i); });
+  const special = new Set(ban); if (nofamOwner >= 0) special.add(nofamOwner); if (lateIdx >= 0) special.add(lateIdx);
+  const pickGuest = (excl) => { const c = []; for (let i = 0; i < n; i++) if (act1[i] && !excl.has(i)) c.push(i); return c[Math.floor(rnd() * c.length)]; };
+  let liar = -1;
+  if (spec.liar) { liar = pickGuest(special); ban.add(liar); special.add(liar); }
+  let feud = null;
+  if (spec.twist === 'feudEnd') {
+    const a = pickGuest(special); special.add(a); const b = pickGuest(special); special.add(b);
+    feud = [a, b]; fixed.push({ k: 'far', g: a, x: b }, { k: 'far', g: b, x: a });
+  }
+  // target arrangement
+  // for late arrivals, build the full seating first, then remove the latecomer
+  const r0 = E.solve(lateIdx >= 0 ? { S, G, act: actAll } : C1, fixed, 1, { rnd, maxNodes: 1e6 });
+  if (!r0.count) throw new Error('no base arrangement');
+  const T1 = r0.sols[0].slice(); if (lateIdx >= 0) T1[lateIdx] = -1;
+  const types1 = lateIdx >= 0 ? spec.types.filter(k => k !== 'empty') : spec.types;
+  let W1 = build(C1, T1, fixed, types1, ban, new Set(), rnd);
+  W1 = prune(C1, W1, fixed.length, spec.prune, rnd);
+  W1 = ensureEveryone(C1, T1, W1, types1, ban, rnd);
+  // mirror (flavour; does not change the solution)
+  if (spec.mirror) {
+    const cnt = W1.reduce((a, w) => (a[w.g] = (a[w.g] || 0) + 1, a), {});
+    let cands = []; for (let g = 0; g < n; g++) for (let x = 0; x < n; x++) if (g !== x && act1[g] && act1[x] && !ban.has(g) && !ban.has(x) && cnt[x] && !special.has(g) && !special.has(x)) cands.push([g, x]);
+    // prefer percy -> pea if present
+    const pc = ids.indexOf('percy'), pe = ids.indexOf('pea');
+    let pair = (pc >= 0 && pe >= 0 && cnt[pe] && !special.has(pc)) ? [pc, pe] : cands[Math.floor(rnd() * cands.length)];
+    if (pair) W1.push({ k: 'mirror', g: pair[0], x: pair[1] });
+  }
+  // notes
+  if (spec.notes) {
+    const ok = W1.map((w, i) => i).filter(i => i >= fixed.length && ['head', 'window', 'kitchen', 'next', 'across', 'middle', 'between'].includes(W1[i].k));
+    for (let k = 0; k < spec.notes && ok.length; k++) { const j = ok.splice(Math.floor(rnd() * ok.length), 1)[0]; W1[j] = Object.assign({}, W1[j], { note: 1 }); }
+  }
+  if (solveN(C1, W1, 2).count !== 1) throw new Error('stage1 not unique');
+  // liar fake wish
+  let fake = null;
+  const makeFake = (C, T, Wreal) => {
+    const subs = [];
+    for (let x = 0; x < n; x++) if (x !== liar && C.act[x]) { subs.push({ k: 'next', g: liar, x }, { k: 'across', g: liar, x }); if (S.tables.length > 1) subs.push({ k: 'same', g: liar, x }); }
+    for (const a of ['head', 'window', 'kitchen']) subs.push({ k: a, g: liar });
+    const fa = subs.filter(w => truth(C, T, w) === 0 && (w.k !== 'across' || S.across[T[liar]] >= 0));
+    const f = Object.assign(fa[Math.floor(rnd() * fa.length)], { fake: 1 });
+    if (solveN(C, Wreal.concat([f]), 1).count !== 0) throw new Error('fake wish still solvable');
+    return f;
+  };
+  if (liar >= 0) fake = makeFake(C1, T1, W1);
+  const stages = [{ active: act1.slice(), wishes: fake ? W1.concat([fake]) : W1, sol: T1 }];
+  let twistDetail = '';
+  const nm = i => G[i].sh;
+  // ---- twists
+  if (spec.twist) {
+    let C2 = C1, base, prefer = new Set(), T2;
+    const strip = W => W.map(w => { const c = Object.assign({}, w); delete c.nw; return c; });
+    if (spec.twist === 'late') {
+      C2 = { S, G, act: actAll }; base = strip(W1); prefer.add(lateIdx);
+      twistDetail = nm(lateIdx) + ' has arrived!';
+    } else if (spec.twist === 'change') {
+      const opts = W1.map((w, i) => i).filter(i => !W1[i].note && W1[i].k !== 'mirror' && W1[i].k !== 'aura' && W1[i].k !== 'nofam' && !special.has(W1[i].g));
+      const i0 = opts[Math.floor(rnd() * opts.length)], g = W1[i0].g;
+      const cs = candidates(C1, T1, spec.types.filter(k => k !== 'ifthen' && k !== 'far'), ban, rnd).filter(w => w.g === g);
+      // want a wish that is FALSE in T1: generate from a random other arrangement
+      const alt = E.solve(C1, fixed, 1, { rnd, maxNodes: 1e6 }).sols[0];
+      const pool = candidates(C1, alt, spec.types.filter(k => k !== 'ifthen' && k !== 'far' && k !== 'notnext'), ban, rnd).filter(w => w.g === g && truth(C1, T1, w) === 0);
+      if (!pool.length) throw new Error('no change wish');
+      let nw, old, found = false;
+      for (let t = 0; t < 40 && !found; t++) {
+        nw = Object.assign({}, pool[Math.floor(rnd() * pool.length)], { nw: 1 });
+        base = strip(W1); old = base[i0]; base[i0] = nw;
+        found = E.solve(C1, base, 1, { maxNodes: 5e5 }).count > 0;
+      }
+      if (!found) throw new Error('no feasible change');
+      prefer.add(g);
+      twistDetail = nm(g) + ' changed their mind: no longer "' + E.wishText(old, nm, G) + '", now "' + E.wishText(nw, nm, G) + '".';
+      void cs;
+    } else if (spec.twist === 'feudStart') {
+      const pairs = [];
+      for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) if (act1[a] && act1[b] && !special.has(a) && !special.has(b) && S.D[T1[a]][T1[b]] <= 2) pairs.push([a, b]);
+      if (!pairs.length) throw new Error('no feud pair');
+      let a, b, found = false;
+      for (let t = 0; t < 40 && !found; t++) {
+        [a, b] = pairs[Math.floor(rnd() * pairs.length)];
+        base = strip(W1).filter(w => w.g !== a && w.g !== b).concat([{ k: 'far', g: a, x: b, nw: 1 }, { k: 'far', g: b, x: a, nw: 1 }]);
+        found = E.solve(C1, base, 1, { maxNodes: 5e5 }).count > 0;
+      }
+      if (!found) throw new Error('no feasible feud');
+      prefer.add(a); prefer.add(b);
+      twistDetail = nm(a) + ' and ' + nm(b) + ' are feuding! They\'ve torn up their old wishes and now want to be far apart.';
+    } else if (spec.twist === 'feudEnd') {
+      const [a, b] = feud;
+      base = strip(W1).filter(w => w.g !== a && w.g !== b);
+      base.push({ k: 'next', g: a, x: b, nw: 1 }, { k: 'next', g: b, x: a, nw: 1 }); prefer.add(a); prefer.add(b);
+      twistDetail = nm(a) + ' and ' + nm(b) + ' have made up! They\'ve torn up their old wishes and now want to sit next to each other.';
+    }
+    const baseReal = base;
+    const rr = E.solve(C2, baseReal, 1, { rnd, maxNodes: 2e6 });
+    if (!rr.count) throw new Error('twist unsatisfiable');
+    T2 = rr.sols[0];
+    let W2 = build(C2, T2, baseReal, spec.types.filter(k => k !== 'ifthen'), ban, prefer, rnd, true);
+    if (lateIdx >= 0 && !W2.some(w => w.g === lateIdx)) {
+      const cs = candidates(C2, T2, spec.types.filter(k => !['ifthen', 'far', 'notnext'].includes(k)), ban, rnd).filter(w => w.g === lateIdx);
+      if (!cs.length) throw new Error('latecomer has no wish');
+      W2.push(Object.assign({}, cs[Math.floor(rnd() * cs.length)], { nw: 1 }));
+    }
+    if (solveN(C2, W2, 2).count !== 1) throw new Error('stage2 not unique');
+    let fake2 = null;
+    if (liar >= 0) {
+      if (truth(C2, T2, fake) === 0 && solveN(C2, W2.concat([fake]), 1).count === 0) fake2 = fake;
+      else throw new Error('fake broken by twist');
+    }
+    const added = W2.filter(w => w.nw && spec.twist === 'late' ? true : w.nw).length;
+    void added;
+    stages.push({ active: C2.act.slice(), wishes: fake2 ? W2.concat([fake2]) : W2, sol: T2 });
+  }
+  // ---- verify with game rules
+  stages.forEach((st, si) => {
+    const C = { S, G, act: st.active };
+    const fib = st.wishes.findIndex(w => w.fake);
+    const real = st.wishes.filter(w => !w.fake);
+    const r = E.solve(C, real, 3, { maxNodes: 6e6 });
+    if (r.aborted || r.count !== 1) throw new Error('verify unique failed stage ' + si + ' count ' + r.count);
+    if (r.sols[0].some((v, i) => v !== st.sol[i])) throw new Error('verify solution mismatch');
+    const m = E.mood(C, st.sol, st.wishes, fib);
+    st.active.forEach((a, g) => { if (a && !m.happy[g]) throw new Error('guest unhappy in solution: ' + ids[g] + ' stage ' + si); });
+    if (fib >= 0) { const m2 = E.mood(C, st.sol, st.wishes, -1); if (m2.happy.every((h, g) => !st.active[g] || h)) throw new Error('fib not needed'); }
+    if (st.active.some((a, g) => a && st.sol[g] < 0)) throw new Error('unseated in solution');
+  });
+  // ---- liar clue
+  let clue = null;
+  if (liar >= 0) {
+    const others = ids.map((_, i) => i).filter(i => i !== liar && !G[i].aura);
+    const speaker = G[others[Math.floor(rnd() * others.length)]].name;
+    const food = G[liar].food; const uniq = ids.filter((id, i) => G[i].food === food).length === 1;
+    if (uniq && rnd() < 0.6) clue = [speaker, 'Psst. Whoever ordered the ' + E.FOOD[food] + ' is telling a fib about where they want to sit.'];
+    else clue = [speaker, 'Psst. Don\'t trust ' + G[liar].desc + '. One of their seating wishes is a fib.'];
+  }
+  // par
+  const n1 = act1.filter(Boolean).length;
+  let par = n1 + Math.max(2, Math.ceil(n1 * 0.25));
+  if (stages.length > 1) { const T2 = stages[1].sol; let d = 0; for (let g = 0; g < n; g++) if (T2[g] !== T1[g]) d++; par += d + 2; }
+  const strip = w => { const o = {}; for (const k in w) if (w[k] != null) o[k] = (k === 'a' || k === 'b') ? strip(w[k]) : w[k]; return o; };
+  return {
+    id: spec.id, ch: spec.ch, title: spec.title, tables: spec.tables, guests: ids, liar, par, seed,
+    intro: clue ? spec.intro.concat([clue]) : spec.intro, outro: spec.outro, twist: spec.twist || null,
+    twistText: spec.twistText || '', twistDetail,
+    stages: stages.map(st => ({ active: st.active, wishes: st.wishes.map(strip), sol: st.sol }))
+  };
+}
+
+  return genOne;
+}
+if (typeof module !== 'undefined' && module.exports) module.exports = makeGenerator; else root.TMGen = makeGenerator;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+window.TMP = [{"id":"1-1","ch":0,"title":"Warm-Up Soup","tables":[{"shape":"round","n":6,"cx":480,"cy":215}],"guests":["rose","barry","dot","gus","pam"],"liar":-1,"par":7,"seed":1000,"intro":[["Grandma Rose","Just a little warm-up, dear. Six chairs, five of us, no drama whatsoever."],["Maurice","Drag guests from the lobby onto chairs. Drop one guest on another to swap them. When every face is smiling, press Serve."],["Maurice","Look at the chairs: a crown 👑 marks the head, a moon 🌙 means facing the window, and a door 🚪 means back to the kitchen."]],"outro":[["Maurice","Wonderful. Oh, this was taped to the window: \"Please seat the family well. More requests to follow. — A Friend.\""],["Maurice","There's a short grey hair on it. Probably nothing."]],"twist":null,"twistText":"","twistDetail":"","stages":[{"active":[true,true,true,true,true],"wishes":[{"k":"head","g":3},{"k":"next","g":3,"x":2},{"k":"across","g":0,"x":3},{"k":"next","g":4,"x":3},{"k":"next","g":1,"x":4},{"k":"kitchen","g":4},{"k":"notnext","g":2,"x":1}],"sol":[3,2,5,0,1]}]},{"id":"1-2","ch":0,"title":"The Long Table","tables":[{"shape":"rect","k":3,"cx":480,"cy":215}],"guests":["rose","barry","dot","kevin","timmy","gus","pam"],"liar":-1,"par":9,"seed":8919,"intro":[["Uncle Barry","A long table! Two heads! Finally a seat worthy of my tongs."],["📨 A Friend","A note was slipped under the kitchen door. Its request is on tonight's list, marked 📨."]],"outro":[["Maurice","Another note, still slightly damp. Somebody licked the envelope. Thoroughly."]],"twist":null,"twistText":"","twistDetail":"","stages":[{"active":[true,true,true,true,true,true,true],"wishes":[{"k":"next","g":1,"x":6},{"k":"next","g":5,"x":6,"note":1},{"k":"across","g":3,"x":0},{"k":"kitchen","g":6},{"k":"between","g":3,"x":1,"y":4},{"k":"window","g":3},{"k":"between","g":0,"x":2,"y":5},{"k":"near","g":2,"x":4},{"k":"notnext","g":4,"x":6}],"sol":[1,4,0,5,6,2,3]}]},{"id":"1-3","ch":0,"title":"No Two Smiths","tables":[{"shape":"round","n":10,"cx":480,"cy":215}],"guests":["rose","barry","dot","timmy","gus","pam","whiskers","kevin"],"liar":-1,"par":12,"seed":16838,"intro":[["Grandma Rose","New rule: no two Smiths side by side. Last time Barry and Dot argued about potato salad for four hours."],["Aunt Dot","It was THREE hours, Mother."]],"outro":[["Maurice","Kevin has pitched his coin to the cat. The cat seemed interested. Unsettlingly interested."]],"twist":"late","twistText":"Cousin Kevin bursts in, an hour late, holding a \"crypto opportunity\" brochure. He needs a seat, and he has wishes.","twistDetail":"Kevin has arrived!","stages":[{"active":[true,true,true,true,true,true,true,false],"wishes":[{"k":"nofam","g":0,"fam":"Smith"},{"k":"across","g":6,"x":1},{"k":"next","g":0,"x":5},{"k":"across","g":2,"x":5},{"k":"next","g":3,"x":6},{"k":"between","g":4,"x":0,"y":1},{"k":"notnext","g":5,"x":3},{"k":"kitchen","g":1},{"k":"head","g":0}],"sol":[0,2,4,6,1,9,7,-1]},{"active":[true,true,true,true,true,true,true,true],"wishes":[{"k":"nofam","g":0,"fam":"Smith"},{"k":"across","g":6,"x":1},{"k":"next","g":0,"x":5},{"k":"across","g":2,"x":5},{"k":"next","g":3,"x":6},{"k":"between","g":4,"x":0,"y":1},{"k":"notnext","g":5,"x":3},{"k":"kitchen","g":1},{"k":"head","g":0},{"k":"next","g":7,"x":5,"nw":1}],"sol":[0,2,4,6,1,9,7,8]}]},{"id":"1-4","ch":0,"title":"The Lazy Susan","tables":[{"shape":"round","n":8,"cx":480,"cy":215,"lazy":true}],"guests":["rose","barry","dot","kevin","timmy","gus","pam"],"liar":-1,"par":9,"seed":24757,"intro":[["Maurice","This is the hall's pride and joy: the revolving lazy-Susan table. The chairs ride on the turntable."],["Maurice","Careful: every time you press Serve and someone is still grumpy, the whole table rotates one seat clockwise. The window and the door stay where they are."],["📨 A Friend","Another note arrived, delivered by \"nobody\", via the cat flap."]],"outro":[["Grandma Rose","Best reunion in years. Whoever is sending those notes has excellent taste."],["Maurice","Chapter complete! The Smiths are leaving. Slowly. Saying goodbye in the doorway for forty minutes."]],"twist":null,"twistText":"","twistDetail":"","stages":[{"active":[true,true,true,true,true,true,true],"wishes":[{"k":"between","g":3,"x":6,"y":1},{"k":"between","g":2,"x":5,"y":4,"note":1},{"k":"next","g":5,"x":0},{"k":"kitchen","g":0},{"k":"next","g":1,"x":4},{"k":"head","g":2},{"k":"next","g":4,"x":2},{"k":"near","g":6,"x":1}],"sol":[2,6,0,5,7,1,4]}]},{"id":"2-1","ch":1,"title":"The U-Shaped Meeting","tables":[{"shape":"u","a":3,"b":3,"cx":480,"cy":205}],"guests":["vlad","boo","unit7","brenda","gary","pendle","dave","kevin"],"liar":-1,"par":10,"seed":32676,"intro":[["Ms. Pendleton","A U-shaped table. Like a meeting room, but with gravy. Very synergistic."],["Boo the Ghost","Can I join on video? ...No? Fine. I'll haunt in person."],["Maurice","U-tables have ends. The two arms face each other, so seats can be \"across\" the gap."]],"outro":[["Maurice","An anonymous note on the CEO's chair: \"Fish course first. — A Friend.\" Ms. Pendleton has approved it in triplicate."]],"twist":null,"twistText":"","twistDetail":"","stages":[{"active":[true,true,true,true,true,true,true,true],"wishes":[{"k":"empty","g":0},{"k":"next","g":2,"x":7},{"k":"kitchen","g":1},{"k":"next","g":5,"x":4},{"k":"two","g":7,"x":1},{"k":"next","g":0,"x":5},{"k":"far","g":6,"x":3},{"k":"kitchen","g":3},{"k":"across","g":5,"x":1},{"k":"across","g":4,"x":3}],"sol":[2,7,6,8,0,1,4,5]}]},{"id":"2-2","ch":1,"title":"Two Tables, One Gala","tables":[{"shape":"round","n":6,"cx":270,"cy":215},{"shape":"rect","k":2,"cx":690,"cy":215}],"guests":["vlad","boo","unit7","brenda","gary","pendle","dave","kevin","barry","dot"],"liar":-1,"par":13,"seed":40595,"intro":[["Brenda from HR","Per policy 7.3, some people must sit at the same table and some at different tables. I have a form."],["Uncle Barry","I'm Kevin's plus-one. Dot is MY plus-one. It's a whole chain."]],"outro":[["Gary the Intern","I found another note. It was in the fish tank. Why was it in the fish tank?"]],"twist":null,"twistText":"","twistDetail":"","stages":[{"active":[true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"far","g":3,"x":4},{"k":"diff","g":0,"x":1},{"k":"kitchen","g":0},{"k":"between","g":2,"x":6,"y":8},{"k":"next","g":7,"x":3},{"k":"diff","g":1,"x":4},{"k":"two","g":9,"x":1},{"k":"kitchen","g":3},{"k":"between","g":4,"x":0,"y":5},{"k":"window","g":7},{"k":"next","g":7,"x":1},{"k":"next","g":5,"x":8},{"k":"window","g":2},{"k":"tbl","g":6,"t":0},{"k":"diff","g":8,"x":7}],"sol":[1,10,3,8,0,5,2,9,4,6]}]},{"id":"2-3","ch":1,"title":"Change of Heart","tables":[{"shape":"rect","k":4,"cx":480,"cy":215}],"guests":["vlad","boo","unit7","brenda","gary","pendle","dave","whiskers","timmy"],"liar":-1,"par":16,"seed":48514,"intro":[["Dave from Sales","Award night! I'm definitely winning Top Seller. Seat me somewhere photogenic."],["📨 A Friend","A note fell out of a napkin. The napkin had been... kneaded. Like bread. By paws?"]],"outro":[["Maurice","Dave did not win Top Seller. Mr. Whiskers did. Nobody remembers nominating him."]],"twist":"change","twistText":"Halfway through the starters, someone changes their mind about where they want to sit. Check the list for the ✨ new wish.","twistDetail":"Whiskers changed their mind: no longer \"Between Unit 7 and Vlad\", now \"At the head of a table 👑\".","stages":[{"active":[true,true,true,true,true,true,true,true,true],"wishes":[{"k":"next","g":5,"x":1},{"k":"between","g":6,"x":8,"y":3},{"k":"across","g":5,"x":0,"note":1},{"k":"between","g":7,"x":2,"y":0},{"k":"near","g":0,"x":6},{"k":"between","g":3,"x":6,"y":5},{"k":"kitchen","g":6},{"k":"two","g":7,"x":4},{"k":"window","g":3},{"k":"notnext","g":1,"x":6},{"k":"two","g":2,"x":0},{"k":"two","g":4,"x":7},{"k":"across","g":8,"x":3}],"sol":[2,7,0,5,9,6,4,1,3]},{"active":[true,true,true,true,true,true,true,true,true],"wishes":[{"k":"next","g":5,"x":1},{"k":"between","g":6,"x":8,"y":3},{"k":"across","g":5,"x":0,"note":1},{"k":"head","g":7,"nw":1},{"k":"near","g":0,"x":6},{"k":"between","g":3,"x":6,"y":5},{"k":"kitchen","g":6},{"k":"two","g":7,"x":4},{"k":"window","g":3},{"k":"notnext","g":1,"x":6},{"k":"two","g":2,"x":0},{"k":"two","g":4,"x":7},{"k":"across","g":8,"x":3}],"sol":[2,7,0,5,1,6,4,9,3]}]},{"id":"2-4","ch":1,"title":"Spin Cycle","tables":[{"shape":"round","n":10,"cx":480,"cy":215,"lazy":true}],"guests":["vlad","boo","unit7","brenda","gary","pendle","dave","kevin","dot"],"liar":-1,"par":12,"seed":56433,"intro":[["Unit 7 (IT)","The rotating table runs on firmware version 1.0. I recommend not failing. At all."],["📨 A Friend","Tonight's note was written in very large letters, as though by someone with no thumbs."]],"outro":[["Count Vlad","I have audited the notes. The ink is mostly gravy. And there is a paw print in the margin."]],"twist":null,"twistText":"","twistDetail":"","stages":[{"active":[true,true,true,true,true,true,true,true,true],"wishes":[{"k":"across","g":0,"x":7},{"k":"head","g":8},{"k":"next","g":0,"x":4},{"k":"two","g":2,"x":6},{"k":"notnext","g":6,"x":5},{"k":"across","g":2,"x":1},{"k":"next","g":4,"x":8,"note":1},{"k":"between","g":3,"x":2,"y":6},{"k":"two","g":7,"x":1},{"k":"far","g":5,"x":2},{"k":"kitchen","g":0},{"k":"notnext","g":1,"x":0}],"sol":[2,9,4,5,1,8,6,7,0]}]},{"id":"2-5","ch":1,"title":"The Feud at the Gala","tables":[{"shape":"u","a":3,"b":3,"cx":300,"cy":205},{"shape":"round","n":6,"cx":730,"cy":215}],"guests":["vlad","boo","unit7","brenda","gary","pendle","dave","kevin","barry","dot","pam","gus","whiskers"],"liar":-1,"par":26,"seed":64352,"intro":[["Ms. Pendleton","Final event of the gala: the after-party. Everyone, including your families. HR insisted."],["Brenda from HR","I did not insist. I filed a complaint."]],"outro":[["Maurice","Chapter complete! The gala is over. Gary has taken home eleven bread rolls in his pockets."],["Maurice","There's an invitation in the morning post: the Royal Wedding wants us. Under it, a note: \"Good. — A Friend.\""]],"twist":"feudStart","twistText":"Uh oh. Over the cheese course, two guests have started a feud. They now want to be far apart.","twistDetail":"Pendleton and Dave are feuding! They've torn up their old wishes and now want to be far apart.","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"two","g":3,"x":4},{"k":"next","g":11,"x":4},{"k":"two","g":1,"x":9},{"k":"notnext","g":8,"x":10},{"k":"between","g":4,"x":11,"y":8},{"k":"near","g":12,"x":9},{"k":"between","g":9,"x":0,"y":2},{"k":"near","g":5,"x":2},{"k":"next","g":2,"x":1},{"k":"notnext","g":8,"x":3},{"k":"far","g":0,"x":7},{"k":"two","g":6,"x":5},{"k":"head","g":1},{"k":"across","g":7,"x":12},{"k":"kitchen","g":3},{"k":"window","g":10},{"k":"kitchen","g":7}],"sol":[1,4,3,11,9,5,7,8,14,2,12,10,0]},{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"two","g":3,"x":4},{"k":"next","g":11,"x":4},{"k":"two","g":1,"x":9},{"k":"notnext","g":8,"x":10},{"k":"between","g":4,"x":11,"y":8},{"k":"near","g":12,"x":9},{"k":"between","g":9,"x":0,"y":2},{"k":"next","g":2,"x":1},{"k":"notnext","g":8,"x":3},{"k":"far","g":0,"x":7},{"k":"head","g":1},{"k":"across","g":7,"x":12},{"k":"kitchen","g":3},{"k":"window","g":10},{"k":"kitchen","g":7},{"k":"far","g":5,"x":6,"nw":1},{"k":"far","g":6,"x":5,"nw":1},{"k":"kitchen","g":6,"nw":1},{"k":"diff","g":5,"x":8,"nw":1},{"k":"between","g":10,"x":1,"y":5,"nw":1},{"k":"head","g":11,"nw":1}],"sol":[1,4,3,10,14,6,11,8,13,2,5,9,0]}]},{"id":"3-1","ch":2,"title":"The Royal Rehearsal","tables":[{"shape":"rect","k":5,"cx":480,"cy":215}],"guests":["marigold","percy","pea","reggie","ember","jangles","fluff","rose","vlad","boo","gus"],"liar":-1,"par":14,"seed":72271,"intro":[["Queen Marigold","A rehearsal dinner. Some of my guests' wishes depend on where OTHER guests sit. Conditions, darling. Royalty runs on conditions."],["Prince Percival","And I'm only happy if Pea is happy. It's in the vows."]],"outro":[["Maurice","A note was found tucked in the wedding cake. It says \"More fish at the reception. — A Friend.\" The Queen is furious and also hungry."]],"twist":null,"twistText":"","twistDetail":"","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"next","g":7,"x":4},{"k":"ifthen","g":2,"x":5,"c":"head","a":{"k":"across","g":2,"x":5},"b":{"k":"next","g":2,"x":5}},{"k":"next","g":1,"x":6},{"k":"next","g":7,"x":10},{"k":"near","g":0,"x":8},{"k":"between","g":8,"x":9,"y":3},{"k":"next","g":0,"x":6},{"k":"across","g":5,"x":9},{"k":"next","g":3,"x":10},{"k":"window","g":10},{"k":"kitchen","g":6},{"k":"across","g":4,"x":10},{"k":"next","g":9,"x":8},{"k":"mirror","g":1,"x":2}],"sol":[6,4,2,9,0,3,5,11,8,7,10]}]},{"id":"3-2","ch":2,"title":"Somebody Is Fibbing","tables":[{"shape":"round","n":8,"cx":260,"cy":215},{"shape":"round","n":8,"cx":700,"cy":215}],"guests":["marigold","percy","pea","reggie","ember","jangles","fluff","rose","barry","dot","vlad","boo","pendle","dave"],"liar":1,"par":18,"seed":80190,"intro":[["Queen Marigold","Two round tables for the families. And one of my guests is lying about a seat. I can smell a fib."],["Queen Marigold","Psst. Whoever ordered the 🍝 pasta is telling a fib about where they want to sit."]],"outro":[["Maurice","Exposed fibs: one. Ruffled feathers: many. The fibber has been assigned extra trifle as punishment."]],"twist":null,"twistText":"","twistDetail":"","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"food","g":12},{"k":"diff","g":0,"x":4},{"k":"same","g":7,"x":9},{"k":"next","g":8,"x":1},{"k":"ifthen","g":3,"x":12,"c":"kitchen","a":{"k":"next","g":3,"x":12},"b":{"k":"kitchen","g":3}},{"k":"next","g":2,"x":12},{"k":"far","g":5,"x":9},{"k":"next","g":6,"x":3},{"k":"next","g":11,"x":0},{"k":"ifthen","g":9,"x":13,"c":"window","a":{"k":"window","g":9},"b":{"k":"head","g":9}},{"k":"next","g":10,"x":7},{"k":"between","g":11,"x":2,"y":0},{"k":"far","g":6,"x":13},{"k":"next","g":5,"x":10},{"k":"notnext","g":4,"x":9},{"k":"head","g":8},{"k":"next","g":13,"x":5},{"k":"kitchen","g":7},{"k":"tbl","g":2,"t":0},{"k":"across","g":1,"x":10,"fake":1}],"sol":[7,1,5,2,14,12,3,10,0,8,11,6,4,13]}]},{"id":"3-3","ch":2,"title":"The Late Bridesmaid","tables":[{"shape":"u","a":3,"b":5,"cx":480,"cy":205}],"guests":["marigold","percy","pea","reggie","ember","jangles","fluff","whiskers","kevin","timmy","gloria"],"liar":3,"par":16,"seed":88109,"intro":[["Lady Pea","My bridesmaid Gloria is running late. Please don't let anyone look her in the eye."],["📨 A Friend","A note on the windowsill, where it's warm. It was lying in a sunbeam."],["Prince Percival","Psst. Don't trust the one in full armour. One of their seating wishes is a fib."]],"outro":[["Sir Reginald","I examined the note with my sword. It is covered in short grey hairs. Like a... no. Surely not."]],"twist":"late","twistText":"Gorgon Gloria glides in, sunglasses firmly on. \"Sorry! Traffic. Also I turned the taxi driver to stone. He's fine. Mostly.\"","twistDetail":"Gloria has arrived!","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,false],"wishes":[{"k":"next","g":7,"x":4},{"k":"near","g":2,"x":7},{"k":"next","g":1,"x":6},{"k":"across","g":0,"x":1},{"k":"two","g":4,"x":1},{"k":"next","g":8,"x":4},{"k":"kitchen","g":5},{"k":"next","g":2,"x":3},{"k":"between","g":9,"x":2,"y":5,"note":1},{"k":"next","g":6,"x":1},{"k":"next","g":3,"x":6,"fake":1}],"sol":[9,1,6,5,3,8,0,4,2,7,-1]},{"active":[true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"next","g":7,"x":4},{"k":"near","g":2,"x":7},{"k":"next","g":1,"x":6},{"k":"across","g":0,"x":1},{"k":"two","g":4,"x":1},{"k":"next","g":8,"x":4},{"k":"kitchen","g":5},{"k":"next","g":2,"x":3},{"k":"between","g":9,"x":2,"y":5,"note":1},{"k":"next","g":6,"x":1},{"k":"two","g":10,"x":5,"nw":1},{"k":"next","g":3,"x":6,"fake":1}],"sol":[9,1,6,5,3,8,0,4,2,7,10]}]},{"id":"3-4","ch":2,"title":"Reconciliation","tables":[{"shape":"rect","k":5,"cx":320,"cy":215},{"shape":"round","n":6,"cx":790,"cy":215}],"guests":["marigold","percy","pea","reggie","ember","jangles","fluff","rose","barry","dot","gus","pam","brenda","gary","unit7"],"liar":-1,"par":25,"seed":96028,"intro":[["Jangles the Jester","Two of our guests have been feuding for YEARS. Keep them apart or there'll be pie-throwing. Not the funny kind."]],"outro":[["Maurice","There's not a dry eye in the house. Except Unit 7, who doesn't have tear ducts, but says it's \"processing feelings\"."]],"twist":"feudEnd","twistText":"A toast! The two feuding guests hug it out, sobbing. Now they insist on sitting next to each other.","twistDetail":"Dot and Pam have made up! They've torn up their old wishes and now want to sit next to each other.","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"far","g":9,"x":11},{"k":"far","g":11,"x":9},{"k":"same","g":3,"x":13},{"k":"same","g":7,"x":12},{"k":"next","g":8,"x":10},{"k":"near","g":6,"x":9},{"k":"tbl","g":4,"t":1},{"k":"window","g":1},{"k":"ifthen","g":3,"x":14,"c":"window","a":{"k":"next","g":3,"x":14},"b":{"k":"window","g":3}},{"k":"two","g":0,"x":6},{"k":"next","g":8,"x":4},{"k":"two","g":6,"x":9},{"k":"two","g":12,"x":13},{"k":"next","g":13,"x":3},{"k":"middle","g":11},{"k":"between","g":3,"x":13,"y":7},{"k":"next","g":2,"x":6},{"k":"kitchen","g":14},{"k":"between","g":5,"x":10,"y":14},{"k":"far","g":0,"x":2},{"k":"kitchen","g":0},{"k":"head","g":10},{"k":"same","g":1,"x":6}],"sol":[5,6,2,10,16,13,3,11,17,1,12,8,7,9,14]},{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"same","g":3,"x":13},{"k":"same","g":7,"x":12},{"k":"next","g":8,"x":10},{"k":"near","g":6,"x":9},{"k":"tbl","g":4,"t":1},{"k":"window","g":1},{"k":"ifthen","g":3,"x":14,"c":"window","a":{"k":"next","g":3,"x":14},"b":{"k":"window","g":3}},{"k":"two","g":0,"x":6},{"k":"next","g":8,"x":4},{"k":"two","g":6,"x":9},{"k":"two","g":12,"x":13},{"k":"next","g":13,"x":3},{"k":"between","g":3,"x":13,"y":7},{"k":"next","g":2,"x":6},{"k":"kitchen","g":14},{"k":"between","g":5,"x":10,"y":14},{"k":"far","g":0,"x":2},{"k":"kitchen","g":0},{"k":"head","g":10},{"k":"same","g":1,"x":6},{"k":"next","g":9,"x":11,"nw":1},{"k":"next","g":11,"x":9,"nw":1},{"k":"next","g":12,"x":11,"nw":1},{"k":"next","g":1,"x":0,"nw":1}],"sol":[5,6,2,8,16,13,3,7,17,1,12,0,11,9,14]}]},{"id":"3-5","ch":2,"title":"The Royal Turntable","tables":[{"shape":"round","n":12,"cx":480,"cy":215,"lazy":true}],"guests":["marigold","percy","pea","reggie","ember","jangles","fluff","whiskers","rose","vlad","boo"],"liar":0,"par":14,"seed":103947,"intro":[["Queen Marigold","The reception! Twelve seats on the spinning table. I decree that you do not spin it."],["Maurice","Remember: a failed Serve rotates everyone one seat."],["Sir Reginald","Psst. Don't trust the one who rules a small country. One of their seating wishes is a fib."]],"outro":[["Maurice","Chapter complete! They're married! Ember lit the cake early. Then the curtains. Then the cake again."],["Maurice","In the gift pile, a can of tuna with a bow on it. The tag says \"For me. — A Friend.\""]],"twist":null,"twistText":"","twistDetail":"","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"notnext","g":4,"x":5},{"k":"head","g":2},{"k":"between","g":8,"x":2,"y":10},{"k":"kitchen","g":6},{"k":"ifthen","g":5,"x":2,"c":"window","a":{"k":"window","g":5},"b":{"k":"kitchen","g":5}},{"k":"between","g":1,"x":4,"y":3},{"k":"next","g":3,"x":7},{"k":"next","g":9,"x":5},{"k":"next","g":10,"x":0},{"k":"next","g":7,"x":0},{"k":"between","g":4,"x":9,"y":1},{"k":"next","g":0,"x":5,"fake":1}],"sol":[9,6,0,7,5,3,2,8,11,4,10]}]},{"id":"4-1","ch":3,"title":"Something Smells","tables":[{"shape":"round","n":10,"cx":480,"cy":215}],"guests":["frank","tut","steve","wendy","pepper","gloria","pip","boo","unit7"],"liar":-1,"par":12,"seed":111866,"intro":[["Pepper the Skunk","Hi! I'm Pepper! I'm super friendly! People just... don't like sitting next to me. No idea why!"],["Maurice","Only guests who can't smell are happy next to Pepper. Check a guest's info by hovering over them."]],"outro":[["Frank","Frank find note. Note say \"Mixer going well. Seat Steve near fish. — A Friend.\" Frank confused. Steve IS fish?"]],"twist":null,"twistText":"","twistDetail":"","stages":[{"active":[true,true,true,true,true,true,true,true,true],"wishes":[{"k":"aura","g":4,"t":"smell"},{"k":"between","g":3,"x":5,"y":1},{"k":"next","g":2,"x":6},{"k":"next","g":7,"x":8},{"k":"across","g":8,"x":1},{"k":"two","g":0,"x":4},{"k":"two","g":5,"x":6},{"k":"between","g":1,"x":3,"y":0},{"k":"head","g":2},{"k":"ifthen","g":8,"x":1,"c":"kitchen","a":{"k":"across","g":8,"x":1},"b":{"k":"next","g":8,"x":1}},{"k":"two","g":6,"x":5}],"sol":[4,3,0,2,6,1,9,7,8]}]},{"id":"4-2","ch":3,"title":"An Aria for Appetizers","tables":[{"shape":"rect","k":5,"cx":480,"cy":215}],"guests":["frank","tut","steve","wendy","pepper","arietta","gloria","pip","vlad","gus","boo"],"liar":0,"par":14,"seed":119785,"intro":[["Madame Arietta","🎶 Seat me ANYWHEEEERE, darlings! 🎶"],["Maurice","Her neighbours will need to love opera or be unable to hear it. Vlad loves opera. Gus's hearing aid has been \"off\" since 1987."],["Pip the Imp","Psst. Don't trust the gentle giant with neck bolts. One of their seating wishes is a fib."]],"outro":[["Maurice","She sang the whole dessert menu. Twice. The cat sat in the window the whole time, looking smug."]],"twist":null,"twistText":"","twistDetail":"","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"aura","g":4,"t":"smell"},{"k":"aura","g":5,"t":"sound"},{"k":"two","g":8,"x":10},{"k":"between","g":9,"x":0,"y":5},{"k":"between","g":3,"x":10,"y":8},{"k":"two","g":7,"x":4},{"k":"notnext","g":10,"x":4},{"k":"two","g":1,"x":10},{"k":"window","g":6},{"k":"across","g":2,"x":3},{"k":"kitchen","g":8},{"k":"next","g":0,"x":7,"fake":1}],"sol":[8,1,6,4,0,10,7,2,5,9,3]}]},{"id":"4-3","ch":3,"title":"Three Little Tables","tables":[{"shape":"round","n":6,"cx":170,"cy":215},{"shape":"round","n":6,"cx":480,"cy":215},{"shape":"round","n":6,"cx":790,"cy":215}],"guests":["frank","tut","steve","wendy","gloria","pip","vlad","boo","unit7","ember","jangles","rose","timmy","gary","fluff"],"liar":4,"par":23,"seed":128613,"intro":[["Werewolf Wendy","Three cosy tables for speed-networking. I'm fine as long as nobody opens the curtains. Full moon tonight."],["Grandma Rose","Psst. Don't trust the one with snakes for hair. One of their seating wishes is a fib."]],"outro":[["Maurice","Wendy has eaten the centrepieces. All of them. She apologised beautifully."]],"twist":"change","twistText":"The curtains blow open. Moonlight! Someone at the tables is suddenly feeling very different about their seat. Look for the ✨ new wish.","twistDetail":"Boo changed their mind: no longer \"If Pip sits back to the kitchen: facing the window 🌙. Otherwise: at the head of a table 👑.\", now \"Back to the kitchen door 🚪\".","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"two","g":8,"x":4},{"k":"two","g":11,"x":13},{"k":"same","g":14,"x":11},{"k":"same","g":2,"x":7},{"k":"near","g":0,"x":6},{"k":"notnext","g":7,"x":11},{"k":"next","g":1,"x":3},{"k":"diff","g":9,"x":10},{"k":"next","g":8,"x":9},{"k":"next","g":6,"x":10},{"k":"notnext","g":2,"x":5},{"k":"between","g":10,"x":6,"y":0},{"k":"two","g":12,"x":8},{"k":"across","g":6,"x":1},{"k":"ifthen","g":13,"x":1,"c":"window","a":{"k":"far","g":13,"x":1},"b":{"k":"kitchen","g":13}},{"k":"ifthen","g":7,"x":5,"c":"kitchen","a":{"k":"window","g":7},"b":{"k":"head","g":7}},{"k":"next","g":5,"x":7},{"k":"tbl","g":11,"t":2},{"k":"kitchen","g":12},{"k":"window","g":9},{"k":"tbl","g":10,"t":0},{"k":"between","g":5,"x":11,"y":7},{"k":"head","g":2},{"k":"kitchen","g":3},{"k":"same","g":4,"x":0,"fake":1}],"sol":[4,3,12,2,6,14,0,15,10,9,5,13,8,17,16]},{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"two","g":8,"x":4},{"k":"two","g":11,"x":13},{"k":"same","g":14,"x":11},{"k":"same","g":2,"x":7},{"k":"near","g":0,"x":6},{"k":"notnext","g":7,"x":11},{"k":"next","g":1,"x":3},{"k":"diff","g":9,"x":10},{"k":"next","g":8,"x":9},{"k":"next","g":6,"x":10},{"k":"notnext","g":2,"x":5},{"k":"between","g":10,"x":6,"y":0},{"k":"two","g":12,"x":8},{"k":"across","g":6,"x":1},{"k":"ifthen","g":13,"x":1,"c":"window","a":{"k":"far","g":13,"x":1},"b":{"k":"kitchen","g":13}},{"k":"kitchen","g":7,"nw":1},{"k":"next","g":5,"x":7},{"k":"tbl","g":11,"t":2},{"k":"kitchen","g":12},{"k":"window","g":9},{"k":"tbl","g":10,"t":0},{"k":"between","g":5,"x":11,"y":7},{"k":"head","g":2},{"k":"kitchen","g":3},{"k":"same","g":4,"x":0,"fake":1}],"sol":[4,3,12,2,6,14,0,13,10,9,5,15,8,17,16]}]},{"id":"4-4","ch":3,"title":"Monster Feud","tables":[{"shape":"u","a":4,"b":5,"cx":480,"cy":205}],"guests":["frank","tut","steve","wendy","pepper","gloria","pip","boo","unit7","ember","reggie","pendle"],"liar":10,"par":28,"seed":135623,"intro":[["Pip the Imp","Hee hee. A big U-table. Lots of places to hide whoopee cushions. Not that I would. Hee."],["Gorgon Gloria","Psst. Don't trust the one in full armour. One of their seating wishes is a fib."]],"outro":[["Maurice","Pip claims the cushion was planted by \"a grey fluffy accomplice\". Nobody believes Pip. Pip is, admittedly, a liar."]],"twist":"feudStart","twistText":"A whoopee cushion goes off. Two guests blame each other, and a feud begins. Keep them apart!","twistDetail":"Frank and Boo are feuding! They've torn up their old wishes and now want to be far apart.","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"aura","g":4,"t":"smell"},{"k":"next","g":5,"x":9},{"k":"window","g":1},{"k":"across","g":9,"x":0},{"k":"between","g":3,"x":6,"y":10},{"k":"two","g":7,"x":2},{"k":"kitchen","g":11},{"k":"between","g":2,"x":4,"y":0},{"k":"two","g":0,"x":1},{"k":"empty","g":8},{"k":"empty","g":9},{"k":"two","g":6,"x":7},{"k":"next","g":10,"x":2,"fake":1}],"sol":[2,4,1,6,0,11,5,3,8,10,7,12]},{"active":[true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"aura","g":4,"t":"smell"},{"k":"next","g":5,"x":9},{"k":"window","g":1},{"k":"across","g":9,"x":0},{"k":"between","g":3,"x":6,"y":10},{"k":"kitchen","g":11},{"k":"between","g":2,"x":4,"y":0},{"k":"empty","g":8},{"k":"empty","g":9},{"k":"two","g":6,"x":7},{"k":"far","g":0,"x":7,"nw":1},{"k":"far","g":7,"x":0,"nw":1},{"k":"far","g":11,"x":3,"nw":1},{"k":"far","g":0,"x":3,"nw":1},{"k":"next","g":10,"x":2,"fake":1}],"sol":[11,7,10,5,9,0,6,8,3,1,4,12]}]},{"id":"4-5","ch":3,"title":"Midnight Spin","tables":[{"shape":"round","n":10,"cx":300,"cy":215,"lazy":true},{"shape":"round","n":6,"cx":750,"cy":215}],"guests":["frank","tut","steve","wendy","pepper","arietta","gloria","pip","vlad","boo","unit7","gus","fluff","whiskers"],"liar":7,"par":18,"seed":143542,"intro":[["Swamp Steve","Gloop. Last mixer dinner. Lazy Susan AND a small table. Gloop gloop."],["Maurice","Steve says that's ambitious. I think. It's hard to tell with Steve."],["Boo the Ghost","Psst. Don't trust the small one with a pointy tail. One of their seating wishes is a fib."]],"outro":[["Maurice","Chapter complete! The monsters left at dawn, as monsters do."],["Maurice","And on the front desk: a final note. \"Grand Banquet. Everyone. Tomorrow. I will reveal myself. — A Friend.\""]],"twist":null,"twistText":"","twistDetail":"","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"aura","g":4,"t":"smell"},{"k":"aura","g":5,"t":"sound"},{"k":"next","g":13,"x":7},{"k":"two","g":0,"x":10},{"k":"between","g":0,"x":7,"y":12},{"k":"diff","g":1,"x":12},{"k":"diff","g":9,"x":4},{"k":"window","g":6},{"k":"two","g":11,"x":1},{"k":"two","g":8,"x":6},{"k":"same","g":2,"x":1},{"k":"across","g":3,"x":6},{"k":"ifthen","g":13,"x":7,"c":"kitchen","a":{"k":"head","g":13},"b":{"k":"window","g":13}},{"k":"next","g":1,"x":4},{"k":"two","g":6,"x":2},{"k":"window","g":12},{"k":"window","g":8},{"k":"ifthen","g":2,"x":11,"c":"window","a":{"k":"head","g":2},"b":{"k":"kitchen","g":2}},{"k":"diff","g":10,"x":11},{"k":"across","g":7,"x":8,"fake":1}],"sol":[12,0,2,9,1,7,4,11,6,15,14,8,13,10]}]},{"id":"5-1","ch":4,"title":"The Arrivals Hall","tables":[{"shape":"rect","k":6,"cx":480,"cy":215}],"guests":["rose","barry","vlad","boo","marigold","percy","pea","frank","pepper","tut","brenda","jangles","kevin"],"liar":5,"par":17,"seed":151461,"intro":[["Maurice","The Grand Banquet begins! We're seating guests in waves. First wave: fourteen chairs, one table, one skunk."],["Grandma Rose","And no two Smiths side by side. Some rules are eternal."],["Mummy Tut","Psst. Don't trust the groom. One of their seating wishes is a fib."]],"outro":[["Brenda from HR","I've cross-referenced every note. They were all delivered at nap times. Specific nap times."]],"twist":null,"twistText":"","twistDetail":"","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"aura","g":8,"t":"smell"},{"k":"nofam","g":0,"fam":"Smith"},{"k":"two","g":1,"x":7},{"k":"next","g":9,"x":4},{"k":"ifthen","g":11,"x":7,"c":"kitchen","a":{"k":"head","g":11},"b":{"k":"window","g":11}},{"k":"next","g":0,"x":10},{"k":"near","g":3,"x":11},{"k":"two","g":4,"x":6},{"k":"next","g":2,"x":4},{"k":"between","g":6,"x":2,"y":0},{"k":"two","g":7,"x":5},{"k":"head","g":9},{"k":"ifthen","g":12,"x":0,"c":"window","a":{"k":"kitchen","g":12},"b":{"k":"far","g":12,"x":0}},{"k":"ifthen","g":9,"x":5,"c":"kitchen","a":{"k":"across","g":9,"x":5},"b":{"k":"window","g":9}},{"k":"across","g":10,"x":7},{"k":"next","g":5,"x":6,"fake":1}],"sol":[3,10,1,11,0,6,2,8,12,13,4,9,7]}]},{"id":"5-2","ch":4,"title":"The Overflow Room","tables":[{"shape":"u","a":4,"b":5,"cx":320,"cy":205},{"shape":"round","n":6,"cx":775,"cy":215}],"guests":["dot","timmy","gus","pam","unit7","gary","pendle","dave","reggie","ember","fluff","steve","wendy","gloria","arietta","pip"],"liar":1,"par":22,"seed":159380,"intro":[["Maurice","Second wave: the U-table and the little round one. Madame Arietta is warming up her voice. The windows are trembling."],["Sir Reginald","Psst. Don't trust the one in the propeller hat. One of their seating wishes is a fib."]],"outro":[["Lady Pea","I felt something under my chair cushion. It's a note! It says: \"Almost time. — A Friend.\" And it's warm."]],"twist":"late","twistText":"Pip the Imp sneaks in late through the dumbwaiter, covered in flour. \"Did I miss the part where you seat me? Hee.\"","twistDetail":"Pip has arrived!","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false],"wishes":[{"k":"aura","g":14,"t":"sound"},{"k":"two","g":11,"x":14},{"k":"diff","g":9,"x":4},{"k":"ifthen","g":4,"x":7,"c":"window","a":{"k":"head","g":4},"b":{"k":"across","g":4,"x":7}},{"k":"next","g":12,"x":0},{"k":"same","g":7,"x":14},{"k":"same","g":0,"x":3},{"k":"next","g":8,"x":5},{"k":"next","g":3,"x":13},{"k":"across","g":5,"x":10},{"k":"next","g":6,"x":13},{"k":"kitchen","g":13},{"k":"kitchen","g":5},{"k":"ifthen","g":8,"x":3,"c":"kitchen","a":{"k":"far","g":8,"x":3},"b":{"k":"next","g":8,"x":3}},{"k":"between","g":10,"x":4,"y":11},{"k":"two","g":2,"x":1},{"k":"window","g":9},{"k":"far","g":13,"x":12},{"k":"notnext","g":8,"x":1},{"k":"next","g":2,"x":14},{"k":"next","g":1,"x":6,"fake":1}],"sol":[18,7,5,15,0,11,13,12,10,16,1,2,17,14,4,-1]},{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"aura","g":14,"t":"sound"},{"k":"two","g":11,"x":14},{"k":"diff","g":9,"x":4},{"k":"ifthen","g":4,"x":7,"c":"window","a":{"k":"head","g":4},"b":{"k":"across","g":4,"x":7}},{"k":"next","g":12,"x":0},{"k":"same","g":7,"x":14},{"k":"same","g":0,"x":3},{"k":"next","g":8,"x":5},{"k":"next","g":3,"x":13},{"k":"across","g":5,"x":10},{"k":"next","g":6,"x":13},{"k":"kitchen","g":13},{"k":"kitchen","g":5},{"k":"ifthen","g":8,"x":3,"c":"kitchen","a":{"k":"far","g":8,"x":3},"b":{"k":"next","g":8,"x":3}},{"k":"between","g":10,"x":4,"y":11},{"k":"two","g":2,"x":1},{"k":"window","g":9},{"k":"far","g":13,"x":12},{"k":"notnext","g":8,"x":1},{"k":"next","g":2,"x":14},{"k":"empty","g":2,"nw":1},{"k":"next","g":15,"x":8,"nw":1},{"k":"next","g":1,"x":6,"fake":1}],"sol":[18,7,5,15,0,11,13,12,10,16,1,2,17,14,4,9]}]},{"id":"5-3","ch":4,"title":"Every Shape at Once","tables":[{"shape":"round","n":6,"cx":150,"cy":215},{"shape":"rect","k":3,"cx":470,"cy":215},{"shape":"round","n":8,"cx":800,"cy":215,"lazy":true}],"guests":["rose","barry","dot","kevin","vlad","boo","brenda","dave","marigold","percy","pea","jangles","frank","tut","wendy","gloria","pepper","gus"],"liar":12,"par":27,"seed":167501,"intro":[["Unit 7 (IT)","Three tables. Three shapes. One of them spins. Probability of success: calculating... please hold."],["Lady Pea","Psst. Don't trust the gentle giant with neck bolts. One of their seating wishes is a fib."]],"outro":[["Maurice","Someone has eaten the fish course. All of it. The plates have been licked clean. There are paw prints on the tablecloth."]],"twist":"change","twistText":"The fish course arrives, and someone suddenly wants to sit somewhere else entirely. Look for the ✨ new wish.","twistDetail":"Gloria changed their mind: no longer \"Next to Gus\", now \"Next to Kevin\".","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"aura","g":16,"t":"smell"},{"k":"head","g":1},{"k":"same","g":11,"x":17},{"k":"near","g":5,"x":13},{"k":"tbl","g":2,"t":0},{"k":"same","g":1,"x":11},{"k":"ifthen","g":0,"x":13,"c":"kitchen","a":{"k":"head","g":0},"b":{"k":"kitchen","g":0}},{"k":"next","g":15,"x":17},{"k":"ifthen","g":6,"x":5,"c":"head","a":{"k":"next","g":6,"x":5},"b":{"k":"head","g":6}},{"k":"two","g":10,"x":1},{"k":"next","g":17,"x":3},{"k":"next","g":15,"x":11},{"k":"across","g":8,"x":14},{"k":"next","g":11,"x":9},{"k":"notnext","g":9,"x":1},{"k":"between","g":4,"x":12,"y":13},{"k":"kitchen","g":14},{"k":"window","g":13},{"k":"notnext","g":5,"x":13},{"k":"diff","g":6,"x":2},{"k":"two","g":7,"x":2},{"k":"window","g":7},{"k":"ifthen","g":10,"x":12,"c":"kitchen","a":{"k":"window","g":10},"b":{"k":"next","g":10,"x":12}},{"k":"kitchen","g":1},{"k":"same","g":3,"x":10},{"k":"across","g":12,"x":4,"fake":1}],"sol":[2,9,5,8,17,20,14,3,4,12,11,13,16,18,1,6,19,7]},{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"aura","g":16,"t":"smell"},{"k":"head","g":1},{"k":"same","g":11,"x":17},{"k":"near","g":5,"x":13},{"k":"tbl","g":2,"t":0},{"k":"same","g":1,"x":11},{"k":"ifthen","g":0,"x":13,"c":"kitchen","a":{"k":"head","g":0},"b":{"k":"kitchen","g":0}},{"k":"next","g":15,"x":3,"nw":1},{"k":"ifthen","g":6,"x":5,"c":"head","a":{"k":"next","g":6,"x":5},"b":{"k":"head","g":6}},{"k":"two","g":10,"x":1},{"k":"next","g":17,"x":3},{"k":"next","g":15,"x":11},{"k":"across","g":8,"x":14},{"k":"next","g":11,"x":9},{"k":"notnext","g":9,"x":1},{"k":"between","g":4,"x":12,"y":13},{"k":"kitchen","g":14},{"k":"window","g":13},{"k":"notnext","g":5,"x":13},{"k":"diff","g":6,"x":2},{"k":"two","g":7,"x":2},{"k":"window","g":7},{"k":"ifthen","g":10,"x":12,"c":"kitchen","a":{"k":"window","g":10},"b":{"k":"next","g":10,"x":12}},{"k":"kitchen","g":1},{"k":"same","g":3,"x":10},{"k":"across","g":12,"x":4,"fake":1}],"sol":[2,9,5,7,17,20,14,3,4,12,11,13,16,18,1,6,19,8]}]},{"id":"5-4","ch":4,"title":"The Long Goodnight","tables":[{"shape":"rect","k":7,"cx":480,"cy":215}],"guests":["rose","gus","pam","timmy","unit7","gary","pendle","reggie","ember","fluff","steve","arietta","pip","percy","boo"],"liar":10,"par":28,"seed":175218,"intro":[["Grandma Rose","Sixteen seats. One table. Two old enemies. One opera singer. This is how I imagined my golden years."],["Little Timmy","Psst. Don't trust the one dripping on the carpet. One of their seating wishes is a fib."]],"outro":[["Maurice","Everyone is seated except... one guest. The guest of honour. Tomorrow night, the Final Banquet. The sender will be there."]],"twist":"feudEnd","twistText":"Arietta sings a ballad so moving that the two feuding guests make up on the spot. They want to sit side by side!","twistDetail":"Pam and Ember have made up! They've torn up their old wishes and now want to sit next to each other.","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"aura","g":11,"t":"sound"},{"k":"far","g":2,"x":8},{"k":"far","g":8,"x":2},{"k":"two","g":2,"x":10},{"k":"ifthen","g":12,"x":13,"c":"kitchen","a":{"k":"across","g":12,"x":13},"b":{"k":"far","g":12,"x":13}},{"k":"across","g":1,"x":5},{"k":"next","g":6,"x":14},{"k":"two","g":12,"x":6},{"k":"next","g":5,"x":10},{"k":"between","g":13,"x":14,"y":0},{"k":"next","g":3,"x":8},{"k":"next","g":9,"x":5},{"k":"across","g":0,"x":4},{"k":"across","g":14,"x":8},{"k":"ifthen","g":14,"x":10,"c":"head","a":{"k":"across","g":14,"x":10},"b":{"k":"kitchen","g":14}},{"k":"window","g":7},{"k":"between","g":4,"x":12,"y":6},{"k":"across","g":10,"x":2,"fake":1}],"sol":[9,1,10,0,5,13,6,11,15,14,12,2,4,8,7]},{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"aura","g":11,"t":"sound"},{"k":"ifthen","g":12,"x":13,"c":"kitchen","a":{"k":"across","g":12,"x":13},"b":{"k":"far","g":12,"x":13}},{"k":"across","g":1,"x":5},{"k":"next","g":6,"x":14},{"k":"two","g":12,"x":6},{"k":"next","g":5,"x":10},{"k":"between","g":13,"x":14,"y":0},{"k":"next","g":3,"x":8},{"k":"next","g":9,"x":5},{"k":"across","g":0,"x":4},{"k":"across","g":14,"x":8},{"k":"ifthen","g":14,"x":10,"c":"head","a":{"k":"across","g":14,"x":10},"b":{"k":"kitchen","g":14}},{"k":"window","g":7},{"k":"between","g":4,"x":12,"y":6},{"k":"next","g":2,"x":8,"nw":1},{"k":"next","g":8,"x":2,"nw":1},{"k":"two","g":13,"x":10,"nw":1},{"k":"far","g":2,"x":9,"nw":1},{"k":"across","g":10,"x":2,"fake":1}],"sol":[9,3,0,14,5,11,6,13,15,12,10,2,4,8,7]}]},{"id":"F","ch":5,"title":"The Final Banquet","tables":[{"shape":"rect","k":4,"cx":230,"cy":215},{"shape":"round","n":8,"cx":545,"cy":215},{"shape":"round","n":6,"cx":815,"cy":215,"lazy":true}],"guests":["rose","barry","dot","kevin","gus","vlad","boo","unit7","brenda","pendle","marigold","percy","pea","ember","frank","pepper","arietta","gloria","pip","whiskers"],"liar":3,"par":27,"seed":183137,"intro":[["Maurice","The Final Banquet. Everyone you've ever seated, all at once. Three tables. One skunk. One soprano. One liar."],["Maurice","And one empty chair, reserved for \"A Friend\". Let's get everyone else seated first."],["Ms. Pendleton (CEO)","Psst. Don't trust the one who just got a job in Sales. One of their seating wishes is a fib."]],"outro":[["Maurice","Mr. Whiskers, it turns out, has owned the Moonlight Banquet Hall since 1997. He bought it with \"money from a crypto opportunity\" (thanks, Kevin)."],["Maurice","Every note, every request, every licked envelope: just a cat who wanted the best seat in the house, and a planner good enough to give it to him."],["Mr. Whiskers","Mrrp."],["Maurice","He says you're promoted. And he'd like more fish."]],"twist":"late","twistText":"The doors swing open. A small grey figure pads in, wearing a tiny bow tie. It is MR. WHISKERS. He drops a final note: \"It was me. I own the building. Now seat me by the fish. — A Friend.\"","twistDetail":"Whiskers has arrived!","stages":[{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,false],"wishes":[{"k":"aura","g":15,"t":"smell"},{"k":"aura","g":16,"t":"sound"},{"k":"nofam","g":0,"fam":"Smith"},{"k":"window","g":10},{"k":"across","g":1,"x":3},{"k":"ifthen","g":7,"x":6,"c":"head","a":{"k":"head","g":7},"b":{"k":"far","g":7,"x":6}},{"k":"two","g":4,"x":11},{"k":"ifthen","g":8,"x":0,"c":"kitchen","a":{"k":"across","g":8,"x":0},"b":{"k":"kitchen","g":8}},{"k":"diff","g":0,"x":12},{"k":"near","g":9,"x":10},{"k":"diff","g":13,"x":2},{"k":"tbl","g":7,"t":0},{"k":"next","g":6,"x":2},{"k":"two","g":17,"x":14},{"k":"two","g":1,"x":6},{"k":"two","g":10,"x":2},{"k":"two","g":14,"x":5},{"k":"near","g":18,"x":15},{"k":"near","g":2,"x":15},{"k":"food","g":13},{"k":"diff","g":11,"x":16},{"k":"far","g":4,"x":0},{"k":"head","g":4},{"k":"far","g":11,"x":8},{"k":"kitchen","g":5},{"k":"window","g":14},{"k":"across","g":12,"x":13},{"k":"kitchen","g":9},{"k":"across","g":3,"x":4,"fake":1}],"sol":[21,5,8,3,18,12,7,1,19,4,6,22,13,17,14,0,11,16,2,-1]},{"active":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true],"wishes":[{"k":"aura","g":15,"t":"smell"},{"k":"aura","g":16,"t":"sound"},{"k":"nofam","g":0,"fam":"Smith"},{"k":"window","g":10},{"k":"across","g":1,"x":3},{"k":"ifthen","g":7,"x":6,"c":"head","a":{"k":"head","g":7},"b":{"k":"far","g":7,"x":6}},{"k":"two","g":4,"x":11},{"k":"ifthen","g":8,"x":0,"c":"kitchen","a":{"k":"across","g":8,"x":0},"b":{"k":"kitchen","g":8}},{"k":"diff","g":0,"x":12},{"k":"near","g":9,"x":10},{"k":"diff","g":13,"x":2},{"k":"tbl","g":7,"t":0},{"k":"next","g":6,"x":2},{"k":"two","g":17,"x":14},{"k":"two","g":1,"x":6},{"k":"two","g":10,"x":2},{"k":"two","g":14,"x":5},{"k":"near","g":18,"x":15},{"k":"near","g":2,"x":15},{"k":"food","g":13},{"k":"diff","g":11,"x":16},{"k":"far","g":4,"x":0},{"k":"head","g":4},{"k":"far","g":11,"x":8},{"k":"kitchen","g":5},{"k":"window","g":14},{"k":"across","g":12,"x":13},{"k":"kitchen","g":9},{"k":"same","g":19,"x":11,"nw":1},{"k":"next","g":19,"x":0,"nw":1},{"k":"across","g":3,"x":4,"fake":1}],"sol":[21,5,8,3,18,12,7,1,19,4,6,22,13,17,14,0,11,16,2,20]}]}];
+</script>
+<script>
+// ===== Table Manners: The Grand Banquet — game =====
+(function () {
+'use strict';
+const E = window.TME, CT = window.TMC, ALL = window.TMP, ROSTER = CT.ROSTER;
+const M_ = 'Maurice';
+const W = 960, H = 540, LOBBY_Y = 402, TR = 17, SR = 20;
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const $ = id => document.getElementById(id);
+const overlay = $('overlay');
+const NORMAL = ALL.filter(p => p.id !== 'F'), FINAL_I = ALL.findIndex(p => p.id === 'F');
+const MAXSTARS = NORMAL.length * 3, NEED = Math.ceil(MAXSTARS * 0.6);
+const FOOD_E = { pasta: '🍝', salad: '🥗', cake: '🍰', fish: '🐟', steak: '🥩', soup: '🍲', tacos: '🌮' };
+
+// ---------------- save
+const KEY = 'tm-grand-banquet-v1';
+let save = { best: {}, relaxed: false, muted: false };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.best) save = Object.assign(save, s); } catch (e) {}
+function persist() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} }
+function totalStars() { let t = 0; NORMAL.forEach(p => { if (save.best[p.id]) t += save.best[p.id].s; }); return t; }
+function unlocked(i) {
+  if (i === FINAL_I) return !!save.best[NORMAL[NORMAL.length - 1].id] && totalStars() >= NEED;
+  return i === 0 || !!save.best[ALL[i - 1].id];
+}
+
+// ---------------- audio
+let AC = null;
+function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } if (AC && AC.state === 'suspended') AC.resume(); return AC; }
+function tone(f, d, type, vol, f2, delay) {
+  const a = ac(); if (!a) return; const t = a.currentTime + (delay || 0);
+  const o = a.createOscillator(), g = a.createGain(); o.type = type || 'sine'; o.frequency.setValueAtTime(f, t);
+  if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || 0.15, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + 0.03);
+}
+const SFX = {
+  pick: () => tone(520, 0.08, 'triangle', 0.12, 760),
+  drop: () => { tone(240, 0.12, 'sine', 0.2, 140); tone(900, 0.04, 'square', 0.03, 600); },
+  swap: () => { tone(400, 0.09, 'triangle', 0.12, 600); tone(600, 0.09, 'triangle', 0.12, 400, 0.08); },
+  lobby: () => tone(380, 0.12, 'sine', 0.12, 220),
+  happy: () => { tone(660, 0.1, 'sine', 0.1); tone(880, 0.12, 'sine', 0.08, null, 0.07); },
+  fail: () => { tone(200, 0.25, 'sawtooth', 0.08, 120); tone(150, 0.3, 'sawtooth', 0.06, 90, 0.1); },
+  serve: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, 'triangle', 0.12, null, i * 0.1)),
+  star: () => tone(1200, 0.15, 'sine', 0.1, 1800),
+  spin: () => tone(300, 0.5, 'triangle', 0.1, 900),
+  twist: () => { tone(110, 0.6, 'sine', 0.25, 90); tone(220, 0.5, 'triangle', 0.08, 180, 0.05); },
+  hint: () => { tone(988, 0.1, 'sine', 0.1); tone(1319, 0.18, 'sine', 0.08, null, 0.08); },
+  fib: () => tone(300, 0.15, 'square', 0.05, 500),
+  click: () => tone(700, 0.04, 'square', 0.04)
+};
+function sfx(n) { if (save.muted) return; try { SFX[n] && SFX[n](); } catch (e) {} }
+
+// ---------------- the Rando Level
+const genOne = window.TMGen(E, ROSTER);
+const RANDO_LAYOUTS = [
+  () => [{ shape: 'round', n: 6 + 2 * ri(3), cx: 480, cy: 215 }],
+  () => [{ shape: 'round', n: 8 + 2 * ri(2), cx: 480, cy: 215, lazy: true }],
+  () => [{ shape: 'rect', k: 3 + ri(3), cx: 480, cy: 215 }],
+  () => [{ shape: 'u', a: 3, b: 3 + 2 * ri(2), cx: 480, cy: 205 }],
+  () => [{ shape: 'round', n: 6, cx: 270, cy: 215 }, { shape: 'rect', k: 2 + ri(2), cx: 690, cy: 215 }],
+  () => [{ shape: 'round', n: 8, cx: 260, cy: 215 }, { shape: 'round', n: 6, cx: 700, cy: 215, lazy: Math.random() < 0.5 }],
+  () => [{ shape: 'u', a: 3, b: 3, cx: 300, cy: 205 }, { shape: 'round', n: 6, cx: 730, cy: 215 }]
+];
+function ri(n) { return Math.floor(Math.random() * n); }
+function pick(a) { return a[ri(a.length)]; }
+const RANDO_INTROS = [
+  [M_, 'The Rando Level! I pulled names out of a hat. The hat was also a guest. It left early.'],
+  [M_, 'A completely random dinner party. Nobody knows why they were invited. Least of all them.'],
+  [M_, 'Tonight\'s guest list was chosen by Mr. Whiskers walking across a keyboard.'],
+  [M_, 'Random guests, random tables, random wishes. The soup is also random. Don\'t ask.'],
+  [M_, 'Somebody spun the lazy Susan of fate. These are the guests it landed on.']
+];
+const RANDO_OUTROS = ['Served! The guests have no idea why they met, but they\'re exchanging phone numbers.', 'A triumph of randomness. The hat would be proud.', 'Done! Somewhere, a statistician weeps with joy.', 'Everyone ate. Nobody cried. Statistically remarkable.'];
+const RANDO_TWISTS = { late: 'The doors fly open: an uninvited guest wanders in. They have opinions about chairs.', change: 'Between courses, someone changes their mind. Of course they do.', feudStart: 'A spilled gravy boat starts a brand-new feud!', feudEnd: 'A heartfelt toast. Two old enemies make up and want to sit together.' };
+function makeRando(seed) {
+  let tries = 0;
+  while (true) {
+    tries++;
+    const tables = pick(RANDO_LAYOUTS)();
+    const seats = E.buildSeats(tables).N;
+    const twist = Math.random() < 0.4 ? pick(['late', 'change', 'feudStart', 'feudEnd']) : null;
+    const nG = Math.min(14, seats - 1 - ri(2) - (twist === 'late' ? 1 : 0));
+    const ids = Object.keys(ROSTER).sort(() => Math.random() - 0.5).slice(0, nG + (twist === 'late' ? 1 : 0));
+    const late = twist === 'late' ? ids.pop() : undefined;
+    const smiths = ids.concat(late ? [late] : []).filter(id => ROSTER[id].fam === 'Smith').length;
+    const spec = {
+      id: 'R', ch: -1, title: 'Rando Level #' + seed, tables, guests: ids, late, twist,
+      nofam: ids.includes('rose') && smiths >= 2 && Math.random() < 0.6 ? 'rose' : undefined,
+      types: ['next', 'notnext', 'across', 'head', 'window', 'kitchen', 'near', 'far', 'between', 'empty', 'food', 'middle', 'same', 'diff', 'two', 'ifthen'],
+      liar: Math.random() < 0.5, mirror: Math.random() < 0.3 ? 1 : 0, prune: 0.45 + Math.random() * 0.3,
+      intro: [pick(RANDO_INTROS)], outro: [[M_, pick(RANDO_OUTROS)]], twistText: twist ? RANDO_TWISTS[twist] : ''
+    };
+    try { return genOne(spec, seed * 31 + tries); } catch (e) { if (tries > 60) throw e; }
+  }
+}
+function startRando(seed) {
+  seed = seed || 1 + ri(99999);
+  mode = 'story';
+  dialog('<h2>🎲 The Rando Level</h2><p class="l">Shuffling guests, flipping tables, rolling for wishes…</p>', []);
+  setTimeout(() => {
+    let p; try { p = makeRando(seed); } catch (e) { console.error(e); dialog('<h2>🎲 Oops</h2><p class="l">The hat jammed. Try again?</p>', [{ label: 'Roll again', id: 'btnGo', cls: 'big', fn: () => startRando() }]); return; }
+    overlay.classList.remove('on'); startPuzzle(-1, false, p);
+  }, 60);
+}
+
+// ---------------- game state
+let G = null; // current table
+let mode = 'title';
+let pointer = { x: -1, y: -1, in: false };
+let drag = null; // {g, x, y, ox, oy}
+let hoverG = -1, hoverS = -1, panelHL = -1;
+let fx = []; // floating effects
+let lastHappyCount = 0;
+
+function startPuzzle(i, skipIntro, pObj) {
+  const p = pObj || ALL[i]; const S = E.buildSeats(p.tables);
+  const guests = p.guests.map(id => Object.assign({ id }, ROSTER[id]));
+  G = { i, p, rando: p.id === 'R', S, guests, stage: 0, pos: guests.map(() => -1), fib: -1, moves: 0, hints: 0, undo: [], hintG: -1, disp: guests.map(() => null), msg: '', done: false, fibOk: false };
+  enterStage(0);
+  mode = 'play';
+  G.msg = p.liar >= 0 ? 'Someone is fibbing! Read the clue in the story (📜), then mark their fake wish.' : 'Drag guests from the lobby onto chairs. Drop on a guest to swap.';
+  refresh();
+  if (!skipIntro) showIntro();
+}
+function enterStage(k) {
+  G.stage = k; const st = G.p.stages[k];
+  G.act = st.active; G.wishes = st.wishes; G.C = { S: G.S, G: G.guests, act: G.act };
+  G.fake = G.wishes.findIndex(w => w.fake);
+  G.fib = G.fibOk && G.fake >= 0 ? G.fake : -1;
+  G.undo = []; G.hintG = -1;
+}
+function mood(pos) { return E.mood(G.C, pos || G.pos, G.wishes, G.fib); }
+function occAt(s) { return G.pos.indexOf(s); }
+function activeList() { const r = []; G.act.forEach((a, g) => { if (a) r.push(g); }); return r; }
+function lobbyList() { return activeList().filter(g => G.pos[g] < 0); }
+function lobbyXY(g) {
+  const L = lobbyList(), n = L.length, i = L.indexOf(g);
+  const sp = Math.min(50, 900 / Math.max(1, n));
+  return { x: 480 + (i - (n - 1) / 2) * sp, y: LOBBY_Y + 74 };
+}
+function targetXY(g) { const s = G.pos[g]; if (s >= 0) return { x: G.S.seats[s].x, y: G.S.seats[s].y }; return lobbyXY(g); }
+
+function pushUndo() { G.undo.push({ pos: G.pos.slice(), fib: G.fib }); if (G.undo.length > 200) G.undo.shift(); }
+function move(g, seat) { // seat -1 => lobby
+  const from = G.pos[g]; if (from === seat) return false;
+  pushUndo();
+  if (seat >= 0) { const h = occAt(seat); if (h >= 0) G.pos[h] = from; sfx(h >= 0 ? 'swap' : 'drop'); } else sfx('lobby');
+  G.pos[g] = seat; G.moves++;
+  if (G.hintG === g && seat === G.p.stages[G.stage].sol[g]) G.hintG = -1;
+  G.msg = ''; refresh(true); return true;
+}
+function swapWithLobby(g, h) { // g seated, h in lobby
+  pushUndo(); G.pos[h] = G.pos[g]; G.pos[g] = -1; G.moves++; sfx('swap'); G.msg = ''; refresh(true);
+}
+function undo() { if (!G || !G.undo.length || G.done) return; const u = G.undo.pop(); G.pos = u.pos; G.fib = u.fib; sfx('click'); G.msg = 'Undone.'; refresh(); }
+function clearTable() { if (!G || G.done) return; if (!G.pos.some(s => s >= 0)) return; pushUndo(); G.pos = G.pos.map(() => -1); G.moves++; sfx('lobby'); G.msg = 'Everyone back to the lobby.'; refresh(); }
+function toggleFib(i) {
+  if (!G || G.done || G.p.liar < 0) return; const w = G.wishes[i]; if (!w || w.k === 'aura' || w.k === 'nofam') return;
+  pushUndo(); G.fib = G.fib === i ? -1 : i; sfx('fib');
+  G.msg = G.fib >= 0 ? 'Marked as a fib: "' + wtext(G.wishes[i]) + '"' : 'Fib mark removed.'; refresh();
+}
+
+function rotateLazy() {
+  let any = false;
+  G.S.tables.forEach(t => {
+    if (!t.lazy) return; any = true; const n = t.ids.length;
+    const moves = [];
+    G.pos.forEach((s, g) => { if (s >= 0 && G.S.seats[s].t === G.S.tables.indexOf(t)) moves.push([g, t.ids[(G.S.seats[s].ord + 1) % n]]); });
+    moves.forEach(([g, s]) => { G.pos[g] = s; });
+    t.spin = (t.spin || 0) + 1; t.spinT = performance.now();
+  });
+  if (any) { G.undo = []; sfx('spin'); }
+  return any;
+}
+
+function starsNow() {
+  if (save.relaxed) return 3;
+  const n = activeList().length;
+  let s = G.moves <= G.p.par ? 3 : G.moves <= G.p.par + Math.ceil(n / 2) + 2 ? 2 : 1;
+  return Math.max(1, s - G.hints);
+}
+
+function serve() {
+  if (!G || G.done || mode !== 'play') return;
+  const m = mood(); const L = activeList();
+  const seated = L.every(g => G.pos[g] >= 0), happyAll = L.every(g => m.happy[g]);
+  if (seated && happyAll && (G.p.liar < 0 || G.fib === G.fake)) {
+    G.fibOk = G.p.liar >= 0;
+    sfx('serve');
+    L.forEach(g => fxAdd(targetXY(g).x, targetXY(g).y - 24, '♥', '#ff8fb1'));
+    if (G.stage + 1 < G.p.stages.length) { setTimeout(() => showTwist(), 500); G.busy = true; refresh(); return; }
+    G.done = true; refresh(); setTimeout(() => finishTable(), 650); return;
+  }
+  // fail
+  G.moves++;
+  let why;
+  if (!seated) why = 'Not everyone is seated! ' + (L.length - L.filter(g => G.pos[g] >= 0).length) + ' still in the lobby.';
+  else if (!happyAll) why = '😠 ' + L.filter(g => !m.happy[g]).length + ' guest(s) still grumpy.';
+  else if (G.fib < 0) why = 'Everyone looks happy... suspiciously happy. Someone is fibbing. Mark the fib first!';
+  else why = '"' + wtext(G.wishes[G.fib]) + '" was not a fib! ' + G.guests[G.wishes[G.fib].g].sh + ' meant it. Find the real fibber.';
+  sfx('fail');
+  if (rotateLazy()) why += ' 🔄 The lazy Susan spins one seat!';
+  G.msg = why; refresh();
+}
+
+function hint() {
+  if (!G || G.done || mode !== 'play') return;
+  const sol = G.p.stages[G.stage].sol, L = activeList();
+  const wrong = L.filter(g => G.pos[g] !== sol[g]);
+  if (!wrong.length) {
+    if (G.p.liar >= 0 && G.fib !== G.fake) { pushUndo(); G.fib = G.fake; spendHint(); G.msg = '💡 Everyone is in the right seat. The fib is: "' + wtext(G.wishes[G.fake]) + '" (marked for you).'; refresh(); return; }
+    G.msg = 'Everyone is already in the right place. Press Serve!'; refresh(); return;
+  }
+  // prefer a guest whose correct seat is currently empty, then anyone
+  wrong.sort((a, b) => (occAt(sol[a]) >= 0) - (occAt(sol[b]) >= 0) || a - b);
+  const g = wrong[0]; G.hintG = g; spendHint(); sfx('hint');
+  G.msg = '💡 ' + G.guests[g].name + ' belongs in the glowing chair.' + (save.relaxed ? '' : ' (Hints cost a star.)'); refresh();
+}
+function spendHint() { G.hints++; }
+
+function finishTable() {
+  if (G.rando) return finishRando();
+  const p = G.p, s = starsNow(), prev = save.best[p.id];
+  if (!prev || s > prev.s || (s === prev.s && G.moves < prev.m)) save.best[p.id] = { s, m: G.moves, h: G.hints, r: save.relaxed ? 1 : 0 };
+  persist(); refresh();
+  for (let k = 0; k < s; k++) setTimeout(() => sfx('star'), 200 + k * 180);
+  const st = '★'.repeat(s) + '<span class="off">' + '★'.repeat(3 - s) + '</span>';
+  const isFinal = p.id === 'F';
+  const nextI = G.i + 1;
+  const btns = [];
+  btns.push({ label: '☰ Tables', fn: showSelect, cls: 'ghost' });
+  btns.push({ label: '↻ Replay', fn: () => startPuzzle(G.i, true), cls: 'ghost' });
+  if (isFinal) btns.push({ label: 'The End →', fn: showEnd, id: 'btnGo', cls: 'big' });
+  else if (nextI === FINAL_I) btns.push({ label: unlocked(FINAL_I) ? 'Final Banquet →' : 'Continue →', fn: () => { unlocked(FINAL_I) ? startPuzzle(FINAL_I) : showSelect(); }, id: 'btnGo', cls: 'big' });
+  else btns.push({ label: 'Next table →', fn: () => startPuzzle(nextI), id: 'btnGo', cls: 'big' });
+  let note = '';
+  if (nextI === FINAL_I && !unlocked(FINAL_I)) note = '<p class="l">🔒 The Final Banquet needs <b>' + NEED + '</b> stars. You have <b>' + totalStars() + '</b>. Replay tables to earn more!</p>';
+  dialog('<h2>🍽️ Table served!</h2><div class="stars">' + st + '</div>' +
+    '<p class="l" style="text-align:center">Moves <b>' + G.moves + '</b> / par ' + p.par + ' · Hints <b>' + G.hints + '</b>' + (save.relaxed ? ' · Relaxed mode' : '') + '</p>' +
+    lines(p.outro) + note, btns);
+}
+
+function finishRando() {
+  const s = starsNow(), r = save.rando || { served: 0, three: 0 };
+  r.served++; if (s === 3) r.three++; save.rando = r; persist(); refresh();
+  for (let k = 0; k < s; k++) setTimeout(() => sfx('star'), 200 + k * 180);
+  const p = G.p;
+  dialog('<h2>🎲 Rando table served!</h2><div class="stars">' + '★'.repeat(s) + '<span class="off">' + '★'.repeat(3 - s) + '</span></div>' +
+    '<p class="l" style="text-align:center">Moves <b>' + G.moves + '</b> / par ' + p.par + ' · Hints <b>' + G.hints + '</b></p>' + lines(p.outro) +
+    '<p class="l" style="text-align:center;color:#b9b2c9">Rando tables served: <b>' + r.served + '</b> · perfect: <b>' + r.three + '</b> (rando stars don\'t count toward the Final Banquet)</p>',
+    [{ label: '☰ Tables', fn: showSelect, cls: 'ghost' }, { label: '↻ Same table', fn: () => startPuzzle(-1, true, p), cls: 'ghost' }, { label: '🎲 Another rando', fn: () => startRando(), id: 'btnGo', cls: 'big' }]);
+}
+
+// ---------------- text helpers
+function nm(i) { return G.guests[i].sh; }
+function wtext(w) { return E.wishText(w, nm, G.guests); }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+function lines(arr) { return (arr || []).map(l => '<p class="l"><b>' + esc(l[0]) + ':</b> ' + esc(l[1]) + '</p>').join(''); }
+
+// ---------------- overlays
+function dialog(html, buttons) {
+  overlay.innerHTML = '<div class="card">' + html + '<div class="btns">' + buttons.map((b, i) => '<button id="' + (b.id || 'dlg' + i) + '" class="' + (b.cls || '') + '">' + b.label + '</button>').join('') + '</div></div>';
+  overlay.classList.add('on');
+  buttons.forEach((b, i) => { $(b.id || 'dlg' + i).onclick = () => { sfx('click'); overlay.classList.remove('on'); overlay.innerHTML = ''; b.fn && b.fn(); }; });
+  const card = overlay.querySelector('.card'); if (card) card.scrollTop = 0;
+}
+function showTitle() {
+  mode = 'title';
+  const t = totalStars();
+  dialog('<h1>🍽️ Table Manners</h1><div class="sub">The Grand Banquet</div>' +
+    '<p class="l">You are the seating planner at the <b>Moonlight Banquet Hall</b>. Five parties. Twenty-three tables. One very grand banquet. And somebody keeps sending anonymous seating requests…</p>' +
+    '<p class="l">Drag guests onto chairs, keep every face smiling, then press <b>Serve</b>. Every table has exactly one solution, and you can always find it with logic. No guessing needed.</p>' +
+    (t ? '<p class="l" style="text-align:center">Progress saved: <b>' + t + '</b> / ' + MAXSTARS + ' ★</p>' : ''),
+    [{ label: '☰ Tables', fn: showSelect, cls: 'ghost' }, { label: '🎲 Rando Level', fn: () => startRando(), id: 'btnRando', cls: 'ghost' }, { label: t ? 'Continue ▶' : 'Begin ▶', fn: () => startPuzzle(firstOpen()), id: 'btnGo', cls: 'big' }]);
+}
+function firstOpen() { for (let i = 0; i < ALL.length; i++) if (unlocked(i) && !save.best[ALL[i].id]) return i; let i = ALL.length - 1; while (i > 0 && !unlocked(i)) i--; return i; }
+function showSelect() {
+  mode = 'select';
+  let h = '<h2>☰ Chapter Select</h2><p class="l">Stars: <b>' + totalStars() + '</b> / ' + MAXSTARS + ' · Final Banquet unlocks at <b>' + NEED + '</b> ★ after Chapter 5.</p>';
+  const rs = save.rando;
+  h += '<div class="chap">🎲 The Rando Level</div><div class="tgrid"><button id="pz-R" class="next">A brand-new random table every time<span class="s">' + (rs ? rs.served + ' served · ' + rs.three + ' perfect' : 'roll the dice ▶') + '</span></button></div>';
+  const open = firstOpen();
+  CT.CHAPTERS.forEach((c, ci) => {
+    h += '<div class="chap">' + c.icon + ' Chapter ' + (ci + 1) + ': ' + c.title + '</div><div class="tgrid">';
+    ALL.forEach((p, i) => { if (p.ch !== ci) return; const b = save.best[p.id], u = unlocked(i);
+      h += '<button id="pz-' + p.id + '" data-i="' + i + '" class="' + (b ? 'done' : (i === open ? 'next' : '')) + '"' + (u ? '' : ' disabled') + '>' + p.id + ' ' + esc(p.title) + '<span class="s">' + (b ? '★'.repeat(b.s) + '☆'.repeat(3 - b.s) : (u ? 'play ▶' : '🔒')) + '</span></button>'; });
+    h += '</div>';
+  });
+  const fb = save.best.F, fu = unlocked(FINAL_I);
+  h += '<div class="chap">🌕 Finale</div><div class="tgrid"><button id="pz-F" data-i="' + FINAL_I + '" class="' + (fb ? 'done' : (fu ? 'next' : '')) + '"' + (fu ? '' : ' disabled') + '>The Final Banquet<span class="s">' + (fb ? '★'.repeat(fb.s) + '☆'.repeat(3 - fb.s) : fu ? 'play ▶' : '🔒 ' + NEED + '★') + '</span></button></div>';
+  const btns = [{ label: 'Title', fn: showTitle, cls: 'ghost' }];
+  if (G && !G.done) btns.push({ label: 'Back to table', fn: () => { mode = 'play'; }, cls: 'ghost' });
+  if (fb) btns.push({ label: '🏆 End card', fn: showEnd, cls: 'ghost' });
+  dialog(h, btns);
+  overlay.querySelectorAll('.tgrid button').forEach(b => { b.onclick = () => { sfx('click'); overlay.classList.remove('on'); if (b.id === 'pz-R') startRando(); else startPuzzle(+b.dataset.i); }; });
+}
+function showIntro() {
+  const p = G.p; let h = '';
+  const first = p.id === 'F' || G.rando ? false : ALL.findIndex(q => q.ch === p.ch) === G.i;
+  if (first) { const c = CT.CHAPTERS[p.ch]; h += '<h2>' + c.icon + ' Chapter ' + (p.ch + 1) + ': ' + c.title + '</h2>' + lines(c.intro) + '<hr style="border-color:#3a3363">'; }
+  h += '<h2>' + (p.id === 'F' ? '🌕 ' : G.rando ? '🎲 ' : 'Table ' + p.id + ': ') + esc(p.title) + '</h2>' + lines(p.intro);
+  const feat = [];
+  if (G.S.tables.some(t => t.lazy)) feat.push('🔄 Lazy Susan: a failed Serve spins it one seat.');
+  if (G.S.tables.length > 1) feat.push('🍽️ ' + G.S.tables.length + ' tables. Guests can move between them.');
+  if (p.twist) feat.push('⚡ Something will happen mid-dinner…');
+  if (p.liar >= 0) feat.push('🤥 One guest has a fake wish. The clue is above.');
+  if (feat.length) h += '<p class="l" style="color:#ffcf8a">' + feat.join('<br>') + '</p>';
+  mode = 'story';
+  dialog(h, [{ label: "Let's seat them ▶", fn: () => { mode = 'play'; }, id: 'btnGo', cls: 'big' }]);
+}
+function showTwist() {
+  sfx('twist'); mode = 'story';
+  dialog('<h2>⚡ Mid-dinner twist!</h2><p class="l">' + esc(G.p.twistText) + '</p><p class="l" style="color:#ffcf8a">' + esc(G.p.twistDetail) + '</p><p class="l">New wishes are tagged ✨ in the list. Fix the seating and Serve again.</p>',
+    [{ label: 'Back to work ▶', id: 'btnGo', cls: 'big', fn: () => { enterStage(G.stage + 1); G.busy = false; mode = 'play'; G.msg = '⚡ ' + G.p.twistDetail; refresh(); } }]);
+}
+function showEnd() {
+  mode = 'end';
+  let st = 0, mv = 0, hn = 0;
+  ALL.forEach(p => { const b = save.best[p.id]; if (b) { st += b.s; mv += b.m; hn += b.h; } });
+  const max = ALL.length * 3, pct = st / max;
+  const ranks = [[1, 'Supreme Chairperson of the Moonlight'], [0.9, 'Archmage of Assigned Seating'], [0.78, 'Duke of Doilies'], [0.66, 'Gravy Diplomat'], [0.5, 'Breadbasket Wrangler'], [0, 'Apprentice Napkin Folder']];
+  const rank = ranks.find(r => pct >= r[0] - 1e-9)[1];
+  dialog('<h1>🌕 The End</h1><div class="sub">Mr. Whiskers has had his fish. The hall is quiet. Somewhere, a chair wobbles.</div>' +
+    '<div class="endstats"><div>Total stars</div><div><b>' + st + '</b> / ' + max + ' ★</div><div>Total moves</div><div><b>' + mv + '</b></div><div>Hints used</div><div><b>' + hn + '</b></div><div>Tables served</div><div><b>' + ALL.filter(p => save.best[p.id]).length + '</b> / ' + ALL.length + '</div></div>' +
+    '<div class="sub" style="margin:0">Your official title:</div><div class="rank" id="rank">🏅 ' + rank + '</div>' +
+    (save.relaxed ? '<p class="l" style="text-align:center;color:#b9b2c9">(Relaxed mode was on: stars are honorary, like a knighthood from a cat.)</p>' : ''),
+    [{ label: '☰ Tables', fn: showSelect, cls: 'ghost' }, { label: 'Title', fn: showTitle, id: 'btnGo', cls: 'big' }]);
+}
+
+// ---------------- panel
+function refresh(fromMove) {
+  if (!G) return;
+  G.m = mood();
+  const L = activeList(), hc = L.filter(g => G.m.happy[g]).length;
+  if (fromMove && hc > lastHappyCount) sfx('happy');
+  lastHappyCount = hc;
+  renderPanel();
+}
+function renderPanel() {
+  const p = G.p;
+  $('ptitle').textContent = (p.id === 'F' ? '🌕 ' : G.rando ? '🎲 ' : p.id + ' · ') + p.title;
+  $('pch').textContent = (p.id === 'F' ? 'Finale' : G.rando ? 'Rando Level' : 'Ch ' + (p.ch + 1) + ': ' + CT.CHAPTERS[p.ch].title) + (p.stages.length > 1 ? ' · course ' + (G.stage + 1) + '/2' : '');
+  $('smoves').textContent = G.moves; $('spar').textContent = p.par; $('shints').textContent = G.hints;
+  const s = starsNow(); $('sstars').textContent = '★'.repeat(s) + '☆'.repeat(3 - s);
+  $('sstars').title = save.relaxed ? 'Relaxed mode: always 3 stars' : '3★: within par with no hints. Each hint costs a star.';
+  $('msg').textContent = G.msg || (G.m && activeList().every(g => G.m.happy[g]) ? '😊 Everyone is smiling! Press Serve.' : 'Hover a guest to see their wishes. Hover a chair to see who would be happy there.');
+  $('fibhelp').style.display = p.liar >= 0 ? 'block' : 'none';
+  $('bUndo').disabled = !G.undo.length || G.done; $('bServe').disabled = G.done || G.busy;
+  $('bRelax').textContent = 'Relaxed: ' + (save.relaxed ? 'ON' : 'off');
+  $('bMute').textContent = save.muted ? '🔇 Muted' : '🔊 Sound';
+  // checklist grouped by guest
+  const m = G.m; let h = '';
+  activeList().forEach(g => {
+    const gu = G.guests[g], seated = G.pos[g] >= 0;
+    const face = !seated ? '💤' : m.happy[g] ? '😊' : '😠';
+    h += '<div class="gb' + (hoverG === g || panelHL === g ? ' hl' : '') + '" data-g="' + g + '"><div class="gn"><span class="f">' + face + '</span>' + esc(gu.name) + '<span class="fd">' + FOOD_E[gu.food] + (gu.imm ? ' ' + gu.imm.map(x => x === 'smell' ? '👃🚫' : '🎭').join('') : '') + '</span></div><ul>';
+    let any = false;
+    G.wishes.forEach((w, i) => {
+      if (w.g !== g) return; any = true;
+      let cls = i === G.fib ? 'fib' : !seated && w.k !== 'nofam' && w.k !== 'aura' ? 'wait' : (m.ok[i] ? 'ok' : 'bad');
+      if (p.liar >= 0 && w.k !== 'aura' && w.k !== 'nofam') cls += ' click';
+      const tags = (w.note ? '<span class="tag">📨 note</span>' : '') + (w.nw ? '<span class="tag nw">✨ new</span>' : '');
+      h += '<li class="' + cls + '" data-wi="' + i + '">' + tags + esc(wtext(w)) + '</li>';
+    });
+    m.grump[g].forEach(a => { any = true; h += '<li class="bad">😖 Next to ' + esc(G.guests[a].sh) + '! ' + (G.guests[a].aura === 'smell' ? '(the smell!)' : '(the singing!)') + '</li>'; });
+    if (!any) h += '<li class="wait">Easygoing: happy anywhere.</li>';
+    h += '</ul></div>';
+  });
+  const list = $('list'); const st = list.scrollTop; list.innerHTML = h; list.scrollTop = st;
+  // chapter progress
+  let cp = '';
+  CT.CHAPTERS.forEach((c, ci) => { let s2 = 0, mx = 0; ALL.forEach(q => { if (q.ch === ci) { mx += 3; if (save.best[q.id]) s2 += save.best[q.id].s; } }); cp += '<span title="' + c.title + '">' + c.icon + ' ' + s2 + '/' + mx + '</span>'; });
+  cp += '<span title="Final Banquet">🌕 ' + (unlocked(FINAL_I) ? (save.best.F ? '★' + save.best.F.s : 'open') : totalStars() + '/' + NEED + '★') + '</span>';
+  $('chprog').innerHTML = cp;
+}
+$('list').addEventListener('click', e => { const li = e.target.closest('li[data-wi]'); if (li && G && G.p.liar >= 0) toggleFib(+li.dataset.wi); });
+$('list').addEventListener('mouseover', e => { const b = e.target.closest('.gb'); panelHL = b ? +b.dataset.g : -1; });
+$('list').addEventListener('mouseleave', () => { panelHL = -1; });
+$('bServe').onclick = serve; $('bUndo').onclick = undo; $('bClear').onclick = clearTable; $('bHint').onclick = hint;
+$('bMenu').onclick = () => { sfx('click'); showSelect(); };
+$('bStory').onclick = () => { if (G) { sfx('click'); showIntro(); } };
+$('bMute').onclick = () => { save.muted = !save.muted; persist(); if (!save.muted) sfx('click'); if (G) renderPanel(); };
+$('bRelax').onclick = () => { save.relaxed = !save.relaxed; persist(); sfx('click'); if (G) { G.msg = save.relaxed ? 'Relaxed mode ON: no par, free unlimited hints, 3 stars every time.' : 'Relaxed mode off: par and hint costs apply.'; renderPanel(); } };
+window.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); } });
+
+// ---------------- input
+function toCanvas(e) { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; }
+function guestAt(x, y) {
+  if (!G) return -1; let best = -1, bd = TR + 5;
+  activeList().forEach(g => { const d = G.disp[g] || targetXY(g); const dd = Math.hypot(d.x - x, d.y - y); if (dd < bd) { bd = dd; best = g; } });
+  return best;
+}
+function seatAt(x, y, r) { if (!G) return -1; let best = -1, bd = r || 26; G.S.seats.forEach(s => { const d = Math.hypot(s.x - x, s.y - y); if (d < bd) { bd = d; best = s.id; } }); return best; }
+cv.addEventListener('pointerdown', e => {
+  ac(); if (mode !== 'play' || !G || G.done || G.busy) return;
+  const p = toCanvas(e); const g = guestAt(p.x, p.y); if (g < 0) return;
+  const d = G.disp[g] || targetXY(g);
+  drag = { g, x: p.x, y: p.y, ox: d.x - p.x, oy: d.y - p.y, moved: false };
+  try { cv.setPointerCapture(e.pointerId); } catch (er) {}
+  sfx('pick'); e.preventDefault();
+});
+cv.addEventListener('pointermove', e => {
+  const p = toCanvas(e); pointer = { x: p.x, y: p.y, in: true };
+  if (drag) { drag.x = p.x; drag.y = p.y; drag.moved = true; }
+});
+cv.addEventListener('pointerleave', () => { if (!drag) pointer.in = false; });
+function endDrag(e) {
+  if (!drag) return; const p = toCanvas(e); const g = drag.g; drag = null;
+  if (!G || G.done) return;
+  const s = seatAt(p.x, p.y, 28);
+  if (s >= 0) { move(g, s); return; }
+  if (p.y > LOBBY_Y) {
+    const h = guestAt(p.x, p.y);
+    if (h >= 0 && h !== g && G.pos[h] < 0 && G.pos[g] >= 0) { swapWithLobby(g, h); return; }
+    if (G.pos[g] >= 0) { move(g, -1); return; }
+  }
+}
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', () => { drag = null; });
+
+// ---------------- effects
+function fxAdd(x, y, t, c) { fx.push({ x, y, t, c, b: performance.now() }); }
+
+// ---------------- drawing
+let dpr = 1;
+function resize() {
+  const r = cv.getBoundingClientRect(); dpr = window.devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(r.width * dpr)), h = Math.max(1, Math.round(r.height * dpr));
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  // keep the side panel the same height as the stage on wide screens
+  const panel = $('panel');
+  if (window.innerWidth > 900) { panel.style.maxHeight = r.height + 'px'; panel.style.height = r.height + 'px'; } else { panel.style.maxHeight = ''; panel.style.height = ''; }
+}
+window.addEventListener('resize', resize);
+
+function rr(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+const stars = []; for (let i = 0; i < 40; i++) stars.push([Math.random() * 960, Math.random() * 18, Math.random()]);
+function drawRoom(t) {
+  const bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#2b2552'); bg.addColorStop(0.7, '#231e44'); bg.addColorStop(1, '#1a1634');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+  // floor tiles
+  ctx.strokeStyle = 'rgba(255,255,255,0.035)'; ctx.lineWidth = 1;
+  for (let x = -540; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 24); ctx.lineTo(x + 380, LOBBY_Y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x + 380, 24); ctx.lineTo(x, LOBBY_Y); ctx.stroke(); }
+  // window wall
+  const wg = ctx.createLinearGradient(0, 0, 0, 24); wg.addColorStop(0, '#0d1638'); wg.addColorStop(1, '#1f2c66');
+  ctx.fillStyle = wg; ctx.fillRect(0, 0, W, 22);
+  stars.forEach(s => { ctx.fillStyle = 'rgba(255,255,230,' + (0.4 + 0.6 * Math.abs(Math.sin(t / 900 + s[2] * 9))) + ')'; ctx.fillRect(s[0], s[1] + 2, 1.5, 1.5); });
+  ctx.fillStyle = '#fff6c8'; ctx.beginPath(); ctx.arc(120, 11, 8, 0, 7); ctx.fill(); ctx.fillStyle = '#0d1638'; ctx.beginPath(); ctx.arc(124, 9, 7, 0, 7); ctx.fill();
+  for (let x = 0; x <= W; x += 120) { ctx.fillStyle = '#5b4a7a'; ctx.fillRect(x - 3, 0, 6, 22); }
+  ctx.fillStyle = '#6b5a8a'; ctx.fillRect(0, 22, W, 3);
+  ctx.fillStyle = 'rgba(255,240,180,0.55)'; ctx.font = 'bold 10px Georgia'; ctx.textAlign = 'center'; ctx.fillText('🌙  W I N D O W  🌙', 480, 15);
+  // moonlight shafts
+  ctx.fillStyle = 'rgba(200,210,255,0.035)'; ctx.beginPath(); ctx.moveTo(60, 25); ctx.lineTo(200, 25); ctx.lineTo(320, LOBBY_Y); ctx.lineTo(120, LOBBY_Y); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(620, 25); ctx.lineTo(760, 25); ctx.lineTo(880, LOBBY_Y); ctx.lineTo(680, LOBBY_Y); ctx.fill();
+  // kitchen door (right wall)
+  ctx.fillStyle = '#6b4226'; rr(944, 150, 18, 130, 4); ctx.fill(); ctx.fillStyle = '#ffd27a'; ctx.beginPath(); ctx.arc(953, 190, 5, 0, 7); ctx.fill();
+  ctx.save(); ctx.translate(938, 215); ctx.rotate(-Math.PI / 2); ctx.fillStyle = 'rgba(255,220,170,0.6)'; ctx.font = 'bold 10px Georgia'; ctx.fillText('🚪 KITCHEN', 0, 0); ctx.restore();
+  // lobby
+  const lg = ctx.createLinearGradient(0, LOBBY_Y, 0, H); lg.addColorStop(0, '#5a1f33'); lg.addColorStop(1, '#3e1424');
+  ctx.fillStyle = lg; ctx.fillRect(0, LOBBY_Y, W, H - LOBBY_Y);
+  ctx.strokeStyle = '#d9a640'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, LOBBY_Y); ctx.lineTo(W, LOBBY_Y); ctx.stroke();
+  ctx.strokeStyle = 'rgba(217,166,64,0.25)'; ctx.setLineDash([6, 6]); ctx.strokeRect(8, LOBBY_Y + 8, W - 16, H - LOBBY_Y - 16); ctx.setLineDash([]);
+  ctx.fillStyle = 'rgba(255,220,170,0.55)'; ctx.font = 'bold 11px Georgia'; ctx.textAlign = 'left'; ctx.fillText('LOBBY', 18, LOBBY_Y + 24);
+}
+function drawTable(t, ti, now) {
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = 14; ctx.shadowOffsetY = 5;
+  const cloth = '#f3ead6', edge = '#c9b48a';
+  ctx.fillStyle = cloth; ctx.strokeStyle = edge; ctx.lineWidth = 3;
+  if (t.shape === 'round') { ctx.beginPath(); ctx.arc(t.cx, t.cy, t.r, 0, 7); ctx.fill(); ctx.shadowColor = 'transparent'; ctx.stroke(); }
+  else if (t.shape === 'rect') { rr(t.cx - t.w / 2, t.cy - t.h / 2, t.w, t.h, 10); ctx.fill(); ctx.shadowColor = 'transparent'; ctx.stroke(); }
+  else { ctx.beginPath(); ctx.moveTo(t.L, t.yT); ctx.lineTo(t.L + t.th, t.yT); ctx.lineTo(t.L + t.th, t.yB - t.th); ctx.lineTo(t.R - t.th, t.yB - t.th); ctx.lineTo(t.R - t.th, t.yT); ctx.lineTo(t.R, t.yT); ctx.lineTo(t.R, t.yB); ctx.lineTo(t.L, t.yB); ctx.closePath(); ctx.fill(); ctx.shadowColor = 'transparent'; ctx.stroke(); }
+  ctx.restore();
+  // centrepiece
+  if (t.shape === 'round') {
+    if (t.lazy) {
+      const rot = (now / 4000) % (Math.PI * 2);
+      ctx.strokeStyle = '#b08850'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(t.cx, t.cy, t.r * 0.62, 0, 7); ctx.stroke();
+      ctx.fillStyle = '#e6d6b0'; ctx.beginPath(); ctx.arc(t.cx, t.cy, t.r * 0.55, 0, 7); ctx.fill();
+      ctx.strokeStyle = '#9a7040'; ctx.lineWidth = 2;
+      for (let k = 0; k < 3; k++) { const a = rot + k * 2.09; ctx.beginPath(); ctx.arc(t.cx, t.cy, t.r * 0.42, a, a + 1.2); ctx.stroke();
+        const ex = t.cx + Math.cos(a + 1.2) * t.r * 0.42, ey = t.cy + Math.sin(a + 1.2) * t.r * 0.42; ctx.beginPath(); ctx.arc(ex, ey, 3, 0, 7); ctx.fillStyle = '#9a7040'; ctx.fill(); }
+      ctx.fillStyle = '#7a5a30'; ctx.font = 'bold 10px Georgia'; ctx.textAlign = 'center'; ctx.fillText('LAZY', t.cx, t.cy - 2); ctx.fillText('SUSAN', t.cx, t.cy + 10);
+    } else { ctx.font = '20px serif'; ctx.textAlign = 'center'; ctx.fillText('🕯️', t.cx, t.cy + 7); }
+  } else if (t.shape === 'rect') { ctx.font = '16px serif'; ctx.textAlign = 'center'; for (let x = t.cx - t.w / 2 + 40; x < t.cx + t.w / 2 - 20; x += 70) ctx.fillText(x % 140 < 70 ? '🕯️' : '🌸', x, t.cy + 6); }
+  else { ctx.font = '14px serif'; ctx.textAlign = 'center'; ctx.fillText('🕯️', t.L + t.th / 2, t.yT + 20); ctx.fillText('🕯️', t.R - t.th / 2, t.yT + 20); ctx.fillText('🍷', t.cx, t.yB - t.th / 2 + 5); }
+  if (G.S.tables.length > 1) {
+    const ly = t.shape === 'round' ? t.cy + t.R + 54 : t.shape === 'rect' ? t.cy + t.h / 2 + 76 : t.yT - 14;
+    ctx.font = 'bold 12px Georgia'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,230,180,0.8)'; ctx.fillText(E.TNAMES[ti] + ' table', t.cx, Math.min(LOBBY_Y - 6, Math.max(36, ly)));
+  }
+}
+function drawSeat(s, now, hl) {
+  const t = G.S.tables[s.t];
+  const ox = s.x - t.cx, oy = s.y - t.cy; let dx = Math.cos(s.ang), dy = Math.sin(s.ang);
+  if (t.shape === 'round') { const l = Math.hypot(ox, oy) || 1; dx = ox / l; dy = oy / l; }
+  ctx.fillStyle = s.head ? '#7a3f5c' : '#5b4a8a'; ctx.strokeStyle = s.head ? '#f2c75c' : '#8f7fc4'; ctx.lineWidth = s.head ? 3 : 2;
+  ctx.beginPath(); ctx.arc(s.x, s.y, SR, 0, 7); ctx.fill(); ctx.stroke();
+  // chair back
+  ctx.strokeStyle = s.head ? '#f2c75c' : '#8f7fc4'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(s.x, s.y, SR + 3, Math.atan2(dy, dx) - 0.9, Math.atan2(dy, dx) + 0.9); ctx.stroke();
+  if (hl) { ctx.strokeStyle = hl; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(s.x, s.y, SR + 6, 0, 7); ctx.stroke(); }
+  // markers
+  const mk = []; if (s.head) mk.push('👑'); if (s.window) mk.push('🌙'); if (s.kitchen) mk.push('🚪'); if (s.middle) mk.push('◆');
+  if (mk.length) {
+    ctx.font = '11px serif'; ctx.textAlign = 'center';
+    const mx = s.x + dx * (SR + 13), my = s.y + dy * (SR + 13) + 4;
+    ctx.fillStyle = 'rgba(20,16,40,0.65)'; const w = mk.length * 13 + 4; rr(mx - w / 2, my - 11, w, 14, 6); ctx.fill();
+    ctx.fillStyle = '#f2c75c'; ctx.fillText(mk.join(''), mx, my);
+  }
+}
+function drawAcc(a, x, y, col) {
+  ctx.save(); ctx.translate(x, y);
+  const r = TR;
+  switch (a) {
+    case 'bun': ctx.fillStyle = '#d8d8e0'; ctx.beginPath(); ctx.arc(0, -r, 7, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(0, -r + 6, r - 3, Math.PI, 0); ctx.fill(); break;
+    case 'cap': ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.arc(0, -r + 6, r - 3, Math.PI, 0); ctx.fill(); ctx.fillRect(0, -r + 3, r + 2, 4); break;
+    case 'bow': ctx.fillStyle = '#e84393'; ctx.beginPath(); ctx.moveTo(6, -r + 2); ctx.lineTo(16, -r - 6); ctx.lineTo(16, -r + 8); ctx.closePath(); ctx.moveTo(6, -r + 2); ctx.lineTo(-4, -r - 6); ctx.lineTo(-4, -r + 8); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(10, -r, 1.4, 0, 7); ctx.arc(0, -r + 2, 1.4, 0, 7); ctx.fill(); break;
+    case 'glasses': ctx.strokeStyle = '#222'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(-6, -3, 4.5, 0, 7); ctx.moveTo(10.5, -3); ctx.arc(6, -3, 4.5, 0, 7); ctx.moveTo(-1.5, -3); ctx.lineTo(1.5, -3); ctx.stroke(); break;
+    case 'propeller': ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(0, -r - 6); ctx.stroke(); ctx.fillStyle = '#e74c3c'; ctx.beginPath(); ctx.ellipse(-6, -r - 7, 6, 2.2, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#3498db'; ctx.beginPath(); ctx.ellipse(6, -r - 7, 6, 2.2, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(0, -r + 5, r - 5, Math.PI, 0); ctx.fill(); break;
+    case 'mustache': ctx.fillStyle = '#eee'; ctx.beginPath(); ctx.ellipse(-5, 4, 6, 2.6, 0.3, 0, 7); ctx.ellipse(5, 4, 6, 2.6, -0.3, 0, 7); ctx.fill(); break;
+    case 'cat': ctx.fillStyle = col; ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5; [[-1, 1], [1, 1]].forEach(([sx]) => { ctx.beginPath(); ctx.moveTo(sx * 13, -8); ctx.lineTo(sx * 11, -r - 7); ctx.lineTo(sx * 3, -r + 1); ctx.closePath(); ctx.fill(); ctx.stroke(); });
+      ctx.strokeStyle = '#444'; ctx.lineWidth = 0.8; ctx.beginPath(); [-1, 1].forEach(sx => { ctx.moveTo(sx * 4, 3); ctx.lineTo(sx * 15, 1); ctx.moveTo(sx * 4, 4); ctx.lineTo(sx * 15, 6); }); ctx.stroke(); break;
+    case 'fangs': ctx.fillStyle = '#2c2440'; ctx.beginPath(); ctx.moveTo(-r + 2, -6); ctx.quadraticCurveTo(0, -r - 8, r - 2, -6); ctx.lineTo(0, -8); ctx.closePath(); ctx.fill(); break;
+    case 'ghost': break;
+    case 'antenna': ctx.strokeStyle = '#555'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(0, -r - 8); ctx.stroke(); ctx.fillStyle = '#ff5252'; ctx.beginPath(); ctx.arc(0, -r - 9, 3, 0, 7); ctx.fill(); break;
+    case 'pearls': ctx.fillStyle = '#fff'; for (let k = -3; k <= 3; k++) { ctx.beginPath(); ctx.arc(k * 4, r - 1 + Math.abs(k) * -0.6, 1.8, 0, 7); ctx.fill(); } ctx.fillStyle = '#5a4080'; ctx.beginPath(); ctx.arc(0, -r + 6, r - 3, Math.PI, 0); ctx.fill(); break;
+    case 'tie': ctx.fillStyle = '#e67e22'; ctx.beginPath(); ctx.moveTo(-3, r - 3); ctx.lineTo(3, r - 3); ctx.lineTo(5, r + 8); ctx.lineTo(0, r + 11); ctx.lineTo(-5, r + 8); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#ffeb3b'; ctx.beginPath(); ctx.arc(0, r + 4, 1.6, 0, 7); ctx.fill(); break;
+    case 'crown': case 'tiara': { const s = a === 'crown' ? 1 : 0.7; ctx.fillStyle = '#f2c75c'; ctx.strokeStyle = '#a07a1a'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-10 * s, -r + 4); ctx.lineTo(-11 * s, -r - 8 * s); ctx.lineTo(-5 * s, -r - 2 * s); ctx.lineTo(0, -r - 10 * s); ctx.lineTo(5 * s, -r - 2 * s); ctx.lineTo(11 * s, -r - 8 * s); ctx.lineTo(10 * s, -r + 4); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle = '#e74c3c'; ctx.beginPath(); ctx.arc(0, -r - 1, 2, 0, 7); ctx.fill(); break; }
+    case 'helmet': ctx.fillStyle = '#9aa4b0'; ctx.beginPath(); ctx.arc(0, -2, r + 1, Math.PI * 1.05, Math.PI * 1.95); ctx.lineTo(r, 2); ctx.lineTo(-r, 2); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#333'; ctx.fillRect(-11, -6, 22, 3); ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.moveTo(0, -r - 2); ctx.quadraticCurveTo(10, -r - 14, 14, -r - 4); ctx.lineTo(0, -r + 2); ctx.fill(); break;
+    case 'horns': ctx.fillStyle = '#7a1f1f'; [-1, 1].forEach(sx => { ctx.beginPath(); ctx.moveTo(sx * 6, -r + 3); ctx.quadraticCurveTo(sx * 13, -r - 2, sx * 12, -r - 10); ctx.lineTo(sx * 11, -r + 4); ctx.fill(); }); break;
+    case 'jester': [['#e74c3c', -1], ['#3498db', 1]].forEach(([c, sx]) => { ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(0, -r + 4); ctx.quadraticCurveTo(sx * 14, -r - 12, sx * 18, -r + 2); ctx.lineTo(sx * 8, -r + 6); ctx.fill(); ctx.fillStyle = '#f1c40f'; ctx.beginPath(); ctx.arc(sx * 18, -r + 3, 2.5, 0, 7); ctx.fill(); }); break;
+    case 'poodle': ctx.fillStyle = '#fff'; [[0, -r - 2, 7], [-12, -8, 6], [12, -8, 6]].forEach(([px, py, pr]) => { ctx.beginPath(); ctx.arc(px, py, pr, 0, 7); ctx.fill(); }); ctx.fillStyle = '#e84393'; ctx.beginPath(); ctx.arc(5, -r - 6, 2.5, 0, 7); ctx.fill(); break;
+    case 'bolts': ctx.fillStyle = '#888'; ctx.fillRect(-r - 4, 3, 6, 5); ctx.fillRect(r - 2, 3, 6, 5); ctx.fillStyle = '#2d4a30'; ctx.fillRect(-r + 3, -r + 2, 2 * r - 6, 6); break;
+    case 'bandage': ctx.strokeStyle = 'rgba(160,140,100,0.7)'; ctx.lineWidth = 1.2; for (let k = -12; k <= 12; k += 6) { ctx.beginPath(); ctx.moveTo(-r, k - 4); ctx.lineTo(r, k + 4); ctx.stroke(); } break;
+    case 'weed': ctx.strokeStyle = '#2e7d32'; ctx.lineWidth = 2.5; [-8, 0, 8].forEach(px => { ctx.beginPath(); ctx.moveTo(px, -r + 3); ctx.quadraticCurveTo(px + 6, -r - 4, px - 2, -r - 8); ctx.stroke(); }); break;
+    case 'wolf': ctx.fillStyle = '#7a5538'; [-1, 1].forEach(sx => { ctx.beginPath(); ctx.moveTo(sx * 14, -6); ctx.lineTo(sx * 13, -r - 8); ctx.lineTo(sx * 4, -r + 1); ctx.closePath(); ctx.fill(); }); break;
+    case 'skunk': ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(-3, -r); ctx.lineTo(3, -r); ctx.lineTo(2, -6); ctx.lineTo(-2, -6); ctx.closePath(); ctx.fill(); ctx.fillStyle = col; [-1, 1].forEach(sx => { ctx.beginPath(); ctx.arc(sx * 11, -r + 3, 5, 0, 7); ctx.fill(); }); break;
+    case 'feather': ctx.fillStyle = '#8e44ad'; ctx.beginPath(); ctx.ellipse(10, -r - 6, 4, 11, 0.5, 0, 7); ctx.fill(); ctx.fillStyle = '#f2c75c'; ctx.beginPath(); ctx.arc(6, -r + 2, 3, 0, 7); ctx.fill(); break;
+    case 'snakes': ctx.strokeStyle = '#2e8b3a'; ctx.lineWidth = 3; [-10, -3, 4, 11].forEach((px, k) => { ctx.beginPath(); ctx.moveTo(px, -r + 5); ctx.quadraticCurveTo(px + (k % 2 ? 6 : -6), -r - 3, px, -r - 9); ctx.stroke(); ctx.fillStyle = '#2e8b3a'; ctx.beginPath(); ctx.arc(px, -r - 9, 2.5, 0, 7); ctx.fill(); }); break;
+  }
+  ctx.restore();
+}
+function drawGuest(g, x, y, state, lift) {
+  const gu = G.guests[g];
+  ctx.save();
+  if (lift) { ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 12; ctx.shadowOffsetY = 6; }
+  ctx.fillStyle = gu.col; ctx.strokeStyle = 'rgba(30,20,50,0.85)'; ctx.lineWidth = 2;
+  if (gu.acc === 'ghost') { ctx.beginPath(); ctx.arc(x, y - 2, TR, Math.PI, 0); ctx.lineTo(x + TR, y + TR - 2); for (let k = 0; k < 4; k++) { const xx = x + TR - (k + 1) * TR / 2; ctx.quadraticCurveTo(xx + TR / 4, y + TR - 8 + (k % 2) * 8, xx, y + TR - 2); } ctx.closePath(); ctx.fill(); ctx.shadowColor = 'transparent'; ctx.stroke(); }
+  else { ctx.beginPath(); ctx.arc(x, y, TR, 0, 7); ctx.fill(); ctx.shadowColor = 'transparent'; ctx.stroke(); }
+  ctx.restore();
+  drawAcc(gu.acc, x, y, gu.col);
+  // face
+  const dark = gu.acc === 'skunk' ? '#fff' : '#2a1d2e';
+  ctx.fillStyle = dark; ctx.strokeStyle = dark; ctx.lineWidth = 1.8; ctx.lineCap = 'round';
+  if (gu.acc === 'snakes') { ctx.fillStyle = '#111'; rr(x - 11, y - 7, 9, 6, 2); ctx.fill(); rr(x + 2, y - 7, 9, 6, 2); ctx.fill(); ctx.fillRect(x - 2, y - 6, 4, 1.5); }
+  else if (gu.acc === 'helmet') { /* visor */ }
+  else { ctx.beginPath(); ctx.arc(x - 5.5, y - 3, 2, 0, 7); ctx.arc(x + 5.5, y - 3, 2, 0, 7); ctx.fill(); }
+  ctx.beginPath();
+  if (state === 'happy') { ctx.arc(x, y + 2, 6, 0.2, Math.PI - 0.2); }
+  else if (state === 'grumpy') { ctx.arc(x, y + 10, 5.5, Math.PI + 0.4, -0.4); ctx.moveTo(x - 8, y - 8); ctx.lineTo(x - 3, y - 6); ctx.moveTo(x + 8, y - 8); ctx.lineTo(x + 3, y - 6); }
+  else { ctx.moveTo(x - 4, y + 6); ctx.lineTo(x + 4, y + 6); }
+  ctx.stroke();
+  if (gu.acc === 'fangs' && state !== 'grumpy') { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(x - 4, y + 5); ctx.lineTo(x - 2, y + 9); ctx.lineTo(x - 1, y + 5); ctx.moveTo(x + 4, y + 5); ctx.lineTo(x + 2, y + 9); ctx.lineTo(x + 1, y + 5); ctx.fill(); }
+  // name tag
+  ctx.font = 'bold 9.5px Georgia'; ctx.textAlign = 'center';
+  ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(15,10,30,0.9)'; ctx.strokeText(gu.sh, x, y + TR + 11); ctx.fillStyle = '#fff2d6'; ctx.fillText(gu.sh, x, y + TR + 11);
+}
+
+function tooltip(x, y, title, rows, sub) {
+  ctx.font = '12px Georgia';
+  let w = Math.max(ctx.measureText(title).width + 10, ...(sub ? [ctx.measureText(sub).width] : [0]), ...rows.map(r => ctx.measureText(r[1]).width + 18)) + 16;
+  w = Math.min(w, 430);
+  const h = 24 + (sub ? 16 : 0) + rows.length * 16 + 6;
+  let tx = x + 24, ty = y - h / 2; if (tx + w > W - 6) tx = x - 24 - w; ty = Math.max(30, Math.min(H - h - 6, ty));
+  ctx.fillStyle = 'rgba(20,16,40,0.95)'; ctx.strokeStyle = '#f2c75c'; ctx.lineWidth = 1.5; rr(tx, ty, w, h, 8); ctx.fill(); ctx.stroke();
+  ctx.textAlign = 'left'; ctx.fillStyle = '#f2c75c'; ctx.font = 'bold 13px Georgia'; ctx.fillText(title, tx + 8, ty + 17);
+  let yy = ty + 17;
+  if (sub) { yy += 16; ctx.fillStyle = '#b9b2c9'; ctx.font = 'italic 11px Georgia'; ctx.fillText(sub, tx + 8, yy); }
+  ctx.font = '12px Georgia';
+  rows.forEach(r => { yy += 16; ctx.fillStyle = r[2] || '#f4ecd8'; ctx.fillText(r[0], tx + 8, yy); ctx.fillText(r[1], tx + 22, yy); });
+}
+
+function draw(now) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const sc = cv.width / W; ctx.setTransform(sc, 0, 0, sc, 0, 0);
+  drawRoom(now);
+  if (!G) { ctx.fillStyle = '#f2c75c'; ctx.font = 'bold 40px Georgia'; ctx.textAlign = 'center'; ctx.fillText('Table Manners', 480, 230); return; }
+  const S = G.S, m = G.m || mood();
+  S.tables.forEach((t, ti) => drawTable(t, ti, now));
+  // hover logic
+  hoverG = -1; hoverS = -1;
+  if (pointer.in && !drag && mode === 'play') { hoverG = guestAt(pointer.x, pointer.y); if (hoverG < 0) hoverS = seatAt(pointer.x, pointer.y, 22); }
+  const dragSeat = drag ? seatAt(drag.x, drag.y, 28) : -1;
+  // predicted moods
+  let pred = null, ring = null;
+  if (drag && dragSeat >= 0) { const p2 = G.pos.slice(); const h = p2.indexOf(dragSeat); if (h >= 0) p2[h] = p2[drag.g]; p2[drag.g] = dragSeat; pred = mood(p2); }
+  if (hoverS >= 0) { ring = {}; activeList().forEach(g => { const p2 = G.pos.slice(); const h = p2.indexOf(hoverS); if (h >= 0 && h !== g) p2[h] = p2[g]; p2[g] = hoverS; ring[g] = mood(p2).happy[g]; }); }
+  const sol = G.p.stages[G.stage].sol;
+  S.seats.forEach(s => {
+    let hl = null;
+    if (s.id === dragSeat) hl = pred && pred.happy[drag.g] ? '#7fd88f' : '#ff8a80';
+    else if (s.id === hoverS) hl = '#f2c75c';
+    if (G.hintG >= 0 && sol[G.hintG] === s.id) hl = 'rgba(255,215,90,' + (0.5 + 0.5 * Math.sin(now / 160)) + ')';
+    drawSeat(s, now, hl);
+  });
+  // hint line
+  if (G.hintG >= 0) { const a = G.disp[G.hintG] || targetXY(G.hintG), b = S.seats[sol[G.hintG]]; ctx.strokeStyle = 'rgba(255,215,90,0.8)'; ctx.setLineDash([5, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.setLineDash([]); }
+  // guests
+  const order = activeList().filter(g => !drag || g !== drag.g);
+  order.forEach(g => {
+    const tg = targetXY(g); let d = G.disp[g];
+    if (!d) d = G.disp[g] = { x: tg.x, y: tg.y };
+    d.x += (tg.x - d.x) * 0.28; d.y += (tg.y - d.y) * 0.28;
+    if (Math.abs(tg.x - d.x) < 0.3) d.x = tg.x; if (Math.abs(tg.y - d.y) < 0.3) d.y = tg.y;
+    const mm = pred || m;
+    const st = G.pos[g] < 0 ? 'wait' : (mm.happy[g] ? 'happy' : 'grumpy');
+    if (ring) { ctx.strokeStyle = ring[g] ? '#7fd88f' : 'rgba(255,138,128,0.85)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(d.x, d.y, TR + 4, 0, 7); ctx.stroke(); }
+    if (g === panelHL || g === hoverG) { ctx.strokeStyle = '#f2c75c'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(d.x, d.y, TR + 6, 0, 7); ctx.stroke(); }
+    if (G.guests[g].aura && G.pos[g] >= 0) { ctx.fillStyle = G.guests[g].aura === 'smell' ? 'rgba(140,200,80,0.12)' : 'rgba(230,120,200,0.12)'; ctx.beginPath(); ctx.arc(d.x, d.y, TR + 14 + 3 * Math.sin(now / 300), 0, 7); ctx.fill(); }
+    drawGuest(g, d.x, d.y, st, false);
+    if (G.guests[g].aura && G.pos[g] >= 0) { ctx.font = '11px serif'; ctx.textAlign = 'center'; ctx.fillText(G.guests[g].aura === 'smell' ? '💨' : '🎶', d.x + 14 + 2 * Math.sin(now / 200), d.y - 14); }
+  });
+  if (drag) { const x = drag.x + drag.ox, y = drag.y + drag.oy; G.disp[drag.g] = { x, y }; drawGuest(drag.g, x, y, pred ? (pred.happy[drag.g] ? 'happy' : 'grumpy') : 'wait', true); }
+  // fx
+  fx = fx.filter(f => now - f.b < 1200);
+  fx.forEach(f => { const k = (now - f.b) / 1200; ctx.globalAlpha = 1 - k; ctx.fillStyle = f.c; ctx.font = 'bold 18px serif'; ctx.textAlign = 'center'; ctx.fillText(f.t, f.x, f.y - k * 30); ctx.globalAlpha = 1; });
+  // tooltips
+  if (hoverG >= 0) {
+    const gu = G.guests[hoverG], d = G.disp[hoverG] || targetXY(hoverG);
+    const rows = [];
+    G.wishes.forEach((w, i) => { if (w.g !== hoverG) return; const seated = G.pos[hoverG] >= 0; rows.push([i === G.fib ? '🤥' : !seated ? '·' : m.ok[i] ? '✓' : '✗', (w.note ? '📨 ' : '') + (w.nw ? '✨ ' : '') + wtext(w), i === G.fib ? '#c9a26b' : !seated ? '#b9b2c9' : m.ok[i] ? '#7fd88f' : '#ff8a80']); });
+    m.grump[hoverG].forEach(a => rows.push(['😖', 'Next to ' + G.guests[a].sh + '!', '#ff8a80']));
+    if (!rows.length) rows.push(['·', 'Easygoing: happy anywhere.', '#b9b2c9']);
+    rows.push(['', FOOD_E[gu.food] + ' likes ' + gu.food + (gu.imm ? ' · ' + gu.imm.map(x => x === 'smell' ? "can't smell" : 'loves/ignores opera').join(', ') : ''), '#b9b2c9']);
+    tooltip(d.x, d.y, gu.name, rows, gu.bio);
+  } else if (hoverS >= 0) {
+    const s = S.seats[hoverS], a = [];
+    if (s.head) a.push('👑 head'); if (s.window) a.push('🌙 faces window'); if (s.kitchen) a.push('🚪 back to kitchen'); if (s.middle) a.push('◆ middle');
+    if (S.tables.length > 1) a.push(E.TNAMES[s.t] + ' table');
+    const happyHere = ring ? activeList().filter(g => ring[g]).map(g => G.guests[g].sh) : [];
+    tooltip(s.x, s.y, 'Chair ' + (s.ord + 1), [['', a.length ? a.join(' · ') : 'An ordinary chair'], ['😊', happyHere.length ? 'Happy here: ' + happyHere.join(', ') : 'Nobody would be happy here (yet)', happyHere.length ? '#7fd88f' : '#ff8a80']]);
+  }
+  // twist banner / stage indicator
+  if (G.p.stages.length > 1) { ctx.fillStyle = 'rgba(20,16,40,0.7)'; rr(8, 30, 120, 20, 6); ctx.fill(); ctx.fillStyle = '#f2c75c'; ctx.font = 'bold 11px Georgia'; ctx.textAlign = 'left'; ctx.fillText(G.stage === 0 ? '🍲 First course' : '⚡ After the twist', 16, 44); }
+  cv.style.cursor = drag ? 'grabbing' : hoverG >= 0 ? 'grab' : 'default';
+}
+function loop(now) { try { draw(now); } catch (e) { console.error(e); } requestAnimationFrame(loop); }
+
+// ---------------- test API (used by the automated playtest bot)
+window.__TM = {
+  rando(seed) { startRando(seed); },
+  state() { return G ? { id: G.p.id, stage: G.stage, stages: G.p.stages.length, pos: G.pos.slice(), act: G.act.slice(), sol: G.p.stages[G.stage].sol.slice(), fake: G.fake, fib: G.fib, done: G.done, busy: !!G.busy, moves: G.moves, par: G.p.par, mode, lazy: G.S.tables.some(t => t.lazy) } : { mode }; },
+  client(x, y) { const r = cv.getBoundingClientRect(); return { x: r.left + x * r.width / W, y: r.top + y * r.height / H }; },
+  seatXY(s) { const q = G.S.seats[s]; return this.client(q.x, q.y); },
+  guestXY(g) { const t = targetXY(g); return this.client(t.x, t.y); },
+  save() { return JSON.parse(JSON.stringify(save)); },
+  happy() { const m = mood(); return activeList().every(g => m.happy[g]); }
+};
+
+resize();
+requestAnimationFrame(loop);
+showTitle();
+})();
+
+</script>
+</body>
+</html>
